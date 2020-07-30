@@ -6,3 +6,8 @@
 #pragma warning(disable:4996)	//disables warning printing console
 
 #include "Utils/Utils.hpp"		//includes all utils...
+
+//All necessary ImGui librarys
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_dx9.h"
+#include "ImGui/imgui_impl_win32.h"
