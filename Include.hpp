@@ -16,3 +16,5 @@
 #include "ImGui/imgui_impl_win32.h"
 
 #include "Hooks.hpp"			//hooking ingame functions
+
+#include "Globals.hpp"
