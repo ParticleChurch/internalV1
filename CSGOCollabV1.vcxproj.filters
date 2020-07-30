@@ -38,5 +38,8 @@
     <ClInclude Include="Utils\Macro.hpp">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\InterfaceTools.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
