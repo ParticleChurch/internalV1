@@ -92,7 +92,7 @@
     <ClInclude Include="Hooks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\HookManager.hpp">
+    <ClInclude Include="Utils\VMTManager.hpp">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>

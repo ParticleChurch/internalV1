@@ -5,7 +5,7 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 namespace H
 {
-	HookManager d3d9;
+	VMTManager d3d9;
 
 	EndScene oEndScene;
 	Reset oReset;
