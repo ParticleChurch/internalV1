@@ -5,8 +5,11 @@
 #include <cstddef>				//defines several types implicitly generated or used (initally for hookmanager.hpp)
 #include <assert.h>				//allows use of assert (initially for hookmanager.hpp)
 #include <d3d9.h>				//used by Direct3D 9 Graphics
+#include <string>				//allows use of c++ style strings
+#include <math.h>				//allows use of basic math functions 
 
 #pragma warning(disable:4996)	//disables warning printing console
+#pragma warning(disable:4244)	//gets rid of const int to float warning
 
 #include "Utils/Utils.hpp"		//includes all utils...
 
@@ -14,5 +17,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
+
+#include "Valve/Valve.hpp"
 
 #include "Hooks.hpp"			//hooking ingame functions

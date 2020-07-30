@@ -19,6 +19,12 @@
     <Filter Include="Header Files\ImGui">
       <UniqueIdentifier>{168062e5-2243-4c2f-a68d-d2581fff6eb0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Vavle">
+      <UniqueIdentifier>{0432f377-ae93-4e99-b95d-d2263939e949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vavle\Custom">
+      <UniqueIdentifier>{e3b6887b-6a1d-4236-ac61-3db8778bc615}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -94,6 +100,12 @@
     </ClInclude>
     <ClInclude Include="Utils\VMTManager.hpp">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Vec.hpp">
+      <Filter>Header Files\Vavle\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Valve.hpp">
+      <Filter>Header Files\Vavle</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
