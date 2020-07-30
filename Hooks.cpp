@@ -45,6 +45,7 @@ void H::UnHook()
 {
 	d3d9.RestoreOriginal();
 	D3dInit = false; //for wndproc... haven't found better solution
+	FreeConsole();
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
