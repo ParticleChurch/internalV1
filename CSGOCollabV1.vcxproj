@@ -172,7 +172,8 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Include.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
-    <ClInclude Include="Utils\InterfaceTools.h" />
+    <ClInclude Include="Utils\HookManager.hpp" />
+    <ClInclude Include="Utils\InterfaceTools.hpp" />
     <ClInclude Include="Utils\Macro.hpp" />
     <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />

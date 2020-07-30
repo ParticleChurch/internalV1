@@ -2,6 +2,8 @@
 #include <Windows.h>			//allows use of windows api
 #include <iostream>				//allows use of printing to console
 #include <Psapi.h>				//header used by Process Status API (initially for patternscan.hpp)
+#include <cstddef>				//defines several types implicitly generated or used (initally for hookmanager.hpp)
+#include <assert.h>				//allows use of assert (initially for hookmanager.hpp)
 
 #pragma warning(disable:4996)	//disables warning printing console
 
