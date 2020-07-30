@@ -158,6 +158,8 @@
   <ItemGroup>
     <ClInclude Include="Include.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
+    <ClInclude Include="Utils\Macro.hpp" />
+    <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
