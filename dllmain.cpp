@@ -1,13 +1,11 @@
-#include "Include.h"
+#include "Include.hpp"
 
 void Init()
 {
-    //alloc console
+    //Alloc console
     AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
-
-
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
