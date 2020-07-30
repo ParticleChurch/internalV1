@@ -118,3 +118,5 @@ public:
 		this->z /= b;
 	}
 };
+
+typedef Vec QAngle;
