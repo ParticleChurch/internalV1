@@ -89,11 +89,11 @@
     <ClInclude Include="Utils\InterfaceTools.hpp">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\HookManager.hpp">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Hooks.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\HookManager.hpp">
+      <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

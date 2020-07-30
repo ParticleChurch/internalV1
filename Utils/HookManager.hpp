@@ -1,123 +1,92 @@
 #pragma once
-
-class ProtectGuard
-{
-public:
-	ProtectGuard(void* Base, size_t Len, std::uint32_t Flags)
-	{
-		this->Base = Base;
-		this->Length = Len;
-		if (!VirtualProtect(Base, Len, Flags, (PDWORD)&this->Old))
-			throw std::runtime_error("Failed to protect region.");
-	}
-	~ProtectGuard()
-	{
-		VirtualProtect(this->Base, this->Length, this->Old, (PDWORD)&this->Old);
-	}
-
-private:
-	void* Base;
-	size_t        Length;
-	std::uint32_t Old;
-};
-
 class HookManager
 {
 private:
-	//VFT - virtual function table
-	void* ClassBase;
-	std::size_t     VFTLength;
-	std::uintptr_t* NewVFT;
-	std::uintptr_t* OldVFT;
+	DWORD* CustomTable;
+	bool	InitComplete;
+	DWORD* OriginalTable;
+	DWORD* Instance;
 
-	//estimates the virtual function tables length
-	static inline std::size_t EstimateVFTLength(std::uintptr_t* VFTStart)
+	int		MethodCount(DWORD* InstancePointer) 
 	{
-		unsigned int i = std::size_t{}; //iterator i
-
-		while (VFTStart[i] >= 0x00010000 &&
-			VFTStart[i] < 0xFFF00000 &&
-			i < 512 /* Hard coded value. Can cause problems, beware.*/) {
-			i++;
+		DWORD* VMT = (DWORD*)*InstancePointer;
+		int Index = 0;
+		int Amount = 0;
+		while (!IsBadCodePtr((FARPROC)VMT[Index]))
+		{
+			if (!IsBadCodePtr((FARPROC)VMT[Index]))
+			{
+				Amount++;
+				Index++;
+			}
 		}
 
-		return i;
+		return Amount;
 	}
+
 public:
-	bool Setup(void* Base = nullptr)
+	bool	Initialise(DWORD* InstancePointer) // Pass a &class
 	{
-		if (Base != nullptr)	
-			this->ClassBase = Base;
+		// Store the instance pointers and such, and work out how big the table is
+		Instance = InstancePointer;
+		OriginalTable = (DWORD*)*InstancePointer;
+		int VMTSize = MethodCount(InstancePointer);
+		size_t TableBytes = VMTSize * 4;
 
-		if (this->ClassBase == nullptr)
-			return false;
+		// Allocate some memory and copy the table
+		CustomTable = (DWORD*)malloc(TableBytes + 8);
+		if (!CustomTable) return false;
+		memcpy((void*)CustomTable, (void*)OriginalTable, VMTSize * 4);
 
-		this->OldVFT = *(std::uintptr_t**)this->ClassBase;
-		this->VFTLength = EstimateVFTLength(this->OldVFT);
+		// Change the pointer
+		*InstancePointer = (DWORD)CustomTable;
 
-		if (this->VFTLength == 0)
-			return false;
-
-		this->NewVFT = new std::uintptr_t[this->VFTLength + 1]();
-
-		std::memcpy(&this->NewVFT[1], this->OldVFT, this->VFTLength * sizeof(std::uintptr_t));
-
-		try {
-			auto guard = ProtectGuard{ this->ClassBase, sizeof(std::uintptr_t), PAGE_READWRITE };
-			this->NewVFT[0] = this->OldVFT[-1];
-			*(std::uintptr_t**)this->ClassBase = &this->NewVFT[1];
-		}
-		catch (...) {
-			delete[] this->NewVFT;
-			return false;
-		}
-
+		InitComplete = true;
 		return true;
 	}
 
-	template<typename T>
-	void HookIndex(int Index, T Function)
+	DWORD	HookMethod(DWORD NewFunction, int Index)
 	{
-		assert(Index >= 0 && Index <= (int)this->VFTLength);
-		this->NewVFT[Index + 1] = reinterpret_cast<std::uintptr_t>(Function);
-	}
-
-	void UnhookIndex(int Index)
-	{
-		this->NewVFT[Index] = this->OldVFT[Index];
-	}
-
-	void UnhookAll()
-	{
-		try {
-			if (this->OldVFT != nullptr) {
-				auto guard = ProtectGuard{ this->ClassBase, sizeof(std::uintptr_t), PAGE_READWRITE };
-				*(std::uintptr_t**)this->ClassBase = this->OldVFT;
-				this->OldVFT = nullptr;
-			}
+		if (InitComplete)
+		{
+			CustomTable[Index] = NewFunction;
+			return OriginalTable[Index];
 		}
-		catch (...) {
+		else
+			return NULL;
+	}
+	void	UnhookMethod(int Index)
+	{
+		if (InitComplete)
+			CustomTable[Index] = OriginalTable[Index];
+		return;
+	}
+
+	void	RestoreOriginal()
+	{
+		if (InitComplete)
+		{
+			*Instance = (DWORD)OriginalTable;
 		}
+		return;
+	}
+	void	RestoreCustom()
+	{
+		if (InitComplete)
+		{
+			*Instance = (DWORD)CustomTable;
+		}
+		return;
 	}
 
 	template<typename T>
-	T GetOriginal(int index)
+	T GetMethod(size_t nIndex)
 	{
-		return (T)this->OldVFT[index];
+		return (T)OriginalTable[nIndex];
 	}
 
-	HookManager() : ClassBase(nullptr), VFTLength(0), NewVFT(nullptr), OldVFT(nullptr)
+	DWORD	GetOriginalFunction(int Index)
 	{
-	}
-
-	HookManager(void* Base) : ClassBase(Base), VFTLength(0), NewVFT(nullptr), OldVFT(nullptr)
-	{
-	}
-	
-	~HookManager()
-	{
-		UnhookAll();
-
-		delete[] NewVFT;
+		return OriginalTable[Index];
 	}
 };

@@ -5,8 +5,10 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 namespace H
 {
-	HookManager EndScene;
-	HookManager Reset;
+	HookManager d3d9;
+
+	EndScene oEndScene;
+	Reset oReset;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -28,21 +30,26 @@ void H::Init()
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
 	std::cout << "Hooking..." << std::endl;
+	d3d9.Initialise((DWORD*)D3d9Device);
 
-	EndScene.Setup(D3d9Device);
 	std::cout << "Endscene...";
-	EndScene.HookIndex(42, EndSceneHook);
+	oEndScene = (EndScene)d3d9.HookMethod((DWORD)&EndSceneHook, 42);
 	std::cout << "Success!" << std::endl;
 
-	Reset.Setup(D3d9Device);
 	std::cout << "Reset...";
-	Reset.HookIndex(16, ResetHook);
+	oReset = (Reset)d3d9.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
+}
+
+void H::UnHook()
+{
+	d3d9.RestoreOriginal();
+	D3dInit = false; //for wndproc... haven't found better solution
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
-	static auto oEndScene = EndScene.GetOriginal<decltype(&EndSceneHook)>(42);
+	//static auto oEndScene = EndScene.GetOriginal<decltype(&EndSceneHook)>(42);
 	if (!D3dInit) {
 		D3dInit = true;
 
@@ -60,6 +67,11 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui::SetNextWindowSize(ImVec2(200, 200));
 	ImGui::Begin("Test");
 
+	if (ImGui::Button("UnInject"))
+	{
+		UnHook();
+	}
+
 	ImGui::End();
 
 	ImGui::EndFrame();
@@ -72,7 +84,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
-	static auto oReset = Reset.GetOriginal<decltype(&ResetHook)>(16);
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 	ImGui_ImplDX9_CreateDeviceObjects();
 	return oReset(device, pPresentationParameters);
