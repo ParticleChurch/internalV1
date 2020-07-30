@@ -1,5 +1,8 @@
 #include "Include.hpp"
 
+//for windprc hook
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace H
 {
 	HookManager EndScene;
@@ -8,6 +11,7 @@ namespace H
 	//GUI Vars
 	bool D3dInit = false;
 	HWND CSGOWindow = NULL;
+	WNDPROC oWndProc = NULL;
 }
 
 void H::Init()
@@ -20,7 +24,11 @@ void H::Init()
 		Sleep(10);
 	}
 
-	std::cout << "Hooking.." << std::endl;
+	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
+	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
+
+	std::cout << "Hooking..." << std::endl;
+
 	EndScene.Setup(D3d9Device);
 	std::cout << "Endscene...";
 	EndScene.HookIndex(42, EndSceneHook);
@@ -49,7 +57,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	ImGui::SetNextWindowSize(ImVec2(200, 200));
 	ImGui::Begin("Test");
+
 	ImGui::End();
 
 	ImGui::EndFrame();
@@ -66,5 +76,13 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 	ImGui_ImplDX9_CreateDeviceObjects();
 	return oReset(device, pPresentationParameters);
+}
+
+LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (D3dInit && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+		return true;
+	}
+	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
