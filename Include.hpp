@@ -7,7 +7,7 @@
 
 #include "Utils/Utils.hpp"		//includes all utils...
 
-//All necessary ImGui librarys
+//All necessary ImGui libraries
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
