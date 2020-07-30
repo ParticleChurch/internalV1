@@ -3,3 +3,5 @@
 #include <iostream>				//allows use of printing to console
 
 #pragma warning(disable:4996)	//disables warning printing console
+
+#include "Utils/Utils.hpp"
