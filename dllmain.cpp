@@ -1,5 +1,4 @@
 #include "Include.hpp"
-
 void Init()
 {
     //Allocate Console
@@ -8,6 +7,8 @@ void Init()
     freopen("CONOUT$", "w", stdout);
 
     std::cout << "Successfully Injected\n";
+
+    H::Init();
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

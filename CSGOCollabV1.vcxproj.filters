@@ -42,6 +42,9 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>Header Files\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include.hpp">
@@ -88,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="Utils\HookManager.hpp">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
