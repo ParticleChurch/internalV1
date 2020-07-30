@@ -6,6 +6,8 @@ void Init()
     AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
+
+    std::cout << "Successfully Injected\n";
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
