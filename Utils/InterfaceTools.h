@@ -3,10 +3,10 @@ typedef void* (*oInterface)(char*, int);
 class InterfaceTools
 {
 public:
-	void* GetInterface(char* moudleName, char* interfaceName)
+	void* GetInterface(char* MoudleName, char* InterfaceName)
 	{
-		oInterface original = (oInterface)GetProcAddress(GetModuleHandleA(moudleName), "CreateInterface");
+		oInterface Original = (oInterface)GetProcAddress(GetModuleHandleA(MoudleName), "CreateInterface");
 
-		return (void*)original(interfaceName, 0);
+		return (void*)Original(InterfaceName, 0);
 	}
 };
