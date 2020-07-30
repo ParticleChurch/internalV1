@@ -2,7 +2,7 @@
 
 void Init()
 {
-    //Alloc console
+    //Allocate Console
     AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
