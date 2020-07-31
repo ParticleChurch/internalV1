@@ -17,8 +17,12 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
+#include "Config.hpp"
+#include "GUI.hpp"
 
 #include "Valve/Valve.hpp"
+
+#include "Interfaces.hpp"
 
 #include "Hooks.hpp"            //hooking ingame functions
 #include "Globals.hpp"

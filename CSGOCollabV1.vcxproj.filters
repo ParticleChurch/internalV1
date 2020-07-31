@@ -25,6 +25,7 @@
     <ClCompile Include="Hooks.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Interfaces.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -122,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\ClientClass.h">
       <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.hpp">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

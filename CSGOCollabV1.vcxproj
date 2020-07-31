@@ -161,6 +161,7 @@
     <ClCompile Include="ImGui\imgui_impl_dx9.cpp" />
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Interfaces.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Globals.hpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Include.hpp" />
+    <ClInclude Include="Interfaces.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\InterfaceTools.hpp" />
