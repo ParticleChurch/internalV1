@@ -221,12 +221,14 @@ public:
 		return GetVFunc<oGetClientClass>(this, 2)(this);
 	}
 
-	bool IsDormant() {
-		return *(bool*)((DWORD)this + (DWORD)0xED);
+	bool IsDormant()
+	{
+		typedef bool(__thiscall* oIsDormant)(void*);
+		return GetVFunc<oIsDormant>(this + 8, 9)(this + 8);
 	}
 
-	int index() {
+	int Index() {
 		typedef int(__thiscall* oGetIndex)(void*);
-		return GetVFunc<oGetIndex>(this, 10)(this + 8);
+		return GetVFunc<oGetIndex>(this + 8, 10)(this + 8);
 	}
 };
