@@ -51,9 +51,6 @@ void H::UnHook()
 
 void H::Eject()
 {
-	HWND console = GetConsoleWindow();
-	std::cout << (DWORD)console << std::endl;
-
 	H::UnHook();
 	FreeConsole();
 
@@ -78,13 +75,20 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::SetNextWindowSize(ImVec2(200, 200));
-	ImGui::Begin("Test");
+	// LoginWindow
+	ImGui::SetNextWindowSize(ImVec2(400, 200));
+	ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoResize);
 
+	// 
+	ImGui::SetCursorPos(ImVec2(100, 20));
 	if (ImGui::Button("Unload"))
 	{
 		G::KillDLL = true;
 	}
+
+	static char str0[128] = "Username";
+	ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
+	std::cout << str0 << std::endl;
 
 	ImGui::End();
 
