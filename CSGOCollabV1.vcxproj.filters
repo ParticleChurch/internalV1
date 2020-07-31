@@ -90,6 +90,15 @@
     <ClInclude Include="Valve\Custom\Matrix3x4.h">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\Prototypes.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\Constants.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\BSPFlags.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -109,6 +118,9 @@
     </Filter>
     <Filter Include="Headers\Valve\Custom">
       <UniqueIdentifier>{c70b1382-d216-4577-ad7b-ac7b8e19b1cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Valve\SDK">
+      <UniqueIdentifier>{cd3901ca-6416-4217-9437-99033e772017}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
