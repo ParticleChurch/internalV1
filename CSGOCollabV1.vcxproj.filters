@@ -40,6 +40,9 @@
     <ClCompile Include="HTTP.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="ESP.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -180,6 +183,9 @@
     <ClInclude Include="Hacks\Hacks.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
+    <ClInclude Include="ESP.hpp">
+      <Filter>Headers\Hacks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -211,6 +217,9 @@
     </Filter>
     <Filter Include="Headers\Hacks">
       <UniqueIdentifier>{d9cf0fb7-2254-46d6-9f8b-883a4a934dd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Hacks">
+      <UniqueIdentifier>{6f9f016a-4e60-464c-9a96-307a1773eed6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
