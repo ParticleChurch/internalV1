@@ -23,7 +23,7 @@
 #include "Valve/Valve.hpp"
 
 #include "Interfaces.hpp"
-#include "Netvars.h"
+#include "Netvars.hpp"
 
 #include "Globals.hpp"
 

@@ -180,7 +180,7 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Include.hpp" />
     <ClInclude Include="Interfaces.hpp" />
-    <ClInclude Include="Netvars.h" />
+    <ClInclude Include="Netvars.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\InterfaceTools.hpp" />

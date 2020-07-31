@@ -139,7 +139,9 @@
     <ClInclude Include="GUI\GUI.hpp">
       <Filter>Headers\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="Netvars.h" />
+    <ClInclude Include="Netvars.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
