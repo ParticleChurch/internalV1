@@ -8,6 +8,8 @@ bool GUI::Main()
 {
 	bool KillGui = false;
 	int WindowSizeX, WindowSizeY;
+	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
+	ImVec2 WindowCenter(WindowSizeX/2.f, WindowSizeY/2.f);
 
 	char authStatus = Config::UserInfo.AuthenticationStatus;
 	if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_COMPLETE)
@@ -27,8 +29,7 @@ bool GUI::Main()
 	else if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_PROCESSING)
 	{
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
-		ImVec2 center(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f);
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
 		ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 
 		// Eject button
@@ -47,9 +48,9 @@ bool GUI::Main()
 	else if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_NONE)
 	{
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
-		ImVec2 center(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f);
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
 		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+		std::cout << "Pos:" << WindowSizeX << ", " << WindowSizeY << std::endl;
 
 		// Login Form
 		ImGui::SetCursorPos(ImVec2(59, 30));
