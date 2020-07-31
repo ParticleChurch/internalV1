@@ -28,7 +28,6 @@ bool GUI::Main()
 		ImGui::Text("Login");
 
 		ImGui::InputText("", Config::UserInfo.Email, 256);
-		std::cout << Config::UserInfo.Email << std::endl;
 	}
 
 	ImGui::End();
