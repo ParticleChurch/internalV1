@@ -102,6 +102,9 @@
     <ClInclude Include="Valve\SDK\CUserCmd.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\ClientFrameStage_t.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

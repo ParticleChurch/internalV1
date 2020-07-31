@@ -10,3 +10,6 @@
 #include "SDK/Constants.hpp"
 #include "SDK/BSPFlags.hpp"
 #include "SDK/CUserCmd.hpp"
+#include "SDK/ClientFrameStage_t.hpp"
+#include "SDK/EFontFlags.hpp"
+#include "SDK/player_info_t.hpp"
