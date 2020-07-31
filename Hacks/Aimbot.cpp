@@ -42,3 +42,96 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 	//gets the total distance (in degrees)
 	return sqrtf(powf(min(a, b), 2) + powf(c, 2));
 }
+
+void Aimbot::Legit()
+{
+	//get closest Entity
+	Vec BestAngle;
+	float BestCrossDist = FLT_MAX; //crosshair distance
+	bool ValidTargetFound = false;
+
+	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
+	{
+		player_info_t PlayerInfo;
+		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
+			continue;
+
+		Entity* Ent = I::entitylist->GetClientEntity(i);
+		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
+			continue;
+
+		if (Ent->IsDormant()) //if dormant
+			continue;
+
+		if (!(Ent->GetHealth() > 0)) //if dead
+			continue;
+
+		Vec Head = Ent->GetBonePos(8);
+		Vec Angle = CalculateAngle(Head);
+		float CrossDist = CrosshairDist(Angle);
+		if (CrossDist < BestCrossDist)
+		{
+			BestCrossDist = CrossDist;
+			BestAngle = Angle;
+			ValidTargetFound = true;
+		}
+	}
+
+	if(G::Localplayer->GetShotsFired() > 1)
+		BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
+
+	Smooth(BestAngle);
+
+	if (ValidTargetFound)
+		G::cmd->viewangles = BestAngle;
+}
+
+void Aimbot::Smooth(Vec& Angle)
+{
+	G::CM_StartAngle.Normalize();
+	Angle.Normalize();
+	Vec Delta = G::CM_StartAngle - Angle;
+
+	Delta.Normalize();
+
+	bool FastToSlow = false;
+	float SmoothYaw = 0.1;
+	float SmoothPitch = 0.1;
+	if (FastToSlow)
+	{
+		Delta.y *= SmoothYaw;
+		Delta.x *= SmoothPitch;
+	}
+
+	bool Constant = true;
+	float Speed = 2;
+	if (Constant)
+	{
+		float CurSpeed = Delta.VecLength();
+		if (CurSpeed > Speed)
+		{
+			Delta.y *= (Speed / CurSpeed);
+			Delta.x *= (Speed / CurSpeed);
+		}
+	}
+
+	bool SlowToFast = false;
+	float Factor = 5;
+	if (SlowToFast)
+	{
+		float CurSpeed = powf(Factor,2) / powf(Delta.VecLength(), 2);
+		if (CurSpeed < Speed)
+		{
+			Delta.y *= CurSpeed;
+			Delta.x *= CurSpeed;
+		}
+	}
+
+	Angle = G::CM_StartAngle + Delta;
+	Angle.Normalize();
+}
+
+void Aimbot::Rage()
+{
+}
+

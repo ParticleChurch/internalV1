@@ -27,12 +27,12 @@ public:
 			this->x = -89;
 		}
 
-		while (this->x > 180) {
-			this->x -= 360;
+		while (this->y > 180) {
+			this->y -= 360;
 		}
 
-		while (this->x < -180) {
-			this->x += 360;
+		while (this->y < -180) {
+			this->y += 360;
 		}
 	}
 

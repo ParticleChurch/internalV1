@@ -140,6 +140,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->buttons &= ~IN_JUMP;
 		}
 
+		aimbot->Legit();
+
 		G::CM_End();
 	}
 	
