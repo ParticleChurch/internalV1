@@ -13,9 +13,9 @@ bool GUI::Main()
 	if (ImGui::Button("Unload"))
 		KillGui = true;
 
-	static char str0[128] = "Username";
-	ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
-	std::cout << str0 << std::endl;
+	static char EmailField[256] = "Username";
+	ImGui::InputText("input text", EmailField, IM_ARRAYSIZE(EmailField));
+	std::cout << EmailField << std::endl;
 
 	ImGui::End();
 	return KillGui;

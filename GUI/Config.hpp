@@ -3,7 +3,7 @@
 struct UserInfoStruct {
 	bool IsAuthenticated = false;
 	bool SubscriptionStatus = false;
-	char* Email[256];
+	char Email[256];
 };
 
 namespace Config {
