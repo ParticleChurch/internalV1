@@ -183,36 +183,36 @@ void ESP::Run()
 		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
 			continue;
 
-		Vec bottom = Ent->GetVecOrigin();
-		Vec top = Ent->GetBonePos(8);
-		top.z += 10;
+		Vec Bottom = Ent->GetVecOrigin();
+		Vec Top = Ent->GetBonePos(8);
+		Top.z += 10;
 
-		Vec feet;
-		Vec head;
+		Vec Feet;
+		Vec Head;
 
-		if (!WorldToScreen(top, head))
+		if (!WorldToScreen(Top, Head))
 			continue;
 
-		if (!WorldToScreen(bottom, feet))
+		if (!WorldToScreen(Bottom, Feet))
 			continue;
 
-		float height = feet.y - head.y;
-		float width = height / 2.5f;
+		float Height = Feet.y - Head.y;
+		float Width = Height / 2.5f;
 
-		Vec topLeft;
-		Vec bottomRight;
+		Vec TopLeft;
+		Vec BottomRight;
 
-		topLeft.x = int(feet.x - width / 2);
-		topLeft.y = head.y;
+		TopLeft.x = int(Feet.x - Width / 2);
+		TopLeft.y = Head.y;
 
-		bottomRight.x = int(feet.x + width / 2);
-		bottomRight.y = feet.y;
+		BottomRight.x = int(Feet.x + Width / 2);
+		BottomRight.y = Feet.y;
 
 		I::surface->DrawSetColor(255, 255, 255, 255); //white
-		DrawBoxes(topLeft, bottomRight);
-		DrawName(topLeft, bottomRight, PlayerInfo.name);
-		DrawSnapLines(topLeft, bottomRight);
-		DrawHealth(topLeft, bottomRight, Ent->GetHealth());
+		DrawBoxes(TopLeft, BottomRight);
+		DrawName(TopLeft, BottomRight, PlayerInfo.name);
+		DrawSnapLines(TopLeft, BottomRight);
+		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
 		
 	}
 }
