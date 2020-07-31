@@ -31,7 +31,9 @@
     <ClCompile Include="GUI.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Netvars.cpp" />
+    <ClCompile Include="Netvars.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">

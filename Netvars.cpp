@@ -1,95 +1,142 @@
 #include "Include.hpp"
 
 namespace N {
-	std::vector<RecvTable*> TABLES = getTables();
+	std::vector<RecvTable*> Tables = GetTables();
 
-	std::vector<RecvTable*> getTables()
+	std::vector<RecvTable*> GetTables()
 	{
-		std::vector<RecvTable*> tables;
+		std::vector<RecvTable*> Tables;
 
-		ClientClass* clientClass = I::client->GetAllClasses();
-		if (!clientClass)
+		ClientClass* ClientClass = I::client->GetAllClasses();
+		if (!ClientClass)
 			return std::vector<RecvTable*>();
 
-		while (clientClass)
+		while (ClientClass)
 		{
-			RecvTable* recvTable = clientClass->m_pRecvTable;
-			tables.push_back(recvTable);
+			RecvTable* recvTable = ClientClass->m_pRecvTable;
+			Tables.push_back(recvTable);
 
-			clientClass = clientClass->m_pNext;
+			ClientClass = ClientClass->m_pNext;
 		}
 
-		return tables;
+		return Tables;
 	}
-	RecvTable* GetTable(std::vector<RecvTable*> tables, const char* tableName)
+	RecvTable* GetTable(std::vector<RecvTable*> Tables, const char* TableName)
 	{
-		if (tables.empty())
+		if (Tables.empty())
 			return NULL;
 
-		for (unsigned long i = 0; i < tables.size(); i++)
+		for (unsigned long i = 0; i < Tables.size(); i++)
 		{
-			RecvTable* table = tables[i];
+			RecvTable* table = Tables[i];
 
 			if (!table)
 				continue;
 
-			if (_strnicmp(table->m_pNetTableName, tableName, 128) == 0)
+			if (_strnicmp(table->m_pNetTableName, TableName, 128) == 0)
 				return table;
 		}
 
 		return NULL;
 	}
-	int GetOffset(std::vector<RecvTable*> tables, const char* tableName, const char* propName)
+	int GetOffset(std::vector<RecvTable*> Tables, const char* TableName, const char* TropName)
 	{
-		int offset = GetRecvProp(tables, tableName, propName);
+		int offset = GetRecvProp(Tables, TableName, TropName);
 		if (!offset)
 			return 0;
 
 		return offset;
 	}
 
-	int GetOffset(const char* tableName, const char* propName)
+	int GetOffset(const char* TableName, const char* TropName)
 	{
-		return GetOffset(TABLES, tableName, propName);
+		return GetOffset(Tables, TableName, TropName);
 	}
 
-	int GetRecvProp(std::vector<RecvTable*> tables, const char* tableName, const char* propName, RecvProp** prop)
+	int GetRecvProp(std::vector<RecvTable*> Tables, const char* TableName, const char* PropName, RecvProp** Prop)
 	{
-		RecvTable* recvTable = GetTable(tables, tableName);
-		if (!recvTable)
+		RecvTable* Table = GetTable(Tables, TableName);
+		if (!Table)
 			return 0;
 
-		int offset = GetRecvProp(tables, recvTable, propName, prop);
+		int offset = GetRecvProp(Tables, Table, PropName, Prop);
 		if (!offset)
 			return 0;
 
 		return offset;
 	}
 
-	int GetRecvProp(std::vector<RecvTable*> tables, RecvTable* recvTable, const char* propName, RecvProp** prop)
+	int GetRecvProp(std::vector<RecvTable*> Tables, RecvTable* Table, const char* PropName, RecvProp** Prop)
 	{
-		int extraOffset = 0;
+		int ExtraOffset = 0;
 
-		for (int i = 0; i < recvTable->m_nProps; ++i) {
-			RecvProp* recvProp = &recvTable->m_pProps[i];
-			RecvTable* child = recvProp->m_pDataTable;
+		for (int i = 0; i < Table->m_nProps; ++i) {
+			RecvProp* RProp = &Table->m_pProps[i];
+			RecvTable* Child = RProp->m_pDataTable;
 
-			if (child && (child->m_nProps > 0))
+			if (Child && (Child->m_nProps > 0))
 			{
-				int tmp = GetRecvProp(tables, child, propName, prop);
+				int tmp = GetRecvProp(Tables, Child, PropName, Prop);
 				if (tmp)
-					extraOffset += (recvProp->m_Offset + tmp);
+					ExtraOffset += (RProp->m_Offset + tmp);
 			}
 
-			if (_strnicmp(recvProp->m_pVarName, propName, 128))
+			if (_strnicmp(RProp->m_pVarName, PropName, 128))
 				continue;
 
-			if (prop)
-				*prop = recvProp;
+			if (Prop)
+				*Prop = RProp;
 
-			return (recvProp->m_Offset + extraOffset);
+			return (RProp->m_Offset + ExtraOffset);
 		}
 
-		return extraOffset;
+		return ExtraOffset;
+	}
+
+	std::string DumpTable(RecvTable* Table, int Depth)
+	{
+		std::string str;
+
+		std::string pre = "";
+
+		for (int i = 0; i < Depth; i++)
+			pre.append("\t");
+
+		str.append(pre);
+		str.append(Table->m_pNetTableName);
+		str.append("\n");
+
+		for (int i = 0; i < Table->m_nProps; i++) {
+			RecvProp* prop = &Table->m_pProps[i];
+			if (!prop)
+				continue;
+
+			std::string varName(prop->m_pVarName);
+
+			if (varName.find("baseclass") == 0 || varName.find("0") == 0 || varName.find("1") == 0 || varName.find("2") == 0)
+				continue;
+
+			str.append("\t");
+			str.append(pre);
+			str.append(varName);
+			str.append("\t");
+			str.append(std::to_string(prop->m_Offset));
+			str.append("\n");
+
+			if (prop->m_pDataTable)
+				str.append(DumpTable(prop->m_pDataTable, Depth + 1));
+		}
+
+		return str;
+	}
+
+	std::string DumpTable()
+	{
+		std::string str;
+		for (auto a : Tables) {
+			str.append("\n");
+			str.append(DumpTable(a, 0));
+		}
+		return str;
 	}
 }
