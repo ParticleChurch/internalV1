@@ -156,8 +156,10 @@
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="ESP.cpp" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="Hacks\Aimbot.cpp" />
+    <ClCompile Include="Hacks\ESP.cpp" />
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="HTTP.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
@@ -176,6 +178,7 @@
     <ClInclude Include="GUI\Config.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
+    <ClInclude Include="Hacks\Aimbot.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
     <ClInclude Include="Hooks.hpp" />
     <ClInclude Include="ImGui\imconfig.h" />

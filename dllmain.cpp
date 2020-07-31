@@ -1,6 +1,4 @@
 #include "Include.hpp"
-HMODULE G::DLLModule = NULL; // gets set later, satisfy `extern` now
-bool G::KillDLL = false;
 
 void Init()
 {

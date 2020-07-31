@@ -124,11 +124,25 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
-	//ez bhop
-	Entity* localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if ((cmd->buttons & IN_JUMP) && (localplayer->GetHealth() > 0) && !(localplayer->GetFlags() & FL_ONGROUND)) {
-		cmd->buttons &= ~IN_JUMP;
+	if (!cmd->command_number)
+		return true;
+
+	if (I::engine->IsInGame() && cmd) {
+		PVOID pebp;
+		__asm mov pebp, ebp;
+		bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
+		bool& bSendPacket = *pbSendPacket;
+
+		G::CM_Start(cmd);
+
+		//ez bhop
+		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
+			cmd->buttons &= ~IN_JUMP;
+		}
+
+		G::CM_End();
 	}
+	
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
 	return true; //silent aim on false (only for client)
 }

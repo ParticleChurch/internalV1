@@ -40,8 +40,14 @@
     <ClCompile Include="HTTP.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="ESP.cpp">
+    <ClCompile Include="Hacks\Aimbot.cpp">
       <Filter>Source\Hacks</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\ESP.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +190,9 @@
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
     <ClInclude Include="ESP.hpp">
+      <Filter>Headers\Hacks</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Aimbot.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
