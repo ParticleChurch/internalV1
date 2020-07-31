@@ -13,7 +13,7 @@ void Init()
     H::Init();
     while (!H::Dead) Sleep(100);
 
-    std::cout << "Ejecting\n";
+    std::cout << "Ejecting...\n";
     H::Eject();
 }
 

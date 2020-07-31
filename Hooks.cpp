@@ -62,7 +62,8 @@ void H::Eject()
 
 
 	// this is the line that will actually free the library
-	//FreeLibraryAndExitThread(G::DLLModule, 0);
+	FreeLibrary(G::DLLModule);
+
 	// but instead it crashes CSGO, i believe our problem is the same as shown here
 	// https://stackoverflow.com/questions/39780590/freelibraryandexitthread-crashes-program-when-unloading-injected-dll
 }
