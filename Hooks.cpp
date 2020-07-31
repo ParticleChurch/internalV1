@@ -95,6 +95,10 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	//if (GUI::Main())
 		//G::KillDLL = true;
 
+	//temp code
+	if(GetAsyncKeyState(VK_F12))
+		G::KillDLL = true;
+
 	ImGui::EndFrame();
 	ImGui::Render();
 
