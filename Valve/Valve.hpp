@@ -9,3 +9,4 @@
 #include "SDK/Prototypes.hpp"
 #include "SDK/Constants.hpp"
 #include "SDK/BSPFlags.hpp"
+#include "SDK/CUserCmd.hpp"

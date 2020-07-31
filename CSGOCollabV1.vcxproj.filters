@@ -99,6 +99,9 @@
     <ClInclude Include="Valve\SDK\BSPFlags.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\CUserCmd.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
