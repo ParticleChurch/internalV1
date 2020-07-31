@@ -25,7 +25,7 @@ void ESP::DrawBoxes(Vec TL, Vec BR)
 	I::surface->DrawOutlinedRect(TL.x, TL.y, BR.x, BR.y);
 }
 
-void ESP::DrawName(Vec TL, Vec BR, char name[128]) //NEED TO FINISH
+void ESP::DrawName(Vec TL, Vec BR, char Name[128]) //NEED TO FINISH
 {
 	int FontSize = (BR.y - TL.y) / 4;
 
@@ -133,7 +133,7 @@ void ESP::DrawName(Vec TL, Vec BR, char name[128]) //NEED TO FINISH
 		TL.y -= 20;
 
 
-	std::string TEXT = name;
+	std::string TEXT = Name;
 
 	static std::wstring wide_string;
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
@@ -151,6 +151,17 @@ void ESP::DrawSnapLines(Vec TL, Vec BR)
 	I::engine->GetScreenSize(xSize, ySize);
 
 	I::surface->DrawLine(xSize / 2, ySize, ((BR.x - TL.x) / 2) + TL.x, BR.y);
+}
+
+void ESP::DrawHealth(Vec TL, Vec BR, int Health)
+{
+	int Height = BR.y - TL.y;
+
+	int HeightBar = (int)(Height * (Health / 100.0f));
+	int WidthBar = (int)(3 + Height / 100.0f);
+
+	I::surface->DrawSetColor(0, 255, 0, 255);		//green
+	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
 }
 
 void ESP::Run()
@@ -197,9 +208,11 @@ void ESP::Run()
 		bottomRight.x = int(feet.x + width / 2);
 		bottomRight.y = feet.y;
 
+		I::surface->DrawSetColor(255, 255, 255, 255); //white
 		DrawBoxes(topLeft, bottomRight);
 		DrawName(topLeft, bottomRight, PlayerInfo.name);
 		DrawSnapLines(topLeft, bottomRight);
+		DrawHealth(topLeft, bottomRight, Ent->GetHealth());
 		
 	}
 }
