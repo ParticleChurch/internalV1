@@ -13,6 +13,7 @@
 #pragma warning(disable:4244)    //gets rid of const int to float warning
 
 #include "Utils/Utils.hpp"        //includes all utils...
+#include "Valve/Valve.hpp"
 #include "Globals.hpp"
 
 //All necessary ImGui libraries
@@ -21,8 +22,6 @@
 #include "ImGui/imgui_impl_win32.h"
 #include "GUI/Config.hpp"
 #include "GUI/GUI.hpp"
-
-#include "Valve/Valve.hpp"
 
 #include "Interfaces.hpp"
 #include "Netvars.hpp"

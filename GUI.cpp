@@ -31,8 +31,12 @@ bool GUI::Main()
 		// Login Form
 		static char Password[64] = "";
 		ImGui::SetCursorPos(ImVec2(20, 30));
-		ImGui::InputText("Email:", Config::UserInfo.Email, 256);
-		ImGui::InputText("Password:", Password, 64);
+		ImGui::Text("Email:"); ImGui::SameLine();
+		ImGui::InputText("", Config::UserInfo.Email, 256);
+
+		ImGui::SetCursorPos(ImVec2(20, 50));
+		ImGui::Text("Password:"); ImGui::SameLine();
+		ImGui::InputText("", Password, 256)
 	}
 
 	ImGui::End();
