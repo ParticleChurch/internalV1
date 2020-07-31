@@ -7,6 +7,7 @@
 #include <d3d9.h>                //used by Direct3D 9 Graphics
 #include <string>                //allows use of c++ style strings
 #include <math.h>                //allows use of basic math functions 
+#include <vector>
 
 #pragma warning(disable:4996)    //disables warning printing console
 #pragma warning(disable:4244)    //gets rid of const int to float warning
