@@ -29,12 +29,12 @@ bool GUI::Main()
 			KillGui = true;
 
 		// Login Form
-		static char Password[64] = "";
-		ImGui::SetCursorPos(ImVec2(20, 30));
+		ImGui::SetCursorPos(ImVec2(41, 30));
 		ImGui::Text("Email:"); ImGui::SameLine();
 		ImGui::InputText("", Config::UserInfo.Email, 256);
 
-		ImGui::SetCursorPos(ImVec2(20, 50));
+		static char Password[64] = "";
+		ImGui::SetCursorPos(ImVec2(20, 55));
 		ImGui::Text("Password:"); ImGui::SameLine();
 		ImGui::InputText("", Password, 256);
 	}

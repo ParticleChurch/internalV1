@@ -54,6 +54,8 @@ void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
 	d3d9VMT.RestoreOriginal();
+	clientmodeVMT.RestoreOriginal();
+	clientVMT.RestoreOriginal();
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
 }
@@ -62,8 +64,6 @@ void H::Eject()
 {
 	H::UnHook();
 	FreeConsole();
-
-
 	FreeLibraryAndExitThread(G::DLLModule, 0);
 }
 
