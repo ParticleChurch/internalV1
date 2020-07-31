@@ -13,7 +13,11 @@
 #pragma warning(disable:4244)    //gets rid of const int to float warning
 
 #include "Utils/Utils.hpp"        //includes all utils...
+
 #include "Valve/Valve.hpp"
+#include "Interfaces.hpp"
+#include "Netvars.hpp"
+
 #include "Globals.hpp"
 
 //All necessary ImGui libraries
@@ -23,7 +27,6 @@
 #include "GUI/Config.hpp"
 #include "GUI/GUI.hpp"
 
-#include "Interfaces.hpp"
-#include "Netvars.hpp"
+
 
 #include "Hooks.hpp"            //hooking ingame functions
