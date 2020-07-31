@@ -45,6 +45,7 @@ void H::Init()
 
 void H::UnHook()
 {
+	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
 	d3d9.RestoreOriginal();
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
@@ -62,7 +63,7 @@ void H::Eject()
 
 
 	// this is the line that will actually free the library
-	FreeLibrary(G::DLLModule);
+	FreeLibraryAndExitThread(G::DLLModule, 0);
 
 	// but instead it crashes CSGO, i believe our problem is the same as shown here
 	// https://stackoverflow.com/questions/39780590/freelibraryandexitthread-crashes-program-when-unloading-injected-dll
