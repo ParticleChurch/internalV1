@@ -13,3 +13,9 @@
 #include "SDK/ClientFrameStage_t.hpp"
 #include "SDK/EFontFlags.hpp"
 #include "SDK/player_info_t.hpp"
+#include "SDK/RecvProp.hpp"
+#include "SDK/RecvTable.hpp"
+#include "SDK/ClientClass.h"
+
+//INTERFACES
+#include "Interfaces/IBaseClientDLL.hpp"

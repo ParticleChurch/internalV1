@@ -13,3 +13,7 @@ class RecvTable;
 class CRecvProxyData;
 class CRecvDecoder;
 typedef void (*RecvVarProxyFn)(const CRecvProxyData* pData, void* pStruct, void* pOut);
+//clientclass
+class IClientNetworkable;
+typedef IClientNetworkable* (*CreateClientClassFn)(int entnum, int serialNum);
+typedef IClientNetworkable* (*CreateEventFn)();

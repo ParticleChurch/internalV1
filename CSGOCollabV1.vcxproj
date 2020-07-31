@@ -183,13 +183,17 @@
     <ClInclude Include="Valve\Custom\Color.hpp" />
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
+    <ClInclude Include="Valve\Interfaces\IBaseClientDLL.hpp" />
     <ClInclude Include="Valve\SDK\BSPFlags.hpp" />
+    <ClInclude Include="Valve\SDK\ClientClass.h" />
     <ClInclude Include="Valve\SDK\ClientFrameStage_t.hpp" />
     <ClInclude Include="Valve\SDK\Constants.hpp" />
     <ClInclude Include="Valve\SDK\CUserCmd.hpp" />
     <ClInclude Include="Valve\SDK\EFontFlags.hpp" />
     <ClInclude Include="Valve\SDK\player_info_t.hpp" />
     <ClInclude Include="Valve\SDK\Prototypes.hpp" />
+    <ClInclude Include="Valve\SDK\RecvProp.hpp" />
+    <ClInclude Include="Valve\SDK\RecvTable.hpp" />
     <ClInclude Include="Valve\Valve.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

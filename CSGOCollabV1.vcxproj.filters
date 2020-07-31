@@ -111,6 +111,18 @@
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\RecvProp.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\RecvTable.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IBaseClientDLL.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\ClientClass.h">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -133,6 +145,9 @@
     </Filter>
     <Filter Include="Headers\Valve\SDK">
       <UniqueIdentifier>{cd3901ca-6416-4217-9437-99033e772017}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Valve\Interfaces">
+      <UniqueIdentifier>{1d8f1a04-9ba6-442c-bcc9-304b53fce71f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
