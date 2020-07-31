@@ -75,9 +75,6 @@
     <ClInclude Include="Utils\InterfaceTools.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Hooks.hpp">
-      <Filter>Headers\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\Valve.hpp">
       <Filter>Headers\Valve</Filter>
     </ClInclude>
@@ -86,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="Valve\Custom\Color.h">
       <Filter>Headers\Valve\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks.hpp">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
