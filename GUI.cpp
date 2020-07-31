@@ -36,7 +36,7 @@ bool GUI::Main()
 
 		ImGui::SetCursorPos(ImVec2(20, 50));
 		ImGui::Text("Password:"); ImGui::SameLine();
-		ImGui::InputText("", Password, 256)
+		ImGui::InputText("", Password, 256);
 	}
 
 	ImGui::End();
