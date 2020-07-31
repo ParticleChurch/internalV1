@@ -5,10 +5,13 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 namespace H
 {
-	VMTManager d3d9;
+	VMTManager d3d9VMT;
+	VMTManager clientVMT;
+	VMTManager clientmodeVMT;
 
 	EndScene oEndScene;
 	Reset oReset;
+	CreateMove oCreateMove;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -30,21 +33,27 @@ void H::Init()
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
 	std::cout << "Hooking..." << std::endl;
-	d3d9.Initialise((DWORD*)D3d9Device);
+	d3d9VMT.Initialise((DWORD*)D3d9Device);
+	clientVMT.Initialise((DWORD*)I::client);
+	clientmodeVMT.Initialise((DWORD*)I::clientmode);
 
 	std::cout << "Endscene...";
-	oEndScene = (EndScene)d3d9.HookMethod((DWORD)&EndSceneHook, 42);
+	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	std::cout << "Success!" << std::endl;
 
 	std::cout << "Reset...";
-	oReset = (Reset)d3d9.HookMethod((DWORD)&ResetHook, 16);
+	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "CreateMove...";
+	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
 }
 
 void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	d3d9.RestoreOriginal();
+	d3d9VMT.RestoreOriginal();
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
 }
@@ -60,7 +69,6 @@ void H::Eject()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
-	//static auto oEndScene = EndScene.GetOriginal<decltype(&EndSceneHook)>(42);
 	if (!D3dInit) {
 		D3dInit = true;
 
@@ -98,5 +106,12 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+}
+
+bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
+{
+	cmd->viewangles.y = 89;
+	oCreateMove(I::clientmode, flInputSampleTime, cmd);
+	return true; //silent aim on false (only for client)
 }
 

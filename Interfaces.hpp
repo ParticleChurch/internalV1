@@ -5,4 +5,5 @@ namespace I
 
 	//interfaces
 	extern IBaseClientDLL* client;
+	extern ClientMode* clientmode;
 }
