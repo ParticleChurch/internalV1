@@ -81,11 +81,14 @@
     <ClInclude Include="Valve\Custom\Vec.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
-    <ClInclude Include="Valve\Custom\Color.h">
-      <Filter>Headers\Valve\Custom</Filter>
-    </ClInclude>
     <ClInclude Include="Hooks.hpp">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Color.hpp">
+      <Filter>Headers\Valve\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Matrix3x4.h">
+      <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
