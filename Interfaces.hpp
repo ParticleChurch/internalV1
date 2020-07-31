@@ -6,4 +6,6 @@ namespace I
 	//interfaces
 	extern IBaseClientDLL* client;
 	extern ClientMode* clientmode;
+	extern IVEngineClient* engine;
+	extern IClientEntityList* entitylist;
 }

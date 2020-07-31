@@ -22,3 +22,4 @@
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
 #include "Interfaces/IVEngineClient.hpp"
+#include "Interfaces/IClientEntityList.hpp"

@@ -159,6 +159,9 @@
     <ClInclude Include="Valve\SDK\NetChannel.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

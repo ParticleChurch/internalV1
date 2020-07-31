@@ -193,6 +193,7 @@
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
     <ClInclude Include="Valve\Interfaces\IBaseClientDLL.hpp" />
+    <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp" />
     <ClInclude Include="Valve\Interfaces\IVEngineClient.hpp" />
     <ClInclude Include="Valve\SDK\BSPFlags.hpp" />
     <ClInclude Include="Valve\SDK\ClientClass.h" />

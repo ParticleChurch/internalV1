@@ -13,6 +13,8 @@ void Init()
 
     H::Init();
 
+    I::engine->ClientCmd_Unrestricted("echo Cheat Injected");
+
     while (!G::KillDLL) Sleep(100);
     std::cout << "Ejecting...\n";
 
