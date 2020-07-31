@@ -23,6 +23,8 @@
 #include "Valve/Valve.hpp"
 
 #include "Interfaces.hpp"
+#include "Netvars.h"
+
+#include "Globals.hpp"
 
 #include "Hooks.hpp"            //hooking ingame functions
-#include "Globals.hpp"

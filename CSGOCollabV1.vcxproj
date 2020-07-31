@@ -163,6 +163,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Interfaces.cpp" />
+    <ClCompile Include="Netvars.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Globals.hpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Include.hpp" />
     <ClInclude Include="Interfaces.hpp" />
+    <ClInclude Include="Netvars.h" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\InterfaceTools.hpp" />
