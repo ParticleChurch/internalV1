@@ -177,6 +177,9 @@
     <ClInclude Include="GUI\HTTP.hpp">
       <Filter>Headers\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="Hacks\Hacks.hpp">
+      <Filter>Headers\Hacks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -205,6 +208,9 @@
     </Filter>
     <Filter Include="Headers\GUI">
       <UniqueIdentifier>{f8fa800d-690c-4e03-9a34-8c024646daae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Hacks">
+      <UniqueIdentifier>{d9cf0fb7-2254-46d6-9f8b-883a4a934dd4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

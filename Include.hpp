@@ -27,6 +27,6 @@
 #include "GUI/Config.hpp"
 #include "GUI/GUI.hpp"
 
-
+#include "Hacks/Hacks.hpp"
 
 #include "Hooks.hpp"            //hooking ingame functions
