@@ -28,6 +28,9 @@
     <ClCompile Include="Interfaces.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
