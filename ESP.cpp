@@ -27,8 +27,6 @@ void ESP::DrawBoxes(Vec TL, Vec BR)
 
 void ESP::DrawName(Vec TL, Vec BR, char name[128]) //NEED TO FINISH
 {
-	TL.y -= 20;
-
 	int FontSize = (BR.y - TL.y) / 4;
 
 	static DWORD Font5 = I::surface->FontCreate();
@@ -129,12 +127,10 @@ void ESP::DrawName(Vec TL, Vec BR, char name[128]) //NEED TO FINISH
 		break;
 	}
 
-	if (FontSize < 5)
-		FontSize = 5;
+	if (FontSize < 20)
+		TL.y -= FontSize;
 	else
-		FontSize = 20;
-
-
+		TL.y -= 20;
 
 
 	std::string TEXT = name;
