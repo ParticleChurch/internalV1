@@ -72,17 +72,20 @@
     <ClInclude Include="Include.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Valve\Valve.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\InterfaceTools.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Hooks.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Valve.hpp">
+      <Filter>Headers\Valve</Filter>
+    </ClInclude>
     <ClInclude Include="Valve\Custom\Vec.hpp">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Valve\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Color.h">
+      <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +100,12 @@
     </Filter>
     <Filter Include="Source">
       <UniqueIdentifier>{c6e88f6d-c8e8-4684-828f-97109ecd0632}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Valve">
+      <UniqueIdentifier>{090700ca-66ed-41c3-b10e-31ff97372196}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Valve\Custom">
+      <UniqueIdentifier>{c70b1382-d216-4577-ad7b-ac7b8e19b1cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
