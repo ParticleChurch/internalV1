@@ -1,116 +1,102 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Utils">
-      <UniqueIdentifier>{2358cdde-005f-41a2-b505-9adac89f39d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\ImGui">
-      <UniqueIdentifier>{168062e5-2243-4c2f-a68d-d2581fff6eb0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Vavle">
-      <UniqueIdentifier>{0432f377-ae93-4e99-b95d-d2263939e949}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Vavle\Custom">
-      <UniqueIdentifier>{e3b6887b-6a1d-4236-ac61-3db8778bc615}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImGui\imgui.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_demo.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_draw.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_impl_win32.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="ImGui\imgui_widgets.cpp">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Hooks.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\Utils.hpp">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\GetVFunc.hpp">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\PatternScan.hpp">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\Macro.hpp">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="ImGui\imconfig.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_dx9.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_win32.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_rectpack.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_textedit.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
-      <Filter>Header Files\ImGui</Filter>
+      <Filter>Headers\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\InterfaceTools.hpp">
-      <Filter>Header Files\Utils</Filter>
+    <ClInclude Include="Utils\GetVFunc.hpp">
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Hooks.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Globals.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Macro.hpp">
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\VMTManager.hpp">
-      <Filter>Header Files\Utils</Filter>
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
-<<<<<<< HEAD
-    <ClInclude Include="Globals.hpp">
-      <Filter>Header Files</Filter>
-=======
-    <ClInclude Include="Valve\Custom\Vec.hpp">
-      <Filter>Header Files\Vavle\Custom</Filter>
+    <ClInclude Include="Utils\Utils.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\PatternScan.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Include.hpp">
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Valve\Valve.hpp">
-      <Filter>Header Files\Vavle</Filter>
->>>>>>> bba54ad47fac9022ce06315a1f383fbcee3e37bf
+      <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\InterfaceTools.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Vec.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{0810755d-df1f-4cd8-b2e4-ea6a7121c4e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\ImGui">
+      <UniqueIdentifier>{193510ae-72f4-4e95-b17a-d5d023e03700}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Utils">
+      <UniqueIdentifier>{84079906-1d2e-4bb7-8c02-4dae26b2a974}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{c6e88f6d-c8e8-4684-828f-97109ecd0632}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
