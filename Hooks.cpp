@@ -14,8 +14,6 @@ namespace H
 	bool D3dInit = false;
 	HWND CSGOWindow = NULL;
 	WNDPROC oWndProc = NULL;
-
-	bool Dead = false;
 }
 
 void H::Init()
@@ -49,24 +47,18 @@ void H::UnHook()
 	d3d9.RestoreOriginal();
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
-	H::Dead = true;
 }
 
 void H::Eject()
 {
-	// TODO: make this function truly eject
-	// it currently just stops all effects of the DLL
-	// so it *seems* like it ejected, however, the library is still loaded
-	// it's just not doing anything
+	HWND console = GetConsoleWindow();
+	std::cout << (DWORD)console << std::endl;
+
 	H::UnHook();
 	FreeConsole();
 
 
-	// this is the line that will actually free the library
 	FreeLibraryAndExitThread(G::DLLModule, 0);
-
-	// but instead it crashes CSGO, i believe our problem is the same as shown here
-	// https://stackoverflow.com/questions/39780590/freelibraryandexitthread-crashes-program-when-unloading-injected-dll
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
@@ -91,7 +83,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 	if (ImGui::Button("Unload"))
 	{
-		H::Dead = true;
+		G::KillDLL = true;
 	}
 
 	ImGui::End();
