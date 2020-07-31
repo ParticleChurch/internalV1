@@ -180,8 +180,12 @@
     <ClInclude Include="Utils\Macro.hpp" />
     <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />
-    <ClInclude Include="Valve\Custom\Color.h" />
+    <ClInclude Include="Valve\Custom\Color.hpp" />
+    <ClInclude Include="Valve\Custom\Matrix3x4.h" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
+    <ClInclude Include="Valve\SDK\BSPFlags.hpp" />
+    <ClInclude Include="Valve\SDK\Constants.hpp" />
+    <ClInclude Include="Valve\SDK\Prototypes.hpp" />
     <ClInclude Include="Valve\Valve.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
