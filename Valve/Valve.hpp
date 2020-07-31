@@ -16,6 +16,9 @@
 #include "SDK/RecvProp.hpp"
 #include "SDK/RecvTable.hpp"
 #include "SDK/ClientClass.h"
+#include "SDK/WeaponData.hpp"
+#include "SDK/NetChannel.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
+#include "Interfaces/IVEngineClient.hpp"

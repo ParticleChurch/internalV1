@@ -3,6 +3,7 @@
 class Vec;
 class Color; 
 class Matrix3x4;
+class Entity; //see globals.hpp for where its included
 
 //SDK
 class CUserCmd;

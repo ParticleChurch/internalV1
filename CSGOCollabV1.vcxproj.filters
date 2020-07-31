@@ -147,6 +147,18 @@
     <ClInclude Include="Netvars.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\WeaponData.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IVEngineClient.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\NetChannel.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
