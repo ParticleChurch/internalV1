@@ -141,7 +141,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		if (!Localplayer || !I::engine->IsInGame() || !(Localplayer->GetHealth() > 0))
 			return;
 		
-		
+		esp->Run();
 		
 	}
 }
