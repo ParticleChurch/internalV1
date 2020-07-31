@@ -37,6 +37,9 @@
     <ClCompile Include="Config.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="HTTP.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">

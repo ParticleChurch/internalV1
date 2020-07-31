@@ -2,7 +2,7 @@
 #include "GUI/HTTP.hpp"
 
 ImVec2 LoginWindowPosition(100, 100);
-char lastAuthenticationStatus = -1;
+bool BeganProcessingLogin = false;
 
 bool GUI::Main()
 {
@@ -11,7 +11,6 @@ bool GUI::Main()
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
 	ImVec2 WindowCenter(WindowSizeX/2.f, WindowSizeY/2.f);
 
-	char authStatus = Config::UserInfo.AuthenticationStatus;
 	if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_COMPLETE)
 	{
 		ImGui::SetNextWindowSize(ImVec2(20 + 50, 200 + 20 + 40));
@@ -44,13 +43,18 @@ bool GUI::Main()
 
 		LoginWindowPosition = ImGui::GetWindowPos();
 		ImGui::End();
+
+		if (!BeganProcessingLogin)
+		{
+			BeganProcessingLogin = true;
+			HTTP::GET();
+		}
 	}
 	else if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_NONE)
 	{
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
 		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
 		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
-		std::cout << "Pos:" << WindowSizeX << ", " << WindowSizeY << std::endl;
 
 		// Login Form
 		ImGui::SetCursorPos(ImVec2(59, 30));
@@ -70,12 +74,14 @@ bool GUI::Main()
 		// Login button
 		ImGui::SetCursorPos(ImVec2(360, 83));
 		if (ImGui::Button("Login", ImVec2(70, 20)))
+		{
 			Config::UserInfo.AuthenticationStatus = AUTHENTICATION_PROCESSING;
+			BeganProcessingLogin = false;
+		}
 
 		LoginWindowPosition = ImGui::GetWindowPos();
 		ImGui::End();
 	}
 
-	lastAuthenticationStatus = authStatus;
 	return KillGui;
 }
