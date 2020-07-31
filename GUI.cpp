@@ -1,4 +1,5 @@
 #include "Include.hpp"
+#include "HTTP.hpp"
 
 ImVec2 LoginWindowPosition(100, 100);
 char lastAuthenticationStatus = -1;
@@ -6,6 +7,7 @@ char lastAuthenticationStatus = -1;
 bool GUI::Main()
 {
 	bool KillGui = false;
+	int WindowSizeX, WindowSizeY;
 
 	char authStatus = Config::UserInfo.AuthenticationStatus;
 	if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_COMPLETE)
