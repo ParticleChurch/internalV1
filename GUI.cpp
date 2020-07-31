@@ -1,5 +1,5 @@
 #include "Include.hpp"
-#include "HTTP.hpp"
+#include "GUI/HTTP.hpp"
 
 ImVec2 LoginWindowPosition(100, 100);
 char lastAuthenticationStatus = -1;
