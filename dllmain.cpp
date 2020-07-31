@@ -1,4 +1,5 @@
 #include "Include.hpp"
+HMODULE G::DLLModule = NULL; // gets set later, satisfy `extern` now
 
 void Init()
 {
@@ -10,6 +11,10 @@ void Init()
     std::cout << "Successfully Injected\n";
 
     H::Init();
+    while (!H::Dead) Sleep(100);
+
+    std::cout << "Ejecting\n";
+    H::Eject();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -29,4 +34,3 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     }
     return TRUE;
 }
-
