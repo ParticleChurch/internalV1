@@ -87,9 +87,6 @@
     <ClInclude Include="Valve\Custom\Color.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
-    <ClInclude Include="Valve\Custom\Matrix3x4.h">
-      <Filter>Headers\Valve\Custom</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\SDK\Prototypes.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
@@ -104,6 +101,15 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\ClientFrameStage_t.hpp">
       <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\EFontFlags.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\player_info_t.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Custom\Matrix3x4.hpp">
+      <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
