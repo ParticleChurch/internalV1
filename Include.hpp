@@ -17,8 +17,8 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
-#include "Config.hpp"
-#include "GUI.hpp"
+#include "GUI/Config.hpp"
+#include "GUI/GUI.hpp"
 
 #include "Valve/Valve.hpp"
 
