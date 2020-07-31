@@ -189,10 +189,10 @@
     <ClInclude Include="Hacks\Hacks.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
-    <ClInclude Include="ESP.hpp">
+    <ClInclude Include="Hacks\Aimbot.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\Aimbot.hpp">
+    <ClInclude Include="Hacks\ESP.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
