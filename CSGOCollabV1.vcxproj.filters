@@ -162,6 +162,15 @@
     <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\GlobalVars.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\Surface.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\Panel.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

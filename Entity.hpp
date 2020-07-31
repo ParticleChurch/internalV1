@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 enum MoveType {
 	NOCLIP = 8,
 	LADDER = 9
@@ -97,6 +96,15 @@ public:
 		return *(int*)((DWORD)this + offset);
 	}
 
+	int GetAmmo() {
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iClip1");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iClip1");
+		if (!this || !this->GetActiveWeapon())
+			return false;
+		return *(int*)(this->GetActiveWeapon() + offset);
+	}
+
 	bool GetGunGameImmunity() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_bGunGameImmunity");
 		if (offset == 0)
@@ -123,6 +131,28 @@ public:
 		if (offset == 0)
 			offset = N::GetOffset("CBaseEntity", "m_flSimulationTime");
 		return *(float*)((DWORD)this + offset);
+	}
+
+	float GetServerTime() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
+		return ((*(int*)((DWORD)this + offset)) * I::globalvars->m_intervalPerTick);
+	}
+
+	Entity* GetActiveWeapon() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_hActiveWeapon");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BasePlayer", "m_hActiveWeapon");
+		static HANDLE weaponHandle;
+		weaponHandle = *(HANDLE*)((DWORD)this + offset);
+		return I::entitylist->GetClientEntityFromHandle(weaponHandle);
+	}
+
+	bool CanShoot() {
+		if (!this || !this->GetActiveWeapon())
+			return false;
+		return this->GetActiveWeapon()->NextPrimaryAttack() <= GetServerTime();
 	}
 
 	Vec GetAimPunchAngle() {
@@ -167,7 +197,12 @@ public:
 			offset = N::GetOffset("DT_CSPlayer", "m_bIsScoped");
 		return *(bool*)((DWORD)this + offset);
 	}
-	
+
+	float MaxAccurateSpeed() {
+		const WeaponData* weaponData = this->GetActiveWeapon()->GetWeaponData();
+		return (this->IsScoped() ? weaponData->maxSpeedAlt : weaponData->maxSpeed) / 3;
+	}
+
 	bool IsAlive()
 	{
 		typedef bool(__thiscall* oAlive)(void*);

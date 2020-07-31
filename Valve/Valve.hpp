@@ -23,3 +23,6 @@
 #include "Interfaces/IBaseClientDLL.hpp"
 #include "Interfaces/IVEngineClient.hpp"
 #include "Interfaces/IClientEntityList.hpp"
+#include "Interfaces/GlobalVars.hpp"
+#include "Interfaces/Surface.hpp"
+#include "Interfaces/Panel.hpp"
