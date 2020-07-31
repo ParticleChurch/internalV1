@@ -221,6 +221,10 @@ public:
 		return GetVFunc<oGetClientClass>(this, 2)(this);
 	}
 
+	bool IsDormant() {
+		return *(bool*)((DWORD)this + (DWORD)0xED);
+	}
+
 	int index() {
 		typedef int(__thiscall* oGetIndex)(void*);
 		return GetVFunc<oGetIndex>(this, 10)(this + 8);

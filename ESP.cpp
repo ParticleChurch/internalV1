@@ -183,6 +183,18 @@ void ESP::Run()
 		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
 			continue;
 
+		if (!(Ent->GetHealth() > 0))
+			continue;
+
+		if (Ent->IsDormant())
+			continue;
+
+		/*
+		//works only on workshop map idk why
+		if (Ent->GetGunGameImmunity())
+			continue;
+			*/
+
 		Vec Bottom = Ent->GetVecOrigin();
 		Vec Top = Ent->GetBonePos(8);
 		Top.z += 10;
@@ -213,6 +225,5 @@ void ESP::Run()
 		DrawName(TopLeft, BottomRight, PlayerInfo.name);
 		DrawSnapLines(TopLeft, BottomRight);
 		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
-		
 	}
 }
