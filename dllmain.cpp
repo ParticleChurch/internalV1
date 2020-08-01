@@ -9,7 +9,7 @@ void Init()
 
     std::cout << "Successfully Injected\n";
 
-    ShellExecute(NULL, TEXT("open"), TEXT("https://www.youtube.com/watch?v=oHg5SJYRHA0"), NULL, NULL, 0);
+    //ShellExecute(NULL, TEXT("open"), TEXT("https://www.youtube.com/watch?v=oHg5SJYRHA0"), NULL, NULL, 0);
 
     H::Init();
 

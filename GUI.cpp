@@ -59,12 +59,12 @@ bool GUI::Main()
 		// Login Form
 		ImGui::SetCursorPos(ImVec2(59, 30));
 		ImGui::Text("Email:"); ImGui::SameLine();
-		ImGui::InputText("###Email", Config::UserInfo.Email, 256);
+		ImGui::InputText("###Email", Config::UserInfo.Email, 257);
 
-		static char Password[64] = "";
+		static char Password[65] = "";
 		ImGui::SetCursorPos(ImVec2(38, 55));
 		ImGui::Text("Password:"); ImGui::SameLine();
-		ImGui::InputText("###Password", Password, 64);
+		ImGui::InputText("###Password", Password, 65);
 
 		// Unload button
 		ImGui::SetCursorPos(ImVec2(10, 83));

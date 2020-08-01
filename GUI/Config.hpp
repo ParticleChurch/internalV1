@@ -6,7 +6,7 @@
 struct UserInfoStruct {
 	char AuthenticationStatus = AUTHENTICATION_NONE;
 	bool SubscriptionStatus = false;
-	char Email[256] = "";
+	char Email[257] = "";
 };
 
 namespace Config {
