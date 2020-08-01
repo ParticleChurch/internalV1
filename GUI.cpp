@@ -22,6 +22,7 @@ void AttemptLogin(LoginInformation* Info)//LoginInformation* Info)
 	Data.Add("Password", Info->Password);
 	
 	std::string LoginResponse = HTTP::API("login", Data);
+	std::cout << LoginResponse << std::endl;
 
 	// If there is a more recently started thread, then quit - we're useless now
 	if (Info->AttemptID < LoginAttemptIndex)
@@ -30,8 +31,18 @@ void AttemptLogin(LoginInformation* Info)//LoginInformation* Info)
 		return;
 	}
 
+	// check that server sent correct number of bytes
+	int NumBytes = LoginResponse.length();
+	if (NumBytes != 2)
+	{
+		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+		std::cout << "Server sent " << NumBytes  << "Bytes" << std::endl;
+		free(Info);
+		return;
+	}
+
 	// check server return status and update config accordingly
-	std::cout << LoginResponse << std::endl;
+	BYTE LoginFlags = LoginResponse[0];
 	Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
 
 	// prevent mem leak
