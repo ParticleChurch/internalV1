@@ -164,6 +164,25 @@ void ESP::DrawHealth(Vec TL, Vec BR, int Health)
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
 }
 
+void ESP::DrawBacktrackingDots()
+{
+	for (int i = 1; i < 65; i++) {
+		if (backtrack->records[i].empty())
+			continue;
+		for (auto tick : backtrack->records[i])
+		{
+			static Vec screen;
+			static Vec loc;
+			loc = tick.Bone(8);
+			if (WorldToScreen(loc, screen))
+			{
+				I::surface->DrawSetColor(Color(255, 255, 255, 255));
+				I::surface->DrawLine(screen.x, screen.y, screen.x + 1, screen.y);
+			}
+		}
+	}
+}
+
 void ESP::Run()
 {
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
@@ -226,4 +245,6 @@ void ESP::Run()
 		DrawSnapLines(TopLeft, BottomRight);
 		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
 	}
+
+	DrawBacktrackingDots();
 }

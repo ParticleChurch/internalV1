@@ -10,6 +10,7 @@ namespace H
 	typedef LRESULT(CALLBACK* WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 	typedef void(__thiscall* CreateMove)(void*, float, CUserCmd*);
 	typedef void(__thiscall* PaintTraverse)(void*, int, bool, bool);
+	typedef void(__stdcall* FrameStageNotify)(int);
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
@@ -17,4 +18,5 @@ namespace H
 	extern LRESULT __stdcall WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	extern bool __stdcall CreateMoveHook(float flInputSampleTime, CUserCmd* cmd);
 	extern void __stdcall PaintTraverseHook(int vguiID, bool force, bool allowForcing);
+	extern void __stdcall FrameStageNotifyHook(int curStage);
 }

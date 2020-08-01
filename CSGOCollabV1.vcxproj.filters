@@ -49,6 +49,9 @@
     <ClCompile Include="Globals.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Backtrack.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -193,6 +196,9 @@
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
     <ClInclude Include="Hacks\ESP.hpp">
+      <Filter>Headers\Hacks</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Backtrack.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>

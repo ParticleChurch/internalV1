@@ -15,6 +15,7 @@ namespace H
 	Reset oReset;
 	CreateMove oCreateMove;
 	PaintTraverse oPaintTraverse;
+	FrameStageNotify oFrameStageNotify;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -57,6 +58,11 @@ void H::Init()
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
+
+	std::cout << "FrameStageNotify...";
+	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
+	std::cout << "Success!" << std::endl;
+	
 }
 
 void H::UnHook()
@@ -140,7 +146,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->buttons &= ~IN_JUMP;
 		}
 
-		aimbot->Legit();
+		
+		//aimbot->Legit();
+		backtrack->run();
 
 		G::CM_End();
 	}
@@ -160,5 +168,11 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		esp->Run();
 		
 	}
+}
+
+void __stdcall H::FrameStageNotifyHook(int curStage)
+{
+	backtrack->update(curStage);
+	return oFrameStageNotify(curStage);
 }
 
