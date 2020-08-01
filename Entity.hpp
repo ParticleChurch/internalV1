@@ -4,16 +4,6 @@ enum MoveType {
 	LADDER = 9
 };
 
-struct Model {
-	void* handle;
-	char name[260];
-	int	loadFlags;
-	int	serverCount;
-	int	type;
-	int	flags;
-	Vec mins, maxs;
-};
-
 class Entity
 {
 public:
@@ -250,4 +240,64 @@ public:
 		typedef Model* (__thiscall* oGetModel)(void*);
 		return GetVFunc<oGetModel>(this + 4, 8)(this + 4);
 	}
+
+	mstudiobbox_t* GetHitBoxSet(int Hitbox)
+	{
+		studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(GetModel());
+		if (StudioModel)
+			return StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
+		else
+			return NULL;
+	}
+
+	//big old cube formed by a1, b1, c1, d1, a2, b2, c2, d2...
+	void GetHitboxEnds(int Hitbox, Vec& a1, Vec& b1, Vec& c1, Vec& d1, Vec& a2, Vec& b2, Vec& c2, Vec& d2)
+	{
+		Vec Location;
+		Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
+		if (SetupBones(BoneMatrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
+			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(GetModel());
+			if (StudioModel)
+			{
+				mstudiobbox_t* hitbox = StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
+				if (hitbox) {
+					Vec min = hitbox->bbmin.Transform(BoneMatrix[hitbox->bone]);
+					Vec max = hitbox->bbmax.Transform(BoneMatrix[hitbox->bone]);
+					
+					//bottom
+					a1.x = min.x - hitbox->m_flRadius;
+					b1.x = min.x - hitbox->m_flRadius;
+					c1.x = min.x + hitbox->m_flRadius;
+					d1.x = min.x + hitbox->m_flRadius;
+
+					a1.y = min.y - hitbox->m_flRadius;
+					b1.y = min.y + hitbox->m_flRadius;
+					c1.y = min.y - hitbox->m_flRadius;
+					d1.y = min.y + hitbox->m_flRadius;
+
+					a1.z = min.z - hitbox->m_flRadius;
+					b1.z = min.z - hitbox->m_flRadius;
+					c1.z = min.z - hitbox->m_flRadius;
+					d1.z = min.z - hitbox->m_flRadius;
+
+					//top
+					a2.x = max.x - hitbox->m_flRadius;
+					b2.x = max.x - hitbox->m_flRadius;
+					c2.x = max.x + hitbox->m_flRadius;
+					d2.x = max.x + hitbox->m_flRadius;
+
+					a2.y = max.y - hitbox->m_flRadius;
+					b2.y = max.y + hitbox->m_flRadius;
+					c2.y = max.y - hitbox->m_flRadius;
+					d2.y = max.y + hitbox->m_flRadius;
+
+					a2.z = max.z - hitbox->m_flRadius;
+					b2.z = max.z - hitbox->m_flRadius;
+					c2.z = max.z - hitbox->m_flRadius;
+					d2.z = max.z - hitbox->m_flRadius;
+				}
+			}
+		}
+	}
+
 };

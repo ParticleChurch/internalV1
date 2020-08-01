@@ -11,4 +11,5 @@ namespace I
 	extern IClientEntityList* entitylist;
 	extern Surface* surface;
 	extern Panel* panel;
+	extern IVModelInfo* modelinfo;
 }

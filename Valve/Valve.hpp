@@ -1,9 +1,9 @@
 #pragma once
 
 //CUSTOM
+#include "Custom/Matrix3x4.hpp"
 #include "Custom/Vec.hpp"
 #include "Custom/Color.hpp"
-#include "Custom/Matrix3x4.hpp"
 
 //SDK
 #include "SDK/Prototypes.hpp"
@@ -18,6 +18,7 @@
 #include "SDK/ClientClass.h"
 #include "SDK/WeaponData.hpp"
 #include "SDK/NetChannel.hpp"
+#include "SDK/Studio.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
@@ -26,3 +27,4 @@
 #include "Interfaces/GlobalVars.hpp"
 #include "Interfaces/Surface.hpp"
 #include "Interfaces/Panel.hpp"
+#include "Interfaces/IVModelInfo.hpp"

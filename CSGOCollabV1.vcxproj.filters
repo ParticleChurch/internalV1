@@ -201,6 +201,12 @@
     <ClInclude Include="Hacks\Backtrack.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IVModelInfo.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\Studio.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

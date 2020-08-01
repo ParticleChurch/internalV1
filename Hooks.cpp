@@ -21,6 +21,8 @@ namespace H
 	bool D3dInit = false;
 	HWND CSGOWindow = NULL;
 	WNDPROC oWndProc = NULL;
+
+	std::vector < std::string> console;
 }
 
 void H::Init()
@@ -98,12 +100,17 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	if (GUI::Main())
-		G::KillDLL = true;
+	//if (GUI::Main())
+		//G::KillDLL = true;
 
 	//temp code
 	if(GetAsyncKeyState(VK_F12))
 		G::KillDLL = true;
+
+	ImGui::Begin("console");
+	for (auto a : console)
+		ImGui::Text(a.c_str());
+	ImGui::End();
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -145,6 +152,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
 			cmd->buttons &= ~IN_JUMP;
 		}
+
+		console.clear();
+		console.resize(0);
+		Vec a1, b1, c1, d1, a2, b2, c2, d2;
+		G::Localplayer->GetHitboxEnds(HITBOX_HEAD, a1, b1, c1, d1, a2, b2, c2, d2);
+
+		console.push_back(a1.str());
+		console.push_back(b1.str());
+		console.push_back(c1.str());
+		console.push_back(d1.str());
+		console.push_back(a2.str());
+		console.push_back(b2.str());
+		console.push_back(c2.str());
+		console.push_back(d2.str());
 
 		if(cmd->buttons & IN_ATTACK)
 			aimbot->Legit();

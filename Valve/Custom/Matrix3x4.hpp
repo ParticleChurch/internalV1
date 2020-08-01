@@ -1,4 +1,6 @@
 #pragma once
+class Vec;
+
 class Matrix3x4 {
 public:
     float c[3][4];
