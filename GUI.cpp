@@ -47,7 +47,7 @@ bool GUI::Main()
 		if (!BeganProcessingLogin)
 		{
 			BeganProcessingLogin = true;
-			HTTP::GET();
+			//HTTP::API();
 		}
 	}
 	else if (Config::UserInfo.AuthenticationStatus == AUTHENTICATION_NONE)

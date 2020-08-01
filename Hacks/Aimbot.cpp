@@ -95,8 +95,8 @@ void Aimbot::Smooth(Vec& Angle)
 	Delta.Normalize();
 
 	bool FastToSlow = false;
-	float SmoothYaw = 0.1;
-	float SmoothPitch = 0.1;
+	float SmoothYaw = 0.1f;
+	float SmoothPitch = 0.1f;
 	if (FastToSlow)
 	{
 		Delta.y *= SmoothYaw;
