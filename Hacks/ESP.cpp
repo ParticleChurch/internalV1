@@ -169,15 +169,32 @@ void ESP::DrawBacktrackingDots()
 	for (int i = 1; i < 65; i++) {
 		if (backtrack->records[i].empty())
 			continue;
+		static bool start = true;
+		start = true;
 		for (auto tick : backtrack->records[i])
 		{
-			static Vec screen;
-			static Vec loc;
-			loc = tick.Bone(8);
-			if (WorldToScreen(loc, screen))
+			static Vec LastScreen;
+			if (start) {
+				Vec screen;
+				Vec loc = tick.Bone(8);
+				if (WorldToScreen(loc, screen))
+				{
+					start = false;
+					LastScreen = screen;
+				}
+			}
+			else
 			{
-				I::surface->DrawSetColor(Color(255, 255, 255, 255));
-				I::surface->DrawLine(screen.x, screen.y, screen.x + 1, screen.y);
+				Vec screen;
+				Vec loc = tick.Bone(8);
+				if (WorldToScreen(loc, screen) && 
+					LastScreen.x > 0  && LastScreen.x < 1920
+					&& LastScreen.y > 0 && LastScreen.y < 1080)
+				{
+					I::surface->DrawSetColor(Color(255, 255, 255, 255));
+					I::surface->DrawLine(screen.x, screen.y, LastScreen.x , LastScreen.y);
+					LastScreen = screen;
+				}
 			}
 		}
 	}
