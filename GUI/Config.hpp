@@ -12,18 +12,25 @@
 #define AUTH_STATUS_PROCESSING              1 // login is processing
 #define AUTH_STATUS_COMPLETE                2 // logged in
 
-struct UserInfoStruct {
-	char AuthStatus = AUTH_STATUS_NONE;
-	bool Paid = false;
-	bool Developer = false;
-	int UserID = 69; // todo
-	char Email[257] = "";
+struct APIResponseFormat_LoginAttempt
+{
+	int Flags;
+	unsigned int UserID;
+	//uint8_t bytes[8];
 };
 
 
 /*
 	Actual user config
 */
+struct UserInfoStruct {
+	char AuthStatus = AUTH_STATUS_NONE;
+	bool Paid = false;
+	bool Developer = false;
+	int UserID = INT_MAX;
+	std::string Email = "";
+};
+
 namespace Config {
 	extern UserInfoStruct UserInfo;
 }

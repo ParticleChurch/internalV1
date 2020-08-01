@@ -23,41 +23,63 @@ std::string HTTP::URLEncode(const std::string& value) {
     return escaped.str();
 }
 
-std::string HTTP::GET(std::string Host, std::string Directory, std::string URLArguments)
+// read binary data from a website into T output
+// returns bool succes
+template <class T>
+bool HTTP::StructuredGET(std::string Host, std::string Directory, std::string URLArguments, T* Output)
 {
+    // host/directory?arg=value
     Directory += "?" + URLArguments;
 
     // configure and open connection
     HINTERNET hInternet = InternetOpenA("InetURL/1.0", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     HINTERNET hConnection = InternetConnectA(hInternet, Host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0, 0, INTERNET_SERVICE_HTTP, 0, 0);
     HINTERNET hData = HttpOpenRequestA(hConnection, "GET", Directory.c_str(), 0, 0, 0, INTERNET_FLAG_SECURE | INTERNET_FLAG_RELOAD, 0);
+    std::cout << "GET: " << Host + Directory << std::endl;
     if (!HttpSendRequestA(hData, NULL, 0, NULL, 0))
-        std::cout << "HTTP GET failed w/ winerror: " << GetLastError() << std::endl;
-
-    // read data
-    std::string HTML = "";
-    
-    char Buffer[2048];
-    DWORD ChunkSize = 0;
-    DWORD BytesRead = 0;
-    while (InternetReadFile(hData, Buffer, 2047, &ChunkSize) && ChunkSize > 0)
     {
-        // append this chunk to tracked total
-        Buffer[ChunkSize] = 0;
-        HTML += Buffer;
-        BytesRead += ChunkSize;
+        std::cout << "StructuredGET.HttpSendRequest failed w/ winerror: " << GetLastError() << std::endl;
+        return false;
     }
 
-    if (!InternetCloseHandle(hInternet))
-        std::cout << "Failed to close hInternet w/ winerror:" << GetLastError() << std::endl;
-    
-    // return pointer to first byte in the vector
-    return HTML;
+
+    DWORD BytesToRead = sizeof(T);
+    DWORD BytesRead;
+    if (!InternetReadFile(hData, Output, BytesToRead + 1 /* add one to know if there is more than requested */, &BytesRead))
+    {
+        std::cout << "InternetReadFile.HttpSendRequest failed w/ winerror: " << GetLastError() << std::endl;
+        return false;
+    }
+
+    if (BytesRead != BytesToRead)
+    {
+        std::cout << "StructuredGET - server gave bad response byte size (got " << BytesRead << " but expected " << BytesToRead << ")\n";
+        return false;
+    }
+    else
+        return true;
 }
 
-// wrapper for POST so we dont have to keep typing the same url
-std::string HTTP::API(std::string CMD, Arguments Arguments)
+// wrap StructuredGET
+template <class T>
+bool HTTP::APIGET(std::string Cmd, Arguments Data, T* Output)
 {
-    Arguments.Add("cmd", CMD);
-    return GET("www.a4g4.com", "/CSGO/api.php", Arguments.String);
+    Data.Add("cmd", Cmd);
+    return HTTP::StructuredGET<T>("www.a4g4.com", "/CSGO/api.php", Data.String, Output);
+}
+
+
+APIResponseFormat_LoginAttempt HTTP::APILogin(std::string Email, std::string Password)
+{
+    APIResponseFormat_LoginAttempt Response{};
+
+    Arguments Data;
+    Data.Add("email", Email);
+    Data.Add("passwd", Password);
+
+    if (!APIGET<APIResponseFormat_LoginAttempt>("login", Data, &Response))
+        std::cout << "fail" << std::endl;
+    //    Response.Flags = 0;
+
+    return Response;
 }

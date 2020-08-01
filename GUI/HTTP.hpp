@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include "Config.hpp"
 #pragma comment(lib, "wininet.lib")
 
 namespace HTTP {
@@ -24,6 +25,10 @@ namespace HTTP {
         }
     };
 
-    extern std::string GET(std::string Host, std::string Directory, std::string URLArguments);
-    extern std::string API(std::string CMD, Arguments Arguments);
+    template <class T>
+    extern bool StructuredGET(std::string Host, std::string Directory, std::string URLArguments, T* output);
+    template <class T>
+    extern bool APIGET(std::string Cmd, Arguments Data, T* Output);
+
+    extern APIResponseFormat_LoginAttempt APILogin(std::string Email, std::string Password);
 }

@@ -11,81 +11,89 @@ bool loginCanceled = false;
 
 struct LoginInformation
 {
-	unsigned int AttemptID; // 4
-	char Email[257];        // 261
-	char Password[65];      // 326 bytes
+	unsigned int AttemptID;
+	char Email[257];
+	char Password[65];
 };
 
-struct LoginApiResponse
+void AttemptLogin(LoginInformation* Info)
 {
-	char LoginFlags;
-	unsigned int UserID; // little endian
-};
-
-void AttemptLogin(LoginInformation* Info)//LoginInformation* Info)
-{
-	HTTP::Arguments Data;
-	Data.Add("Email", Info->Email);
-	Data.Add("Password", Info->Password);
-	
-	std::string ServerResponse = HTTP::API("login", Data);
-
-	// If there is a more recently started thread, then quit - we're useless now
-	if (Config::UserInfo.AuthStatus != AUTH_STATUS_PROCESSING || Info->AttemptID < LoginAttemptIndex)
+	APIResponseFormat_LoginAttempt Response = HTTP::APILogin(Info->Email, Info->Password);
+	if (Response.Flags & LOGIN_FLAG_LOGIN_VALID)
 	{
-		free(Info);
-		return;
-	}
-
-	// validate response and collect data
-	std::cout << "Server sent " << ServerResponse.length() << "Bytes" << std::endl;
-	if (!ServerResponse._Starts_with("APISUCCESS\n"))
-	{
-		std::cout << "API bad response: " << std::endl;
-		std::cout << ServerResponse << std::endl;
-		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-		free(Info);
-		return;
-	};
-
-	std::string DataString = ServerResponse.substr(ServerResponse.find_first_of("\n") + 1);
-	int sep = DataString.find_first_of("\n") + 1;
-	char LoginFlags = (char)std::stoi(DataString.substr(0, sep));
-	int UserID = std::stoi(DataString.substr(sep));
-
-	if (LoginFlags & LOGIN_FLAG_LOGIN_VALID)
-	{
-		Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
+		// this user has entered a valid login
+		if (Response.Flags & LOGIN_FLAG_BANNED)
+		{
+			// this user has been banned (todo: print "fuck you" then crash csgo)
+			Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+		}
+		else if (Response.Flags & LOGIN_FLAG_ACCOUNT_ALREADY_IN_USE)
+		{
+			// this user is logged in elsewhere (todo: tell them they should enter free mode)
+			Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+		}
+		else
+		{
+			Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
+			Config::UserInfo.Developer = Response.Flags & LOGIN_FLAG_ACCOUNT_IS_DEVELOPER;
+			Config::UserInfo.Paid = Response.Flags & LOGIN_FLAG_ACCOUNT_PAID;
+			Config::UserInfo.Email = Info->Email;
+			Config::UserInfo.UserID = Response.UserID;
+		}
 	}
 	else
 	{
+		// invalid login
 		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
 	}
-	
+
 	// deallocate resources
 	free(Info);
 }
 
+bool GUI::PaidHackMenu()
+{
+	bool PressedEject = false;
+
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
+	ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoScrollbar);
+
+	ImGui::SetCursorPos(ImVec2(0, 30));
+	if (ImGui::Button("Eject", ImVec2(70, 20)))
+		PressedEject = true;
+
+	ImGui::End();
+	return PressedEject;
+}
+
+bool GUI::FreeHackMenu()
+{
+	bool PressedEject = false;
+
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
+	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
+
+	ImGui::SetCursorPos(ImVec2(0, 30));
+	if (ImGui::Button("Eject", ImVec2(70, 20)))
+		PressedEject = true;
+
+	ImGui::End();
+	return PressedEject;
+}
+
 bool GUI::Main()
 {
-	bool KillGui = false;
+	bool PressedEject = false;
 	int WindowSizeX, WindowSizeY;
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
 	ImVec2 WindowCenter(WindowSizeX/2.f, WindowSizeY/2.f);
 
 	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
 	{
-		ImGui::SetNextWindowSize(ImVec2(20 + 50, 200 + 20 + 40));
-		ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
-
-		// Unload button
-		ImGui::SetCursorPos(ImVec2(20 + 150, 20 + 20));
-		if (ImGui::Button("Unload", ImVec2(100, 40)))
-			KillGui = true;
-
-		// TODO: change config
-		std::cout << "authenticated" << std::endl;
-		ImGui::End();
+		if (Config::UserInfo.Paid || Config::UserInfo.Developer)
+			PressedEject = GUI::PaidHackMenu();
+		else
+			PressedEject = GUI::FreeHackMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
@@ -96,7 +104,7 @@ bool GUI::Main()
 		// Eject button
 		ImGui::SetCursorPos(ImVec2(10, 83));
 		if (ImGui::Button("Eject", ImVec2(70, 20)))
-			KillGui = true;
+			PressedEject = true;
 
 		// Cancel button
 		ImGui::SetCursorPos(ImVec2(360, 83));
@@ -123,14 +131,30 @@ bool GUI::Main()
 		ImGui::Text("Password:"); ImGui::SameLine();
 		ImGui::InputText("###Password", Password, 65);
 
-		// Unload button
+		// Eject button
 		ImGui::SetCursorPos(ImVec2(10, 83));
-		if (ImGui::Button("Eject", ImVec2(70, 20)))
-			KillGui = true;
+		if (ImGui::Button("Eject", ImVec2(99, 20)))
+			PressedEject = true;
+
+		// Free2Play button
+		ImGui::SetCursorPos(ImVec2(10 + 99 + 8, 83));
+		if (ImGui::Button("Free Version", ImVec2(99, 20)))
+		{
+			Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
+			Config::UserInfo.Email = "free@a4g4.com";
+			Config::UserInfo.UserID = INT_MAX;
+			Config::UserInfo.Paid = false;
+			Config::UserInfo.Developer = false;
+		}
+
+		// Register button
+		ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8, 83));
+		if (ImGui::Button("Register", ImVec2(99, 20)))
+			ShellExecute(NULL, TEXT("open"), TEXT("https://www.a4g4.com"), NULL, NULL, 0);
 
 		// Login button
-		ImGui::SetCursorPos(ImVec2(360, 83));
-		if (ImGui::Button("Login", ImVec2(70, 20)))
+		ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8 + 99 + 8, 83));
+		if (ImGui::Button("Login", ImVec2(99, 20)))
 		{
 			// reset old data
 			LoginAttemptIndex++;
@@ -152,5 +176,5 @@ bool GUI::Main()
 		ImGui::End();
 	}
 
-	return KillGui;
+	return PressedEject;
 }
