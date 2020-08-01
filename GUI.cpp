@@ -7,6 +7,7 @@ ImVec2 LoginWindowPosition(100, 100);
 // Variables to help communicate between main thread and login thread (helping with race conditions)
 std::mutex LoginMutex;
 unsigned int LoginAttemptIndex = 0;      // equal to the number of times that the user pressed the login button
+bool loginCanceled = false;
 
 struct LoginInformation
 {
@@ -15,38 +16,56 @@ struct LoginInformation
 	char Password[65];      // 326 bytes
 };
 
+struct LoginApiResponse
+{
+	char LoginFlags;
+	unsigned int UserID; // little endian
+};
+
 void AttemptLogin(LoginInformation* Info)//LoginInformation* Info)
 {
 	HTTP::Arguments Data;
 	Data.Add("Email", Info->Email);
 	Data.Add("Password", Info->Password);
 	
-	std::string LoginResponse = HTTP::API("login", Data);
-	std::cout << LoginResponse << std::endl;
+	std::string ServerResponse = HTTP::API("login", Data);
 
 	// If there is a more recently started thread, then quit - we're useless now
-	if (Info->AttemptID < LoginAttemptIndex)
+	if (Config::UserInfo.AuthStatus != AUTH_STATUS_PROCESSING || Info->AttemptID < LoginAttemptIndex)
 	{
 		free(Info);
 		return;
 	}
 
-	// check that server sent correct number of bytes
-	int NumBytes = LoginResponse.length();
-	if (NumBytes != 2)
+	// validate response and collect data
+	std::cout << "Server sent " << ServerResponse.length() << "Bytes" << std::endl;
+	if (!ServerResponse._Starts_with("APISUCCESS\n"))
 	{
+		std::cout << "API bad response: " << std::endl;
+		std::cout << ServerResponse << std::endl;
 		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-		std::cout << "Server sent " << NumBytes  << "Bytes" << std::endl;
 		free(Info);
 		return;
-	}
+	};
 
-	// check server return status and update config accordingly
-	BYTE LoginFlags = LoginResponse[0];
+	std::string DataString = ServerResponse.substr(ServerResponse.find_first_of("\n") + 1);
+	int sep = DataString.find_first_of("\n") + 1;
+	char LoginFlags = (char)std::stoi(DataString.substr(0, sep));
+	int UserID = std::stoi(DataString.substr(sep));
+
+	std::cout << "Flags begin" << std::endl;
+	std::cout << LoginFlags << std::endl;
+	std::cout << UserID << std::endl;
+	std::cout << "Flags end" << std::endl;
+
+	// handle response
+	//std::cout << "uid:" << Response.UserID << std::endl;
+
 	Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-
-	// prevent mem leak
+	
+	// deallocate resources
 	free(Info);
+	//free(&Response);
 }
 
 bool GUI::Main()

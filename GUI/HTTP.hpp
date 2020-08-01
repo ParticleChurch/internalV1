@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 #pragma comment(lib, "wininet.lib")
 
 namespace HTTP {

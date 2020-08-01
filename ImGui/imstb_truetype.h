@@ -370,7 +370,7 @@ int main(int argc, char **argv)
 // Complete program: print "Hello World!" banner, with bugs
 //
 #if 0
-char buffer[24<<20];
+char Buffer[24<<20];
 unsigned char screen[20][79];
 
 int main(int arg, char **argv)
