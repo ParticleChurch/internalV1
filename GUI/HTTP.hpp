@@ -23,6 +23,6 @@ namespace HTTP {
         }
     };
 
-    extern std::string POST(std::string Host, std::string Directory, std::string URLArguments);
+    extern std::string GET(std::string Host, std::string Directory, std::string URLArguments);
     extern std::string API(std::string CMD, Arguments Arguments);
 }
