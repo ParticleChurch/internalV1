@@ -53,19 +53,17 @@ void AttemptLogin(LoginInformation* Info)//LoginInformation* Info)
 	char LoginFlags = (char)std::stoi(DataString.substr(0, sep));
 	int UserID = std::stoi(DataString.substr(sep));
 
-	std::cout << "Flags begin" << std::endl;
-	std::cout << LoginFlags << std::endl;
-	std::cout << UserID << std::endl;
-	std::cout << "Flags end" << std::endl;
-
-	// handle response
-	//std::cout << "uid:" << Response.UserID << std::endl;
-
-	Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+	if (LoginFlags & LOGIN_FLAG_LOGIN_VALID)
+	{
+		Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
+	}
+	else
+	{
+		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+	}
 	
 	// deallocate resources
 	free(Info);
-	//free(&Response);
 }
 
 bool GUI::Main()
