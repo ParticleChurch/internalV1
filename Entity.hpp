@@ -4,6 +4,16 @@ enum MoveType {
 	LADDER = 9
 };
 
+struct Model {
+	void* handle;
+	char name[260];
+	int	loadFlags;
+	int	serverCount;
+	int	type;
+	int	flags;
+	Vec mins, maxs;
+};
+
 class Entity
 {
 public:
@@ -232,5 +242,12 @@ public:
 	int Index() {
 		typedef int(__thiscall* oGetIndex)(void*);
 		return GetVFunc<oGetIndex>(this + 8, 10)(this + 8);
+	}
+
+	//TEST
+	Model* GetModel()
+	{
+		typedef Model* (__thiscall* oGetModel)(void*);
+		return GetVFunc<oGetModel>(this + 4, 8)(this + 4);
 	}
 };

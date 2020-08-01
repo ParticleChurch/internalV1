@@ -57,6 +57,9 @@ void Aimbot::Legit()
 			continue;
 
 		Entity* Ent = I::entitylist->GetClientEntity(i);
+		if (!Ent)
+			continue;
+
 		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
 			continue;
 
