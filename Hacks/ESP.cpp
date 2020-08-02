@@ -27,120 +27,21 @@ void ESP::DrawBoxes(Vec TL, Vec BR)
 
 void ESP::DrawName(Vec TL, Vec BR, char Name[128]) //NEED TO FINISH
 {
-	int FontSize = (BR.y - TL.y) / 4;
-
-	static DWORD Font5 = I::surface->FontCreate();
-	static DWORD Font6 = I::surface->FontCreate();
-	static DWORD Font7 = I::surface->FontCreate();
-	static DWORD Font8 = I::surface->FontCreate();
-	static DWORD Font9 = I::surface->FontCreate();
-	static DWORD Font10 = I::surface->FontCreate();
-	static DWORD Font11 = I::surface->FontCreate();
-	static DWORD Font12 = I::surface->FontCreate();
-	static DWORD Font13 = I::surface->FontCreate();
-	static DWORD Font14 = I::surface->FontCreate();
-	static DWORD Font15 = I::surface->FontCreate();
-	static DWORD Font16 = I::surface->FontCreate();
-	static DWORD Font17 = I::surface->FontCreate();
-	static DWORD Font18 = I::surface->FontCreate();
-	static DWORD Font19 = I::surface->FontCreate();
-	static DWORD Font20 = I::surface->FontCreate();
-	
-
+	static DWORD FONT = I::surface->FontCreate();
 	static bool Once = true;
-
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(Font5, "Tahoma", 5, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font6, "Tahoma", 6, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font7, "Tahoma", 7, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font8, "Tahoma", 8, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font9, "Tahoma", 9, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font10, "Tahoma", 10, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font11, "Tahoma", 11, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font12, "Tahoma", 12, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font13, "Tahoma", 13, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font14, "Tahoma", 14, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font15, "Tahoma", 15, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font16, "Tahoma", 16, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font17, "Tahoma", 17, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font18, "Tahoma", 18, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font19, "Tahoma", 19, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-		I::surface->SetFontGlyphSet(Font20, "Tahoma", 20, 100, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+		I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
-
-	switch ((int)FontSize) {
-	case 5:
-		I::surface->DrawSetTextFont(Font5);
-		break;
-	case 6:
-		I::surface->DrawSetTextFont(Font6);
-		break;
-	case 7:
-		I::surface->DrawSetTextFont(Font7);
-		break;
-	case 8:
-		I::surface->DrawSetTextFont(Font8);
-		break;
-	case 9:
-		I::surface->DrawSetTextFont(Font9);
-		break;
-	case 10:
-		I::surface->DrawSetTextFont(Font10);
-		break;
-	case 11:
-		I::surface->DrawSetTextFont(Font11);
-		break;
-	case 12:
-		I::surface->DrawSetTextFont(Font12);
-		break;
-	case 13:
-		I::surface->DrawSetTextFont(Font13);
-		break;
-	case 14:
-		I::surface->DrawSetTextFont(Font14);
-		break;
-	case 15:
-		I::surface->DrawSetTextFont(Font15);
-		break;
-	case 16:
-		I::surface->DrawSetTextFont(Font16);
-		break;
-	case 17:
-		I::surface->DrawSetTextFont(Font17);
-		break;
-	case 18:
-		I::surface->DrawSetTextFont(Font18);
-		break;
-	case 19:
-		I::surface->DrawSetTextFont(Font19);
-		break;
-	case 20:
-		I::surface->DrawSetTextFont(Font20);
-		break;
-	default:
-		if(FontSize < 5)
-			I::surface->DrawSetTextFont(Font5);
-		else 
-			I::surface->DrawSetTextFont(Font20);
-		break;
-	}
-
-	if (FontSize < 20)
-		TL.y -= FontSize;
-	else
-		TL.y -= 20;
-
 
 	std::string TEXT = Name;
-
 	static std::wstring wide_string;
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 	
-	
+	I::surface->DrawSetTextFont(FONT);
 	I::surface->DrawSetTextColor(Current);
-	I::surface->DrawSetTextPos(TL.x, TL.y);
+	I::surface->DrawSetTextPos(TL.x, TL.y - 14);
 	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
 
