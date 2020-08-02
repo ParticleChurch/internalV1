@@ -155,13 +155,13 @@ public:
 	}
 	*/
 
-	void unlockCursor()
+	void UnlockCursor()
 	{
 		typedef void(__thiscall* ounlockCursor)(PVOID);
 		return GetVFunc< ounlockCursor>(this, 66)(this);
 	}
 
-	void lockCursor()
+	void LockCursor()
 	{
 		typedef void(__thiscall* olockCursor)(PVOID);
 		return GetVFunc< olockCursor>(this, 67)(this);

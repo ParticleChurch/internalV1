@@ -16,6 +16,7 @@ namespace H
 	CreateMove oCreateMove;
 	PaintTraverse oPaintTraverse;
 	FrameStageNotify oFrameStageNotify;
+	LockCursor oLockCursor;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -64,16 +65,21 @@ void H::Init()
 	std::cout << "FrameStageNotify...";
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
-	
+
+	std::cout << "LockCursor...";
+	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
+	std::cout << "Success!" << std::endl;
 }
 
 void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
 	panelVMT.RestoreOriginal();
+	surfaceVMT.RestoreOriginal();
 	d3d9VMT.RestoreOriginal();
 	clientmodeVMT.RestoreOriginal();
 	clientVMT.RestoreOriginal();
+	
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
 }
@@ -129,7 +135,12 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (D3dInit && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+	if (uMsg == WM_KEYDOWN) {
+		if (wParam == VK_INSERT) {
+			GUI::ShowMenu = !GUI::ShowMenu;
+		}
+	}
+	if (D3dInit && GUI::ShowMenu && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
 		return true;
 	}
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
@@ -141,6 +152,11 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		return true;
 
 	if (I::engine->IsInGame() && cmd) {
+		if (GUI::ShowMenu) {
+			cmd->buttons = 0;
+			cmd->upmove = 0;
+		}
+
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
@@ -184,5 +200,13 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	backtrack->update(curStage);
 	return oFrameStageNotify(curStage);
+}
+
+void __stdcall H::LockCursorHook()
+{
+	if (GUI::ShowMenu) {
+		return I::surface->UnlockCursor();
+	}
+	return oLockCursor(I::surface);
 }
 

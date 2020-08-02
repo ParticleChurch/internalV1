@@ -60,6 +60,9 @@ bool GUI::PaidHackMenu()
 {
 	bool PressedEject = false;
 
+	if (!ShowMenu)			//if they arent displaying the menu... just return
+		return PressedEject;
+
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
 	ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoScrollbar);
 
@@ -74,6 +77,9 @@ bool GUI::PaidHackMenu()
 bool GUI::FreeHackMenu()
 {
 	bool PressedEject = false;
+
+	if (!ShowMenu)			//if they arent displaying the menu... just return
+		return PressedEject;
 
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
 	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
@@ -102,6 +108,7 @@ bool GUI::Main()
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
+		GUI::ShowMenu = true;
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
 		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
 		ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
@@ -121,6 +128,7 @@ bool GUI::Main()
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
 	{
+		GUI::ShowMenu = true;
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
 		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
 		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
