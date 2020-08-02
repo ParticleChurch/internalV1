@@ -35,7 +35,6 @@ bool HTTP::StructuredGET(std::string Host, std::string Directory, std::string UR
     HINTERNET hInternet = InternetOpenA("InetURL/1.0", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     HINTERNET hConnection = InternetConnectA(hInternet, Host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0, 0, INTERNET_SERVICE_HTTP, 0, 0);
     HINTERNET hData = HttpOpenRequestA(hConnection, "GET", Directory.c_str(), 0, 0, 0, INTERNET_FLAG_SECURE | INTERNET_FLAG_RELOAD, 0);
-    std::cout << "GET: " << Host + Directory << std::endl;
     if (!HttpSendRequestA(hData, NULL, 0, NULL, 0))
     {
         std::cout << "StructuredGET.HttpSendRequest failed w/ winerror: " << GetLastError() << std::endl;
@@ -78,8 +77,7 @@ APIResponseFormat_LoginAttempt HTTP::APILogin(std::string Email, std::string Pas
     Data.Add("passwd", Password);
 
     if (!APIGET<APIResponseFormat_LoginAttempt>("login", Data, &Response))
-        std::cout << "fail" << std::endl;
-    //    Response.Flags = 0;
+         Response.Flags = 0;
 
     return Response;
 }
