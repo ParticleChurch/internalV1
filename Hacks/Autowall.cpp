@@ -70,6 +70,28 @@ float Autowall::HandleBulletPenetration(SurfaceData* EnterSurfaceData, const tra
     return Damage;
 }
 
+bool Autowall::IsVisible(Vec Start, Vec End, Entity* Ent)
+{
+    trace_t Trace;
+    Ray_t Ray(Start, End);
+    CTraceFilter Filter(G::Localplayer);
+    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
+
+    return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
+}
+
+bool Autowall::IsVisible(Vec End, Entity* Ent)
+{
+    Vec Start = G::Localplayer->GetEyePos();
+
+    trace_t Trace;
+    Ray_t Ray(Start, End);
+    CTraceFilter Filter(G::Localplayer);
+    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
+
+    return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
+}
+
 bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire)
 {
     if (!G::Localplayer)

@@ -40,6 +40,7 @@ void H::Init()
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
 	std::cout << "Hooking..." << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo Hooking");
 	d3d9VMT.Initialise((DWORD*)D3d9Device);
 	clientVMT.Initialise((DWORD*)I::client);
 	clientmodeVMT.Initialise((DWORD*)I::clientmode);
@@ -49,26 +50,32 @@ void H::Init()
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
 
 	std::cout << "FrameStageNotify...";
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
 }
 
 void H::UnHook()

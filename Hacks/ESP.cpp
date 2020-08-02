@@ -50,7 +50,6 @@ void ESP::DrawSnapLines(Vec TL, Vec BR)
 	int xSize;
 	int ySize;
 	I::engine->GetScreenSize(xSize, ySize);
-
 	I::surface->DrawLine(xSize / 2, ySize, ((BR.x - TL.x) / 2) + TL.x, BR.y);
 }
 
