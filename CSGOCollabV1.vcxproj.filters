@@ -231,6 +231,12 @@
     <ClInclude Include="Hacks\Autowall.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\GameEventManager.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StrHash.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

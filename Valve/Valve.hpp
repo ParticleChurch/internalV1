@@ -34,3 +34,4 @@
 #include "Interfaces/IVModelInfo.hpp"
 #include "Interfaces/IEngineTrace.hpp"
 #include "Interfaces/PhysicsSurfaceProps.hpp"
+#include "Interfaces/GameEventManager.hpp"

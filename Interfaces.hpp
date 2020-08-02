@@ -14,4 +14,5 @@ namespace I
 	extern IVModelInfo* modelinfo;
 	extern IEngineTrace* enginetrace;
 	extern PhysicsSurfaceProps* physicssurfaceprops;
+	extern GameEventManager* gameeventmanager;
 }

@@ -14,4 +14,5 @@ namespace I
 	IVModelInfo* modelinfo = (IVModelInfo*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VModelInfoClient004");
 	IEngineTrace* enginetrace = (IEngineTrace*)NewInterface->GetInterface((char*)"engine.dll", (char*)"EngineTraceClient004");
 	PhysicsSurfaceProps* physicssurfaceprops = (PhysicsSurfaceProps*)NewInterface->GetInterface((char*)"vphysics.dll", (char*)"VPhysicsSurfaceProps001");
+	GameEventManager* gameeventmanager = (GameEventManager*)NewInterface->GetInterface((char*)"engine.dll", (char*)"GAMEEVENTSMANAGER002");
 }

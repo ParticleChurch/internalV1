@@ -10,6 +10,7 @@ namespace H
 	VMTManager clientmodeVMT;
 	VMTManager surfaceVMT;
 	VMTManager panelVMT;
+	VMTManager gameeventmanagerVMT;
 
 	EndScene oEndScene;
 	Reset oReset;
@@ -17,6 +18,7 @@ namespace H
 	PaintTraverse oPaintTraverse;
 	FrameStageNotify oFrameStageNotify;
 	LockCursor oLockCursor;
+	FireEventClientSide oFireEventClientSide;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -46,6 +48,7 @@ void H::Init()
 	clientmodeVMT.Initialise((DWORD*)I::clientmode);
 	surfaceVMT.Initialise((DWORD*)I::surface);
 	panelVMT.Initialise((DWORD*)I::panel);
+	gameeventmanagerVMT.Initialise((DWORD*)I::gameeventmanager);
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -76,11 +79,17 @@ void H::Init()
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
+
+	std::cout << "FireEventClientSide...";
+	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 }
 
 void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
+	gameeventmanagerVMT.RestoreOriginal();
 	panelVMT.RestoreOriginal();
 	surfaceVMT.RestoreOriginal();
 	d3d9VMT.RestoreOriginal();
@@ -215,5 +224,49 @@ void __stdcall H::LockCursorHook()
 		return I::surface->UnlockCursor();
 	}
 	return oLockCursor(I::surface);
+}
+
+bool __stdcall H::FireEventClientSideHook(GameEvent* event)
+{
+	if (!(I::engine->IsInGame()))
+		return oFireEventClientSide(I::gameeventmanager, event);
+	if (!event)
+		return oFireEventClientSide(I::gameeventmanager, event);
+
+	switch (StrHash::HashRuntime(event->GetName())) {
+		case StrHash::Hash("player_hurt"):
+		{
+			//also add hitmarkers here...
+			const auto localIdx = I::engine->GetLocalPlayer();
+			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
+				break;
+			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
+		}
+		break;
+
+		case StrHash::Hash("player_death"):
+		{
+			//also add player kill say here
+			const auto localIdx = I::engine->GetLocalPlayer();
+			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
+				break;
+			I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
+		}
+		break;
+		case StrHash::Hash("weapon_fire"):
+		{
+			const auto localIdx = I::engine->GetLocalPlayer();
+
+			player_info_t Info;
+			int index = I::engine->GetPlayerForUserID(event->GetInt("userid"));
+			if (index < 65 && I::engine->GetPlayerInfo(index, &Info)) 
+			{
+				if (!backtrack->records[index].empty())
+					backtrack->records[index].back().Shooting = true;
+			}
+		}
+		break;
+	}
+	return oFireEventClientSide(I::gameeventmanager, event);
 }
 

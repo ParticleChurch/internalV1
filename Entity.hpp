@@ -72,7 +72,6 @@ public:
 		Matrix3x4 boneMatrixes[128];
 		if (SetupBones(boneMatrixes, 128, 0x100, 0))
 			return Vec(boneMatrixes[boneID][0][3], boneMatrixes[boneID][1][3], boneMatrixes[boneID][2][3]);
-		std::cout << "FAILED TO SETUP BONES OH GOD OH FUCK" << std::endl;
 		return Vec(0,0,0);
 	}
 

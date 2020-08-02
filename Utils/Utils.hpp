@@ -4,3 +4,4 @@
 #include "PatternScan.hpp"		//for scanning in memory for specific functions
 #include "InterfaceTools.hpp"	//for creating interfaces with csgo classes/interfaces
 #include "VMTManager.hpp"		//for hooking functions (ex createmove)
+#include "StrHash.hpp"			//for hashing str to ints (ex fireeventclientside in hooks.cpp)

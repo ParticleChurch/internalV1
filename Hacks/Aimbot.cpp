@@ -163,6 +163,8 @@ void Aimbot::Rage()
 		if (!(Ent->GetHealth() > 0)) //if dead
 			continue;
 
+
+
 		Vec Head = Ent->GetBonePos(8);
 
 		if (!autowall->CanScan(Ent, Head, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))

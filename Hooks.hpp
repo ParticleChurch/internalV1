@@ -1,4 +1,4 @@
-namespace H
+		namespace H
 {
 	extern void Init();
 	extern void UnHook();
@@ -12,6 +12,7 @@ namespace H
 	typedef void(__thiscall* PaintTraverse)(void*, int, bool, bool);
 	typedef void(__stdcall* FrameStageNotify)(int);
 	typedef void(__thiscall* LockCursor)(void*);
+	typedef bool(__thiscall* FireEventClientSide)(void*, GameEvent*);
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
@@ -21,4 +22,5 @@ namespace H
 	extern void __stdcall PaintTraverseHook(int vguiID, bool force, bool allowForcing);
 	extern void __stdcall FrameStageNotifyHook(int curStage);
 	extern void __stdcall LockCursorHook();
+	extern bool __stdcall FireEventClientSideHook(GameEvent* event);
 }

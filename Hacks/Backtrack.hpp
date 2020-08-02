@@ -3,6 +3,7 @@
 struct Tick {
     int TickCount;
     Matrix3x4 Matrix[128];
+    bool Shooting = false;
     Vec Bone(int i) {
         return Vec(Matrix[i][0][3],
             Matrix[i][1][3],
@@ -13,6 +14,7 @@ struct Tick {
         for (int i = 0; i < 128; i++) {
             Matrix[i] = Obj.Matrix[i];
         }
+        Shooting = Obj.Shooting;
     }
 };
 

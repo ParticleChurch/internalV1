@@ -4,8 +4,7 @@ Backtrack* backtrack = new Backtrack();
 
 void Backtrack::update(int stage)
 {
-	static Entity* Localplayer;
-	Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
 		for (auto a : records)
 			a.clear();

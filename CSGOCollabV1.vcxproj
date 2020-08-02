@@ -197,6 +197,7 @@
     <ClInclude Include="Interfaces.hpp" />
     <ClInclude Include="Netvars.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
+    <ClInclude Include="Utils\StrHash.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\InterfaceTools.hpp" />
     <ClInclude Include="Utils\Macro.hpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="Valve\Custom\Color.hpp" />
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
+    <ClInclude Include="Valve\Interfaces\GameEventManager.hpp" />
     <ClInclude Include="Valve\Interfaces\GlobalVars.hpp" />
     <ClInclude Include="Valve\Interfaces\IBaseClientDLL.hpp" />
     <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp" />
