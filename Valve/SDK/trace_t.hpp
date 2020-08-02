@@ -16,6 +16,6 @@ struct trace_t {
     } Surface;
     int Hitgroup;
     std::byte pad2[4];
-    Entity* entity;
+    Entity* Entity;
     int hitbox;
 };

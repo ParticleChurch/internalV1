@@ -155,6 +155,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		//if(cmd->buttons & IN_ATTACK)
 			//aimbot->Legit();
+
+		if (GetAsyncKeyState(VK_LMENU))
+			aimbot->Rage();
 		backtrack->run();
 
 		G::CM_End();

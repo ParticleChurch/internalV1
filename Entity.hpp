@@ -200,9 +200,9 @@ public:
 		return *(bool*)((DWORD)this + offset);
 	}
 
-	float MaxAccurateSpeed() {
-		const WeaponData* weaponData = this->GetActiveWeapon()->GetWeaponData();
-		return (this->IsScoped() ? weaponData->maxSpeedAlt : weaponData->maxSpeed) / 3;
+	float MaxAccurateSpeed() { 
+		const WeaponData* WeaponData = this->GetActiveWeapon()->GetWeaponData();
+		return (this->IsScoped() ? WeaponData->MaxSpeedAlt : WeaponData->MaxSpeed) / 3; //alt and regular might be flipped lol
 	}
 
 	bool IsAlive()

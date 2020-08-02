@@ -52,6 +52,9 @@
     <ClCompile Include="Hacks\Backtrack.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Autowall.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -224,6 +227,9 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\SurfaceData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Autowall.hpp">
+      <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

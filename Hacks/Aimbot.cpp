@@ -139,5 +139,52 @@ void Aimbot::Smooth(Vec& Angle)
 //rage functions
 void Aimbot::Rage()
 {
+	//get closest Entity
+	Vec BestAngle;
+	float BestCrossDist = FLT_MAX; //crosshair distance
+	bool ValidTargetFound = false;
+
+	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
+	{
+		player_info_t PlayerInfo;
+		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
+			continue;
+
+		Entity* Ent = I::entitylist->GetClientEntity(i);
+		if (!Ent)
+			continue;
+
+		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
+			continue;
+
+		if (Ent->IsDormant()) //if dormant
+			continue;
+
+		if (!(Ent->GetHealth() > 0)) //if dead
+			continue;
+
+		Vec Head = Ent->GetBonePos(8);
+
+		if (!autowall->CanScan(Ent, Head, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
+			continue;
+
+		
+		Vec Angle = CalculateAngle(Head);
+		float CrossDist = CrosshairDist(Angle);
+		if (CrossDist < BestCrossDist)
+		{
+			BestCrossDist = CrossDist;
+			BestAngle = Angle;
+			ValidTargetFound = true;
+		}
+	}
+
+	if (G::Localplayer->GetShotsFired() > 1)
+		BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
+
+	if (ValidTargetFound) {
+		G::cmd->viewangles = BestAngle;
+		G::cmd->buttons |= IN_ATTACK;
+	}
 }
 

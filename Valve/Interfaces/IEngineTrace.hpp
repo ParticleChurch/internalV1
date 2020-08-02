@@ -1,35 +1,4 @@
 #pragma once
-static float GetDamageMultiplier(int HitGroup) 
-{
-    switch (HitGroup) {
-    case HITGROUP_HEAD:
-        return 4.0f;
-    case HITGROUP_STOMACH:
-        return 1.25f;
-    case HITGROUP_LEFTLEG:
-    case HITGROUP_RIGHTLEG:
-        return 0.75f;
-    default:
-        return 1.0f;
-    }
-}
-
-static bool IsArmored(int HitGroup, bool Helmet)
-{
-    switch (HitGroup) {
-    case HITGROUP_HEAD:
-        return Helmet;
-
-    case HITGROUP_CHEST:
-    case HITGROUP_STOMACH:
-    case HITGROUP_LEFTARM:
-    case HITGROUP_RIGHTARM:
-        return true;
-    default:
-        return false;
-    }
-}
-
 class IEngineTrace {
 public:
     int GetPointContents(const Vec& vecAbsPosition, int contentsMask = MASK_ALL) {
