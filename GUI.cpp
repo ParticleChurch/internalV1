@@ -111,7 +111,7 @@ bool GUI::Main()
 		GUI::ShowMenu = true;
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
 		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
-		ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+		ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 
 		// Eject button
 		ImGui::SetCursorPos(ImVec2(10, 83));
@@ -131,7 +131,7 @@ bool GUI::Main()
 		GUI::ShowMenu = true;
 		ImGui::SetNextWindowSize(ImVec2(440, 114));
 		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
-		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 
 		// Login Form
 		static char Email[257] = "";
