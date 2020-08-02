@@ -1,6 +1,11 @@
 #include "Include.hpp"
 #include "GUI/HTTP.hpp"
 
+namespace GUI
+{
+	bool ShowMenu = false;
+}
+
 // will be set to the screen center
 ImVec2 LoginWindowPosition(100, 100);
 
