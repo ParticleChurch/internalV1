@@ -8,6 +8,7 @@ private:
 	void DrawName(Vec TL, Vec BR, char Name[128]);
 	void DrawSnapLines(Vec TL, Vec BR);
 	void DrawHealth(Vec TL, Vec BR, int Health);
+	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
 public:
 	void Run();

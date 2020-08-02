@@ -153,22 +153,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->buttons &= ~IN_JUMP;
 		}
 
-		console.clear();
-		console.resize(0);
-		Vec a1, b1, c1, d1, a2, b2, c2, d2;
-		G::Localplayer->GetHitboxEnds(HITBOX_HEAD, a1, b1, c1, d1, a2, b2, c2, d2);
-
-		console.push_back(a1.str());
-		console.push_back(b1.str());
-		console.push_back(c1.str());
-		console.push_back(d1.str());
-		console.push_back(a2.str());
-		console.push_back(b2.str());
-		console.push_back(c2.str());
-		console.push_back(d2.str());
-
-		if(cmd->buttons & IN_ATTACK)
-			aimbot->Legit();
+		//if(cmd->buttons & IN_ATTACK)
+			//aimbot->Legit();
 		backtrack->run();
 
 		G::CM_End();

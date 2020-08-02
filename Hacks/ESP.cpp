@@ -164,6 +164,38 @@ void ESP::DrawHealth(Vec TL, Vec BR, int Health)
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
 }
 
+void ESP::DrawSkeleton(Entity* Ent)
+{
+	//https://www.unknowncheats.me/wiki/Counter_Strike_Global_Offensive:Bone_ESP 
+	//p help, prob should implement properly but will do later
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
+	if (!StudioModel)
+		return;
+
+	static Matrix3x4 BoneToWorldOut[128];
+	if (Ent->SetupBones(BoneToWorldOut, 128, 256, 0))
+	{
+		for (int i = 0; i < StudioModel->numbones; i++)
+		{
+			mstudiobone_t* Bone = StudioModel->GetBone(i);
+			if (!Bone || !(Bone->flags & 256) || Bone->parent == -1)
+				continue;
+
+			Vec Screen1;
+			Vec loc1 = Vec(BoneToWorldOut[i][0][3], BoneToWorldOut[i][1][3], BoneToWorldOut[i][2][3]);
+			if (!WorldToScreen(loc1, Screen1))
+				continue;
+
+			Vec Screen2;
+			Vec loc2 = Vec(BoneToWorldOut[Bone->parent][0][3], BoneToWorldOut[Bone->parent][1][3], BoneToWorldOut[Bone->parent][2][3]);
+			if (!WorldToScreen(loc2, Screen2))
+				continue;
+
+			I::surface->DrawLine(Screen1.x, Screen1.y, Screen2.x, Screen2.y);
+		}
+	}
+}
+
 void ESP::DrawBacktrackingDots()
 {
 	for (int i = 1; i < 65; i++) {
@@ -260,7 +292,9 @@ void ESP::Run()
 		DrawBoxes(TopLeft, BottomRight);
 		DrawName(TopLeft, BottomRight, PlayerInfo.name);
 		DrawSnapLines(TopLeft, BottomRight);
+		DrawSkeleton(Ent);
 		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
+		
 	}
 
 	DrawBacktrackingDots();
