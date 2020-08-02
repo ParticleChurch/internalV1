@@ -12,4 +12,6 @@ namespace I
 	extern Surface* surface;
 	extern Panel* panel;
 	extern IVModelInfo* modelinfo;
+	extern IEngineTrace* enginetrace;
+	extern PhysicsSurfaceProps* physicssurfaceprops;
 }

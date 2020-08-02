@@ -2,6 +2,7 @@
 
 Aimbot* aimbot = new Aimbot();
 
+//general help functions
 Vec Aimbot::CalculateAngle(Vec Target)
 {
 	Vec EyePos = G::Localplayer->GetEyePos();//starting head position
@@ -43,6 +44,7 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 	return sqrtf(powf(min(a, b), 2) + powf(c, 2));
 }
 
+//legit functions
 void Aimbot::Legit()
 {
 	//get closest Entity
@@ -134,6 +136,7 @@ void Aimbot::Smooth(Vec& Angle)
 	Angle.Normalize();
 }
 
+//rage functions
 void Aimbot::Rage()
 {
 }

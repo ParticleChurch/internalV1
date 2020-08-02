@@ -19,6 +19,10 @@
 #include "SDK/WeaponData.hpp"
 #include "SDK/NetChannel.hpp"
 #include "SDK/Studio.hpp"
+#include "SDK/Ray_t.hpp"
+#include "SDK/CTraceFilter.hpp"
+#include "SDK/trace_t.hpp"
+#include "SDK/SurfaceData.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
@@ -28,3 +32,5 @@
 #include "Interfaces/Surface.hpp"
 #include "Interfaces/Panel.hpp"
 #include "Interfaces/IVModelInfo.hpp"
+#include "Interfaces/IEngineTrace.hpp"
+#include "Interfaces/PhysicsSurfaceProps.hpp"
