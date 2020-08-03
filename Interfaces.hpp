@@ -16,4 +16,5 @@ namespace I
 	extern PhysicsSurfaceProps* physicssurfaceprops;
 	extern GameEventManager* gameeventmanager;
 	extern InputSystem* inputsystem;
+	extern CVar* cvar;
 }

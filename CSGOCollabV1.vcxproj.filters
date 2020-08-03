@@ -249,6 +249,12 @@
     <ClInclude Include="Valve\Interfaces\InputSystem.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\Convar.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\UtlVector.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

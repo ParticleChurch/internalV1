@@ -19,6 +19,7 @@ namespace H
 	FrameStageNotify oFrameStageNotify;
 	LockCursor oLockCursor;
 	FireEventClientSide oFireEventClientSide;
+	//SvCheatsGetBool oSvCheatsGetBool;
 	
 	//GUI Vars
 	bool D3dInit = false;
@@ -84,14 +85,17 @@ void H::Init()
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
+
+	//std::cout << "SvCheatsGetBool...";
+	//oSvCheatsGetBool = (SvCheatsGetBool)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 }
 
 void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
 	gameeventmanagerVMT.RestoreOriginal();
-	panelVMT.RestoreOriginal();
 	surfaceVMT.RestoreOriginal();
+	panelVMT.RestoreOriginal();
 	d3d9VMT.RestoreOriginal();
 	clientmodeVMT.RestoreOriginal();
 	clientVMT.RestoreOriginal();
@@ -196,10 +200,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//if(cmd->buttons & IN_ATTACK)
 			//aimbot->Legit();
 
-		antiaim->rage();
+		static auto nadeVar{ I::cvar->FindVar("cl_grenadepreview") };
+		nadeVar->onChangeCallbacks.size = 0;
+		nadeVar->SetValue((int)1);
+
+		//antiaim->rage();
 		//antiaim->legit();
 
-		backtrack->run();
+		//backtrack->run();
 
 		if (cmd->buttons & IN_ATTACK || cmd->buttons & IN_USE)
 		{
@@ -207,7 +215,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			*G::pSendPacket = true;
 		}
 		
-		aimbot->Rage();
+		//aimbot->Rage();
 
 		G::CM_End();
 	}
@@ -289,4 +297,3 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	}
 	return oFireEventClientSide(I::gameeventmanager, event);
 }
-

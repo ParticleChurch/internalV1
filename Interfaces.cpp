@@ -16,4 +16,5 @@ namespace I
 	PhysicsSurfaceProps* physicssurfaceprops = (PhysicsSurfaceProps*)NewInterface->GetInterface((char*)"vphysics.dll", (char*)"VPhysicsSurfaceProps001");
 	GameEventManager* gameeventmanager = (GameEventManager*)NewInterface->GetInterface((char*)"engine.dll", (char*)"GAMEEVENTSMANAGER002");
 	InputSystem* inputsystem = (InputSystem*)NewInterface->GetInterface((char*)"inputsystem.dll", (char*)"InputSystemVersion001");
+	CVar* cvar = (CVar*)NewInterface->GetInterface((char*)"vstdlib.dll", (char*)"VEngineCvar007");
 }

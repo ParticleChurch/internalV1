@@ -24,6 +24,7 @@
 #include "SDK/trace_t.hpp"
 #include "SDK/SurfaceData.hpp"
 #include "SDK/AnimState.hpp"
+#include "SDK/UtlVector.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
@@ -37,3 +38,4 @@
 #include "Interfaces/PhysicsSurfaceProps.hpp"
 #include "Interfaces/GameEventManager.hpp"
 #include "Interfaces/InputSystem.hpp"
+#include "Interfaces/Convar.hpp"
