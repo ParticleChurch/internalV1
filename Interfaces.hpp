@@ -17,4 +17,5 @@ namespace I
 	extern GameEventManager* gameeventmanager;
 	extern InputSystem* inputsystem;
 	extern CVar* cvar;
+	extern CInput* input;
 }

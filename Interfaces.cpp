@@ -7,6 +7,7 @@ namespace I
 	IBaseClientDLL* client = (IBaseClientDLL*)NewInterface->GetInterface((char*)"client.dll", (char*)"VClient018");
 	ClientMode* clientmode = **(ClientMode***)((*(uintptr_t**)(client))[10] + 0x5);
 	GlobalVars* globalvars = **(GlobalVars***)((*(uintptr_t**)(client))[11] + 10);
+	CInput* input = *(CInput**)((*(DWORD**)client)[16] + 0x1);
 	IVEngineClient* engine = (IVEngineClient*)NewInterface->GetInterface((char*)("engine.dll"), (char*)("VEngineClient014"));
 	IClientEntityList* entitylist = (IClientEntityList*)NewInterface->GetInterface((char*)"client.dll", (char*)"VClientEntityList003");
 	Surface* surface = (Surface*)NewInterface->GetInterface((char*)"vguimatsurface.dll", (char*)"VGUI_Surface031");

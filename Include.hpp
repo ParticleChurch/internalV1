@@ -13,6 +13,7 @@
 #include <deque>				 //allows use of deque ADT (initially used in backtracking) 
 #include <mutex>				 //essential for thread safety (for http requests with GUI stuff)
 #include <algorithm>			 //for use of std::clamp (initailly for entity.hpp)
+#include <intrin.h>				 //for _ReturnAddress() (intitially for hooks.cpp)
 
 #pragma warning(disable:4996)    //disables warning printing console
 #pragma warning(disable:4244)    //gets rid of const int to float warning

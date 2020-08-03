@@ -11,6 +11,7 @@ namespace H
 	VMTManager surfaceVMT;
 	VMTManager panelVMT;
 	VMTManager gameeventmanagerVMT;
+	VMTManager inputVMT;
 
 	EndScene oEndScene;
 	Reset oReset;
@@ -19,14 +20,18 @@ namespace H
 	FrameStageNotify oFrameStageNotify;
 	LockCursor oLockCursor;
 	FireEventClientSide oFireEventClientSide;
-	//SvCheatsGetBool oSvCheatsGetBool;
+
+	hkCamToFirstPeron ohkCamToFirstPeron;
+	DoPostScreenEffects oDoPostScreenEffects;
 	
 	//GUI Vars
 	bool D3dInit = false;
 	HWND CSGOWindow = NULL;
 	WNDPROC oWndProc = NULL;
 
+	//TEMP
 	std::vector < std::string> console;
+	bool ThirdPersonToggle = false;
 }
 
 void H::Init()
@@ -50,6 +55,7 @@ void H::Init()
 	surfaceVMT.Initialise((DWORD*)I::surface);
 	panelVMT.Initialise((DWORD*)I::panel);
 	gameeventmanagerVMT.Initialise((DWORD*)I::gameeventmanager);
+	inputVMT.Initialise((DWORD*)I::input);
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -86,20 +92,29 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
-	//std::cout << "SvCheatsGetBool...";
-	//oSvCheatsGetBool = (SvCheatsGetBool)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
+
+	std::cout << "hkCamToFirstPeronVMT...";
+	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
+
+	std::cout << "DoPostScreenEffects...";
+	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
+
 }
 
 void H::UnHook()
 {
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
+	inputVMT.RestoreOriginal();
 	gameeventmanagerVMT.RestoreOriginal();
 	surfaceVMT.RestoreOriginal();
 	panelVMT.RestoreOriginal();
 	d3d9VMT.RestoreOriginal();
 	clientmodeVMT.RestoreOriginal();
 	clientVMT.RestoreOriginal();
-	
 	D3dInit = false; //for wndproc... haven't found better solution
 	FreeConsole();
 }
@@ -209,6 +224,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		//backtrack->run();
 
+		static float lastUpdate = 0;
+
+		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
+			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
+			lastUpdate = I::globalvars->m_curTime;
+			ThirdPersonToggle = !ThirdPersonToggle;
+		}
+
 		if (cmd->buttons & IN_ATTACK || cmd->buttons & IN_USE)
 		{
 			G::cmd->viewangles = G::CM_StartAngle;
@@ -240,6 +263,17 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	backtrack->update(curStage);
+
+	
+	//this is for accurate angles (aa, etc)
+	static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+	if (offset == 0)
+		offset = N::GetOffset("DT_CSPlayer", "deadflag");
+
+	if (I::input->m_fCameraInThirdPerson)
+		*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::CM_EndAngle;
+		
+
 	return oFrameStageNotify(curStage);
 }
 
@@ -296,4 +330,26 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		break;
 	}
 	return oFireEventClientSide(I::gameeventmanager, event);
+}
+
+void __fastcall H::hkCamToFirstPeronHook()
+{
+	if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
+		return;
+	ohkCamToFirstPeron(I::input);
+}
+
+void __stdcall H::DoPostScreenEffectsHook(int param)
+{
+	
+	if (I::engine->IsInGame()) {
+		if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
+		{
+			if (!(I::input->m_fCameraInThirdPerson))
+				I::input->m_fCameraInThirdPerson = true;
+			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 150.f);
+		}		
+	}
+
+	return oDoPostScreenEffects(I::clientmode, param);
 }

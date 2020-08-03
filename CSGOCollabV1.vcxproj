@@ -214,6 +214,7 @@
     <ClInclude Include="Valve\Interfaces\IBaseClientDLL.hpp" />
     <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp" />
     <ClInclude Include="Valve\Interfaces\IEngineTrace.hpp" />
+    <ClInclude Include="Valve\Interfaces\CInput.hpp" />
     <ClInclude Include="Valve\Interfaces\InputSystem.hpp" />
     <ClInclude Include="Valve\Interfaces\IVEngineClient.hpp" />
     <ClInclude Include="Valve\Interfaces\IVModelInfo.hpp" />

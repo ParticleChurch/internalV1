@@ -13,7 +13,9 @@
 	typedef void(__stdcall* FrameStageNotify)(int);
 	typedef void(__thiscall* LockCursor)(void*);
 	typedef bool(__thiscall* FireEventClientSide)(void*, GameEvent*);
-	//typedef bool(__fastcall* SvCheatsGetBool)(void*);
+
+    typedef void(__thiscall* hkCamToFirstPeron)(void*);
+    typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
@@ -24,5 +26,7 @@
 	extern void __stdcall FrameStageNotifyHook(int curStage);
 	extern void __stdcall LockCursorHook();
 	extern bool __stdcall FireEventClientSideHook(GameEvent* event);
-	//extern bool __fastcall SvCheatsGetBoolHook();
+
+    extern void __fastcall hkCamToFirstPeronHook();
+    extern void __stdcall DoPostScreenEffectsHook(int param);
 }

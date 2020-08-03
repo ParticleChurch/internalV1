@@ -39,3 +39,4 @@
 #include "Interfaces/GameEventManager.hpp"
 #include "Interfaces/InputSystem.hpp"
 #include "Interfaces/Convar.hpp"
+#include "Interfaces/CInput.hpp"
