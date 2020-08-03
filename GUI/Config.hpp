@@ -185,9 +185,11 @@ struct Config_Visuals {
 	bool Radar = false;							//displays enemy location on the radar
 	bool Boxes = false;							//if boxes around players are displayed
 	Color BoxColor;								//color of box
+	bool Skeleton = false;						//player skeleton
 	bool Name = false;							//if names are displayed
 	bool Health = false;						//if health is displayed
 	bool Ammo = false;							//if ammo displayed
+	
 
 	//Players - chams
 	bool VisibleChams = false;		//enables visible chams
