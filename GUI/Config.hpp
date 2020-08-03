@@ -107,7 +107,7 @@ struct Config_AntiAim {
 	bool Enable = false;
 	//Only display these 3 next options if one of these: (Fakelag || Legit || Rage) is enabled
 	bool Visualize = false;	//if the fake angle is visualized when in third person
-	//Color Fake;				//Color of fake when in third person
+	Color Fake;				//Color of fake when in third person
 	int Opacity = 100;		//how opaque the fake player is (0 is invisible)
 
 	//Fakelag
@@ -191,9 +191,9 @@ struct Config_Visuals {
 
 	//Players - chams
 	bool VisibleChams = false;		//enables visible chams
-	//Color VisibleColor;				//visible chams color
+	Color VisibleColor;				//visible chams color
 	bool ThroughWallChams = false;	//enables through wall chams
-	//Color ThroughWallColor;			//through wall chams color
+	Color ThroughWallColor;			//through wall chams color
 };
 
 namespace Config {
