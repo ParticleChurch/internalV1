@@ -179,42 +179,28 @@ bool GUI::PaidHackMenu()
 
 //Free Hack Func
 
-void Hotkey(int& key) noexcept //custom IMGUI shennanigans
+void Hotkey(int& key, std::string name) noexcept //custom IMGUI shennanigans
 {
 	ImGui::SameLine();
-	static bool Toggle = false;
 
-	if (key)
-	{
-		if (ImGui::Button(std::string("[ " + std::string(I::inputsystem->VirtualKeyToString(key)) + " ]").c_str()))
-			Toggle = true;
-	}
-	else
-	{
-		if (ImGui::Button("[ None ]"))
-			Toggle = true;
-	}
+	ImGui::Text("[ %s ]", key ? I::inputsystem->VirtualKeyToString(key) : "None");
 
-	if (Toggle)
-	{
-		DWORD menuKey = VK_INSERT;
-		ImGui::SetTooltip("Press any key to change keybind");
-		ImGuiIO& io = ImGui::GetIO();
+	DWORD menuKey = VK_INSERT;
+	
+	ImGuiIO& io = ImGui::GetIO();
 
-		for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++) {
-			if (ImGui::IsKeyPressed(i) && i != menuKey) {
-				key = i != VK_ESCAPE ? i : 0;
-				Toggle = false;
-			}
-		}
+	if (!ImGui::IsItemHovered())
+		return;
 
-		for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) {
-			if (ImGui::IsMouseDown(i) && i + (i > 1 ? 2 : 1) != menuKey) {
-				key = i + (i > 1 ? 2 : 1);
-				Toggle = false;
-			}
-		}
-	}
+	ImGui::SetTooltip("Press any key to change keybind");
+
+	for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++) 
+		if (ImGui::IsKeyPressed(i) && i != menuKey) 
+			key = i != VK_ESCAPE ? i : 0;
+
+	for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) 
+		if (ImGui::IsMouseDown(i) && i + (i > 1 ? 2 : 1) != menuKey) 
+			key = i + (i > 1 ? 2 : 1);
 }
 
 namespace ImGui
@@ -232,17 +218,40 @@ namespace ImGui
 		if (values.empty()) { return false; }
 		return Combo(label, currIndex, vector_getter, static_cast<void*>(&values), values.size());
 	}
+
+	void ColorPicker(std::string name, Color* COLOR) {
+		ImVec4 color = ImVec4(COLOR->color[0] / 255.f, COLOR->color[1] / 255.f, COLOR->color[2] / 255.f, 1.f);
+		bool open_popup = ImGui::ColorButton(name.c_str(), color);
+		ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+		open_popup |= ImGui::Button((name + "pallet").c_str());
+		if (open_popup)
+		{
+			ImGui::OpenPopup((name + "picker").c_str());
+			//backup_color = color;
+		}
+
+		if (ImGui::BeginPopup((name + "picker").c_str()))
+		{
+			ImGui::SetNextItemWidth(100);
+			static float color_[3];
+			ImGui::ColorPicker3(name.c_str(), color_, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
+			*COLOR = Color(int(color_[0] * 255), int(color_[1] * 255), int(color_[2] * 255), 255);
+			color = ImVec4(color_[0], color_[1], color_[2], 1);
+
+			ImGui::EndPopup();
+		}
+	}
 }
 
 void DisplayLegitTab()
 {
-	ImGui::Checkbox("Enable###Enable", &Config::legitbot.Enable);
+	ImGui::Checkbox("Enable###LEnable", &Config::legitbot.Enable);
 	ImGui::Separator();
 
 	ImGui::Text("Aimbot");
-	ImGui::Checkbox("Enable###EnableAim", &Config::legitbot.EnableAim);
-	Hotkey(Config::legitbot.AimKey);
-	ImGui::Checkbox("TeamCheck###TeamCheck", &Config::legitbot.TeamCheck);
+	ImGui::Checkbox("Enable###LEnableAim", &Config::legitbot.EnableAim);
+	Hotkey(Config::legitbot.AimKey,"LAimKey");
+	ImGui::Checkbox("Team Check###LTeamCheck", &Config::legitbot.TeamCheck);
 
 	ImGui::Separator();
 	static int tab = 0;
@@ -273,15 +282,15 @@ void DisplayLegitTab()
 	if (tab == 4)
 		ImGui::Text("Sniper");
 
-	ImGui::SliderInt(("Fov###Fov" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].Fov, 0, 90);
-	ImGui::SliderInt(("Yaw Speed###Yaw Speed" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].YawSpeed, 0, 100);
-	ImGui::SliderInt(("Pitch Speed###Pitch Speed" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].PitchSpeed, 0, 100);
-	ImGui::Checkbox(("Recoil Control###Recoil Control" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].RecoilControl);
+	ImGui::SliderInt(("Fov###LFov" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].Fov, 0, 90);
+	ImGui::SliderInt(("Yaw Speed###LYaw Speed" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].YawSpeed, 0, 100);
+	ImGui::SliderInt(("Pitch Speed###LPitch Speed" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].PitchSpeed, 0, 100);
+	ImGui::Checkbox(("Recoil Control###LRecoil Control" + std::to_string(tab)).c_str(), &Config::legitbot.weapon[tab].RecoilControl);
 
 	static const char* Hitboxes[] = { "Head", "Pelvis", "Stomach", "Chest", "Legs", "Feet" };
 	
 	static std::string preview = "";
-	if (ImGui::BeginCombo(("Hitboxes##combo" + std::to_string(tab)).c_str(), preview.c_str())) // The second parameter is the label previewed before opening the combo.
+	if (ImGui::BeginCombo(("Hitboxes##Lcombo" + std::to_string(tab)).c_str(), preview.c_str())) // The second parameter is the label previewed before opening the combo.
 	{
 		Config::legitbot.weapon[tab].LHitboxes.clear();
 		Config::legitbot.weapon[tab].LHitboxes.resize(0);
@@ -326,7 +335,7 @@ void DisplayLegitTab()
 
 
 	static int PriorityChoice = 0;
-	ImGui::Combo(("Priority##combo" + std::to_string(tab)).c_str(), &PriorityChoice, Config::legitbot.weapon[tab].LHitboxes);
+	ImGui::Combo(("Priority##Lcombo" + std::to_string(tab)).c_str(), &PriorityChoice, Config::legitbot.weapon[tab].LHitboxes);
 	if (PriorityChoice == 0)
 	{
 		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_HEAD);
@@ -360,6 +369,213 @@ void DisplayLegitTab()
 
 }
 
+void DisplayRageTab() {
+	ImGui::Checkbox("Enable###REnable", &Config::ragebot.Enable);
+	ImGui::Separator();
+
+	ImGui::Text("General");
+	ImGui::Checkbox("Enable###REnableAim", &Config::ragebot.EnableAim);
+	if(!Config::ragebot.AutoShoot)
+		Hotkey(Config::ragebot.AimKey,"RAimKey");
+	ImGui::Checkbox("Auto Shoot###RAutoShoot", &Config::ragebot.AutoShoot);
+	ImGui::Checkbox("Silent Aim###RSilentAim", &Config::ragebot.SilentAim);
+	ImGui::Checkbox("Team Check###RTeamCheck", &Config::ragebot.TeamCheck);
+	ImGui::Checkbox("Aim Step###RAimStep", &Config::ragebot.AimStep);
+	ImGui::Checkbox("Auto Scope###RAutoScope", &Config::ragebot.AutoScope);
+
+	ImGui::Separator();
+	static int tab = 0;
+	if (ImGui::Button("Pistol"))
+		tab = 0;
+	ImGui::SameLine();
+	if (ImGui::Button("Smg"))
+		tab = 1;
+	ImGui::SameLine();
+	if (ImGui::Button("Heavy"))
+		tab = 2;
+	ImGui::SameLine();
+	if (ImGui::Button("Rifle"))
+		tab = 3;
+	ImGui::SameLine();
+	if (ImGui::Button("Scout"))
+		tab = 4;
+	ImGui::SameLine();
+	if (ImGui::Button("AWP"))
+		tab = 5;
+	ImGui::SameLine();
+	if (ImGui::Button("Auto"))
+		tab = 6;
+
+	ImGui::Separator();
+	if (tab == 0)
+		ImGui::Text("Pistol");
+	if (tab == 1)
+		ImGui::Text("Smg");
+	if (tab == 2)
+		ImGui::Text("Heavy");
+	if (tab == 3)
+		ImGui::Text("Rifle");
+	if (tab == 4)
+		ImGui::Text("Scout");
+	if (tab == 5)
+		ImGui::Text("AWP");
+	if (tab == 6)
+		ImGui::Text("Auto");
+
+	static const char* Hitboxes[] = { "Head", "Pelvis", "Stomach", "Chest", "Legs", "Feet" };
+
+	static std::string preview = "";
+	if (ImGui::BeginCombo(("Hitboxes##Rcombo" + std::to_string(tab)).c_str(), preview.c_str())) // The second parameter is the label previewed before opening the combo.
+	{
+		Config::ragebot.weapon[tab].LHitboxes.clear();
+		Config::ragebot.weapon[tab].LHitboxes.resize(0);
+		int NumSelected = 0;
+		preview = "";
+		for (int n = 0; n < IM_ARRAYSIZE(Hitboxes); n++)
+		{
+			ImGui::Selectable(Hitboxes[n], &Config::ragebot.weapon[tab].HSelected[n], ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+			if (Config::ragebot.weapon[tab].HSelected[n]) {
+				NumSelected++;
+				if (NumSelected > 1)
+					preview.append(", " + std::string(Hitboxes[n]));
+				else
+					preview.append(Hitboxes[n]);
+				Config::ragebot.weapon[tab].LHitboxes.push_back(Hitboxes[n]);
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (Config::ragebot.weapon[tab].HSelected[0])
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_HEAD);
+	if (Config::ragebot.weapon[tab].HSelected[1])
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_PELVIS);
+	if (Config::ragebot.weapon[tab].HSelected[2])
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_STOMACH);
+	if (Config::ragebot.weapon[tab].HSelected[3]) {
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_LOWER_CHEST);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_CHEST);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_UPPER_CHEST);
+	}
+	if (Config::ragebot.weapon[tab].HSelected[4]) {
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_THIGH);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_THIGH);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_CALF);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_CALF);
+	}
+	if (Config::ragebot.weapon[tab].HSelected[5]) {
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_FOOT);
+		Config::ragebot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_FOOT);
+	}
+
+
+	static int PriorityChoice = 0;
+	ImGui::Combo(("Priority##Rcombo" + std::to_string(tab)).c_str(), &PriorityChoice, Config::ragebot.weapon[tab].LHitboxes);
+	if (PriorityChoice == 0)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_HEAD);
+	}
+	if (PriorityChoice == 1)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_PELVIS);
+	}
+	if (PriorityChoice == 2)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_STOMACH);
+	}
+	if (PriorityChoice == 3)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_LOWER_CHEST);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_CHEST);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_UPPER_CHEST);
+	}
+	if (PriorityChoice == 4)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_RIGHT_THIGH);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_LEFT_THIGH);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_RIGHT_CALF);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_LEFT_CALF);
+	}
+	if (PriorityChoice == 5)
+	{
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_RIGHT_FOOT);
+		Config::ragebot.weapon[tab].Priority.push_back(HITBOX_LEFT_FOOT);
+	}
+
+	ImGui::SliderInt(("Visible Min Damage###VisibleMinDamage" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].MinDamageVisible, 0, 120);
+	ImGui::SliderInt(("Autowall Min Damage###AutowallMinDamage" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].MinDamageAutowall, 0, 120);
+	ImGui::Checkbox(("Body Aim On Lethal###BaimOnLethal" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].BaimOnLethal);
+	ImGui::Text("Damage Overide");
+	Hotkey(Config::ragebot.weapon[tab].OverideKey,"ROverideKey");
+	ImGui::SliderInt(("Overide Damage###OverideDamage" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].OverideDamage, 0, 120);
+	ImGui::Checkbox(("Auto Slow###AutoSlow" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].AutoSlow);
+	ImGui::SliderInt(("Shot Delay (ms)###ShotDelay" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].ShotDelay, 0, 300);
+	ImGui::SliderInt(("Hit Chance (%)###HitChance" + std::to_string(tab)).c_str(), &Config::ragebot.weapon[tab].HitChance, 0, 100);
+}
+
+void DisplayAntiAimTab() {
+	ImGui::Checkbox("Enable###AAEnable", &Config::antiaim.Enable);
+	ImGui::Separator();
+
+	if (Config::antiaim.FakeLag.Enable || Config::antiaim.Legit.Enable || Config::antiaim.Rage.Enable)
+	{
+		ImGui::Checkbox("Visualize###AAVisualize", &Config::antiaim.Visualize);
+		ImGui::ColorPicker("Fake Color", &Config::antiaim.Fake);
+		ImGui::SliderInt("Opacity", &Config::antiaim.Opacity, 0, 100);
+		ImGui::Separator();
+	}
+
+	ImGui::Text("FakeLag");
+	ImGui::Checkbox("Enable###AAEnableFakeLag", &Config::antiaim.FakeLag.Enable);
+	ImGui::SliderInt("Fake Lag Ticks", &Config::antiaim.FakeLag.FakeLagTicks, 0, 16);
+	ImGui::Checkbox("Adaptive###AAAdaptive", &Config::antiaim.FakeLag.Adaptive);
+	ImGui::Checkbox("Lag On Peak###AALagOnPeak", &Config::antiaim.FakeLag.LagOnPeak);
+
+	ImGui::Separator();
+
+	ImGui::Text("Legit");
+	ImGui::Checkbox("Enable###AALegitEnable", &Config::antiaim.Legit.Enable);
+	Hotkey(Config::antiaim.Legit.InverterKey, "InverterKey");
+
+	ImGui::Separator();
+	ImGui::Text("Rage");
+	ImGui::Checkbox("Enable###AARageEnable", &Config::antiaim.Rage.Enable);
+	ImGui::SliderInt("Real Jitter Amount", &Config::antiaim.Rage.RealJitterAmount, 0, 58);
+	ImGui::Text("Left AA Key:");
+	Hotkey(Config::antiaim.Rage.LeftKey, "LeftKey");
+	ImGui::Text("Back AA Key:");
+	Hotkey(Config::antiaim.Rage.BackKey, "BackKey");
+	ImGui::Text("Right AA Key:");
+	Hotkey(Config::antiaim.Rage.RightKey, "RightKey");
+	ImGui::Checkbox("Add Fake###AARageAddFake", &Config::antiaim.Rage.AddFake);
+	ImGui::SliderInt("Fake Jitter Amount", &Config::antiaim.Rage.FakeJitterAmount, 0, 58);	
+}
+
+void DisplayMovementTab() {
+	ImGui::Checkbox("Enable###MoveEnable", &Config::movement.Enable);
+	ImGui::Separator();
+
+	ImGui::Checkbox("Bunny Hop###BHOP", &Config::movement.BunnyHop);
+	ImGui::Checkbox("Crouch In Air###CrouchInAir", &Config::movement.CrouchInAir);
+	ImGui::Checkbox("Fast Crouch###FastCrouch", &Config::movement.FastCrouch);
+	ImGui::Checkbox("Legit Auto Strafe###LegitAutoStrafe", &Config::movement.LegitAutoStrafe);
+	if (Config::movement.LegitAutoStrafe)
+		Config::movement.RageAutoStrafe = false;
+	ImGui::Checkbox("Rage Auto Strafe###RageAutoStrafe", &Config::movement.RageAutoStrafe);
+	if (Config::movement.RageAutoStrafe)
+		Config::movement.LegitAutoStrafe = false;
+	ImGui::Checkbox("Slow Walk###SlowWalk", &Config::movement.SlowWalk);
+	Hotkey(Config::movement.SlowWalkKey, "SlowWalkKey");
+	ImGui::Checkbox("Slide Walk###SlideWalk", &Config::movement.SlideWalk);
+}
+
+void DisplayVisualsTab() {
+	for (int i = 0; i < 69; i++)
+	{
+		ImGui::Text("420 fuck im tired");
+	}
+}
+
 bool GUI::FreeHackMenu()
 {
 	bool PressedEject = false;
@@ -371,9 +587,77 @@ bool GUI::FreeHackMenu()
 	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
 
 	static bool DisplayLegit = true;
+	static bool DisplayRage = false;
+	static bool DisplayAA = false;
+	static bool DisplayMovement = false;
+	static bool DisplayVisuals = false;
+
+	if (ImGui::Button("Legit"))
+	{
+		DisplayLegit = true;
+		DisplayRage = false;
+		DisplayAA = false;
+		DisplayMovement = false;
+		DisplayVisuals = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Rage"))
+	{
+		DisplayLegit = false;
+		DisplayRage = true;
+		DisplayAA = false;
+		DisplayMovement = false;
+		DisplayVisuals = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Anti-Aim"))
+	{
+		DisplayLegit = false;
+		DisplayRage = false;
+		DisplayAA = true;
+		DisplayMovement = false;
+		DisplayVisuals = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Movement"))
+	{
+		DisplayLegit = false;
+		DisplayRage = false;
+		DisplayAA = false;
+		DisplayMovement = true;
+		DisplayVisuals = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Visuals"))
+	{
+		DisplayLegit = false;
+		DisplayRage = false;
+		DisplayAA = false;
+		DisplayMovement = false;
+		DisplayVisuals = true;
+	}
+
+	ImGui::Separator();
+
 	if (DisplayLegit)
 	{
 		DisplayLegitTab();
+	}
+	if (DisplayRage)
+	{
+		DisplayRageTab();
+	}
+	if (DisplayAA)
+	{
+		DisplayAntiAimTab();
+	}
+	if (DisplayMovement)
+	{
+		DisplayMovementTab();
+	}
+	if (DisplayVisuals)
+	{
+		DisplayVisualsTab();
 	}
 
 	ImGui::Separator();

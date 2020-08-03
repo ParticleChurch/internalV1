@@ -300,7 +300,6 @@ public:
 	//big old cube formed by a1, b1, c1, d1, a2, b2, c2, d2...
 	void GetHitboxEnds(int Hitbox, Vec& a1, Vec& b1, Vec& c1, Vec& d1, Vec& a2, Vec& b2, Vec& c2, Vec& d2)
 	{
-		Vec Location;
 		Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
 		if (SetupBones(BoneMatrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
 			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(GetModel());
@@ -342,6 +341,23 @@ public:
 					b2.z = max.z - hitbox->m_flRadius;
 					c2.z = max.z - hitbox->m_flRadius;
 					d2.z = max.z - hitbox->m_flRadius;
+				}
+			}
+		}
+	}
+
+	Vec GetBone(int Hitbox)
+	{
+		Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
+		if (SetupBones(BoneMatrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
+			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(GetModel());
+			if (StudioModel)
+			{
+				mstudiobbox_t* hitbox = StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
+				if (hitbox) {
+					Vec min = hitbox->bbmin.Transform(BoneMatrix[hitbox->bone]);
+					Vec max = hitbox->bbmax.Transform(BoneMatrix[hitbox->bone]);
+					return (max + min) / 2.f;
 				}
 			}
 		}

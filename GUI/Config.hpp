@@ -77,8 +77,10 @@ Aimbot - going off of https://cdn.discordapp.com/attachments/624039569268146187/
 */
 struct Config_RageBot {
 	//General
-	bool Enable = false;	//enable aimbot
+	bool Enable = false;	//enable RageTab
+	bool EnableAim = false;	//enable aimbot
 	int AimKey = 0;			//for onkey aimbot
+	bool AutoShoot = false;	//for automatic aimbot
 	bool SilentAim = false;	//silent aim
 	bool TeamCheck = false;	//dont shoot teamate
 	bool AimStep = false;	//move in increments to not get banned on casual servers
@@ -89,6 +91,8 @@ struct Config_RageBot {
 	{
 		//target
 		std::vector<int> Hitboxes;	//which hitboxes to target
+		bool HSelected[6];							//which options were selected in gui for hitboxes
+		std::vector<std::string> LHitboxes;			//which options are available after hitboxes selected in gui
 		std::vector<int> Priority;	//which of those hitboxes to prioritize
 		//damage
 		int MinDamageVisible = 0;	//min damage to hit while player visible
@@ -101,7 +105,7 @@ struct Config_RageBot {
 		int ShotDelay = 0;			//delay between seeing target and shooting
 		int HitChance = 100;		//radius away from center of hitbox...
 		
-	}weapon[5];
+	}weapon[7];
 };
 
 /*

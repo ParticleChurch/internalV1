@@ -182,6 +182,8 @@ void Aimbot::Rage()
 	//if unable to find Onshot tick
 	if (BestTickCount == -1)
 	{
+		if (GetAsyncKeyState(VK_LMENU))
+			return;
 		Vec loc = backtrack->Records[RecordIndex].back().Bone(8);
 		Entity* Ent = I::entitylist->GetClientEntity(backtrack->Records[RecordIndex].back().Index);
 		if (!autowall->CanScan(Ent, loc, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))

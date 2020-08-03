@@ -4,6 +4,10 @@ AntiAim* antiaim = new AntiAim();
 
 void AntiAim::legit()
 {
+
+	if (G::Localplayer->GetMoveType() == LADDER)
+		return;
+
 	bool BreakLBY = LBYBreak();
 	
 	//this is for left side

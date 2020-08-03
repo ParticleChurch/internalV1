@@ -178,7 +178,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 4;
+		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 3;
 
 		G::CM_Start(cmd, pSendPacket);
 
@@ -204,9 +204,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		if (cmd->buttons & IN_ATTACK || cmd->buttons & IN_USE)
 		{
 			G::cmd->viewangles = G::CM_StartAngle;
+			*G::pSendPacket = true;
 		}
-
-		//aimbot->Rage();
+		
+		aimbot->Rage();
 
 		G::CM_End();
 	}
