@@ -23,6 +23,7 @@
 #include "SDK/CTraceFilter.hpp"
 #include "SDK/trace_t.hpp"
 #include "SDK/SurfaceData.hpp"
+#include "SDK/AnimState.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"

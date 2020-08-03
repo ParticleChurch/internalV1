@@ -175,10 +175,18 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		PVOID pebp;
 		__asm mov pebp, ebp;
-		bool* pbSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
-		bool& bSendPacket = *pbSendPacket;
+		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
+		bool& bSendPacket = *pSendPacket;
 
-		G::CM_Start(cmd);
+		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 4;
+
+		G::CM_Start(cmd, pSendPacket);
+
+		if (fabsf(G::cmd->sidemove) < 5.0f) {
+			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+		}
+
+		G::CM_MoveFixStart();
 
 		//ez bhop
 		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
@@ -188,15 +196,23 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//if(cmd->buttons & IN_ATTACK)
 			//aimbot->Legit();
 
-		if (GetAsyncKeyState(VK_LMENU))
-			aimbot->Rage();
+		antiaim->rage();
+		//antiaim->legit();
+
 		backtrack->run();
+
+		if (cmd->buttons & IN_ATTACK || cmd->buttons & IN_USE)
+		{
+			G::cmd->viewangles = G::CM_StartAngle;
+		}
+
+		//aimbot->Rage();
 
 		G::CM_End();
 	}
 	
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
-	return true; //silent aim on false (only for client)
+	return false; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
@@ -261,8 +277,11 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			int index = I::engine->GetPlayerForUserID(event->GetInt("userid"));
 			if (index < 65 && I::engine->GetPlayerInfo(index, &Info)) 
 			{
-				if (!backtrack->records[index].empty())
-					backtrack->records[index].back().Shooting = true;
+				if (!backtrack->Records[index].empty())
+				{
+					backtrack->Records[index].back().Shooting = true;
+					backtrack->Records[index].front().Shooting = true;
+				}
 			}
 		}
 		break;

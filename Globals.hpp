@@ -8,9 +8,13 @@ namespace G {
 	//for hacks
 	extern Entity* Localplayer;
 
+	//CM stuff
 	extern CUserCmd* cmd;
+	extern bool* pSendPacket;
 	extern Vec CM_StartAngle;
 	extern Vec CM_EndAngle;
-	extern void CM_Start(CUserCmd*);
+	extern void CM_Clamp();
+	extern void CM_Start(CUserCmd*, bool*);
+	extern void CM_MoveFixStart();
 	extern void CM_End();
 };

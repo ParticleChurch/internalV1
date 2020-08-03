@@ -99,12 +99,13 @@ void ESP::DrawSkeleton(Entity* Ent)
 void ESP::DrawBacktrackingDots()
 {
 	for (int i = 1; i < 65; i++) {
-		if (backtrack->records[i].empty())
+		if (backtrack->Records[i].empty())
 			continue;
 		static bool start = true;
 		start = true;
-		for (auto tick : backtrack->records[i])
+		for (auto tick : backtrack->Records[i])
 		{
+		
 			static Vec LastScreen;
 			if (start) {
 				Vec screen;
@@ -123,12 +124,38 @@ void ESP::DrawBacktrackingDots()
 					LastScreen.x > 0  && LastScreen.x < 1920
 					&& LastScreen.y > 0 && LastScreen.y < 1080)
 				{
-					I::surface->DrawSetColor(Color(255, 255, 255, 255));
+					if (!tick.Shooting)
+						I::surface->DrawSetColor(Color(255, 255, 255, 255));
+					else
+						I::surface->DrawSetColor(Color(255, 0, 0, 255));
 					I::surface->DrawLine(screen.x, screen.y, LastScreen.x , LastScreen.y);
 					LastScreen = screen;
 				}
 			}
 		}
+	}
+}
+
+void ESP::DrawTraces()
+{
+	Vec Screen1;
+	Vec Screen2;
+	for (auto Trace : traces)
+	{
+		bool ST = WorldToScreen(Trace.Startpos, Screen1);
+		bool END = WorldToScreen(Trace.Endpos, Screen2);
+		if (ST && END)
+		{
+			I::surface->DrawSetColor(Color(255, 0, 0, 255));
+			I::surface->DrawLine(Screen1.x, Screen1.y, Screen2.x, Screen2.y);
+		}
+
+		if (END)
+		{
+			I::surface->DrawSetColor(Color(0, 0, 255, 200));
+			I::surface->DrawOutlinedCircle(Screen2.x, Screen2.y, 4, 8);
+		}
+
 	}
 }
 
@@ -196,7 +223,7 @@ void ESP::Run()
 		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
 		
 	}
-
+	DrawTraces();
 	DrawBacktrackingDots();
 
 }

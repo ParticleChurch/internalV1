@@ -6,7 +6,7 @@ void Backtrack::update(int stage)
 {
 	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
-		for (auto a : records)
+		for (auto a : Records)
 			a.clear();
 		return;
 	}
@@ -15,53 +15,58 @@ void Backtrack::update(int stage)
 		return;
 
 	for (int i = 1; i < 65; i++) {
-		static Entity* ent;
-		ent = I::entitylist->GetClientEntity(i);
-		if (!ent) //if not nullptr
+		Entity* Ent = I::entitylist->GetClientEntity(i);
+		if (!Ent) //if not nullptr
 		{
-			records[i].clear();
+			Records[i].clear();
 			continue;
 		}
 		static player_info_t info;
 		if (!I::engine->GetPlayerInfo(i, &info)) //if player
 		{
-			records[i].clear();
+			Records[i].clear();
 			continue;
 		}
-		if (Localplayer == ent) //if player not localplayer
+		if (Localplayer == Ent) //if player not localplayer
 		{
-			records[i].clear();
+			Records[i].clear();
 			continue;
 		}
 		if (i == I::engine->GetLocalPlayer()) //if player localplayer
 		{
-			records[i].clear();
+			Records[i].clear();
 			continue;
 		}
-		if (!(ent->GetHealth() > 0)) //if health isn't greater than 0
+		if (!(Ent->GetHealth() > 0)) //if health isn't greater than 0
 		{
-			records[i].clear();
+			Records[i].clear();
 			continue;
 		}
-		if (ent->GetTeam() == Localplayer->GetTeam())
+		if (Ent->GetTeam() == Localplayer->GetTeam())
 		{
-			records[i].clear();
+			Records[i].clear();
+			continue;
+		}
+		if (Ent->IsDormant())
+		{
+			Records[i].clear();
 			continue;
 		}
 
 		Tick tick;
 		tick.TickCount = I::globalvars->m_tickCount;
+		tick.Index = i;
 		//could add ping to ticks to this value, to maybe be more accurate? try experimenting...
-		ent->SetupBones(tick.Matrix, 128, 0x100, 0);
+		Ent->SetupBones(tick.Matrix, 128, 0x100, 0);
 
-		if (records[i].empty() || records[i].back().TickCount != tick.TickCount) {
-			records[i].push_back(tick);
+		if (Records[i].empty() || Records[i].back().TickCount != tick.TickCount) {
+			Records[i].push_back(tick);
 		}
 
-		if (records[i].size() > 12)
+		if (Records[i].size() > 12)
 		{
-			records[i].pop_front();
-			records[i].resize(12);
+			Records[i].pop_front();
+			Records[i].resize(12);
 		}
 	}
 
@@ -69,9 +74,8 @@ void Backtrack::update(int stage)
 
 void Backtrack::run()
 {
-	static Entity* localPlayer;
-	localPlayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if (!I::engine->IsInGame() || !localPlayer || !(localPlayer->GetHealth() > 0)) {
+	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
 		return;
 	}
 
@@ -80,9 +84,9 @@ void Backtrack::run()
 	int RecordIndex = -1;
 	for (int i = 0; i < 65; i++)
 	{
-		if (records[i].empty())
+		if (Records[i].empty())
 			continue;
-		Vec Angle = aimbot->CalculateAngle(records[i].back().Bone(8));
+		Vec Angle = aimbot->CalculateAngle(Records[i].back().Bone(8));
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossEntDist)
 		{
@@ -98,7 +102,7 @@ void Backtrack::run()
 	//get closest tick
 	float CrossTickDist = FLT_MAX;
 	int BestTickCount = -1;
-	for (Tick tick : records[RecordIndex])
+	for (Tick tick : Records[RecordIndex])
 	{
 		Vec Angle = aimbot->CalculateAngle(tick.Bone(8));
 		float CrossDist = aimbot->CrosshairDist(Angle);

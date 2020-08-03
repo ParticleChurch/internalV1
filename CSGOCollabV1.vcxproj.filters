@@ -55,6 +55,9 @@
     <ClCompile Include="Hacks\Autowall.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\AntiAim.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -236,6 +239,12 @@
     </ClInclude>
     <ClInclude Include="Utils\StrHash.hpp">
       <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\AnimState.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\AntiAim.hpp">
+      <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

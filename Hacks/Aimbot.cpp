@@ -139,54 +139,70 @@ void Aimbot::Smooth(Vec& Angle)
 //rage functions
 void Aimbot::Rage()
 {
-	//get closest Entity
-	Vec BestAngle;
-	float BestCrossDist = FLT_MAX; //crosshair distance
-	bool ValidTargetFound = false;
+	if (!G::Localplayer->CanShoot())
+		return;
 
-	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
+	//get closest entity
+	float CrossEntDist = FLT_MAX;
+	int RecordIndex = -1;
+	for (int i = 0; i < 65; i++)
 	{
-		player_info_t PlayerInfo;
-		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
+		if (backtrack->Records[i].empty())
 			continue;
-
-		Entity* Ent = I::entitylist->GetClientEntity(i);
-		if (!Ent)
-			continue;
-
-		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
-			continue;
-
-		if (Ent->IsDormant()) //if dormant
-			continue;
-
-		if (!(Ent->GetHealth() > 0)) //if dead
-			continue;
-
-
-
-		Vec Head = Ent->GetBonePos(8);
-
-		if (!autowall->CanScan(Ent, Head, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
-			continue;
-
-		
-		Vec Angle = CalculateAngle(Head);
-		float CrossDist = CrosshairDist(Angle);
-		if (CrossDist < BestCrossDist)
+		Vec Angle = aimbot->CalculateAngle(backtrack->Records[i].back().Bone(8));
+		float CrossDist = aimbot->CrosshairDist(Angle);
+		if (CrossDist < CrossEntDist)
 		{
-			BestCrossDist = CrossDist;
-			BestAngle = Angle;
-			ValidTargetFound = true;
+			RecordIndex = i;
+			CrossEntDist = CrossDist;
 		}
 	}
 
-	if (G::Localplayer->GetShotsFired() > 1)
-		BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
+	if (RecordIndex == -1)
+		return;
 
-	if (ValidTargetFound) {
-		G::cmd->viewangles = BestAngle;
-		G::cmd->buttons |= IN_ATTACK;
+	//searching for onshot tick
+	int BestTickCount = -1;
+	Vec BestAngle;
+	Vec Target;
+	for (Tick tick : backtrack->Records[RecordIndex])
+	{
+		if (tick.Shooting)
+		{
+			Entity* Ent = I::entitylist->GetClientEntity(tick.Index);
+			if (autowall->CanScan(Ent, tick.Bone(8), G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
+			{
+				BestTickCount = tick.TickCount;
+				BestAngle = CalculateAngle(tick.Bone(8));
+				Target = tick.Bone(8);
+			}
+		}
 	}
+
+	//if unable to find Onshot tick
+	if (BestTickCount == -1)
+	{
+		Vec loc = backtrack->Records[RecordIndex].back().Bone(8);
+		Entity* Ent = I::entitylist->GetClientEntity(backtrack->Records[RecordIndex].back().Index);
+		if (!autowall->CanScan(Ent, loc, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
+			return;
+		BestAngle = CalculateAngle(loc);
+	}
+	else //if there is an onshot tick
+	{
+		G::cmd->tick_count = BestTickCount;
+	}
+
+	BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
+
+	G::cmd->viewangles = BestAngle;
+	G::cmd->buttons |= IN_ATTACK;
+
+	trace_t Trace;
+	Trace.Startpos = G::Localplayer->GetEyePos();
+	Trace.Endpos = Target;
+	esp->traces.clear();
+	esp->traces.resize(0);
+	esp->traces.push_back(Trace);
 }
 

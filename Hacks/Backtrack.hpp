@@ -3,6 +3,7 @@
 struct Tick {
     int TickCount;
     Matrix3x4 Matrix[128];
+    int Index;
     bool Shooting = false;
     Vec Bone(int i) {
         return Vec(Matrix[i][0][3],
@@ -20,7 +21,7 @@ struct Tick {
 
 class Backtrack {
 public:
-    std::deque<Tick> records[65];
+    std::deque<Tick> Records[65];
     void update(int stage);
     void run();
 };

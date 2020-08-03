@@ -199,9 +199,58 @@ public:
 		return *(bool*)((DWORD)this + offset);
 	}
 
-	float MaxAccurateSpeed() { 
+	float MaxAccurateSpeed() 
+	{ 
 		const WeaponData* WeaponData = this->GetActiveWeapon()->GetWeaponData();
 		return (this->IsScoped() ? WeaponData->MaxSpeedAlt : WeaponData->MaxSpeed) / 3; //alt and regular might be flipped lol
+	}
+
+	float GetLBY() //LowerBodyYawTarget
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flLowerBodyYawTarget");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_flLowerBodyYawTarget");
+		return *(float*)((DWORD)this + offset);
+	}
+
+	Vec GetEyeAngles() //GetEyeAngles
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		return *(Vec*)((DWORD)this + offset);
+	}
+
+	AnimState* GetAnimstate() noexcept
+	{
+		return *reinterpret_cast<AnimState**>(this + 0x3914);
+	}
+
+	float GetMaxDesyncAngle() noexcept
+	{
+		const auto animState = GetAnimstate();
+
+		if (!animState)
+			return 0.0f;
+
+		float yawModifier = (animState->stopToFullRunningFraction * -0.3f - 0.2f) * std::clamp(animState->footSpeed, 0.0f, 1.0f) + 1.0f;
+
+		if (animState->duckAmount > 0.0f)
+			yawModifier += (animState->duckAmount * std::clamp(animState->footSpeed2, 0.0f, 1.0f) * (0.5f - yawModifier));
+
+		return animState->velocitySubtractY * yawModifier;
+	}
+
+	bool LBYUpdated()
+	{
+		static int LastLBY = -1;
+		int CurLBY = (int)GetLBY();
+		if (CurLBY != LastLBY)
+		{
+			LastLBY = CurLBY;
+			return true;
+		}
+		return false;
 	}
 
 	bool IsAlive()
@@ -233,7 +282,6 @@ public:
 		return GetVFunc<oGetIndex>(this + 8, 10)(this + 8);
 	}
 
-	//TEST
 	Model* GetModel()
 	{
 		typedef Model* (__thiscall* oGetModel)(void*);

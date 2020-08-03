@@ -10,7 +10,9 @@ private:
 	void DrawHealth(Vec TL, Vec BR, int Health);
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
+	void DrawTraces();
 public:
+	std::vector<trace_t> traces;
 	void Run();
 
 	
