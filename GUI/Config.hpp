@@ -1,4 +1,6 @@
 #pragma once
+#include "../Valve/Custom/Color.hpp"
+
 /*
 	Web API shit
 */
@@ -179,13 +181,13 @@ struct Config_Visuals {
 	bool NoScope = false;	//if weapon scopes are hidden
 
 
-	//Players - esp					//note players just mean enemies
-	bool Radar = false;				//displays enemy location on the radar
-	bool Boxes = false;				//if boxes around players are displayed
-	Color BoxColor;					//color of box
-	bool Name = false;				//if names are displayed
-	bool Health = false;			//if health is displayed
-	bool Ammo = false;				//if ammo displayed
+	//Players - esp								//note players just mean enemies
+	bool Radar = false;							//displays enemy location on the radar
+	bool Boxes = false;							//if boxes around players are displayed
+	Color BoxColor;								//color of box
+	bool Name = false;							//if names are displayed
+	bool Health = false;						//if health is displayed
+	bool Ammo = false;							//if ammo displayed
 
 	//Players - chams
 	bool VisibleChams = false;		//enables visible chams

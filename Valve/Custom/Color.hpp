@@ -5,6 +5,14 @@ public:
 
 	unsigned char color[4];
 
+	Color()
+	{
+		color[0] = 255;
+		color[1] = 255;
+		color[2] = 255;
+		color[3] = 255;
+	}
+
 	Color(float r, float g, float b, float a = 255.00f)
 	{
 		color[0] = r;
