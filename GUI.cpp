@@ -570,10 +570,44 @@ void DisplayMovementTab() {
 }
 
 void DisplayVisualsTab() {
-	for (int i = 0; i < 69; i++)
-	{
-		ImGui::Text("420 fuck im tired");
-	}
+	ImGui::Checkbox("Enable###VisualsEnable", &Config::visuals.Enable);
+	ImGui::Separator();
+
+	ImGui::Text("General");
+	ImGui::Checkbox("Recoil Crosshair###VRecoilCrosshair", &Config::visuals.RecoilCrosshair);
+	ImGui::Checkbox("ThirdPerson###VThirdPerson", &Config::visuals.ThirdPerson);
+	Hotkey(Config::visuals.ThirdPersonKey, "ThirdPersonKey");
+	ImGui::Separator();
+
+	ImGui::Text("World");
+	ImGui::Checkbox("Asus Walls###VAsusWalls", &Config::visuals.AsusWalls);
+	ImGui::SliderInt("Asus Wall Opacity (%)###VAsusWallsValue", &Config::visuals.AsusWallVal, 0, 100);
+	ImGui::Checkbox("Asus Props###VAsusProps", &Config::visuals.AsusProps);
+	ImGui::SliderInt("Asus Props Opacity (%)###VAsusPropsValue", &Config::visuals.AsusPropVal, 0, 100);
+	ImGui::Separator();
+
+	ImGui::Text("Removals");
+	ImGui::Checkbox("No Flash###VNoFlash", &Config::visuals.NoFlash);
+	ImGui::Checkbox("No Smoke###VNoSmoke", &Config::visuals.NoSmoke);
+	ImGui::Checkbox("No Scope###VNoScope", &Config::visuals.NoScope);
+	ImGui::Separator();
+
+	ImGui::Text("Players - ESP");
+	ImGui::Checkbox("Radar###VRadar", &Config::visuals.Radar);
+	ImGui::Checkbox("Boxes###VBoxes", &Config::visuals.Boxes);
+	ImGui::ColorPicker("Boxe Color###VBoxeColor", &Config::visuals.BoxColor);
+	ImGui::Checkbox("Skeleton###VSkeleton", &Config::visuals.Skeleton);
+	ImGui::Checkbox("Name###VName", &Config::visuals.Name);
+	ImGui::Checkbox("Health###VHealth", &Config::visuals.Health);
+	ImGui::Checkbox("Ammo###VAmmo", &Config::visuals.Ammo);
+	ImGui::Separator();
+
+	ImGui::Text("Players - Chams");
+	ImGui::Checkbox("Visible Chams###VVisibleCHams", &Config::visuals.VisibleChams);
+	ImGui::ColorPicker("Visible Cham Color###VVisChamColor", &Config::visuals.VisibleColor);
+	ImGui::Checkbox("Through Wall Chams###VWallCHams", &Config::visuals.ThroughWallChams);
+	ImGui::ColorPicker("Through Wall Cham Color###VWallChamColor", &Config::visuals.ThroughWallColor);
+
 }
 
 bool GUI::FreeHackMenu()
