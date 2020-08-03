@@ -15,4 +15,5 @@ namespace I
 	extern IEngineTrace* enginetrace;
 	extern PhysicsSurfaceProps* physicssurfaceprops;
 	extern GameEventManager* gameeventmanager;
+	extern InputSystem* inputsystem;
 }

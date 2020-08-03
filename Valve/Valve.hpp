@@ -36,3 +36,4 @@
 #include "Interfaces/IEngineTrace.hpp"
 #include "Interfaces/PhysicsSurfaceProps.hpp"
 #include "Interfaces/GameEventManager.hpp"
+#include "Interfaces/InputSystem.hpp"

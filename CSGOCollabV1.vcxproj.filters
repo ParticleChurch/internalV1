@@ -246,6 +246,9 @@
     <ClInclude Include="Hacks\AntiAim.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\InputSystem.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

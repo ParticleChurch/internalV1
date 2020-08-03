@@ -201,7 +201,6 @@ struct Config_Visuals {
 namespace Config {
 	extern UserInfoStruct UserInfo;
 
-
 	extern Config_LegitBot legitbot;
 	extern Config_RageBot ragebot;
 	extern Config_AntiAim antiaim;

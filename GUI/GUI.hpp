@@ -2,7 +2,13 @@
 
 namespace GUI {
 	extern bool ShowMenu;
-	extern bool PaidHackMenu();
-	extern bool FreeHackMenu();
 	extern bool Main();
+
+
+	//Paid Hack Helpers
+	extern bool PaidHackMenu();
+
+	//Free Hack Helpers
+	extern bool FreeHackMenu();
+	
 }

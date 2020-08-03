@@ -56,48 +56,12 @@ void AttemptLogin(LoginInformation* Info)
 	free(Info);
 }
 
-bool GUI::PaidHackMenu()
-{
-	bool PressedEject = false;
-
-	if (!ShowMenu)			//if they arent displaying the menu... just return
-		return PressedEject;
-
-	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
-	ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoScrollbar);
-
-	ImGui::SetCursorPos(ImVec2(0, 30));
-	if (ImGui::Button("Eject", ImVec2(70, 20)))
-		PressedEject = true;
-
-	ImGui::End();
-	return PressedEject;
-}
-
-bool GUI::FreeHackMenu()
-{
-	bool PressedEject = false;
-
-	if (!ShowMenu)			//if they arent displaying the menu... just return
-		return PressedEject;
-
-	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
-	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
-
-	ImGui::SetCursorPos(ImVec2(0, 30));
-	if (ImGui::Button("Eject", ImVec2(70, 20)))
-		PressedEject = true;
-
-	ImGui::End();
-	return PressedEject;
-}
-
 bool GUI::Main()
 {
 	bool PressedEject = false;
 	int WindowSizeX, WindowSizeY;
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
-	ImVec2 WindowCenter(WindowSizeX/2.f, WindowSizeY/2.f);
+	ImVec2 WindowCenter(WindowSizeX / 2.f, WindowSizeY / 2.f);
 
 	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
 	{
@@ -191,3 +155,86 @@ bool GUI::Main()
 
 	return PressedEject;
 }
+
+
+//Paid Hack Func
+bool GUI::PaidHackMenu()
+{
+	bool PressedEject = false;
+
+	if (!ShowMenu)			//if they arent displaying the menu... just return
+		return PressedEject;
+
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
+	ImGui::Begin("Hack", 0, ImGuiWindowFlags_NoScrollbar);
+
+	ImGui::SetCursorPos(ImVec2(0, 30));
+	if (ImGui::Button("Eject", ImVec2(70, 20)))
+		PressedEject = true;
+
+	ImGui::End();
+	return PressedEject;
+}
+
+
+//Free Hack Func
+
+void Hotkey(int& key) noexcept //custom IMGUI shennanigans
+{
+	static bool Toggle = false;
+
+	if (key)
+	{
+		if (ImGui::Button(std::string("[ " + std::string(I::inputsystem->VirtualKeyToString(key)) + " ]").c_str()))
+			Toggle = true;
+	}
+	else
+	{
+		if (ImGui::Button("[ None ]"))
+			Toggle = true;
+	}
+
+	if (Toggle)
+	{
+		DWORD menuKey = VK_INSERT;
+		ImGui::SetTooltip("Press any key to change keybind");
+		ImGuiIO& io = ImGui::GetIO();
+
+		for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++) {
+			if (ImGui::IsKeyPressed(i) && i != menuKey) {
+				key = i != VK_ESCAPE ? i : 0;
+				Toggle = false;
+			}
+		}
+
+		for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) {
+			if (ImGui::IsMouseDown(i) && i + (i > 1 ? 2 : 1) != menuKey) {
+				key = i + (i > 1 ? 2 : 1);
+				Toggle = false;
+			}
+		}
+	}
+}
+
+bool GUI::FreeHackMenu()
+{
+	bool PressedEject = false;
+
+	if (!ShowMenu)			//if they arent displaying the menu... just return
+		return PressedEject;
+
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
+	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
+
+	ImGui::SetCursorPos(ImVec2(0, 30));
+	if (ImGui::Button("Eject", ImVec2(70, 20)))
+		PressedEject = true;
+
+	static int yay = 0;
+	Hotkey(yay);
+
+	ImGui::End();
+	return PressedEject;
+}
+
+

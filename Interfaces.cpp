@@ -15,4 +15,5 @@ namespace I
 	IEngineTrace* enginetrace = (IEngineTrace*)NewInterface->GetInterface((char*)"engine.dll", (char*)"EngineTraceClient004");
 	PhysicsSurfaceProps* physicssurfaceprops = (PhysicsSurfaceProps*)NewInterface->GetInterface((char*)"vphysics.dll", (char*)"VPhysicsSurfaceProps001");
 	GameEventManager* gameeventmanager = (GameEventManager*)NewInterface->GetInterface((char*)"engine.dll", (char*)"GAMEEVENTSMANAGER002");
+	InputSystem* inputsystem = (InputSystem*)NewInterface->GetInterface((char*)"inputsystem.dll", (char*)"InputSystemVersion001");
 }
