@@ -39,11 +39,13 @@ Legitbot
 struct Config_LegitBot
 {
 	//General
-	bool Enable = false;	//enable aimbot
+	bool Enable = false;	//enable LegitTab
+	bool EnableAim = false;	//enable aimbot
 	int AimKey = 0;			//for onkey aimbot
 	bool TeamCheck = false;	//dont shoot teamates
 
 	//For Specific Weapons
+	//pistol smg heavy rifle sniper
 	struct WeaponChoice
 	{
 		//Aimbot
@@ -53,9 +55,11 @@ struct Config_LegitBot
 		bool RecoilControl = false;	//recoil control
 
 		//target
-		std::vector<int> Hitboxes;	//which hitboxes to target
-		std::vector<int> Priority;	//which of those hitboxes to prioritize
-	}weapon[6];
+		std::vector<int> Hitboxes;					//which hitboxes to target
+		bool HSelected[6];							//which options were selected in gui for hitboxes
+		std::vector<std::string> LHitboxes;			//which options are available after hitboxes selected in gui
+		std::vector<int> Priority;					//which of those hitboxes to prioritize
+	}weapon[5];
 
 	//Backtracking
 	bool EnableBacktracking = false;	//if backtracking is enabled
@@ -97,7 +101,7 @@ struct Config_RageBot {
 		int ShotDelay = 0;			//delay between seeing target and shooting
 		int HitChance = 100;		//radius away from center of hitbox...
 		
-	}weapon[6];
+	}weapon[5];
 };
 
 /*
