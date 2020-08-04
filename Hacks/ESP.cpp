@@ -161,7 +161,22 @@ void ESP::DrawTraces()
 
 void ESP::Run()
 {
+	
+	for (auto P : H::points)
+	{
+		Vec screen;
+		if (WorldToScreen(P, screen))
+		{
+			static int lol = 0;
+			if (lol > 255)
+				lol = 0;
+			lol++;
+			I::surface->DrawSetColor(Color(255.f - lol, lol, 255.f, 255.f));
+			I::surface->DrawOutlinedCircle(screen.x, screen.y, 4, 8);
+		}
+	}
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
+
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
 		if (i == I::engine->GetLocalPlayer())

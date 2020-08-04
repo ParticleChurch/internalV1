@@ -31,6 +31,7 @@ namespace H
 
 	//TEMP
 	std::vector < std::string> console;
+	std::vector<Vec> points;
 	bool ThirdPersonToggle = false;
 }
 
@@ -256,6 +257,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 			return;
 		
 		esp->Run();
+
 		
 	}
 }
@@ -338,6 +340,79 @@ void __fastcall H::hkCamToFirstPeronHook()
 		return;
 	ohkCamToFirstPeron(I::input);
 }
+/*
+static void SinCos(float radians, float* sine, float* cosine)
+{
+	*sine = (float)sin(radians);
+	*cosine = (float)cos(radians);
+}
+
+void AngleVectors(const QAngle& angles, Vec* forward, Vec* right, Vec* up)
+{
+	float sr, sp, sy, cr, cp, cy;
+	SinCos(DEG2RAD(angles.y), &sy, &cy);
+	SinCos(DEG2RAD(angles.x), &sp, &cp);
+	SinCos(DEG2RAD(angles.z), &sr, &cr);
+
+	if (forward)
+	{
+		forward->x = cp * cy;
+		forward->y = cp * sy;
+		forward->z = -sp;
+	}
+
+	if (right)
+	{
+		right->x = (-1 * sr * sp * cy + -1 * cr * -sy);
+		right->y = (-1 * sr * sp * sy + -1 * cr * cy);
+		right->z = -1 * sr * cp;
+	}
+
+	if (up)
+	{
+		up->x = (cr * sp * cy + -sr * -sy);
+		up->y = (cr * sp * sy + -sr * cy);
+		up->z = cr * cp;
+	}
+}
+*/
+
+Vec GetIdealCameraPos(float distance)
+{
+	Vec PlayerPos = G::Localplayer->GetEyePos();	//pleyer center position
+	Vec Ideal = PlayerPos;							//Final ideal angle
+	QAngle FPAng = G::CM_StartAngle;				//flipped player angle
+	FPAng.x *= -1;
+	FPAng.y += 180;
+	FPAng.Normalize();
+	
+	Ideal.z += distance * sin(DEG2RAD(FPAng.x));
+	float Hz = distance * cos(DEG2RAD(FPAng.x)); //horizonal distance
+
+	Ideal.x += Hz * cos(DEG2RAD(FPAng.y));
+	Ideal.y += Hz * sin(DEG2RAD(FPAng.y));
+
+
+	H::points.push_back(Ideal);
+	
+	return Ideal;
+}
+
+float GetCameraBoomLength(float distance)
+{
+	Vec IdealCameraPos = GetIdealCameraPos(distance);	//ideal camera position
+	Vec PlayerPos = G::Localplayer->GetEyePos();		//pleyer center position
+
+	trace_t Trace;
+	Ray_t Ray(PlayerPos, IdealCameraPos);
+	CTraceFilter Filter(I::entitylist->GetClientEntity(I::engine->GetLocalPlayer()));
+	I::enginetrace->TraceRay(Ray, MASK_ALL, &Filter, &Trace);
+
+	if (Trace.Fraction <= 1)
+		return distance * Trace.Fraction * 0.9;
+	else
+		return distance;
+}
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
@@ -347,8 +422,14 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 		{
 			if (!(I::input->m_fCameraInThirdPerson))
 				I::input->m_fCameraInThirdPerson = true;
-			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 150.f);
-		}		
+			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, GetCameraBoomLength(150.f));
+		}
+		else
+		{
+			if ((I::input->m_fCameraInThirdPerson))
+				I::input->m_fCameraInThirdPerson = false;
+			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 0);
+		}
 	}
 
 	return oDoPostScreenEffects(I::clientmode, param);

@@ -3,6 +3,7 @@
 	extern void Init();
 	extern void UnHook();
 	extern void Eject();
+	extern std::vector<Vec> points;
 
 	//typedef
 	typedef long(__stdcall* EndScene)(IDirect3DDevice9* device);
