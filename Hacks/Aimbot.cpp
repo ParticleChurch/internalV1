@@ -189,13 +189,12 @@ void Aimbot::Rage()
 	//if unable to find proper record
 	if (RecordIndex == -1) return;
 
-	
-
 	Tick BestTick;
 	Vec BestTarget;
 	bool ValidFound = false;
 	float SimTime = FLT_MAX;
 	std::vector<int> Hitboxes = { HITBOX_HEAD }; 
+	float BestAngle = FLT_MAX;
 	for (auto Hitbox : Hitboxes)
 	{
 		for (Tick tick : backtrack->Records[RecordIndex])
@@ -225,7 +224,12 @@ void Aimbot::Rage()
 			Vec Middle = (max + min) / 2.f;
 			if (!autowall->CanScanBacktrack(Ent, Middle, Weapondata, 1, true, HITGROUP_HEAD)) continue;
 
+			if (BestAngle < tick.angle.x)
+				continue;
+
+			BestAngle = tick.angle.x;
 			SimTime = tick.SimulationTime;
+			Ent->GetEyePos();
 			BestTarget = Middle;
 			BestTick = tick;
 			ValidFound = true;
@@ -237,6 +241,7 @@ void Aimbot::Rage()
 	Vec Angle = CalculateAngle(BestTarget);
 	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
 
+	
 	G::cmd->viewangles = Angle;
 	G::cmd->tick_count = backtrack->TimeToTicks(SimTime);
 	G::cmd->buttons |= IN_ATTACK;

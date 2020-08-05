@@ -6,6 +6,7 @@ struct Tick {
     Matrix3x4 Matrix[256];
 
     //Resolving info
+    QAngle angle;
     bool Shooting = false;
     bool InAir = false;
 

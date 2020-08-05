@@ -102,6 +102,9 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
+
+	std::cout << "______________________________";
+
 }
 
 void H::UnHook()
@@ -121,6 +124,8 @@ void H::UnHook()
 void H::Eject()
 {
 	H::UnHook();
+
+	Sleep(2000);
 	FreeConsole();
 	FreeLibraryAndExitThread(G::DLLModule, 0);
 }
@@ -381,7 +386,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 				Entity* Ent = I::entitylist->GetClientEntity(attacker);
 				if (Ent->GetTeam() != G::Localplayer->GetTeam() && !backtrack->Records[attacker].empty())
 				{
-					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime());
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime()) + 1;
 					for (int a = 0; a < backtrack->Records[attacker].size(); a++) {
 						if (ideal == backtrack->TimeToTicks(backtrack->Records[attacker][a].SimulationTime)) {
 							backtrack->Records[attacker][a].Shooting = true;
@@ -404,6 +409,17 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		break;
 		case StrHash::Hash("weapon_fire"):
 		{
+			/*
+			weapon_fire
+			Note: Every time a client fires their weapon
+
+			Name:	weapon_fire
+			Structure:	
+			short	userid	
+			string	weapon	weapon name used
+			bool	silenced	is weapon silenced
+
+			*/
 			const auto localIdx = I::engine->GetLocalPlayer();
 
 			player_info_t Info;
@@ -412,7 +428,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			{
 				if (!backtrack->Records[index].empty())
 				{
-					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime());
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime()) + 1;
 					for (int a = 0; a < backtrack->Records[index].size(); a++) {
 						if (ideal == backtrack->TimeToTicks(backtrack->Records[index][a].SimulationTime)) {
 							backtrack->Records[index][a].Shooting = true;
