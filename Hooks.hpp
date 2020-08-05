@@ -3,7 +3,7 @@
 	extern void Init();
 	extern void UnHook();
 	extern void Eject();
-	extern std::vector<Vec> points;
+	extern std::vector < std::string> console;
 
 	//typedef
 	typedef long(__stdcall* EndScene)(IDirect3DDevice9* device);
@@ -14,7 +14,6 @@
 	typedef void(__stdcall* FrameStageNotify)(int);
 	typedef void(__thiscall* LockCursor)(void*);
 	typedef bool(__thiscall* FireEventClientSide)(void*, GameEvent*);
-
     typedef void(__thiscall* hkCamToFirstPeron)(void*);
     typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 
@@ -27,7 +26,6 @@
 	extern void __stdcall FrameStageNotifyHook(int curStage);
 	extern void __stdcall LockCursorHook();
 	extern bool __stdcall FireEventClientSideHook(GameEvent* event);
-
     extern void __fastcall hkCamToFirstPeronHook();
     extern void __stdcall DoPostScreenEffectsHook(int param);
 }

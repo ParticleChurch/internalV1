@@ -140,6 +140,11 @@ void ESP::DrawTraces()
 {
 	Vec Screen1;
 	Vec Screen2;
+
+	if (traces.size() > 5)
+	{
+		traces.pop_front();
+	}
 	for (auto Trace : traces)
 	{
 		bool ST = WorldToScreen(Trace.Startpos, Screen1);
@@ -161,21 +166,38 @@ void ESP::DrawTraces()
 
 void ESP::Run()
 {
-	
-	for (auto P : H::points)
-	{
-		Vec screen;
-		if (WorldToScreen(P, screen))
-		{
-			static int lol = 0;
-			if (lol > 255)
-				lol = 0;
-			lol++;
-			I::surface->DrawSetColor(Color(255.f - lol, lol, 255.f, 255.f));
-			I::surface->DrawOutlinedCircle(screen.x, screen.y, 4, 8);
-		}
-	}
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
+
+	static DWORD FONT = I::surface->FontCreate();
+	static bool Once = true;
+	if (Once)
+	{
+		Once = false;
+		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+	}
+	
+	std::string TEXT;
+	Vec Pos;
+	if (antiaim->Left)
+	{
+		TEXT = "LEFT";
+		Pos.x = (1920 / 2) - 30;
+		Pos.y = 1080 / 2;
+	}
+	else
+	{
+		TEXT = "RIGHT";
+		Pos.x = (1920 / 2) + 30;
+		Pos.y = 1080 / 2;
+	}
+
+	static std::wstring wide_string;
+	wide_string = std::wstring(TEXT.begin(), TEXT.end());
+
+	I::surface->DrawSetTextFont(FONT);
+	I::surface->DrawSetTextColor(Current);
+	I::surface->DrawSetTextPos(Pos.x, Pos.y);
+	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
@@ -199,6 +221,16 @@ void ESP::Run()
 		if (Ent->IsDormant())
 			continue;
 
+		//Bad
+		/*
+		if (Ent->GetEyeAngles().x < 60){
+			if (!backtrack->Records[i].empty())
+			{
+				backtrack->Records[i].front().Shooting = true;
+				//backtrack->Records[i].back().Shoot = Ent->GetEyePos();
+			}
+		}
+		*/
 		/*
 		//works only on workshop map idk why
 		if (Ent->GetGunGameImmunity())

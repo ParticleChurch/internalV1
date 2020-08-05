@@ -139,72 +139,106 @@ void Aimbot::Smooth(Vec& Angle)
 //rage functions
 void Aimbot::Rage()
 {
+	//if (!Config::ragebot.Enable)
+		//return;
+
+	//if (!Config::ragebot.EnableAim)
+		//return;
+
 	if (!G::Localplayer->CanShoot())
 		return;
+
+	if (!G::Localplayer->GetAmmo())
+		return;
+
+	WeaponData* Weapondata = G::Localplayer->GetActiveWeapon()->GetWeaponData();
+	if (!Weapondata) return;
 
 	//get closest entity
 	float CrossEntDist = FLT_MAX;
 	int RecordIndex = -1;
-	for (int i = 0; i < 65; i++)
+	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
-		if (backtrack->Records[i].empty())
+		player_info_t PlayerInfo;
+		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
 			continue;
-		Vec Angle = aimbot->CalculateAngle(backtrack->Records[i].back().Bone(8));
-		float CrossDist = aimbot->CrosshairDist(Angle);
+
+		Entity* Ent = I::entitylist->GetClientEntity(i);
+		if (!Ent)
+			continue;
+
+		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
+			continue;
+
+		if (Ent->IsDormant()) //if dormant
+			continue;
+
+		if (!(Ent->GetHealth() > 0)) //if dead
+			continue;
+
+		Vec Head = Ent->GetBonePos(8);
+		Vec Angle = CalculateAngle(Head);
+		float CrossDist = CrosshairDist(Angle);
 		if (CrossDist < CrossEntDist)
 		{
-			RecordIndex = i;
 			CrossEntDist = CrossDist;
+			RecordIndex = i;
 		}
 	}
 
-	if (RecordIndex == -1)
-		return;
+	//if unable to find proper record
+	if (RecordIndex == -1) return;
 
-	//searching for onshot tick
-	int BestTickCount = -1;
-	Vec BestAngle;
-	Vec Target;
-	for (Tick tick : backtrack->Records[RecordIndex])
+	
+
+	Tick BestTick;
+	Vec BestTarget;
+	bool ValidFound = false;
+	float SimTime = FLT_MAX;
+	std::vector<int> Hitboxes = { HITBOX_HEAD }; 
+	for (auto Hitbox : Hitboxes)
 	{
-		if (tick.Shooting)
+		for (Tick tick : backtrack->Records[RecordIndex])
 		{
+			if (!backtrack->Valid(tick.SimulationTime))
+				continue;
+
+			if (!tick.Shooting) continue;		//ONLY ONSHOT_______________________
+
 			Entity* Ent = I::entitylist->GetClientEntity(tick.Index);
-			if (autowall->CanScan(Ent, tick.Bone(8), G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
-			{
-				BestTickCount = tick.TickCount;
-				BestAngle = CalculateAngle(tick.Bone(8));
-				Target = tick.Bone(8);
-			}
+			if (!Ent) continue;
+			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
+			if (!StudioModel) continue;
+
+			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
+			if (!StudioBox) continue;
+
+			float radius = StudioBox->m_flRadius * 0.9;
+			Vec min = StudioBox->bbmin.Transform(tick.Matrix[StudioBox->bone]);
+			Vec max = StudioBox->bbmax.Transform(tick.Matrix[StudioBox->bone]);
+
+
+			//Vec MinLeft = Ent->GetLeft(min, radius, Ent);
+			//Vec MinRight = Ent->GetRight(min, radius, Ent);
+			//Vec MaxLeft = Ent->GetLeft(max, radius, Ent);
+			//Vec MaxRight = Ent->GetRight(max, radius, Ent);
+			Vec Middle = (max + min) / 2.f;
+			if (!autowall->CanScanBacktrack(Ent, Middle, Weapondata, 1, true, HITGROUP_HEAD)) continue;
+
+			SimTime = tick.SimulationTime;
+			BestTarget = Middle;
+			BestTick = tick;
+			ValidFound = true;
 		}
 	}
 
-	//if unable to find Onshot tick
-	if (BestTickCount == -1)
-	{
-		if (GetAsyncKeyState(VK_LMENU))
-			return;
-		Vec loc = backtrack->Records[RecordIndex].back().Bone(8);
-		Entity* Ent = I::entitylist->GetClientEntity(backtrack->Records[RecordIndex].back().Index);
-		if (!autowall->CanScan(Ent, loc, G::Localplayer->GetActiveWeapon()->GetWeaponData(), 1, true))
-			return;
-		BestAngle = CalculateAngle(loc);
-	}
-	else //if there is an onshot tick
-	{
-		G::cmd->tick_count = BestTickCount;
-	}
+	if (!ValidFound) return;
+	
+	Vec Angle = CalculateAngle(BestTarget);
+	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
 
-	BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
-
-	G::cmd->viewangles = BestAngle;
+	G::cmd->viewangles = Angle;
+	G::cmd->tick_count = backtrack->TimeToTicks(SimTime);
 	G::cmd->buttons |= IN_ATTACK;
-
-	trace_t Trace;
-	Trace.Startpos = G::Localplayer->GetEyePos();
-	Trace.Endpos = Target;
-	esp->traces.clear();
-	esp->traces.resize(0);
-	esp->traces.push_back(Trace);
 }
 

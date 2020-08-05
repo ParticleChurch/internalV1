@@ -31,7 +31,6 @@ namespace H
 
 	//TEMP
 	std::vector < std::string> console;
-	std::vector<Vec> points;
 	bool ThirdPersonToggle = false;
 }
 
@@ -92,7 +91,6 @@ void H::Init()
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
-
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
@@ -199,12 +197,60 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool& bSendPacket = *pSendPacket;
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 3;
+		
+		
 
 		G::CM_Start(cmd, pSendPacket);
 
+		//shitty SILENT autostrafe
+		/*
+		static bool flip = false;
+		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
+		{
+			if (cmd->sidemove > 300)
+				cmd->viewangles.y -= 30;
+			else if (cmd->sidemove < -300)
+				cmd->viewangles.y += 30;
+
+			flip = !flip;
+			if (cmd->mousedx > 0.5 || flip)
+			{
+				cmd->viewangles.y += 2;
+				cmd->sidemove = 450.0f;
+			}
+			else if (!flip || cmd->mousedx < 0.5)
+			{
+				cmd->viewangles.y -= 2;
+				cmd->sidemove = -450.0f;
+			}
+			cmd->viewangles.Normalize();
+		}
+		*/
+		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
+
+		//SlowWalk
+		if (false && G::Localplayer && G::Localplayer->IsAlive())
+		{
+			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
+			if (G::cmd->forwardmove && G::cmd->sidemove) {
+				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+			}
+			else if (G::cmd->forwardmove) {
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+			else if (G::cmd->sidemove) {
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+		}
+
+		//for AA
 		if (fabsf(G::cmd->sidemove) < 5.0f) {
 			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 		}
+
+
 
 		G::CM_MoveFixStart();
 
@@ -213,35 +259,30 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->buttons &= ~IN_JUMP;
 		}
 
-		//if(cmd->buttons & IN_ATTACK)
-			//aimbot->Legit();
+		antiaim->rage();
 
-		static auto nadeVar{ I::cvar->FindVar("cl_grenadepreview") };
-		nadeVar->onChangeCallbacks.size = 0;
-		nadeVar->SetValue((int)1);
-
-		//antiaim->rage();
-		//antiaim->legit();
-
-		//backtrack->run();
+		backtrack->run();
+		
 
 		static float lastUpdate = 0;
-
 		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
 			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
 			lastUpdate = I::globalvars->m_curTime;
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
-		if (cmd->buttons & IN_ATTACK || cmd->buttons & IN_USE)
-		{
+		if (cmd->buttons & IN_ATTACK)
 			G::cmd->viewangles = G::CM_StartAngle;
-			*G::pSendPacket = true;
-		}
 		
-		//aimbot->Rage();
+		if (GetAsyncKeyState(VK_LMENU)) {
+			
+			aimbot->Rage();
+		}
+
+		
 
 		G::CM_End();
+	
 	}
 	
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
@@ -257,23 +298,39 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 			return;
 		
 		esp->Run();
-
-		
 	}
 }
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
+	if (curStage == FRAME_RENDER_START)
+	{
+		if(I::engine->IsInGame())
+			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+	}
 	backtrack->update(curStage);
 
-	
-	//this is for accurate angles (aa, etc)
-	static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
-	if (offset == 0)
-		offset = N::GetOffset("DT_CSPlayer", "deadflag");
+	if (I::engine->IsInGame()) {
+		//this is for accurate angles (aa, etc)
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-	if (I::input->m_fCameraInThirdPerson)
-		*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::CM_EndAngle;
+		if (I::input->m_fCameraInThirdPerson)
+			*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
+
+		if (curStage == FRAME_RENDER_START && G::Localplayer) //FIX ANIMATION LOD
+		{
+			int LPIndex = I::engine->GetLocalPlayer();
+			for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
+				Entity* entity = I::entitylist->GetClientEntity(i);
+				if (!entity || i == LPIndex || entity->IsDormant() || !entity->IsAlive()) continue;
+				*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
+				*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
+			}
+		}
+
+	}
 		
 
 	return oFrameStageNotify(curStage);
@@ -297,11 +354,42 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	switch (StrHash::HashRuntime(event->GetName())) {
 		case StrHash::Hash("player_hurt"):
 		{
+			/*
+			player_hurt
+			Name:	player_hurt
+			Structure:
+			short	userid	user ID of who was hurt
+			short	attacker	user ID of who attacked
+			byte	health	remaining health points
+			byte	armor	remaining armor points
+			string	weapon	weapon name attacker used, if not the world
+			short	dmg_health	damage done to health
+			byte	dmg_armor	damage done to armor
+			byte	hitgroup	hitgroup that was damaged
+			*/
+
 			//also add hitmarkers here...
 			const auto localIdx = I::engine->GetLocalPlayer();
-			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
-				break;
-			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
+			int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
+			int userid = I::engine->GetPlayerForUserID(event->GetInt("userid"));
+
+			if (attacker == localIdx && userid != localIdx)
+				I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
+
+			if (attacker != localIdx && attacker < 65)
+			{
+				Entity* Ent = I::entitylist->GetClientEntity(attacker);
+				if (Ent->GetTeam() != G::Localplayer->GetTeam() && !backtrack->Records[attacker].empty())
+				{
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime());
+					for (int a = 0; a < backtrack->Records[attacker].size(); a++) {
+						if (ideal == backtrack->TimeToTicks(backtrack->Records[attacker][a].SimulationTime)) {
+							backtrack->Records[attacker][a].Shooting = true;
+						}
+					}
+				}
+			}
+			
 		}
 		break;
 
@@ -324,8 +412,12 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			{
 				if (!backtrack->Records[index].empty())
 				{
-					backtrack->Records[index].back().Shooting = true;
-					backtrack->Records[index].front().Shooting = true;
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime());
+					for (int a = 0; a < backtrack->Records[index].size(); a++) {
+						if (ideal == backtrack->TimeToTicks(backtrack->Records[index][a].SimulationTime)) {
+							backtrack->Records[index][a].Shooting = true;
+						}
+					}
 				}
 			}
 		}
@@ -355,9 +447,6 @@ Vec GetIdealCameraPos(float distance)
 
 	Ideal.x += Hz * cos(DEG2RAD(FPAng.y));
 	Ideal.y += Hz * sin(DEG2RAD(FPAng.y));
-
-
-	H::points.push_back(Ideal);
 	
 	return Ideal;
 }
@@ -365,7 +454,7 @@ Vec GetIdealCameraPos(float distance)
 float GetCameraBoomLength(float distance)
 {
 	Vec IdealCameraPos = GetIdealCameraPos(distance);	//ideal camera position
-	Vec PlayerPos = G::Localplayer->GetEyePos();		//pleyer center position
+	Vec PlayerPos = G::Localplayer->GetEyePos();		//player center position
 
 	trace_t Trace;
 	Ray_t Ray(PlayerPos, IdealCameraPos);

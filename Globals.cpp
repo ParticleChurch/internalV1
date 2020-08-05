@@ -14,6 +14,8 @@ namespace G
 	bool* pSendPacket;
 	Vec CM_StartAngle;
 	Vec CM_EndAngle;
+	QAngle RealAngle;
+	QAngle FakeAngle;
 	float StartForwardMove;
 	float StartSideMove;
 
@@ -58,7 +60,7 @@ namespace G
 
 	void CM_Start(CUserCmd* cmd, bool* pSendPacket)
 	{
-		G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+		I::globalvars->ServerTime(cmd);
 		G::cmd = cmd;
 		G::CM_StartAngle = cmd->viewangles;
 		G::pSendPacket = pSendPacket;
@@ -72,6 +74,11 @@ namespace G
 	{
 		cmd->viewangles.Normalize(); //prevent csgo from hating us
 		CM_EndAngle = cmd->viewangles;
+
+		if (*G::pSendPacket)
+			G::FakeAngle = G::cmd->viewangles;
+		else
+			G::RealAngle = G::cmd->viewangles;
 
 		//fix movement
 		static float deltaView;

@@ -90,6 +90,15 @@ public:
 		return (GetVecOrigin() + *(Vec*)((DWORD)this + offset));
 	}
 
+	Vec GetEyeHeight()
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
+
+		return *(Vec*)((DWORD)this + offset);
+	}
+
 	int GetHealth() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_iHealth");
 		if (offset == 0)
@@ -127,18 +136,18 @@ public:
 		return *(float*)((DWORD)this + offset);
 	}
 
-	float GetSimulationTime() {
-		static DWORD offset = N::GetOffset("CBaseEntity", "m_flSimulationTime");
-		if (offset == 0)
-			offset = N::GetOffset("CBaseEntity", "m_flSimulationTime");
-		return *(float*)((DWORD)this + offset);
-	}
-
 	float GetServerTime() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
 		return ((*(int*)((DWORD)this + offset)) * I::globalvars->m_intervalPerTick);
+	}
+
+	int GetTickBase() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
+		return *(int*)((DWORD)this + offset);
 	}
 
 	Entity* GetActiveWeapon() {
@@ -218,7 +227,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
-		return *(Vec*)((DWORD)this + offset);
+		Vec a = *(Vec*)((DWORD)this + offset);
+		if (a.x > 89)
+			a.x = 360 - a.x;
+		return a;
+	}
+
+	float GetSimulationTime() 
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");
+		return *(float*)((DWORD)this + offset);
 	}
 
 	AnimState* GetAnimstate() noexcept
@@ -361,6 +381,26 @@ public:
 				}
 			}
 		}
+	}
+
+	Vec GetLeft(Vec C, float radius, Entity* ent)
+	{
+		Vec P = ent->GetEyePos();	//player
+		float gamma = (M_PI / 2.f) + atan2f(C.y - P.y, C.x - P.x);
+		float distance = sqrtf(pow((C.x - P.x), 2) + pow((C.y - P.y), 2));
+		float beta = asin(radius / distance);
+
+		return Vec(C.x + radius * cosf(gamma + beta), C.y + radius * sinf(gamma + beta), C.z);
+	}
+
+	Vec GetRight(Vec C, float radius, Entity* ent)
+	{
+		Vec P = ent->GetEyePos();	//player
+		float gamma = (M_PI / 2.f) + atan2f(C.y - P.y, C.x - P.x);
+		float distance = sqrtf(pow((C.x - P.x), 2) + pow((C.y - P.y), 2));
+		float beta = asin(radius / distance);
+
+		return Vec(C.x - radius * cosf(gamma - beta), C.y - radius * sinf(gamma - beta), C.z);
 	}
 
 };

@@ -6,6 +6,7 @@ public:
 	bool LBYBreak();
 	//functions for legit
 	void legit();
+	bool Left = true;
 	//functions for rage
 	void rage();
 };

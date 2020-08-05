@@ -12,6 +12,7 @@ void Init()
     //ShellExecute(NULL, TEXT("open"), TEXT("https://www.youtube.com/watch?v=oHg5SJYRHA0"), NULL, NULL, 0);
 
     H::Init();
+    backtrack->Init();
 
     I::engine->ClientCmd_Unrestricted("echo Cheat Injected");
 

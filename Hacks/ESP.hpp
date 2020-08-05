@@ -12,7 +12,7 @@ private:
 	void DrawBacktrackingDots();
 	void DrawTraces();
 public:
-	std::vector<trace_t> traces;
+	std::deque<trace_t> traces;
 	void Run();
 
 	

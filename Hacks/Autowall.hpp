@@ -11,6 +11,7 @@ private:
 	bool IsVisible(Vec End, Entity*); //FROM LOCAL PLAYER HEAD POS
 public:
 	bool CanScan(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire);
+	bool CanScanBacktrack(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire, int Hitgroup);
 };
 
 extern Autowall* autowall;

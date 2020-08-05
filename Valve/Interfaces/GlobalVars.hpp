@@ -11,4 +11,6 @@ public:
     int     m_tickCount;
     float   m_intervalPerTick;
     float   m_interpAmount;
+
+    float ServerTime(CUserCmd* = nullptr) noexcept;
 };

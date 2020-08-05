@@ -13,6 +13,8 @@ namespace G {
 	extern bool* pSendPacket;
 	extern Vec CM_StartAngle;
 	extern Vec CM_EndAngle;
+	extern QAngle RealAngle;
+	extern QAngle FakeAngle;
 	extern void CM_Clamp();
 	extern void CM_Start(CUserCmd*, bool*);
 	extern void CM_MoveFixStart();

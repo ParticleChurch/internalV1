@@ -2,6 +2,17 @@
 
 Backtrack* backtrack = new Backtrack();
 
+void Backtrack::Init()
+{
+	UpdateRate = I::cvar->FindVar("cl_updaterate");
+	MaxUpdateRate = I::cvar->FindVar("sv_maxupdaterate");
+	Interp = I::cvar->FindVar("cl_interp");
+	InterpRatio = I::cvar->FindVar("cl_interp_ratio");
+	MinInterpRatio = I::cvar->FindVar("sv_client_min_interp_ratio");
+	MaxInterpRatio = I::cvar->FindVar("sv_client_max_interp_ratio");
+	MaxUnlag = I::cvar->FindVar("sv_maxunlag");
+}
+
 void Backtrack::update(int stage)
 {
 	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
@@ -54,19 +65,23 @@ void Backtrack::update(int stage)
 		}
 
 		Tick tick;
-		tick.TickCount = I::globalvars->m_tickCount;
 		tick.Index = i;
-		//could add ping to ticks to this value, to maybe be more accurate? try experimenting...
-		Ent->SetupBones(tick.Matrix, 128, 0x100, 0);
+		tick.SimulationTime = Ent->GetSimulationTime();
+		Ent->SetupBones(tick.Matrix, 256, BONE_USED_BY_ANYTHING, I::globalvars->m_curTime);
+		
+		tick.InAir = !(Ent->GetFlags() & FL_ONGROUND);
+		tick.Shooting = false;
 
-		if (Records[i].empty() || Records[i].back().TickCount != tick.TickCount) {
-			Records[i].push_back(tick);
+		Records[i].push_front(tick);
+
+		while (Records[i].size() > 3 && Records[i].size() > TimeToTicks(40000.f / 1000.f)) {
+			Records[i].pop_back();
 		}
-
-		if (Records[i].size() > 12)
+		
+		for (int j = 0; j < Records[i].size(); j++)
 		{
-			Records[i].pop_front();
-			Records[i].resize(12);
+			if (!Valid(Records[i][j].SimulationTime))
+				Records[i].erase(Records[i].begin() + j);
 		}
 	}
 
@@ -74,6 +89,9 @@ void Backtrack::update(int stage)
 
 void Backtrack::run()
 {
+	if (!(G::cmd->buttons & IN_ATTACK))
+		return;
+
 	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
 		return;
@@ -102,14 +120,19 @@ void Backtrack::run()
 	//get closest tick
 	float CrossTickDist = FLT_MAX;
 	int BestTickCount = -1;
+	Tick BestTick;
 	for (Tick tick : Records[RecordIndex])
 	{
+		if (!Valid(tick.SimulationTime))
+			continue;
+
 		Vec Angle = aimbot->CalculateAngle(tick.Bone(8));
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossTickDist)
 		{
-			BestTickCount = tick.TickCount;
+			BestTickCount = backtrack->TimeToTicks(tick.SimulationTime);// +GetLerp());
 			CrossTickDist = CrossDist;
+			BestTick = tick;
 		}
 	}
 
@@ -120,3 +143,4 @@ void Backtrack::run()
 	//set command number to proper number
 	G::cmd->tick_count = BestTickCount;
 }
+
