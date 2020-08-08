@@ -64,7 +64,7 @@ template <class T>
 bool HTTP::APIGET(std::string Cmd, Arguments Data, T* Output)
 {
     Data.Add("cmd", Cmd);
-    return HTTP::StructuredGET<T>("www.a4g4.com", "/CSGO/api.php", Data.String, Output);
+    return HTTP::StructuredGET<T>("www.a4g4.com", "/API/api.php", Data.String, Output);
 }
 
 
