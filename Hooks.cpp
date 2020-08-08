@@ -102,7 +102,6 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
-
 	std::cout << "______________________________";
 
 }
@@ -190,11 +189,19 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd->command_number)
 		return true;
 
+	static bool SilentAim = false;
+
 	if (I::engine->IsInGame() && cmd) {
 		if (GUI::ShowMenu) {
 			cmd->buttons = 0;
 			cmd->upmove = 0;
 		}
+
+		if (!G::Localplayer) return false;
+
+		if (!(G::Localplayer->GetHealth() > 0)) return false;
+
+		I::globalvars->ServerTime(cmd);
 
 		PVOID pebp;
 		__asm mov pebp, ebp;
@@ -202,20 +209,88 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool& bSendPacket = *pSendPacket;
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 3;
-		
-		
 
 		G::CM_Start(cmd, pSendPacket);
 
-		//shitty SILENT autostrafe
+		//G::cmd->buttons |= IN_BULLRUSH;	//fast duck
+
+		//SlowWalk
+		/*
+		if (false && G::Localplayer && G::localplayer->GetHealth() > 0)
+		{
+			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
+			if (G::cmd->forwardmove && G::cmd->sidemove) {
+				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+			}
+			else if (G::cmd->forwardmove) {
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+			else if (G::cmd->sidemove) {
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+		}
+		*/
+
+		//for AA
+		//if (fabsf(G::cmd->sidemove) < 5.0f) {
+		//	G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+		//}
+
+		G::CM_MoveFixStart();
+
+		//ez bhop
+		if ((cmd->buttons & IN_JUMP) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
+			cmd->buttons &= ~IN_JUMP;
+		}
+
+		//antiaim->rage();
+		//antiaim->legit();
+
+		backtrack->run();
+		
+		
+		static float lastUpdate = 0;
+		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
+			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
+			lastUpdate = I::globalvars->m_curTime;
+			ThirdPersonToggle = !ThirdPersonToggle;
+		}
+
+		if (Config::legitbot.Enable)
+			SilentAim = false;
+		if (Config::ragebot.Enable)
+			SilentAim = true;
+
+		if (cmd->buttons & IN_ATTACK)
+			G::cmd->viewangles = G::CM_StartAngle;
+
+		if (GetAsyncKeyState(VK_LMENU))
+		{
+			aimbot->Rage();
+			SilentAim = true;
+		}
+		
+
+		
+
+		//aimbot->Legit();
+
+		G::CM_End();
+
+		
+		
+
 		/*
 		static bool flip = false;
 		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
 		{
+			SilentAim = true;
 			if (cmd->sidemove > 300)
-				cmd->viewangles.y -= 30;
+				cmd->viewangles.y -= 20;
 			else if (cmd->sidemove < -300)
-				cmd->viewangles.y += 30;
+				cmd->viewangles.y += 20;
 
 			flip = !flip;
 			if (cmd->mousedx > 0.5 || flip)
@@ -231,111 +306,59 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->viewangles.Normalize();
 		}
 		*/
-		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
-
-		//SlowWalk
-		if (false && G::Localplayer && G::Localplayer->IsAlive())
-		{
-			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
-			if (G::cmd->forwardmove && G::cmd->sidemove) {
-				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-			}
-			else if (G::cmd->forwardmove) {
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-			else if (G::cmd->sidemove) {
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-		}
-
-		//for AA
-		if (fabsf(G::cmd->sidemove) < 5.0f) {
-			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
-		}
-
-
-
-		G::CM_MoveFixStart();
-
-		//ez bhop
-		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
-			cmd->buttons &= ~IN_JUMP;
-		}
-
-		antiaim->rage();
-
-		backtrack->run();
-		
-
-		static float lastUpdate = 0;
-		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
-			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
-			lastUpdate = I::globalvars->m_curTime;
-			ThirdPersonToggle = !ThirdPersonToggle;
-		}
-
-		if (cmd->buttons & IN_ATTACK)
-			G::cmd->viewangles = G::CM_StartAngle;
-		
-		if (GetAsyncKeyState(VK_LMENU)) {
-			
-			aimbot->Rage();
-		}
-
-		
-
-		G::CM_End();
 	
 	}
 	
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
-	return false; //silent aim on false (only for client)
+	return !SilentAim; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
+	
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
-		Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-		if (!Localplayer || !I::engine->IsInGame() || !(Localplayer->GetHealth() > 0))
+		if (!G::Localplayer || !I::engine->IsInGame() || !(G::Localplayer->GetHealth() > 0))
 			return;
 		
 		esp->Run();
 	}
+	
 }
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-	if (curStage == FRAME_RENDER_START)
-	{
-		if(I::engine->IsInGame())
-			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	}
-	backtrack->update(curStage);
-
 	if (I::engine->IsInGame()) {
-		//this is for accurate angles (aa, etc)
-		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "deadflag");
-
-		if (I::input->m_fCameraInThirdPerson)
-			*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
-
-		if (curStage == FRAME_RENDER_START && G::Localplayer) //FIX ANIMATION LOD
+		if (curStage == FRAME_RENDER_START)
 		{
+			//Get Local Player
+			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+			if (!G::Localplayer || !(G::Localplayer->GetHealth() > 0)) //if alive then do stuff
+				return oFrameStageNotify(curStage);;
+
+			//backtracking
+			backtrack->update(curStage);
+
+			//this is for accurate third person angles (aa, etc)
+			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+			if (offset == 0)
+				offset = N::GetOffset("DT_CSPlayer", "deadflag");
+
+			if (I::input->m_fCameraInThirdPerson && G::Localplayer)
+				*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::RealAngle;
+
+			//FIX ANIMATION LOD
 			int LPIndex = I::engine->GetLocalPlayer();
 			for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 				Entity* entity = I::entitylist->GetClientEntity(i);
-				if (!entity || i == LPIndex || entity->IsDormant() || !entity->IsAlive()) continue;
+				if (!entity || i == LPIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
 				*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
 				*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 			}
 		}
 
 	}
+	
 		
 
 	return oFrameStageNotify(curStage);
@@ -356,10 +379,10 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	if (!event)
 		return oFireEventClientSide(I::gameeventmanager, event);
 
-	switch (StrHash::HashRuntime(event->GetName())) {
-		case StrHash::Hash("player_hurt"):
-		{
-			/*
+	if (!G::Localplayer || !(G::Localplayer->GetHealth() > 0)) //if alive then do stuff
+		return oFireEventClientSide(I::gameeventmanager, event);
+
+	/*
 			player_hurt
 			Name:	player_hurt
 			Structure:
@@ -371,7 +394,24 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			short	dmg_health	damage done to health
 			byte	dmg_armor	damage done to armor
 			byte	hitgroup	hitgroup that was damaged
-			*/
+	*/
+	/*
+			weapon_fire
+			Note: Every time a client fires their weapon
+
+			Name:	weapon_fire
+			Structure:
+			short	userid
+			string	weapon	weapon name used
+			bool	silenced	is weapon silenced
+
+	*/
+
+	/*
+	switch (StrHash::HashRuntime(event->GetName())) {
+		case StrHash::Hash("player_hurt"):
+		{
+			
 
 			//also add hitmarkers here...
 			const auto localIdx = I::engine->GetLocalPlayer();
@@ -386,7 +426,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 				Entity* Ent = I::entitylist->GetClientEntity(attacker);
 				if (Ent->GetTeam() != G::Localplayer->GetTeam() && !backtrack->Records[attacker].empty())
 				{
-					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime()) + 1;
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime());
 					for (int a = 0; a < backtrack->Records[attacker].size(); a++) {
 						if (ideal == backtrack->TimeToTicks(backtrack->Records[attacker][a].SimulationTime)) {
 							backtrack->Records[attacker][a].Shooting = true;
@@ -407,19 +447,10 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
 		}
 		break;
+
 		case StrHash::Hash("weapon_fire"):
 		{
-			/*
-			weapon_fire
-			Note: Every time a client fires their weapon
-
-			Name:	weapon_fire
-			Structure:	
-			short	userid	
-			string	weapon	weapon name used
-			bool	silenced	is weapon silenced
-
-			*/
+			
 			const auto localIdx = I::engine->GetLocalPlayer();
 
 			player_info_t Info;
@@ -428,7 +459,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			{
 				if (!backtrack->Records[index].empty())
 				{
-					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime()) + 1;
+					int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime());
 					for (int a = 0; a < backtrack->Records[index].size(); a++) {
 						if (ideal == backtrack->TimeToTicks(backtrack->Records[index][a].SimulationTime)) {
 							backtrack->Records[index][a].Shooting = true;
@@ -439,6 +470,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		}
 		break;
 	}
+	*/
 	return oFireEventClientSide(I::gameeventmanager, event);
 }
 
@@ -486,7 +518,7 @@ float GetCameraBoomLength(float distance)
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
 	
-	if (I::engine->IsInGame()) {
+	if (I::engine->IsInGame() && G::Localplayer && G::Localplayer->GetHealth() > 0) {
 		if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
 		{
 			if (!(I::input->m_fCameraInThirdPerson))

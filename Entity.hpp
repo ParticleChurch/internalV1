@@ -19,6 +19,13 @@ public:
 		return GetVFunc<ogetWeaponData>(this, 460)(this);
 	}
 
+	WeaponId GetWeaponId() { //get active weapon entity then call
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iItemDefinitionIndex");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iItemDefinitionIndex");
+		return *(WeaponId*)((DWORD)this + offset);
+	}
+
 	void* self() {
 		return this;
 	}

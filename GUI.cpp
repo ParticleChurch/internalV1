@@ -246,6 +246,8 @@ namespace ImGui
 void DisplayLegitTab()
 {
 	ImGui::Checkbox("Enable###LEnable", &Config::legitbot.Enable);
+	if (Config::legitbot.Enable)
+		Config::ragebot.Enable = false;
 	ImGui::Separator();
 
 	ImGui::Text("Aimbot");
@@ -294,6 +296,9 @@ void DisplayLegitTab()
 	{
 		Config::legitbot.weapon[tab].LHitboxes.clear();
 		Config::legitbot.weapon[tab].LHitboxes.resize(0);
+		Config::legitbot.weapon[tab].Hitboxes.clear();
+		Config::legitbot.weapon[tab].Hitboxes.resize(0);
+		
 		int NumSelected = 0;
 		preview = "";
 		for (int n = 0; n < IM_ARRAYSIZE(Hitboxes); n++)
@@ -306,11 +311,38 @@ void DisplayLegitTab()
 				else
 					preview.append(Hitboxes[n]);
 				Config::legitbot.weapon[tab].LHitboxes.push_back(Hitboxes[n]);
+
+
+				if (n == 0)
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_HEAD);
+				else if (n == 1)
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_PELVIS);
+				else if (n == 2)
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_STOMACH);
+				else if (n == 3)
+				{
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LOWER_CHEST);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_CHEST);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_UPPER_CHEST);
+				}
+				else if (n == 4)
+				{
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_THIGH);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_THIGH);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_CALF);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_CALF);
+				}
+				else if (n == 5)
+				{
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_FOOT);
+					Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_FOOT);
+				}
 			}
 		}
 		ImGui::EndCombo();
 	}
 
+	/*
 	if (Config::legitbot.weapon[tab].HSelected[0])
 		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_HEAD);
 	if (Config::legitbot.weapon[tab].HSelected[1])
@@ -332,6 +364,7 @@ void DisplayLegitTab()
 		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_FOOT);
 		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_FOOT);
 	}
+	*/
 
 
 	static int PriorityChoice = 0;
@@ -371,6 +404,8 @@ void DisplayLegitTab()
 
 void DisplayRageTab() {
 	ImGui::Checkbox("Enable###REnable", &Config::ragebot.Enable);
+	if(Config::ragebot.Enable)
+		Config::legitbot.Enable = false;
 	ImGui::Separator();
 
 	ImGui::Text("General");
@@ -617,8 +652,50 @@ bool GUI::FreeHackMenu()
 	if (!ShowMenu)			//if they arent displaying the menu... just return
 		return PressedEject;
 
+	static bool init = false;
+	if (!init)
+	{
+		init = true;
+		ImGuiStyle* style = &ImGui::GetStyle();
+		style->WindowRounding = 0.0f;
+		style->WindowPadding = ImVec2(15, 15);
+		style->ChildRounding = 0.0f;
+		style->FrameRounding = 0.0f; //rounding for button
+		style->FramePadding = ImVec2(7, 7);
+		style->GrabRounding = 0.0f;
+		style->PopupRounding = 0.0f;
+		style->ScrollbarRounding = 0.0f;
+		style->FrameBorderSize = 0.f;
+		style->ItemSpacing = ImVec2(15, 15);
+		style->ItemInnerSpacing = ImVec2(5, 5);
+		style->Colors[ImGuiCol_WindowBg] = ImVec4(0.f, 0.f, 0.f, 1.f);
+
+		style->Colors[ImGuiCol_Button]				= ImVec4(1.f, 1.f, 1.f, 0.f);
+		style->Colors[ImGuiCol_ButtonHovered]		= ImVec4(1.f, 1.f, 1.f, 0.4f);
+		style->Colors[ImGuiCol_ButtonActive]		= ImVec4(1.f, 1.f, 1.f, 0.0f);
+		style->Colors[ImGuiCol_CheckMark]			= ImVec4(1.f, 1.f, 1.f, 1.f);
+		style->Colors[ImGuiCol_FrameBg]				= ImVec4(1.f, 1.f, 1.f, 0.f);// Background of checkbox, radio button, plot, slider, text input
+		style->Colors[ImGuiCol_FrameBgHovered]		= ImVec4(1.f, 1.f, 1.f, 0.1f);
+		style->Colors[ImGuiCol_FrameBgActive]		= ImVec4(1.f, 1.f, 1.f, 0.f);
+		style->Colors[ImGuiCol_FrameBgHovered]		= ImVec4(1.f, 1.f, 1.f, 0.f);// Background of checkbox, radio button, plot, slider, text input
+		style->Colors[ImGuiCol_FrameBgActive]		= ImVec4(1.f, 1.f, 1.f, 0.f);// Background of checkbox, radio button, plot, slider, text input
+		style->Colors[ImGuiCol_SliderGrab]			= ImVec4(1.f, 1.f, 1.f, 1.f);
+		style->Colors[ImGuiCol_SliderGrabActive]	= ImVec4(1.f, 1.f, 1.f, 1.f);
+
+		style->Colors[ImGuiCol_Header]				= ImVec4(1.f, 1.f, 1.f, 0.2f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
+		style->Colors[ImGuiCol_HeaderHovered]		= ImVec4(1.f, 1.f, 1.f, 0.4f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
+		style->Colors[ImGuiCol_HeaderActive]		= ImVec4(1.f, 1.f, 1.f, 0.4f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
+
+		
+	}
+	
+
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
-	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar);
+	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar);
+	
+	ImGui::GetStyle().Alpha = 1;
+	ImGui::GetStyle().FrameBorderSize = 0.5f;
+	ImGui::GetStyle().Colors[ImGuiCol_Border] = ImVec4(1.f, 1.f, 1.f, 1.f);
 
 	static bool DisplayLegit = true;
 	static bool DisplayRage = false;
@@ -628,6 +705,7 @@ bool GUI::FreeHackMenu()
 
 	if (ImGui::Button("Legit"))
 	{
+		
 		DisplayLegit = true;
 		DisplayRage = false;
 		DisplayAA = false;
@@ -637,6 +715,7 @@ bool GUI::FreeHackMenu()
 	ImGui::SameLine();
 	if (ImGui::Button("Rage"))
 	{
+		Config::legitbot.Enable = false;
 		DisplayLegit = false;
 		DisplayRage = true;
 		DisplayAA = false;
@@ -696,10 +775,15 @@ bool GUI::FreeHackMenu()
 
 	ImGui::Separator();
 	//ImGui::SetCursorPos(ImVec2(0, 30)); //leaving eject at end lol
-	if (ImGui::Button("Eject", ImVec2(70, 20)))
+	if (ImGui::Button("Eject"))//, ImVec2(70, 20)))
 		PressedEject = true;
 
+	ImGui::GetStyle().Alpha = 0.7;
+	ImGui::GetStyle().FrameBorderSize = 0.f;
+	ImGui::GetStyle().Colors[ImGuiCol_Border] = ImVec4(1.f, 1.f, 1.f, 0.f);
+
 	ImGui::End();
+
 	return PressedEject;
 }
 

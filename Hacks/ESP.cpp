@@ -175,29 +175,6 @@ void ESP::Run()
 		Once = false;
 		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
-	
-	std::string TEXT;
-	Vec Pos;
-	if (antiaim->Left)
-	{
-		TEXT = "LEFT";
-		Pos.x = (1920 / 2) - 30;
-		Pos.y = 1080 / 2;
-	}
-	else
-	{
-		TEXT = "RIGHT";
-		Pos.x = (1920 / 2) + 30;
-		Pos.y = 1080 / 2;
-	}
-
-	static std::wstring wide_string;
-	wide_string = std::wstring(TEXT.begin(), TEXT.end());
-
-	I::surface->DrawSetTextFont(FONT);
-	I::surface->DrawSetTextColor(Current);
-	I::surface->DrawSetTextPos(Pos.x, Pos.y);
-	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{

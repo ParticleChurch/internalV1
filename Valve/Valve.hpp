@@ -4,6 +4,7 @@
 #include "Custom/Matrix3x4.hpp"
 #include "Custom/Vec.hpp"
 #include "Custom/Color.hpp"
+#include "Custom/WeaponId.hpp"
 
 //SDK
 #include "SDK/Prototypes.hpp"

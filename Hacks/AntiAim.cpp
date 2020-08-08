@@ -8,10 +8,15 @@ void AntiAim::legit()
 		return;
 	if (!Config::antiaim.Legit.Enable)
 		return;
+
+	if (!(G::Localplayer->GetHealth() > 0))
+		return;
 		
 	if (G::Localplayer->GetMoveType() == LADDER)
 		return;
 
+	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
+		return;
 
 
 	int side = 1;
@@ -64,7 +69,7 @@ bool AntiAim::LBYBreak()
 
 void AntiAim::rage()
 {
-	if (!G::Localplayer->IsAlive())
+	if (!(G::Localplayer->GetHealth() > 0))
 		return;
 
 	G::cmd->viewangles.x = 89;
@@ -76,28 +81,17 @@ void AntiAim::rage()
 	bool BreakLBY = LBYBreak();
 	 
 	static float Delta = 58.f;
-	static bool right = false;
-	if (Delta < -58.f) {
-		right = true;
-	}
-	else if (Delta > 58.f)
-		right = false;
-
-	if (right)
-		Delta += 2.f;
-	else
-		Delta -= 2.f;
 
 	if (!BreakLBY)
 	{
-		float amount = Delta;
+		static float amount = Delta;
 		if (*G::pSendPacket)				
 			G::cmd->viewangles.y += amount;
 	}
 	
 	if (BreakLBY)
 	{
-		float amount = Delta * -2;
+		static float amount = Delta * -2;
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
 	}

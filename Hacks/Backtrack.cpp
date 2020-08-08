@@ -15,8 +15,7 @@ void Backtrack::Init()
 
 void Backtrack::update(int stage)
 {
-	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
+	if (!I::engine->IsInGame() || !G::Localplayer || !(G::Localplayer->GetHealth() > 0)) {
 		for (auto a : Records)
 			a.clear();
 		return;
@@ -38,7 +37,7 @@ void Backtrack::update(int stage)
 			Records[i].clear();
 			continue;
 		}
-		if (Localplayer == Ent) //if player not localplayer
+		if (G::Localplayer == Ent) //if player not localplayer
 		{
 			Records[i].clear();
 			continue;
@@ -53,7 +52,7 @@ void Backtrack::update(int stage)
 			Records[i].clear();
 			continue;
 		}
-		if (Ent->GetTeam() == Localplayer->GetTeam())
+		if (Ent->GetTeam() == G::Localplayer->GetTeam())
 		{
 			Records[i].clear();
 			continue;
@@ -93,8 +92,7 @@ void Backtrack::run()
 	if (!(G::cmd->buttons & IN_ATTACK))
 		return;
 
-	Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if (!I::engine->IsInGame() || !Localplayer || !(Localplayer->GetHealth() > 0)) {
+	if (!I::engine->IsInGame() || !G::Localplayer || !(G::Localplayer->GetHealth() > 0)) {
 		return;
 	}
 

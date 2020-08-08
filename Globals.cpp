@@ -60,7 +60,6 @@ namespace G
 
 	void CM_Start(CUserCmd* cmd, bool* pSendPacket)
 	{
-		I::globalvars->ServerTime(cmd);
 		G::cmd = cmd;
 		G::CM_StartAngle = cmd->viewangles;
 		G::pSendPacket = pSendPacket;
