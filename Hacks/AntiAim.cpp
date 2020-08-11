@@ -12,7 +12,7 @@ void AntiAim::legit()
 	if (!(G::Localplayer->GetHealth() > 0))
 		return;
 		
-	if (G::Localplayer->GetMoveType() == LADDER)
+	if (G::Localplayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
 
 	if (G::Localplayer->GetVecVelocity().VecLength() > 100)

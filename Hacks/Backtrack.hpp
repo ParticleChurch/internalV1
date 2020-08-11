@@ -54,7 +54,7 @@ private:
    
 public:
     std::deque<Tick> Records[65];
-    void update(int stage);
+    void update();
     void run();
 
     int TimeToTicks(float time) noexcept

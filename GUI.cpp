@@ -342,64 +342,46 @@ void DisplayLegitTab()
 		ImGui::EndCombo();
 	}
 
-	/*
-	if (Config::legitbot.weapon[tab].HSelected[0])
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_HEAD);
-	if (Config::legitbot.weapon[tab].HSelected[1])
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_PELVIS);
-	if (Config::legitbot.weapon[tab].HSelected[2])
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_STOMACH);
-	if (Config::legitbot.weapon[tab].HSelected[3]) {
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LOWER_CHEST);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_CHEST);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_UPPER_CHEST);
-	}
-	if (Config::legitbot.weapon[tab].HSelected[4]) {
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_THIGH);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_THIGH);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_CALF);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_CALF);
-	}
-	if (Config::legitbot.weapon[tab].HSelected[5]) {
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_RIGHT_FOOT);
-		Config::legitbot.weapon[tab].Hitboxes.push_back(HITBOX_LEFT_FOOT);
-	}
-	*/
-
 
 	static int PriorityChoice = 0;
+	static int PrevPriorityChoice = -1;
 	ImGui::Combo(("Priority##Lcombo" + std::to_string(tab)).c_str(), &PriorityChoice, Config::legitbot.weapon[tab].LHitboxes);
-	if (PriorityChoice == 0)
+	if (PrevPriorityChoice != PriorityChoice)
 	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_HEAD);
-	}
-	if (PriorityChoice == 1)
-	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_PELVIS);
-	}
-	if (PriorityChoice == 2)
-	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_STOMACH);
-	}
-	if (PriorityChoice == 3)
-	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LOWER_CHEST);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_CHEST);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_UPPER_CHEST);
-	}
-	if (PriorityChoice == 4)
-	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_THIGH);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_THIGH);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_CALF);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_CALF);
-	}
-	if (PriorityChoice == 5)
-	{
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_FOOT);
-		Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_FOOT);
-	}
-
+		PrevPriorityChoice = PriorityChoice;
+		Config::legitbot.weapon[tab].Priority.clear();
+		Config::legitbot.weapon[tab].Priority.resize(0);
+		if (PriorityChoice == 0)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_HEAD);
+		}
+		if (PriorityChoice == 1)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_PELVIS);
+		}
+		if (PriorityChoice == 2)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_STOMACH);
+		}
+		if (PriorityChoice == 3)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LOWER_CHEST);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_CHEST);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_UPPER_CHEST);
+		}
+		if (PriorityChoice == 4)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_THIGH);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_THIGH);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_CALF);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_CALF);
+		}
+		if (PriorityChoice == 5)
+		{
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_RIGHT_FOOT);
+			Config::legitbot.weapon[tab].Priority.push_back(HITBOX_LEFT_FOOT);
+		}
+	} 
 }
 
 void DisplayRageTab() {
@@ -684,9 +666,7 @@ bool GUI::FreeHackMenu()
 
 		style->Colors[ImGuiCol_Header]				= ImVec4(1.f, 1.f, 1.f, 0.2f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
 		style->Colors[ImGuiCol_HeaderHovered]		= ImVec4(1.f, 1.f, 1.f, 0.4f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
-		style->Colors[ImGuiCol_HeaderActive]		= ImVec4(1.f, 1.f, 1.f, 0.4f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
-
-		
+		style->Colors[ImGuiCol_HeaderActive]		= ImVec4(1.f, 1.f, 1.f, 0.4f); // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem	
 	}
 	
 

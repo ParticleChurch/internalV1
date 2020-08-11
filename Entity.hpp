@@ -1,12 +1,15 @@
 #pragma once
-enum MoveType {
-	NOCLIP = 8,
-	LADDER = 9
-};
-
 class Entity
 {
 public:
+	float* pGetFlashMaxAlpha()
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
+		return (float*)((DWORD)this + offset);
+	}
+
 	void SetEntitySpotted(BYTE val) {
 		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_bSpotted");
 		if (offset == 0)

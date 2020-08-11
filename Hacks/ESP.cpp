@@ -98,14 +98,13 @@ void ESP::DrawSkeleton(Entity* Ent)
 
 void ESP::DrawBacktrackingDots()
 {
-	for (int i = 1; i < 65; i++) {
+	for (int i = 1; i < 65; i++) { //AIDS
 		if (backtrack->Records[i].empty())
 			continue;
 		static bool start = true;
 		start = true;
 		for (auto tick : backtrack->Records[i])
 		{
-		
 			static Vec LastScreen;
 			if (start) {
 				Vec screen;
@@ -164,6 +163,25 @@ void ESP::DrawTraces()
 	}
 }
 
+void ESP::DrawPoints()
+{
+
+	if (points.size() > 5)
+	{
+		points.pop_front();
+	}
+	for (auto point : points)
+	{
+		Vec screen;
+		if (WorldToScreen(point, screen))
+		{
+			I::surface->DrawSetColor(Color(0, 255, 255, 255));
+			I::surface->DrawOutlinedCircle(screen.x, screen.y, 4, 8);
+		}
+
+	}
+}
+
 void ESP::Run()
 {
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
@@ -175,6 +193,7 @@ void ESP::Run()
 		Once = false;
 		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
+
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
@@ -248,6 +267,7 @@ void ESP::Run()
 		
 	}
 	DrawTraces();
+	DrawPoints();
 	DrawBacktrackingDots();
 
 }

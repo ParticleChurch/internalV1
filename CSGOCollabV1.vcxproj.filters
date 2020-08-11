@@ -22,9 +22,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Hooks.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Interfaces.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -59,6 +56,9 @@
       <Filter>Source\Hacks</Filter>
     </ClCompile>
     <ClCompile Include="GlobalVars.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Hooks.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

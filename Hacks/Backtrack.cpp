@@ -13,16 +13,13 @@ void Backtrack::Init()
 	MaxUnlag = I::cvar->FindVar("sv_maxunlag");
 }
 
-void Backtrack::update(int stage)
+void Backtrack::update()
 {
 	if (!I::engine->IsInGame() || !G::Localplayer || !(G::Localplayer->GetHealth() > 0)) {
 		for (auto a : Records)
 			a.clear();
 		return;
 	}
-
-	if (stage != FRAME_RENDER_START)
-		return;
 
 	for (int i = 1; i < 65; i++) {
 		Entity* Ent = I::entitylist->GetClientEntity(i);
@@ -84,7 +81,6 @@ void Backtrack::update(int stage)
 				Records[i].erase(Records[i].begin() + j);
 		}
 	}
-
 }
 
 void Backtrack::run()

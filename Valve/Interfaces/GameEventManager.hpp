@@ -30,8 +30,8 @@ public:
 class GameEventListener {
 public:
     virtual ~GameEventListener() {}
-    virtual void fireGameEvent(GameEvent* event) = 0;
-    virtual int getEventDebugId() { return 42; }
+    virtual void FireGameEvent(GameEvent* event) = 0;
+    virtual int GetEventDebugId() { return 42; }
 };
 
 class GameEventManager {

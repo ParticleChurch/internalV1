@@ -56,12 +56,13 @@ void Aimbot::Legit()
 
 	if (!(G::Localplayer->GetHealth() > 0)) return;
 
-	if (!GetAsyncKeyState(legitbot.AimKey)) return;
+	Entity* ActiveWeapon = G::Localplayer->GetActiveWeapon();
+	if (!ActiveWeapon) return;
+
+	if (!((bool)GetAsyncKeyState(legitbot.AimKey))) return;
 
 	//Config Stuff (for certain weapons)
 	int ConfigIndex = -1;
-	Entity* ActiveWeapon = G::Localplayer->GetActiveWeapon();
-	if (!ActiveWeapon) return;
 	WeaponId WeaponID = ActiveWeapon->GetWeaponId();
 	int WeaponClass = GetWeaponClass(WeaponID);
 	if (WeaponClass == 35) //pistol
@@ -126,41 +127,29 @@ void Aimbot::Legit()
 			if (CrossDist > legitbot.weapon[ConfigIndex].Fov) //if not in fov
 				continue;
 
-			if (CrossDist < BestCrossDist)
+			bool InPriority = false;
+			for (auto a : legitbot.weapon[ConfigIndex].Priority)
+			{
+				if (a == hitbox) {
+					InPriority = true;
+
+				}
+			}
+			
+			if (CrossDist < BestCrossDist && !InPriority)
 			{
 				BestCrossDist = CrossDist;
+				BestAngle = Angle;
+				ValidTargetFound = true;
+			}
+			else if(InPriority)
+			{
+				BestCrossDist *= -1;
 				BestAngle = Angle;
 				ValidTargetFound = true;
 			}
 		}
 		
-		//for priority
-		/*
-		for (auto hitbox : legitbot.weapon[ConfigIndex].Priority)
-		{
-			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(hitbox);
-			if (!StudioBox) continue;	//if cant get the hitbox...
-
-			Vec min = StudioBox->bbmin.Transform(backtrack->Records[i].front().Matrix[StudioBox->bone]);
-			Vec max = StudioBox->bbmax.Transform(backtrack->Records[i].front().Matrix[StudioBox->bone]);
-			Vec loc = (max + min) / 2.f; //just getting middle of bone cuz not rage...
-
-			if (!autowall->IsVisible(loc, Ent)) //if not visible
-				return;
-
-			Vec Angle = CalculateAngle(loc);
-			float CrossDist = CrosshairDist(Angle);
-			if (CrossDist < legitbot.weapon[ConfigIndex].Fov) //if not in fov
-				continue;
-
-			if (CrossDist < BestCrossDist)
-			{
-				BestCrossDist = CrossDist;
-				BestAngle = Angle;
-				ValidTargetFound = true;
-			}
-		}
-		*/
 	}
 
 	if(G::Localplayer->GetShotsFired() > 1 &&		//shots 
@@ -310,15 +299,13 @@ void Aimbot::Rage()
 			Vec min = StudioBox->bbmin.Transform(tick.Matrix[StudioBox->bone]);
 			Vec max = StudioBox->bbmax.Transform(tick.Matrix[StudioBox->bone]);
 
-
-
 			//Vec MinLeft = Ent->GetLeft(min, radius, Ent);
 			//Vec MinRight = Ent->GetRight(min, radius, Ent);
 			//Vec MaxLeft = Ent->GetLeft(max, radius, Ent);
 			//Vec MaxRight = Ent->GetRight(max, radius, Ent);
 			Vec Middle = (max + min) / 2.f;
 			Middle.z += radius;
-			if (!autowall->CanScanBacktrack(Ent, Middle, Weapondata, 20, true, HITGROUP_HEAD)) continue;
+			if (!autowall->CanScanBacktrack(Ent, Middle, Weapondata, 1, true, HITGROUP_HEAD)) continue;
 
 			if (BestAngle < tick.angle.x)
 				continue;

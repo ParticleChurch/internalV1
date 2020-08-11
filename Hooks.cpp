@@ -21,6 +21,9 @@ namespace H
 	LockCursor oLockCursor;
 	FireEventClientSide oFireEventClientSide;
 
+	FireEvent oFireEvent;
+
+
 	hkCamToFirstPeron ohkCamToFirstPeron;
 	DoPostScreenEffects oDoPostScreenEffects;
 
@@ -92,6 +95,15 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
+
+
+	std::cout << "FireEvent...";
+	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
+
+
+
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
@@ -101,11 +113,11 @@ void H::Init()
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
-
 }
 
 void H::UnHook()
 {
+	*G::pSendPacket = true;
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
 	inputVMT.RestoreOriginal();
 	gameeventmanagerVMT.RestoreOriginal();
@@ -185,10 +197,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd->command_number)
 		return true;
 
-	if (I::engine->IsInGame() && cmd) {
+	if (I::engine->IsInGame() && cmd) 
+	{
+		I::globalvars->ServerTime(cmd);
+
 		if (GUI::ShowMenu) {
 			cmd->buttons = 0;
 			cmd->upmove = 0;
+			return false;
 		}
 
 		PVOID pebp;
@@ -198,11 +214,60 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 3;
 
-
-
 		G::CM_Start(cmd, pSendPacket);
 
-		//shitty SILENT autostrafe
+		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
+
+		//SlowWalk
+		if (false && G::Localplayer && G::Localplayer->GetHealth() > 0)
+		{
+			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
+			if (G::cmd->forwardmove && G::cmd->sidemove) {
+				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+			}
+			else if (G::cmd->forwardmove) {
+				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+			else if (G::cmd->sidemove) {
+				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
+			}
+		}
+
+		//for AA
+		if (fabsf(G::cmd->sidemove) < 5.0f) {
+			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+		}
+
+		G::CM_MoveFixStart();
+
+		antiaim->legit();
+
+		//ez bhop
+		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
+			&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
+			cmd->buttons &= ~IN_JUMP;
+		}
+
+		//toggle on and off third person
+		static float lastUpdate = 0;
+		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
+			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
+			lastUpdate = I::globalvars->m_curTime;
+			ThirdPersonToggle = !ThirdPersonToggle;
+		}
+
+		//manual shot
+		if (cmd->buttons & IN_ATTACK)
+			G::cmd->viewangles = G::CM_StartAngle;
+
+		aimbot->Legit();
+
+		if (GetAsyncKeyState(VK_LMENU))
+			aimbot->Rage();
+
+		G::CM_End();
 		/*
 		static bool flip = false;
 		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
@@ -225,67 +290,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			cmd->viewangles.Normalize();
 		}
 		*/
-		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
-
-		//SlowWalk
-		if (false && G::Localplayer && G::Localplayer->IsAlive())
-		{
-			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
-			if (G::cmd->forwardmove && G::cmd->sidemove) {
-				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-			}
-			else if (G::cmd->forwardmove) {
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-			else if (G::cmd->sidemove) {
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-		}
-
-		//for AA
-		if (fabsf(G::cmd->sidemove) < 5.0f) {
-			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
-		}
-
-
-
-		G::CM_MoveFixStart();
-
-		//ez bhop
-		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)) {
-			cmd->buttons &= ~IN_JUMP;
-		}
-
-		antiaim->rage();
-
-		backtrack->run();
-
-
-		static float lastUpdate = 0;
-		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
-			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
-			lastUpdate = I::globalvars->m_curTime;
-			ThirdPersonToggle = !ThirdPersonToggle;
-		}
-
-		if (cmd->buttons & IN_ATTACK)
-			G::cmd->viewangles = G::CM_StartAngle;
-
-		if (GetAsyncKeyState(VK_LMENU)) {
-
-			aimbot->Rage();
-		}
-
-
-
-		G::CM_End();
-
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
-	return false; //silent aim on false (only for client)
+	return true; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
@@ -304,33 +312,30 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	if (curStage == FRAME_RENDER_START)
 	{
-		if (I::engine->IsInGame())
+		if (I::engine->IsInGame()) {
 			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	}
-	backtrack->update(curStage);
 
-	if (I::engine->IsInGame()) {
-		//this is for accurate angles (aa, etc)
-		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "deadflag");
+			//this is for accurate angles (aa, etc)
+			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+			if (offset == 0)
+				offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-		if (I::input->m_fCameraInThirdPerson)
-			*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
+			if (I::input->m_fCameraInThirdPerson)
+				*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
 
-		if (curStage == FRAME_RENDER_START && G::Localplayer) //FIX ANIMATION LOD
-		{
+			backtrack->update();
+
+			*G::Localplayer->pGetFlashMaxAlpha() = 0;
+
 			int LPIndex = I::engine->GetLocalPlayer();
 			for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 				Entity* entity = I::entitylist->GetClientEntity(i);
-				if (!entity || i == LPIndex || entity->IsDormant() || !entity->IsAlive()) continue;
+				if (!entity || i == LPIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
 				*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
 				*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 			}
 		}
-
 	}
-
 
 	return oFrameStageNotify(curStage);
 }
@@ -350,7 +355,18 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	if (!event)
 		return oFireEventClientSide(I::gameeventmanager, event);
 
+	
+
 	switch (StrHash::HashRuntime(event->GetName())) {
+	case StrHash::Hash("bullet_impact"):
+	{
+		H::console.push_back("impact!!!");
+	}
+	case StrHash::Hash("player_footstep"):
+	{
+		H::console.push_back("FOOTSTEP!!!");
+	}
+	break;
 	case StrHash::Hash("player_hurt"):
 	{
 		/*
@@ -366,7 +382,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		byte	dmg_armor	damage done to armor
 		byte	hitgroup	hitgroup that was damaged
 		*/
-
+		
 		//also add hitmarkers here...
 		const auto localIdx = I::engine->GetLocalPlayer();
 		int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
@@ -391,7 +407,6 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 
 	}
 	break;
-
 	case StrHash::Hash("player_death"):
 	{
 		//also add player kill say here
@@ -403,6 +418,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	break;
 	case StrHash::Hash("weapon_fire"):
 	{
+		
 		const auto localIdx = I::engine->GetLocalPlayer();
 
 		player_info_t Info;
@@ -421,8 +437,31 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		}
 	}
 	break;
+	
 	}
 	return oFireEventClientSide(I::gameeventmanager, event);
+}
+
+bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WORKS HAHAHAHA
+{
+	//   float  : float, 32 bit
+	if (!(I::engine->IsInGame()))
+		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
+	if (!event)
+		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
+
+	switch (StrHash::HashRuntime(event->GetName())) {
+		case StrHash::Hash("bullet_impact"):
+		{
+			Vec loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+			esp->points.push_back(loc);
+			H::console.clear();
+			H::console.resize(0);
+			H::console.push_back(loc.str());
+		}
+		break;
+	}
+	return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
 }
 
 void __fastcall H::hkCamToFirstPeronHook()
