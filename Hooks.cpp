@@ -12,6 +12,7 @@ namespace H
 	VMTManager panelVMT;
 	VMTManager gameeventmanagerVMT;
 	VMTManager inputVMT;
+	VMTManager modelrenderVMT;
 
 	EndScene oEndScene;
 	Reset oReset;
@@ -20,12 +21,10 @@ namespace H
 	FrameStageNotify oFrameStageNotify;
 	LockCursor oLockCursor;
 	FireEventClientSide oFireEventClientSide;
-
 	FireEvent oFireEvent;
-
-
 	hkCamToFirstPeron ohkCamToFirstPeron;
 	DoPostScreenEffects oDoPostScreenEffects;
+	DrawModelExecute oDrawModelExecute;
 
 	//GUI Vars
 	bool D3dInit = false;
@@ -59,6 +58,7 @@ void H::Init()
 	panelVMT.Initialise((DWORD*)I::panel);
 	gameeventmanagerVMT.Initialise((DWORD*)I::gameeventmanager);
 	inputVMT.Initialise((DWORD*)I::input);
+	modelrenderVMT.Initialise((DWORD*)I::modelrender);
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -95,14 +95,10 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
-
-
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
-
-
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
@@ -113,12 +109,18 @@ void H::Init()
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
+
+	std::cout << "DrawModelExecute...";
+	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");
 }
 
 void H::UnHook()
 {
 	*G::pSendPacket = true;
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
+	modelrenderVMT.RestoreOriginal();
 	inputVMT.RestoreOriginal();
 	gameeventmanagerVMT.RestoreOriginal();
 	surfaceVMT.RestoreOriginal();
@@ -212,7 +214,30 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 3;
+		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 5;
+
+		/*
+		static bool flip = false;
+		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
+		{
+			if (cmd->sidemove > 300)
+				cmd->viewangles.y -= 30;
+			else if (cmd->sidemove < -300)
+				cmd->viewangles.y += 30;
+			flip = !flip;
+			if (cmd->mousedx > 0.5 || flip)
+			{
+				cmd->viewangles.y += 2;
+				cmd->sidemove = 450.0f;
+			}
+			else if (!flip || cmd->mousedx < 0.5)
+			{
+				cmd->viewangles.y -= 2;
+				cmd->sidemove = -450.0f;
+			}
+			cmd->viewangles.Normalize();
+		}
+		*/
 
 		G::CM_Start(cmd, pSendPacket);
 
@@ -233,11 +258,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			else if (G::cmd->sidemove) {
 				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
 			}
-		}
-
-		//for AA
-		if (fabsf(G::cmd->sidemove) < 5.0f) {
-			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 		}
 
 		G::CM_MoveFixStart();
@@ -262,38 +282,18 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		if (cmd->buttons & IN_ATTACK)
 			G::cmd->viewangles = G::CM_StartAngle;
 
-		aimbot->Legit();
+		//aimbot->Legit();
 
 		if (GetAsyncKeyState(VK_LMENU))
 			aimbot->Rage();
 
-		G::CM_End();
-		/*
-		static bool flip = false;
-		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
-		{
-			if (cmd->sidemove > 300)
-				cmd->viewangles.y -= 30;
-			else if (cmd->sidemove < -300)
-				cmd->viewangles.y += 30;
-			flip = !flip;
-			if (cmd->mousedx > 0.5 || flip)
-			{
-				cmd->viewangles.y += 2;
-				cmd->sidemove = 450.0f;
-			}
-			else if (!flip || cmd->mousedx < 0.5)
-			{
-				cmd->viewangles.y -= 2;
-				cmd->sidemove = -450.0f;
-			}
-			cmd->viewangles.Normalize();
-		}
-		*/
+		//backtrack->run();
+
+		G::CM_End();	
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
-	return true; //silent aim on false (only for client)
+	return false; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
@@ -358,15 +358,6 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	
 
 	switch (StrHash::HashRuntime(event->GetName())) {
-	case StrHash::Hash("bullet_impact"):
-	{
-		H::console.push_back("impact!!!");
-	}
-	case StrHash::Hash("player_footstep"):
-	{
-		H::console.push_back("FOOTSTEP!!!");
-	}
-	break;
 	case StrHash::Hash("player_hurt"):
 	{
 		/*
@@ -390,74 +381,79 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 
 		if (attacker == localIdx && userid != localIdx)
 			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
-
-		if (attacker != localIdx && attacker < 65)
-		{
-			Entity* Ent = I::entitylist->GetClientEntity(attacker);
-			if (Ent->GetTeam() != G::Localplayer->GetTeam() && !backtrack->Records[attacker].empty())
-			{
-				int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(attacker)->GetSimulationTime());
-				for (int a = 0; a < backtrack->Records[attacker].size(); a++) {
-					if (ideal == backtrack->TimeToTicks(backtrack->Records[attacker][a].SimulationTime)) {
-						backtrack->Records[attacker][a].Shooting = true;
-					}
-				}
-			}
-		}
-
 	}
 	break;
 	case StrHash::Hash("player_death"):
 	{
-		//also add player kill say here
+		/*
+		player_death
+		Note: When a client dies
+
+		Name:	player_death
+		Structure:	
+		short	userid	user ID who died
+		short	attacker	user ID who killed
+		short	assister	user ID who assisted in the kill
+		bool	assistedflash	assister helped with a flash
+		string	weapon	weapon name killer used
+		string	weapon_itemid	inventory item id of weapon killer used
+		string	weapon_fauxitemid	faux item id of weapon killer used
+		string	weapon_originalowner_xuid	
+		bool	headshot	singals a headshot
+		short	dominated	did killer dominate victim with this kill
+		short	revenge	did killer get revenge on victim with this kill
+		short	wipe	To do: check if indicates on a squad wipeout in Danger Zone
+		short	penetrated	number of objects shot penetrated before killing target
+		bool	noreplay	if replay data is unavailable, this will be present and set to false
+		bool	noscope	kill happened without a scope, used for death notice icon
+		bool	thrusmoke	hitscan weapon went through smoke grenade
+		bool	attackerblind	attacker was blind from flashbang
+		*/
+		
 		const auto localIdx = I::engine->GetLocalPlayer();
 		if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
 			break;
 		I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
+		//I::engine->ClientCmd_Unrestricted("say ok"); //kill say
 	}
-	break;
-	case StrHash::Hash("weapon_fire"):
-	{
-		
-		const auto localIdx = I::engine->GetLocalPlayer();
-
-		player_info_t Info;
-		int index = I::engine->GetPlayerForUserID(event->GetInt("userid"));
-		if (index < 65 && I::engine->GetPlayerInfo(index, &Info))
-		{
-			if (!backtrack->Records[index].empty())
-			{
-				int ideal = backtrack->TimeToTicks(I::entitylist->GetClientEntity(index)->GetSimulationTime());
-				for (int a = 0; a < backtrack->Records[index].size(); a++) {
-					if (ideal == backtrack->TimeToTicks(backtrack->Records[index][a].SimulationTime)) {
-						backtrack->Records[index][a].Shooting = true;
-					}
-				}
-			}
-		}
-	}
-	break;
-	
+	break;	
 	}
 	return oFireEventClientSide(I::gameeventmanager, event);
 }
 
 bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WORKS HAHAHAHA
 {
-	//   float  : float, 32 bit
 	if (!(I::engine->IsInGame()))
 		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
 	if (!event)
 		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
 
 	switch (StrHash::HashRuntime(event->GetName())) {
+		/*
+		bullet_impact
+		Note: Every time a bullet hits something
+
+		Name:	bullet_impact
+		Structure:	
+		short	userid	
+		float	x	
+		float	y	
+		float	z	
+		*/
 		case StrHash::Hash("bullet_impact"):
 		{
-			Vec loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
-			esp->points.push_back(loc);
-			H::console.clear();
-			H::console.resize(0);
-			H::console.push_back(loc.str());
+			Vec			HitLocation		= Vec(event->GetInt("x"), event->GetInt("y"), event->GetInt("z"));
+			const int	LocalIndex		= I::engine->GetLocalPlayer();
+			const int	UserIndex		= I::engine->GetPlayerForUserID(event->GetInt("userid"));
+			Entity*		Entity			= I::entitylist->GetClientEntity(UserIndex);
+
+			//if not localplayer and not on our team...
+			if (UserIndex != LocalIndex && G::Localplayer->GetTeam() != Entity->GetTeam() 
+				&& UserIndex < 65 && UserIndex >= 0)
+			{
+				backtrack->Records[UserIndex].front().Value += 20; //better value
+			}
+				
 		}
 		break;
 	}
@@ -524,4 +520,84 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 	}
 
 	return oDoPostScreenEffects(I::clientmode, param);
+}
+
+void OverideMat(bool ignorez, bool wireframe, bool transparent, Color rgba,
+	void* thisptr, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
+{
+	static Material* normal = I::materialsystem->CreateMaterial("normal", KeyValues::FromString("VertexLitGeneric", nullptr));
+
+	normal->ColorModulate(
+		rgba.r() / 255.0f,
+		rgba.g() / 255.0f,
+		rgba.b() / 255.0f);
+
+	if (transparent)
+		normal->AlphaModulate(0.45);
+
+	normal->SetMaterialVarFlag(MaterialVarFlag::IGNOREZ, ignorez);
+	normal->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, wireframe);
+
+	I::modelrender->ForcedMaterialOverride(normal);
+	H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+	if (ignorez)
+	{
+		I::modelrender->ForcedMaterialOverride(nullptr);
+	}
+}
+
+void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
+{
+	bool is_arm = strstr(info.model->name, "arms") != nullptr;
+	bool is_player = strstr(info.model->name, "models/player") != nullptr;
+	bool is_sleeve = strstr(info.model->name, "sleeve") != nullptr;
+	bool is_flash = strstr(info.model->name, "flash") != nullptr;
+
+	static Color color_blocked = Color(200, 100, 100);
+	static Color color_visible(100, 200, 100);
+	Entity* ent = I::entitylist->GetClientEntity(info.entityIndex);
+	Entity* local = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+	static player_info_t bInfo;
+
+	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && I::engine->GetPlayerInfo(info.entityIndex, &bInfo))
+	{
+		bool isEnemy = ent->GetTeam() != local->GetTeam();
+
+		if (isEnemy)
+		{
+			OverideMat(
+				true,	//viz thru wall?
+				false,	//wireframe?
+				false,	//transparent?
+				color_blocked,
+				thisptr, ctx, state, info, customBoneToWorld);
+
+			//oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+
+			OverideMat(
+				false,	//viz thru wall?
+				false,	//wireframe?
+				false,	//transparent?
+				color_visible,
+				thisptr, ctx, state, info, customBoneToWorld);
+
+			//oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+		}
+		else if(info.entityIndex == I::engine->GetLocalPlayer())
+		{
+
+			static Color color_local = Color(1, 250, 254);
+			OverideMat(
+				true,	//viz thru wall?
+				false,	//wireframe?
+				true,	//transparent?
+				color_local,
+				thisptr, ctx, state, info, customBoneToWorld);
+		}
+	}
+	else
+	{
+		oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+	}
+
 }

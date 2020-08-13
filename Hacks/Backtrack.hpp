@@ -6,9 +6,10 @@ struct Tick {
     Matrix3x4 Matrix[256];
 
     //Resolving info
-    QAngle angle;
-    bool Shooting = false;
-    bool InAir = false;
+    QAngle Angle;       //angle at a point in time
+    Vec EyePos;         //Eye position
+    bool InAir = false; //if in air
+    int Value = 0;      //value of tick (if reliable/hurtful)
 
     Tick() {};
     Tick(int Index, float SimulationTime, Matrix3x4 Matrix[128]) {
@@ -34,11 +35,11 @@ struct Tick {
     {
         return (SimulationTime == Obj.SimulationTime) &&
             (Index == Obj.Index) &&
-            (Shooting == Obj.Shooting);
+            (Value == Obj.Value);
     }
     bool operator != (Tick const& Obj)
     {
-        return (SimulationTime != Obj.SimulationTime) || (Index != Obj.Index) || (Shooting != Obj.Shooting);
+        return (SimulationTime != Obj.SimulationTime) || (Index != Obj.Index) || (Value != Obj.Value);
     }
 };
 

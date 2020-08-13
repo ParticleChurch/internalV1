@@ -60,6 +60,19 @@ struct Model {
 	Vec mins, maxs;
 };
 
+struct ModelRenderInfo {
+	Vec origin;
+	Vec angles;
+	char pad[4];
+	void* renderable;
+	const Model* model;
+	const Matrix3x4* modelToWorld;
+	const Matrix3x4* lightingOffset;
+	const Vec* lightingOrigin;
+	int flags;
+	int entityIndex;
+};
+
 enum modtype_t
 {
 	mod_bad = 0,

@@ -26,6 +26,8 @@
 #include "SDK/SurfaceData.hpp"
 #include "SDK/AnimState.hpp"
 #include "SDK/UtlVector.hpp"
+#include "SDK/Material.h"
+#include "SDK/KeyValues.h"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"
@@ -41,3 +43,5 @@
 #include "Interfaces/InputSystem.hpp"
 #include "Interfaces/Convar.hpp"
 #include "Interfaces/CInput.hpp"
+#include "Interfaces/ModelRender.h"
+#include "Interfaces/MaterialSystem.h"

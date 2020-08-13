@@ -243,6 +243,14 @@ public:
 		return a;
 	}
 
+	void SetEyeAngles(QAngle angle)
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		*(QAngle*)((DWORD)this + offset) = angle;
+	}
+
 	float GetSimulationTime() 
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");

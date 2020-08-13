@@ -18,4 +18,6 @@ namespace I
 	GameEventManager* gameeventmanager = (GameEventManager*)NewInterface->GetInterface((char*)"engine.dll", (char*)"GAMEEVENTSMANAGER002");
 	InputSystem* inputsystem = (InputSystem*)NewInterface->GetInterface((char*)"inputsystem.dll", (char*)"InputSystemVersion001");
 	CVar* cvar = (CVar*)NewInterface->GetInterface((char*)"vstdlib.dll", (char*)"VEngineCvar007");
+	ModelRender* modelrender = (ModelRender*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VEngineModel016");
+	MaterialSystem* materialsystem = (MaterialSystem*)NewInterface->GetInterface((char*)"materialsystem.dll", (char*)"VMaterialSystem080");
 }

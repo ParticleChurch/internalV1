@@ -21,6 +21,22 @@ Vec Aimbot::CalculateAngle(Vec Target)
 	return Angle;
 }
 
+Vec Aimbot::CalculateAngle(Vec Source, Vec Target)
+{
+	static float Distance;	//Total distance between target and starting head position
+	Distance = sqrtf(pow(Source.x - Target.x, 2) + pow(Source.y - Target.y, 2) + pow(Source.z - Target.z, 2));
+
+	static float Height;	//total difference in height between target and starting head position
+	Height = Source.z - Target.z;
+
+	static Vec Angle;
+	Angle.x = RAD2DEG(asin(Height / Distance));									//yaw angle
+	Angle.y = RAD2DEG(atan2(Source.y - Target.y, Source.x - Target.x)) - 180;	//pitch angle
+
+	Angle.Normalize();	//making sure the angles are proper
+	return Angle;
+}
+
 float Aimbot::CrosshairDist(Vec TargetAngle)
 {
 	static Vec cur;
@@ -235,103 +251,101 @@ void Aimbot::Rage()
 	if (!G::Localplayer->GetAmmo())
 		return;
 
-	WeaponData* Weapondata = G::Localplayer->GetActiveWeapon()->GetWeaponData();
-	if (!Weapondata) return;
 
-	//get closest entity
-	float CrossEntDist = FLT_MAX;
-	int RecordIndex = -1;
-	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
-	{
-		player_info_t PlayerInfo;
-		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
-			continue;
-
+	//get closest Entity
+	int BestIndex = -1;
+	float BestCrossDist = FLT_MAX;
+	for (int i = 1; i < 65; i++) {
 		Entity* Ent = I::entitylist->GetClientEntity(i);
-		if (!Ent)
+		if (!Ent) //if not nullptr
+			continue;
+		
+		static player_info_t info;
+		if (!I::engine->GetPlayerInfo(i, &info)) //if player
+			continue;
+		
+		if (G::Localplayer == Ent) //if player not localplayer
+			continue;
+		
+		if (i == I::engine->GetLocalPlayer()) //if player localplayer
+			continue;
+		
+		if (!(Ent->GetHealth() > 0)) //if health isn't greater than 0
+			continue;
+		
+		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if on local players team
+			continue;
+		
+		if (Ent->IsDormant()) //if out of range... (def cant hit)
 			continue;
 
-		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
-			continue;
-
-		if (Ent->IsDormant()) //if dormant
-			continue;
-
-		if (!(Ent->GetHealth() > 0)) //if dead
-			continue;
-
-		Vec Head = Ent->GetBonePos(8);
-		Vec Angle = CalculateAngle(Head);
-		float CrossDist = CrosshairDist(Angle);
-		if (CrossDist < CrossEntDist)
+		Vec		Location	= Ent->GetBone(HITBOX_HEAD);
+		QAngle	Angle		= aimbot->CalculateAngle(Location);
+		float	CrossDist	= aimbot->CrosshairDist(Angle);
+		if (CrossDist < BestCrossDist)
 		{
-			CrossEntDist = CrossDist;
-			RecordIndex = i;
+			BestCrossDist = CrossDist;
+			BestIndex = i;
 		}
 	}
 
-	//if unable to find proper record
-	if (RecordIndex == -1) return;
+	//if a valid target hasn't been found
+	if (BestIndex == -1)
+		return;
 
-	Tick BestTick;
-	Vec BestTarget;
+	Entity* Ent = I::entitylist->GetClientEntity(BestIndex);
+	if (!Ent) return; //if proper entity
+	
+	//absolute unit of a shit code
+	Entity* Weapon = G::Localplayer->GetActiveWeapon();
+	WeaponData* WeapData = Weapon->GetWeaponData();
+
+	QAngle Angle;
+	int tick_count;
 	bool ValidFound = false;
-	float SimTime = FLT_MAX;
-	std::vector<int> Hitboxes = { HITBOX_HEAD }; 
-	float BestAngle = FLT_MAX;
-	bool TargetShoot = false;
-	for (auto Hitbox : Hitboxes)
+
+	std::vector<Hitboxes> hitboxes = { HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };
+	int HitGroup = 0;
+
+	for (auto HBOX : hitboxes)
 	{
-		for (Tick tick : backtrack->Records[RecordIndex])
-		{
-			if (!backtrack->Valid(tick.SimulationTime))
-				continue;
+		studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
+		if (!StudioModel) continue; //if cant get the model
 
-			Entity* Ent = I::entitylist->GetClientEntity(tick.Index);
-			if (!Ent) continue;
-			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
-			if (!StudioModel) continue;
+		//if(!(tick.Value > 0)) continue; //if not onshot...
 
-			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
-			if (!StudioBox) continue;
+			//GOIN FOR HEAD BB
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HBOX);
+		if (!StudioBox) continue;	//if cant get the hitbox...
 
-			float radius = StudioBox->m_flRadius * 0.5;
-			Vec min = StudioBox->bbmin.Transform(tick.Matrix[StudioBox->bone]);
-			Vec max = StudioBox->bbmax.Transform(tick.Matrix[StudioBox->bone]);
+		if (HBOX == HITBOX_HEAD)
+			HitGroup = HITGROUP_HEAD;
+		else if (HBOX == HITBOX_PELVIS || HBOX == HITBOX_STOMACH)
+			HitGroup = HITGROUP_STOMACH;
+		else if (HBOX == HITBOX_LOWER_CHEST || HBOX == HITBOX_CHEST || HBOX == HITBOX_UPPER_CHEST)
+			HitGroup = HITGROUP_CHEST;
+		else if (HBOX == HITBOX_RIGHT_THIGH)
+			HitGroup = HITGROUP_RIGHTLEG;
+		else if (HBOX == HITBOX_LEFT_THIGH)
+			HitGroup = HITGROUP_LEFTLEG;
 
-			//Vec MinLeft = Ent->GetLeft(min, radius, Ent);
-			//Vec MinRight = Ent->GetRight(min, radius, Ent);
-			//Vec MaxLeft = Ent->GetLeft(max, radius, Ent);
-			//Vec MaxRight = Ent->GetRight(max, radius, Ent);
-			Vec Middle = (max + min) / 2.f;
-			Middle.z += radius;
-			if (!autowall->CanScanBacktrack(Ent, Middle, Weapondata, 1, true, HITGROUP_HEAD)) continue;
+		Vec loc = Ent->GetBone(HBOX);
 
-			if (BestAngle < tick.angle.x)
-				continue;
+		if (!autowall->CanScanBacktrack(Ent, loc, WeapData, 1, true, HitGroup))
+			continue;
 
-			if (TargetShoot)
-				continue;
-
-			if (tick.Shooting)
-				TargetShoot = true;		//ONLY ONSHOT_______________________
-
-			BestAngle = tick.angle.x;
-			SimTime = tick.SimulationTime;
-			BestTarget = Middle;
-			BestTick = tick;
-			ValidFound = true;
-		}
+		Angle = aimbot->CalculateAngle(loc);
+		ValidFound = true;
 	}
-
+	
 	if (!ValidFound) return;
-	
-	Vec Angle = CalculateAngle(BestTarget);
-	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
 
-	
+	//HIDE SHOTS
+	*G::pSendPacket = true;
+
+	//actual shit
+	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
 	G::cmd->viewangles = Angle;
-	G::cmd->tick_count = backtrack->TimeToTicks(SimTime);
 	G::cmd->buttons |= IN_ATTACK;
 }
 

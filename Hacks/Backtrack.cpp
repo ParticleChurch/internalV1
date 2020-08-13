@@ -65,9 +65,9 @@ void Backtrack::update()
 		tick.SimulationTime = Ent->GetSimulationTime();
 		Ent->SetupBones(tick.Matrix, 256, BONE_USED_BY_ANYTHING, I::globalvars->m_curTime);
 		
-		tick.angle = Ent->GetEyeAngles();
+		tick.Angle = Ent->GetEyeAngles();
+		tick.EyePos = Ent->GetEyePos();
 		tick.InAir = !(Ent->GetFlags() & FL_ONGROUND);
-		tick.Shooting = false;
 
 		Records[i].push_front(tick);
 

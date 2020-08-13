@@ -123,62 +123,15 @@ void ESP::DrawBacktrackingDots()
 					LastScreen.x > 0  && LastScreen.x < 1920
 					&& LastScreen.y > 0 && LastScreen.y < 1080)
 				{
-					if (!tick.Shooting)
-						I::surface->DrawSetColor(Color(255, 255, 255, 255));
-					else
-						I::surface->DrawSetColor(Color(255, 0, 0, 255));
+					//if (!tick.Shooting)
+					//	I::surface->DrawSetColor(Color(255, 255, 255, 255));
+					//else
+					I::surface->DrawSetColor(Color(255, 0, 0, 255));
 					I::surface->DrawLine(screen.x, screen.y, LastScreen.x , LastScreen.y);
 					LastScreen = screen;
 				}
 			}
 		}
-	}
-}
-
-void ESP::DrawTraces()
-{
-	Vec Screen1;
-	Vec Screen2;
-
-	if (traces.size() > 5)
-	{
-		traces.pop_front();
-	}
-	for (auto Trace : traces)
-	{
-		bool ST = WorldToScreen(Trace.Startpos, Screen1);
-		bool END = WorldToScreen(Trace.Endpos, Screen2);
-		if (ST && END)
-		{
-			I::surface->DrawSetColor(Color(255, 0, 0, 255));
-			I::surface->DrawLine(Screen1.x, Screen1.y, Screen2.x, Screen2.y);
-		}
-
-		if (END)
-		{
-			I::surface->DrawSetColor(Color(0, 0, 255, 200));
-			I::surface->DrawOutlinedCircle(Screen2.x, Screen2.y, 4, 8);
-		}
-
-	}
-}
-
-void ESP::DrawPoints()
-{
-
-	if (points.size() > 5)
-	{
-		points.pop_front();
-	}
-	for (auto point : points)
-	{
-		Vec screen;
-		if (WorldToScreen(point, screen))
-		{
-			I::surface->DrawSetColor(Color(0, 255, 255, 255));
-			I::surface->DrawOutlinedCircle(screen.x, screen.y, 4, 8);
-		}
-
 	}
 }
 
@@ -217,22 +170,6 @@ void ESP::Run()
 		if (Ent->IsDormant())
 			continue;
 
-		//Bad
-		/*
-		if (Ent->GetEyeAngles().x < 60){
-			if (!backtrack->Records[i].empty())
-			{
-				backtrack->Records[i].front().Shooting = true;
-				//backtrack->Records[i].back().Shoot = Ent->GetEyePos();
-			}
-		}
-		*/
-		/*
-		//works only on workshop map idk why
-		if (Ent->GetGunGameImmunity())
-			continue;
-			*/
-
 		Vec Bottom = Ent->GetVecOrigin();
 		Vec Top = Ent->GetBonePos(8);
 		Top.z += 10;
@@ -266,8 +203,5 @@ void ESP::Run()
 		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
 		
 	}
-	DrawTraces();
-	DrawPoints();
 	DrawBacktrackingDots();
-
 }

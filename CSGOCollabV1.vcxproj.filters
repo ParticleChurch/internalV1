@@ -264,6 +264,18 @@
     <ClInclude Include="Valve\Custom\WeaponId.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\ModelRender.h">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\Material.h">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\MaterialSystem.h">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\KeyValues.h">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

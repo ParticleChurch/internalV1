@@ -18,4 +18,6 @@ namespace I
 	extern InputSystem* inputsystem;
 	extern CVar* cvar;
 	extern CInput* input;
+	extern ModelRender* modelrender;
+	extern MaterialSystem* materialsystem;
 }

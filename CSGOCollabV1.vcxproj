@@ -218,6 +218,8 @@
     <ClInclude Include="Valve\Interfaces\InputSystem.hpp" />
     <ClInclude Include="Valve\Interfaces\IVEngineClient.hpp" />
     <ClInclude Include="Valve\Interfaces\IVModelInfo.hpp" />
+    <ClInclude Include="Valve\Interfaces\MaterialSystem.h" />
+    <ClInclude Include="Valve\Interfaces\ModelRender.h" />
     <ClInclude Include="Valve\Interfaces\Panel.hpp" />
     <ClInclude Include="Valve\Interfaces\PhysicsSurfaceProps.hpp" />
     <ClInclude Include="Valve\Interfaces\Surface.hpp" />
@@ -229,6 +231,8 @@
     <ClInclude Include="Valve\SDK\CTraceFilter.hpp" />
     <ClInclude Include="Valve\SDK\CUserCmd.hpp" />
     <ClInclude Include="Valve\SDK\EFontFlags.hpp" />
+    <ClInclude Include="Valve\SDK\KeyValues.h" />
+    <ClInclude Include="Valve\SDK\Material.h" />
     <ClInclude Include="Valve\SDK\NetChannel.hpp" />
     <ClInclude Include="Valve\SDK\player_info_t.hpp" />
     <ClInclude Include="Valve\SDK\Prototypes.hpp" />

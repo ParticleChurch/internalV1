@@ -18,6 +18,9 @@ void AntiAim::legit()
 	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
 		return;
 
+	if (fabsf(G::cmd->sidemove) < 5.0f) {
+		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+	}
 
 	int side = 1;
 	static float lastUpdate = 0;
@@ -77,6 +80,10 @@ void AntiAim::rage()
 
 	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
 		return;
+
+	if (fabsf(G::cmd->sidemove) < 5.0f) {
+		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+	}
 
 	bool BreakLBY = LBYBreak();
 	 

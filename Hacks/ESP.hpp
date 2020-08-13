@@ -10,11 +10,7 @@ private:
 	void DrawHealth(Vec TL, Vec BR, int Health);
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
-	void DrawTraces();
-	void DrawPoints();
 public:
-	std::deque<trace_t> traces;
-	std::deque<Vec> points;
 	void Run();
 
 	
