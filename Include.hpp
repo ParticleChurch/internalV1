@@ -17,6 +17,7 @@
 
 #pragma warning(disable:4996)    //disables warning printing console
 #pragma warning(disable:4244)    //gets rid of const int to float warning
+#pragma warning(disable:4305)    //gets rid of double to float warning
 
 #include "Utils/Utils.hpp"       //includes all utils...
 

@@ -71,11 +71,12 @@ void Backtrack::update()
 
 		Records[i].push_front(tick);
 
-		while (Records[i].size() > 3 && Records[i].size() > TimeToTicks(40000.f / 1000.f)) {
+		unsigned int Ticks = TimeToTicks(40000.f / 1000.f);
+		while (Records[i].size() > 3 && Records[i].size() > Ticks) {
 			Records[i].pop_back();
 		}
 		
-		for (int j = 0; j < Records[i].size(); j++)
+		for (unsigned int j = 0; j < Records[i].size(); j++)
 		{
 			if (!Valid(Records[i][j].SimulationTime))
 				Records[i].erase(Records[i].begin() + j);

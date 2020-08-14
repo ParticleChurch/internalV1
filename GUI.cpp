@@ -766,5 +766,3 @@ bool GUI::FreeHackMenu()
 
 	return PressedEject;
 }
-
-
