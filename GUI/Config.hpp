@@ -214,4 +214,6 @@ namespace Config {
 	extern Config_AntiAim antiaim;
 	extern Config_Movement movement;
 	extern Config_Visuals visuals;
+
+	extern unsigned int RaindropCount;
 }

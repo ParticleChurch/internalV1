@@ -15,10 +15,10 @@ public:
 
 	Color(float r, float g, float b, float a = 255.00f)
 	{
-		color[0] = r;
-		color[1] = g;
-		color[2] = b;
-		color[3] = a;
+		color[0] = (unsigned char) r;
+		color[1] = (unsigned char) g;
+		color[2] = (unsigned char) b;
+		color[3] = (unsigned char) a;
 	}
 
 	float* Base()

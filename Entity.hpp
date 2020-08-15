@@ -399,6 +399,7 @@ public:
 				}
 			}
 		}
+		return Vec();
 	}
 
 	Vec GetLeft(Vec C, float radius, Entity* ent)

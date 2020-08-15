@@ -672,6 +672,7 @@ bool GUI::FreeHackMenu()
 
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
 	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar);
+	GUI::Rain();
 	
 	ImGui::GetStyle().Alpha = 1;
 	ImGui::GetStyle().FrameBorderSize = 0.5f;
@@ -765,4 +766,76 @@ bool GUI::FreeHackMenu()
 	ImGui::End();
 
 	return PressedEject;
+}
+
+
+#define randf() static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+#define square(x) (x)*(x)
+#define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
+
+inline float lerp(float a, float b, float f)
+{
+	return (b - a) * f + a;
+}
+
+struct Raindrop {
+	float x, y, z = -1.f;
+	int height;
+	float secondsToFall;
+	ImU32 color;
+};
+
+bool RaindropsInitialized = false;
+std::chrono::steady_clock::time_point RainLastMovedTime;
+
+void GUI::Rain()
+{
+	/* get imgui window factors */
+	ImVec2 WindowMin = ImGui::GetWindowPos();
+	ImVec2 WindowMax = addImVec2(WindowMin, ImGui::GetWindowSize());
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+	/* initalize raindrops */
+	static Raindrop* Raindrops = (Raindrop*)malloc(sizeof(Raindrop) * Config::RaindropCount);
+	if (!RaindropsInitialized)
+	{
+		for (unsigned int i = 0; i < Config::RaindropCount; i++)
+		{
+			Raindrops[i].x = randf();
+			Raindrops[i].y = randf();
+			Raindrops[i].z = square(randf());
+			Raindrops[i].color = IM_COL32(255, 255, 255, 55 + 200 * Raindrops[i].z);
+			Raindrops[i].height = (int)lerp(10, 15, Raindrops[i].z);
+			Raindrops[i].secondsToFall = lerp(30, 10, Raindrops[i].z);
+		}
+		RaindropsInitialized = true;
+	}
+
+	/* timings */
+	auto Now = std::chrono::high_resolution_clock::now();
+	double SecondsSinceLastUpdate = ((double)std::chrono::duration_cast<std::chrono::microseconds>(Now - RainLastMovedTime).count()) / 1e6f;
+	RainLastMovedTime = Now;
+
+	/* draw rain */
+	ImVec2 top, bottom;
+	for (unsigned int i = 0; i < Config::RaindropCount; i++)
+	{
+		/* fall downwards */
+		Raindrops[i].y += SecondsSinceLastUpdate / Raindrops[i].secondsToFall;
+		if (Raindrops[i].y >= 1.f)
+		{
+			Raindrops[i].y = fmod(Raindrops[i].y, 1.f);
+			Raindrops[i].x = randf();
+		}
+
+		/* calculate position in pixels */
+		top.x = lerp(WindowMin.x, WindowMax.x, Raindrops[i].x);
+		bottom.x = top.x + 1;
+
+		top.y = lerp(WindowMin.y - Raindrops[i].height, WindowMax.y, Raindrops[i].y);
+		bottom.y = top.y + Raindrops[i].height;
+
+		/* add to draw queue */
+		draw_list->AddRectFilled(top, bottom, Raindrops[i].color);
+	}
 }

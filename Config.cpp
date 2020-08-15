@@ -9,4 +9,6 @@ namespace Config
 	Config_AntiAim antiaim;
 	Config_Movement movement;
 	Config_Visuals visuals;
+
+	unsigned int RaindropCount = 100;
 }
