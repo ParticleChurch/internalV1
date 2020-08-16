@@ -4,11 +4,11 @@ AntiAim* antiaim = new AntiAim();
 
 void AntiAim::legit()
 {
-	if (!Config::antiaim.Enable)
-		return;
-	if (!Config::antiaim.Legit.Enable)
-		return;
-
+	//if (!Config::antiaim.Enable)
+	//	return;
+	//if (!Config::antiaim.Legit.Enable)
+	//	return;
+	
 	if (!(G::Localplayer->GetHealth() > 0))
 		return;
 		
@@ -21,8 +21,7 @@ void AntiAim::legit()
 	if (fabsf(G::cmd->sidemove) < 5.0f) {
 		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 	}
-
-	int side = 1;
+	
 	static float lastUpdate = 0;
 	if (GetAsyncKeyState(Config::antiaim.Legit.InverterKey) &&
 		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {

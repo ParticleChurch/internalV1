@@ -7,6 +7,7 @@ public:
 	//functions for legit
 	void legit();
 	bool Left = true;
+	int side = 1;
 	//functions for rage
 	void rage();
 };

@@ -15,6 +15,7 @@ namespace G {
 	extern Vec CM_EndAngle;
 	extern QAngle RealAngle;
 	extern QAngle FakeAngle;
+	extern Matrix3x4 FakeMatrix[128];
 	extern float StartForwardMove;
 	extern float StartSideMove;
 	extern void CM_Clamp();

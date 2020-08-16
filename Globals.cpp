@@ -16,6 +16,7 @@ namespace G
 	Vec CM_EndAngle;
 	QAngle RealAngle;
 	QAngle FakeAngle;
+	Matrix3x4 FakeMatrix[128];
 	float StartForwardMove;
 	float StartSideMove;
 
@@ -74,8 +75,10 @@ namespace G
 		cmd->viewangles.Normalize(); //prevent csgo from hating us
 		CM_EndAngle = cmd->viewangles;
 
-		if (*G::pSendPacket)
+		if (*G::pSendPacket) {
 			G::FakeAngle = G::cmd->viewangles;
+			G::Localplayer->SetupBones(G::FakeMatrix, 128, 0x100, I::globalvars->m_curTime);
+		}
 		else
 			G::RealAngle = G::cmd->viewangles;
 
