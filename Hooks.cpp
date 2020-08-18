@@ -336,7 +336,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
-		//antiaim->legit();
+		antiaim->legit();
 
 		//manual shot
 		if (cmd->buttons & IN_ATTACK)
@@ -900,7 +900,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 		}
 		else if(info.entityIndex == I::engine->GetLocalPlayer())
 		{
-			/*
+			
 			static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
 			RotateBoneMatrix(G::RealAngle.y - G::FakeAngle.y, G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
 
@@ -920,8 +920,8 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				color_desync,
 				thisptr, ctx, state, info, G::FakeMatrix);
 				
-			*/
 			
+			/*
 			static Color color_local = Color(1, 250, 254);
 			OverideMat(
 				false,	//viz thru wall?
@@ -929,7 +929,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				false,	//transparent?
 				color_local,
 				thisptr, ctx, state, info, customBoneToWorld);
-			
+			*/
 			
 			
 		}

@@ -8,7 +8,10 @@ void AntiAim::legit()
 	//	return;
 	//if (!Config::antiaim.Legit.Enable)
 	//	return;
-	
+
+	if (!G::Localplayer)
+		return;
+
 	if (!(G::Localplayer->GetHealth() > 0))
 		return;
 		
