@@ -90,6 +90,7 @@ void H::Init()
 	Sleep(100);
 
 	std::cout << "FrameStageNotify...";
+	backtrack->Init();
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
@@ -381,10 +382,10 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			if (offset == 0)
 				offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-			if (I::input->m_fCameraInThirdPerson)
-				*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
+			//if (I::input->m_fCameraInThirdPerson)
+			//	*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
 
-			//backtrack->update();
+			backtrack->update();
 
 			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
 
@@ -918,8 +919,9 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				false,	//transparent?
 				color_desync,
 				thisptr, ctx, state, info, G::FakeMatrix);
-				*/
-
+				
+			*/
+			
 			static Color color_local = Color(1, 250, 254);
 			OverideMat(
 				false,	//viz thru wall?
@@ -927,7 +929,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				false,	//transparent?
 				color_local,
 				thisptr, ctx, state, info, customBoneToWorld);
-
+			
 			
 			
 		}
