@@ -18,10 +18,6 @@ void AntiAim::legit()
 	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
 		return;
 
-	if (fabsf(G::cmd->sidemove) < 5.0f) {
-		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
-	}
-	
 	static float lastUpdate = 0;
 	if (GetAsyncKeyState(Config::antiaim.Legit.InverterKey) &&
 		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {

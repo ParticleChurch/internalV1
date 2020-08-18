@@ -17,7 +17,7 @@ void Init()
     I::engine->ClientCmd_Unrestricted("echo Cheat Injected");
 
     while (!G::KillDLL) Sleep(100);
-    std::cout << "Ejecting...\n";
+    std::cout << "\nEjecting...\n";
 
     H::Eject();
 }

@@ -34,6 +34,7 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
+
 }
 
 void H::Init()
@@ -49,7 +50,7 @@ void H::Init()
 	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
-	std::cout << "Hooking..." << std::endl;
+	std::cout << "\nHooking..." << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Hooking");
 	d3d9VMT.Initialise((DWORD*)D3d9Device);
 	clientVMT.Initialise((DWORD*)I::client);
@@ -65,50 +66,70 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
+	Sleep(100);
+
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
+
+	Sleep(100);
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
+	Sleep(100);
+
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
+
+	Sleep(100);
 
 	std::cout << "FrameStageNotify...";
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
+	Sleep(100);
+
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
+
+	Sleep(100);
 
 	std::cout << "FireEventClientSide...";
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
+	Sleep(100);
+
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
+
+	Sleep(100);
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
 
+	Sleep(100);
+
 	std::cout << "DoPostScreenEffects...";
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
+
+	Sleep(100);
 
 	std::cout << "DrawModelExecute...";
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
@@ -118,17 +139,46 @@ void H::Init()
 
 void H::UnHook()
 {
-	*G::pSendPacket = true;
-	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	modelrenderVMT.RestoreOriginal();
-	inputVMT.RestoreOriginal();
-	gameeventmanagerVMT.RestoreOriginal();
-	surfaceVMT.RestoreOriginal();
-	panelVMT.RestoreOriginal();
-	d3d9VMT.RestoreOriginal();
-	clientmodeVMT.RestoreOriginal();
-	clientVMT.RestoreOriginal();
+	std::cout << "WndProc...";
 	D3dInit = false; //for wndproc... haven't found better solution
+	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "modelrenderVMT...";
+	modelrenderVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "inputVMT...";
+	inputVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "gameeventmanagerVMT...";
+	gameeventmanagerVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "surfaceVMT...";
+	surfaceVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "panelVMT...";
+	panelVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "d3d9VMT...";
+	d3d9VMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "clientmodeVMT...";
+	if(G::pSendPacket) //make sure it isnt already a nullptr
+		*G::pSendPacket = true;
+	clientmodeVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "clientVMT...";
+	clientVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+	
+	std::cout << "Freeing Console...Ejected!";
 	FreeConsole();
 }
 
@@ -214,7 +264,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 15;
+		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 2;
 
 		/*
 		static bool flip = false;
@@ -260,6 +310,15 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			}
 		}
 
+		//AA FIX
+		if (fabsf(G::cmd->sidemove) < 5.0f) {
+			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
+		}
+
+		H::console.clear();
+		H::console.resize(0);
+		H::console.push_back(std::to_string(G::Localplayer->MaxAccurateSpeed()));
+
 		G::CM_MoveFixStart();
 
 		//ez bhop
@@ -276,7 +335,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
-		antiaim->legit();
+		//antiaim->legit();
 
 		//manual shot
 		if (cmd->buttons & IN_ATTACK)
@@ -286,8 +345,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		
 
-		if (GetAsyncKeyState(VK_LMENU))
-			aimbot->Rage();
+		//if (GetAsyncKeyState(VK_LMENU))
+		//	aimbot->Rage();
 
 		//backtrack->run();
 
@@ -322,12 +381,12 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			if (offset == 0)
 				offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-			//if (I::input->m_fCameraInThirdPerson)
-				//*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
+			if (I::input->m_fCameraInThirdPerson)
+				*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
 
-			backtrack->update();
+			//backtrack->update();
 
-			*G::Localplayer->pGetFlashMaxAlpha() = 0;
+			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
 
 			int LPIndex = I::engine->GetLocalPlayer();
 			for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
@@ -557,7 +616,6 @@ void OverideMat(bool ignorez, bool wireframe, bool transparent, Color rgba, void
 		I::modelrender->ForcedMaterialOverride(nullptr);
 	}
 }
-
 
 float DotProduct(const float* v1, const float* v2) {
 	return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
@@ -841,6 +899,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 		}
 		else if(info.entityIndex == I::engine->GetLocalPlayer())
 		{
+			/*
 			static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
 			RotateBoneMatrix(G::RealAngle.y - G::FakeAngle.y, G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
 
@@ -859,6 +918,15 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				false,	//transparent?
 				color_desync,
 				thisptr, ctx, state, info, G::FakeMatrix);
+				*/
+
+			static Color color_local = Color(1, 250, 254);
+			OverideMat(
+				false,	//viz thru wall?
+				false,	//wireframe?
+				false,	//transparent?
+				color_local,
+				thisptr, ctx, state, info, customBoneToWorld);
 
 			
 			
