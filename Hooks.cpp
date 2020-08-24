@@ -343,10 +343,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 		}
 
-		H::console.clear();
-		H::console.resize(0);
-		H::console.push_back(std::to_string(G::Localplayer->MaxAccurateSpeed()));
-
 		G::CM_MoveFixStart();
 
 		//toggle on and off third person
@@ -357,8 +353,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
-		//antiaim->legit();
-		antiaim->rage();
+		antiaim->legit();
+		//antiaim->rage();
 
 		// decide when to enable desync
 		bool desync = true;
@@ -492,10 +488,6 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
 		int userid = I::engine->GetPlayerForUserID(event->GetInt("userid"));
 		int HitGroup = event->GetInt("hitgroup");
-
-		H::console.clear();
-		H::console.resize(0);
-		H::console.push_back("Hurt: " + std::to_string(HitGroup));
 
 
 		if (attacker == localIdx && userid != localIdx)
@@ -706,11 +698,11 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 
 			//oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
-		else if(info.entityIndex == I::engine->GetLocalPlayer())
+		else if (info.entityIndex == I::engine->GetLocalPlayer())
 		{
-			
+
 			static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
-			RotateBoneMatrix(G::RealAngle.y - G::FakeAngle.y, G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
+			RotateBoneMatrix(Vec(0, antiaim->real.y - G::CM_StartAngle.y, 0), G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
 
 			static Color color_local = Color(1, 250, 254);
 			OverideMat(
@@ -720,6 +712,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				color_local,
 				thisptr, ctx, state, info, BoneMatrix);
 
+			//RotateBoneMatrix(Vec(0, antiaim->fake.y - G::CM_StartAngle.y, 0), G::Localplayer->GetVecOrigin(), customBoneToWorld, G::FakeMatrix);
 			static Color color_desync = Color(255, 255, 255);
 			OverideMat(
 				false,	//viz thru wall?
@@ -727,19 +720,17 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				false,	//transparent?
 				color_desync,
 				thisptr, ctx, state, info, G::FakeMatrix);
-				
-			
-			/*
-			static Color color_local = Color(1, 250, 254);
+		}
+		else
+		{
+			static Color color_team = Color(1, 1, 254);
 			OverideMat(
 				false,	//viz thru wall?
 				false,	//wireframe?
-				false,	//transparent?
-				color_local,
+				true,	//transparent?
+				color_team,
 				thisptr, ctx, state, info, customBoneToWorld);
-			*/
-			
-			
+			oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
 	}
 	else

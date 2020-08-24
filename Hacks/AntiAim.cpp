@@ -18,9 +18,6 @@ void AntiAim::legit()
 	if (G::Localplayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
 
-	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
-		return;
-
 	static float lastUpdate = 0;
 	if (GetAsyncKeyState(Config::antiaim.Legit.InverterKey) &&
 		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
@@ -31,21 +28,37 @@ void AntiAim::legit()
 	}
 
 	bool BreakLBY = LBYBreak();
+	float Delta = G::Localplayer->GetMaxDesyncAngle();
 	
-	//this is for left side
-	
+	//side by default = left
 	if (!BreakLBY)
 	{
-		float amount = 58.f * 2 * side;
+		float amount = Delta * 2 * side;
 		G::cmd->viewangles.y += *G::pSendPacket ? 0 : amount;
 	}
 
 	if (BreakLBY)
 	{
-		float amount = 58.f * -1 * side;
+		float amount = Delta * -1 * side;
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
 	}
+
+	if (*G::pSendPacket)
+		fake = G::cmd->viewangles;
+	else if (!BreakLBY)
+	{
+		real.x = G::cmd->viewangles.x;
+		real.y = G::cmd->viewangles.y + (Delta * side * -1);
+	}
+
+	fake.Normalize();
+	real.Normalize();
+
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back(fake.str());
+	H::console.push_back(real.str());
 }
 
 bool AntiAim::LBYBreak()
@@ -76,16 +89,14 @@ void AntiAim::rage()
 	G::cmd->viewangles.x = 89;
 	G::cmd->viewangles.y += 180;
 
-	if (G::Localplayer->GetVecVelocity().VecLength() > 100)
-		return;
 
-	if (fabsf(G::cmd->sidemove) < 5.0f) {
-		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
-	}
+
+	real = fake = G::cmd->viewangles;
+	real.Normalize();
+	fake.Normalize();
 
 	bool BreakLBY = LBYBreak();
-	 
-	static float Delta = 58.f;
+	float Delta = G::Localplayer->GetMaxDesyncAngle();
 
 	if (!BreakLBY)
 	{
@@ -100,4 +111,12 @@ void AntiAim::rage()
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
 	}
+
+	if (*G::pSendPacket)
+		fake = G::cmd->viewangles;
+	else
+		real = G::cmd->viewangles;
+
+	real.Normalize();
+	fake.Normalize();
 }

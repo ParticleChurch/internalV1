@@ -10,6 +10,8 @@ public:
 	int side = 1;
 	//functions for rage
 	void rage();
+	QAngle real;
+	QAngle fake;
 };
 
 extern AntiAim* antiaim;

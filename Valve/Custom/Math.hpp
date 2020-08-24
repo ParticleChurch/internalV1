@@ -42,7 +42,6 @@ inline void AngleVectors(const QAngle& angles, Vec* forward, Vec* right, Vec* up
 	}
 }
 
-
 inline void MatrixCopy(const Matrix3x4& source, Matrix3x4& target)
 {
 	for (int i = 0; i < 3; i++) {
@@ -198,16 +197,16 @@ inline void VectorRotate(const Vec& in1, const QAngle& in2, Vec& out)
 	VectorRotate(in1, matRotate, out);
 }
 
-inline void RotateBoneMatrix(float AAangle, Vec origin, Matrix3x4* pCustomBoneToWorld, Matrix3x4* BoneMatrix)
+inline void RotateBoneMatrix(Vec AAangle, Vec origin, Matrix3x4* pCustomBoneToWorld, Matrix3x4* BoneMatrix)
 {
 	Vec BonePos;
 	Vec OutPos;
 	for (int i = 0; i < MAXSTUDIOBONES; i++)
 	{
-		AngleMatrix(Vec(0, AAangle, 0), BoneMatrix[i]);
+		AngleMatrix(AAangle, BoneMatrix[i]);
 		MatrixMultiply(BoneMatrix[i], pCustomBoneToWorld[i]);
 		BonePos = Vec(pCustomBoneToWorld[i][0][3] - origin.x, pCustomBoneToWorld[i][1][3] - origin.y, pCustomBoneToWorld[i][2][3] - origin.z);
-		VectorRotate(BonePos, Vec(0, AAangle, 0), OutPos);
+		VectorRotate(BonePos, AAangle, OutPos);
 		OutPos += origin;
 		BoneMatrix[i].c[0][3] = OutPos.x;
 		BoneMatrix[i].c[1][3] = OutPos.y;
