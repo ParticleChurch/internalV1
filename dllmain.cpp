@@ -1,5 +1,7 @@
 #include "Include.hpp"
 
+/* this is a comment (test git) */
+
 void Init()
 {
     //Allocate Console
