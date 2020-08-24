@@ -147,17 +147,24 @@ public:
 		return *(float*)((DWORD)this + offset);
 	}
 
-	float NextPrimaryAttack() {
+	float GetNextPrimaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
 		return *(float*)((DWORD)this + offset);
 	}
 
-	float NextSecondaryAttack() {
+	float GetNextSecondaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
+	float GetGrenadeThrowTime() {
+		static DWORD offset = N::GetOffset("DT_BaseCSGrenade", "m_fThrowTime");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCSGrenade", "m_fThrowTime");
 		return *(float*)((DWORD)this + offset);
 	}
 
@@ -187,7 +194,7 @@ public:
 	bool CanShoot() {
 		if (!this || !this->GetActiveWeapon())
 			return false;
-		return this->GetActiveWeapon()->NextPrimaryAttack() <= GetServerTime();
+		return this->GetActiveWeapon()->GetNextPrimaryAttack() <= GetServerTime();
 	}
 
 	Vec GetAimPunchAngle() {

@@ -294,6 +294,33 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
 
+
+		if (cmd->buttons & IN_JUMP && G::Localplayer->GetHealth() > 0 && G::Localplayer->GetMoveType() != MOVETYPE_LADDER) // && Config::bhop
+		{
+			// bhop
+			if (!(G::Localplayer->GetFlags() & FL_ONGROUND))
+				cmd->buttons &= ~IN_JUMP;
+			// auto strafe
+			Vec Velocity = G::Localplayer->GetVecVelocity();
+			if (Velocity.VecLength2D() > 25) // only autostrafe if we're moving at least 25u/s
+			{
+				// oh god no
+				int MouseDeltaX = cmd->mousedx;
+				if (MouseDeltaX > 0)
+				{
+					cmd->sidemove = 450;
+					cmd->buttons |= IN_MOVERIGHT;
+					cmd->buttons &= ~IN_MOVELEFT;
+				}
+				else if (MouseDeltaX < 0)
+				{
+					cmd->sidemove = -450;
+					cmd->buttons |= IN_MOVELEFT;
+					cmd->buttons &= ~IN_MOVERIGHT;
+				}
+			}
+		}
+
 		//SlowWalk
 		if (false && G::Localplayer && G::Localplayer->GetHealth() > 0)
 		{
@@ -322,12 +349,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		G::CM_MoveFixStart();
 
-		//ez bhop
-		if ((cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
-			&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
-			cmd->buttons &= ~IN_JUMP;
-		}
-
 		//toggle on and off third person
 		static float lastUpdate = 0;
 		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
@@ -339,28 +360,45 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//antiaim->legit();
 		antiaim->rage();
 
-		//dont aa if in going to attack this tick
-		auto ActiveWeapon = G::Localplayer->GetActiveWeapon();
-		float TimeToAttack = ActiveWeapon->GetNextAttack() - ServerTime;
-		float TimeToPrimary = ActiveWeapon->NextPrimaryAttack() - ServerTime;
-		float TimeToSecondary = ActiveWeapon->NextSecondaryAttack() - ServerTime;
-		
+		// decide when to enable desync
+		bool desync = true;
+		if (cmd->buttons & IN_USE)
+			desync = false;
+		else
+		{
+			auto ActiveWeapon = G::Localplayer->GetActiveWeapon();
+			auto WeaponData = ActiveWeapon->GetWeaponData();
+			bool UsingKnifeOrGun = WeaponData->IsGun() || WeaponData->Type == WeaponType::Knife;
+			if (UsingKnifeOrGun)
+			{
+				bool CanAttack = (G::Localplayer->GetNextAttack() - ServerTime) <= 0;
+				bool CanPrimary = CanAttack && ((ActiveWeapon->GetNextPrimaryAttack() - ServerTime) <= 0) && (G::Localplayer->GetAmmo() > 0 || (WeaponData->Type == WeaponType::Knife));
+				bool CanSecondary = CanAttack && ((ActiveWeapon->GetNextSecondaryAttack() - ServerTime) <= 0);
 
-		//bool CanPrimary = (TimeToAttack <= 0 && (ActiveWeapon->GetWeaponData()->Bullets > 0 || !ActiveWeapon->Is()));
-		//bool CanSecondary = (timeToAttack <= 0 && timeToSecondary <= 0 && !ActiveWeapon->IsGun());
-		bool InPrimary = cmd->buttons & IN_ATTACK;
-		bool InSecondary = cmd->buttons & IN_ATTACK2;
-		// if (CanPrimary && InPrimary || InSecondary && InSecondary)
-		//	 G::cmd->viewangles = G::CM_StartAngle;
-		if (cmd->buttons & IN_ATTACK)
+				if (!CanPrimary)
+					cmd->buttons &= ~IN_ATTACK;
+
+				bool PrimaryAttack = CanPrimary && cmd->buttons & IN_ATTACK;
+				bool SecondaryAttack = CanSecondary && cmd->buttons & IN_ATTACK2 && WeaponData->Type == WeaponType::Knife;
+
+				// disable desync for this tick
+				if (PrimaryAttack || SecondaryAttack)
+					G::cmd->viewangles = G::CM_StartAngle;
+			}
+			else if (ActiveWeapon->GetGrenadeThrowTime() > 0)
+			{
+				// we are currently releasing a grenade, do not desync or the nade path will be fucked
+				G::cmd->viewangles = G::CM_StartAngle;
+			}
+		}
+
+		if (!desync)
 			G::cmd->viewangles = G::CM_StartAngle;
 
 		//aimbot->Legit();
 
-		
-
-		if (GetAsyncKeyState(VK_LMENU))
-			aimbot->Rage();
+		//if (GetAsyncKeyState(VK_LMENU))
+		//	aimbot->Rage();
 
 		backtrack->run();
 

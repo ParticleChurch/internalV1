@@ -60,6 +60,9 @@ void ESP::DrawHealth(Vec TL, Vec BR, int Health)
 	int HeightBar = (int)(Height * (Health / 100.0f));
 	int WidthBar = (int)(3 + Height / 100.0f);
 
+	I::surface->DrawSetColor(255, 0, 0, 255);		//red
+	I::surface->DrawFilledRect(BR.x + 1, BR.y - Height, BR.x + WidthBar + 1, BR.y);
+
 	I::surface->DrawSetColor(0, 255, 0, 255);		//green
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
 }

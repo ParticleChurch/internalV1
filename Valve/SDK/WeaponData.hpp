@@ -44,4 +44,23 @@ struct WeaponData {
     float RecoilMagnitudeAlt;
     std::byte pad8[0x14];
     float RecoveryTimeStand;
+
+    inline bool IsGun()
+    {
+        switch (this->Type)
+        {
+        case WeaponType::C4:
+            return false;
+        case WeaponType::Knife:
+            return false;
+        case WeaponType::Grenade:
+            return false;
+        case WeaponType::Placeholder:
+            return false;
+        case WeaponType::Unknown:
+            return false;
+        default:
+            return true;
+        }
+    }
 };
