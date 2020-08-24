@@ -45,3 +45,6 @@
 #include "Interfaces/CInput.hpp"
 #include "Interfaces/ModelRender.h"
 #include "Interfaces/MaterialSystem.h"
+
+//MORE CUSTOM
+#include "Custom/Math.hpp"

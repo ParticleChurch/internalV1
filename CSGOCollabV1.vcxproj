@@ -205,6 +205,7 @@
     <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />
     <ClInclude Include="Valve\Custom\Color.hpp" />
+    <ClInclude Include="Valve\Custom\Math.hpp" />
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
     <ClInclude Include="Valve\Custom\WeaponId.hpp" />

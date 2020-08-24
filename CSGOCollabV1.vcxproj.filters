@@ -276,6 +276,9 @@
     <ClInclude Include="Valve\SDK\KeyValues.h">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Custom\Math.hpp">
+      <Filter>Headers\Valve\Custom</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
