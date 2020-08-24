@@ -4,6 +4,8 @@ namespace GUI {
 	extern bool ShowMenu;
 	extern bool Main();
 	extern void Rain();
+	extern void ProcessingLoginMenu();
+	extern bool LoginMenu();
 
 
 	//Paid Hack Helpers
@@ -11,5 +13,4 @@ namespace GUI {
 
 	//Free Hack Helpers
 	extern bool FreeHackMenu();
-	
 }

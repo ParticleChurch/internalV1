@@ -29,6 +29,14 @@ public:
 		return *(WeaponId*)((DWORD)this + offset);
 	}
 
+	float GetNextAttack()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
 	void* self() {
 		return this;
 	}

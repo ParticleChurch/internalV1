@@ -252,7 +252,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 	if (I::engine->IsInGame() && cmd) 
 	{
-		I::globalvars->ServerTime(cmd);
+		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		if (GUI::ShowMenu) {
 			cmd->buttons = 0;
@@ -338,7 +338,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		antiaim->legit();
 
-		//manual shot
+		//dont aa if in going to attack this tick
+		bool InPrimary = cmd->buttons & IN_ATTACK;
+		bool InSecondary = cmd->buttons & IN_ATTACK2;
+		float TimeToAttack = G::Localplayer->GetNextAttack() - ServerTime;
+		//bool CanPrimary = (timeToAttack <= 0 && timeToPrimary <= 0 && (bulletsLeft > 0 || !ActiveWeapon->IsGun()));
+		//bool CanSecondary = (timeToAttack <= 0 && timeToSecondary <= 0 && !ActiveWeapon->IsGun());
+		// if (CanPrimary && InPrimary || InSecondary && InSecondary)
+		//	 G::cmd->viewangles = G::CM_StartAngle;
 		if (cmd->buttons & IN_ATTACK)
 			G::cmd->viewangles = G::CM_StartAngle;
 

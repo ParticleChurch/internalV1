@@ -56,6 +56,124 @@ void AttemptLogin(LoginInformation* Info)
 	free(Info);
 }
 
+void GUI::ProcessingLoginMenu()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	ImGui::SetNextWindowSize(ImVec2(440, 114));
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x/2, io.DisplaySize.y/2), 0, ImVec2(0.5f, 0.5f));
+	ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+
+	// Cancel button
+	ImGui::SetCursorPos(ImVec2(360, 83));
+	if (ImGui::Button("Cancel", ImVec2(70, 20)))
+		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+
+	LoginWindowPosition = ImGui::GetWindowPos();
+	ImGui::End();
+}
+
+bool GUI::LoginMenu()
+{
+	static bool init = false;
+	static float MainColor = 20.f / 255.f;
+	if (!init)
+	{
+		init = true;
+
+		ImGuiStyle* style = &ImGui::GetStyle();
+
+		// turn off all default rounding and padding
+		style->WindowRounding = 0.0f;
+		style->WindowPadding = ImVec2(0, 0);
+		style->ChildRounding = 0.0f;
+		style->FrameRounding = 0.0f;
+		style->FramePadding = ImVec2(0, 0);
+		style->GrabRounding = 0.0f;
+		style->PopupRounding = 0.0f;
+		style->ScrollbarRounding = 0.0f;
+		style->FrameBorderSize = 1.f;
+		style->ItemSpacing = ImVec2(0, 0);
+		style->ItemInnerSpacing = ImVec2(0, 0);
+
+		// main window outline solid 1px white
+		style->Colors[ImGuiCol_Border] = ImVec4(1.f, 1.f, 1.f, 1.f);
+		style->Colors[ImGuiCol_WindowBg] = ImVec4(MainColor, MainColor, MainColor, 1.f);
+		style->Colors[ImGuiCol_FrameBg] = ImVec4(MainColor, MainColor, MainColor, 0.f);
+
+		// buttons
+		style->Colors[ImGuiCol_Button] = ImVec4(MainColor, MainColor, MainColor, 0.5f);
+		style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
+		style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.5f, 0.5f, 0.5f, 1.f);
+	}
+
+	bool PressedEject = false;
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowSize(ImVec2(440, 114));
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), 0, ImVec2(0.5f, 0.5f));
+	ImGui::Begin("Login", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+
+	// Login Form
+	ImGui::GetStyle().FrameBorderSize = 0.f;
+	static char Email[257] = "";
+	ImGui::SetCursorPos(ImVec2(59, 30));
+	ImGui::Text("Email:"); ImGui::SameLine();
+	ImGui::InputText("###Email", Email, 257);
+
+	static char Password[65] = "";
+	ImGui::SetCursorPos(ImVec2(38, 55));
+	ImGui::Text("Password:"); ImGui::SameLine();
+	ImGui::InputText("###Password", Password, 65);
+
+	// Eject button
+	ImGui::GetStyle().FrameBorderSize = 1.f;
+	ImGui::SetCursorPos(ImVec2(10, 83));
+	if (ImGui::Button("Eject", ImVec2(99, 20)))
+		PressedEject = true;
+
+	// Free2Play button
+	ImGui::SetCursorPos(ImVec2(10 + 99 + 8, 83));
+	if (ImGui::Button("Free Version", ImVec2(99, 20)))
+	{
+		Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
+		Config::UserInfo.Email = "free@a4g4.com";
+		Config::UserInfo.UserID = INT_MAX;
+		Config::UserInfo.Paid = false;
+		Config::UserInfo.Developer = false;
+	}
+
+	// Register button
+	ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8, 83));
+	if (ImGui::Button("Register", ImVec2(99, 20)))
+		ShellExecute(NULL, TEXT("open"), TEXT("https://www.a4g4.com"), NULL, NULL, 0);
+
+	// Login button
+	ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8 + 99 + 8, 83));
+	if (ImGui::Button("Login", ImVec2(99, 20)))
+	{
+		// reset old data
+		LoginAttemptIndex++;
+		Config::UserInfo.AuthStatus = AUTH_STATUS_PROCESSING;
+
+		// fill LoginInformation with recent data (malloc thread will still have access once scope deconstructs)
+		// p.s. thread has to free this malloc, to prevent a *tiny*, but still existent, memory leak
+		LoginInformation* Info = (LoginInformation*)malloc(sizeof(LoginInformation));
+		Info->AttemptID = LoginAttemptIndex;
+		strcpy(Info->Email, Email);
+		strcpy(Info->Password, Password);
+
+		// start login thread
+		CreateThread(0, 0, LPTHREAD_START_ROUTINE(AttemptLogin), Info, 0, 0);
+		Sleep(0); // let thread begin
+	}
+
+	LoginWindowPosition = ImGui::GetWindowPos();
+	ImGui::End();
+
+	return PressedEject;
+}
+
 bool GUI::Main()
 {
 	bool PressedEject = false;
@@ -66,96 +184,23 @@ bool GUI::Main()
 	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
 	{
 		if (Config::UserInfo.Paid || Config::UserInfo.Developer)
-			PressedEject = GUI::PaidHackMenu();
+			PressedEject = PaidHackMenu();
 		else
-			PressedEject = GUI::FreeHackMenu();
+			PressedEject = FreeHackMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
 		GUI::ShowMenu = true;
-		ImGui::SetNextWindowSize(ImVec2(440, 114));
-		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
-		ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-
-		// Eject button
-		ImGui::SetCursorPos(ImVec2(10, 83));
-		if (ImGui::Button("Eject", ImVec2(70, 20)))
-			PressedEject = true;
-
-		// Cancel button
-		ImGui::SetCursorPos(ImVec2(360, 83));
-		if (ImGui::Button("Cancel", ImVec2(70, 20)))
-			Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-
-		LoginWindowPosition = ImGui::GetWindowPos();
-		ImGui::End();
+		ProcessingLoginMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
 	{
 		GUI::ShowMenu = true;
-		ImGui::SetNextWindowSize(ImVec2(440, 114));
-		ImGui::SetNextWindowPos(WindowCenter, 0, ImVec2(0.5f, 0.5f));
-		ImGui::Begin("Login", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-
-		// Login Form
-		static char Email[257] = "";
-		ImGui::SetCursorPos(ImVec2(59, 30));
-		ImGui::Text("Email:"); ImGui::SameLine();
-		ImGui::InputText("###Email", Email, 257);
-
-		static char Password[65] = "";
-		ImGui::SetCursorPos(ImVec2(38, 55));
-		ImGui::Text("Password:"); ImGui::SameLine();
-		ImGui::InputText("###Password", Password, 65);
-
-		// Eject button
-		ImGui::SetCursorPos(ImVec2(10, 83));
-		if (ImGui::Button("Eject", ImVec2(99, 20)))
-			PressedEject = true;
-
-		// Free2Play button
-		ImGui::SetCursorPos(ImVec2(10 + 99 + 8, 83));
-		if (ImGui::Button("Free Version", ImVec2(99, 20)))
-		{
-			Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
-			Config::UserInfo.Email = "free@a4g4.com";
-			Config::UserInfo.UserID = INT_MAX;
-			Config::UserInfo.Paid = false;
-			Config::UserInfo.Developer = false;
-		}
-
-		// Register button
-		ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8, 83));
-		if (ImGui::Button("Register", ImVec2(99, 20)))
-			ShellExecute(NULL, TEXT("open"), TEXT("https://www.a4g4.com"), NULL, NULL, 0);
-
-		// Login button
-		ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8 + 99 + 8, 83));
-		if (ImGui::Button("Login", ImVec2(99, 20)))
-		{
-			// reset old data
-			LoginAttemptIndex++;
-			Config::UserInfo.AuthStatus = AUTH_STATUS_PROCESSING;
-
-			// fill LoginInformation with recent data (malloc thread will still have access once scope deconstructs)
-			// p.s. thread has to free this malloc, to prevent a *tiny*, but still existent, memory leak
-			LoginInformation* Info = (LoginInformation*)malloc(sizeof(LoginInformation));
-			Info->AttemptID = LoginAttemptIndex;
-			strcpy(Info->Email, Email);
-			strcpy(Info->Password, Password);
-
-			// start login thread
-			CreateThread(0, 0, LPTHREAD_START_ROUTINE(AttemptLogin), Info, 0, 0);
-			Sleep(0); // let thread begin
-		}
-
-		LoginWindowPosition = ImGui::GetWindowPos();
-		ImGui::End();
+		PressedEject = LoginMenu();
 	}
 
 	return PressedEject;
 }
-
 
 //Paid Hack Func
 bool GUI::PaidHackMenu()
