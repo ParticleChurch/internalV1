@@ -336,14 +336,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
-		antiaim->legit();
+		//antiaim->legit();
+		antiaim->rage();
 
 		//dont aa if in going to attack this tick
+		auto ActiveWeapon = G::Localplayer->GetActiveWeapon();
+		float TimeToAttack = ActiveWeapon->GetNextAttack() - ServerTime;
+		float TimeToPrimary = ActiveWeapon->NextPrimaryAttack() - ServerTime;
+		float TimeToSecondary = ActiveWeapon->NextSecondaryAttack() - ServerTime;
+		
+
+		//bool CanPrimary = (TimeToAttack <= 0 && (ActiveWeapon->GetWeaponData()->Bullets > 0 || !ActiveWeapon->Is()));
+		//bool CanSecondary = (timeToAttack <= 0 && timeToSecondary <= 0 && !ActiveWeapon->IsGun());
 		bool InPrimary = cmd->buttons & IN_ATTACK;
 		bool InSecondary = cmd->buttons & IN_ATTACK2;
-		float TimeToAttack = G::Localplayer->GetNextAttack() - ServerTime;
-		//bool CanPrimary = (timeToAttack <= 0 && timeToPrimary <= 0 && (bulletsLeft > 0 || !ActiveWeapon->IsGun()));
-		//bool CanSecondary = (timeToAttack <= 0 && timeToSecondary <= 0 && !ActiveWeapon->IsGun());
 		// if (CanPrimary && InPrimary || InSecondary && InSecondary)
 		//	 G::cmd->viewangles = G::CM_StartAngle;
 		if (cmd->buttons & IN_ATTACK)
@@ -353,10 +359,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		
 
-		//if (GetAsyncKeyState(VK_LMENU))
-		//	aimbot->Rage();
+		if (GetAsyncKeyState(VK_LMENU))
+			aimbot->Rage();
 
-		//backtrack->run();
+		backtrack->run();
 
 		G::CM_End();	
 	}

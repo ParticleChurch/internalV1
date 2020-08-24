@@ -29,14 +29,6 @@ public:
 		return *(WeaponId*)((DWORD)this + offset);
 	}
 
-	float GetNextAttack()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		return *(float*)((DWORD)this + offset);
-	}
-
 	void* self() {
 		return this;
 	}
@@ -147,10 +139,25 @@ public:
 		return *(int*)((DWORD)this + offset);
 	}
 
+	float GetNextAttack()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
 	float NextPrimaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
+	float NextSecondaryAttack() {
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
 		return *(float*)((DWORD)this + offset);
 	}
 
