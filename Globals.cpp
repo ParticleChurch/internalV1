@@ -11,6 +11,7 @@ namespace G
 
 	//Createmove
 	CUserCmd* cmd;
+	int ChokeAmount = 2;
 	bool* pSendPacket;
 	Vec CM_StartAngle;
 	Vec CM_EndAngle;
@@ -61,27 +62,18 @@ namespace G
 
 	void CM_Start(CUserCmd* cmd, bool* pSendPacket)
 	{
-		G::cmd = cmd;
 		G::CM_StartAngle = cmd->viewangles;
+		G::cmd = cmd;
 		G::pSendPacket = pSendPacket;
 	}
 	void CM_MoveFixStart()
 	{
+		
 		G::StartForwardMove = G::cmd->forwardmove;
 		G::StartSideMove = G::cmd->sidemove;
 	}
-	void CM_End()
+	void CM_MoveFixEnd()
 	{
-		cmd->viewangles.Normalize(); //prevent csgo from hating us
-		CM_EndAngle = cmd->viewangles;
-
-		if (*G::pSendPacket) {
-			G::FakeAngle = G::cmd->viewangles;
-			G::Localplayer->SetupBones(G::FakeMatrix, 128, 0x100, I::globalvars->m_curTime);
-		}
-		else
-			G::RealAngle = G::cmd->viewangles;
-
 		//fix movement
 		static float deltaView;
 		static float f1;
@@ -106,6 +98,18 @@ namespace G
 
 		cmd->forwardmove = cos(DEG2RAD(deltaView)) * StartForwardMove + cos(DEG2RAD(deltaView + 90.f)) * StartSideMove;
 		cmd->sidemove = sin(DEG2RAD(deltaView)) * StartForwardMove + sin(DEG2RAD(deltaView + 90.f)) * StartSideMove;
+	}
+	void CM_End()
+	{
+		cmd->viewangles.Normalize(); //prevent csgo from hating us
+		CM_EndAngle = cmd->viewangles;
+
+		if (*G::pSendPacket) {
+			G::FakeAngle = G::cmd->viewangles;
+			G::Localplayer->SetupBones(G::FakeMatrix, 128, 0x100, I::globalvars->m_curTime);
+		}
+		else
+			G::RealAngle = G::cmd->viewangles;
 
 		CM_Clamp();
 	}

@@ -152,7 +152,6 @@ struct Config_Movement {
 	//General
 	bool Enable = false;			//enable movement hacks
 	bool BunnyHop = false;			//enable bunnyhop
-	bool CrouchInAir = false;		//enable autocrouch in air
 	bool FastCrouch = false;		//enables faster crouching
 	bool LegitAutoStrafe = false;	//enable legit autostrafe
 	bool RageAutoStrafe = false;	//enable rage autostrafe

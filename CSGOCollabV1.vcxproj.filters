@@ -61,6 +61,9 @@
     <ClCompile Include="Hooks.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Movement.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -278,6 +281,9 @@
     </ClInclude>
     <ClInclude Include="Valve\Custom\Math.hpp">
       <Filter>Headers\Valve\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Movement.hpp">
+      <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

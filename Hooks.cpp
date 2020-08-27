@@ -34,7 +34,6 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
-
 }
 
 void H::Init()
@@ -66,28 +65,28 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "FrameStageNotify...";
 	backtrack->Init();
@@ -95,47 +94,47 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "FireEventClientSide...";
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "DoPostScreenEffects...";
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
-	Sleep(100);
+	Sleep(200);
 
 	std::cout << "DrawModelExecute...";
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");
+	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
 }
 
 void H::UnHook()
@@ -208,13 +207,10 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	if (GUI::Main())
 		G::KillDLL = true;
 
-	//temp code
-	if (GetAsyncKeyState(VK_F11))
-		G::KillDLL = true;
-
 	ImGui::Begin("console");
 	for (auto a : console)
 		ImGui::Text(a.c_str());
+
 	ImGui::End();
 
 	ImGui::EndFrame();
@@ -250,13 +246,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd->command_number)
 		return true;
 
-	if (I::engine->IsInGame() && cmd) 
+	if (I::engine->IsInGame() && cmd && G::Localplayer) 
 	{
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		if (GUI::ShowMenu) {
 			cmd->buttons = 0;
 			cmd->upmove = 0;
+			cmd->weaponselect = 0;
 			return false;
 		}
 
@@ -265,83 +262,17 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= 2;
-
-		/*
-		static bool flip = false;
-		if (!bSendPacket && !(G::Localplayer->GetFlags() & FL_ONGROUND))
-		{
-			if (cmd->sidemove > 300)
-				cmd->viewangles.y -= 30;
-			else if (cmd->sidemove < -300)
-				cmd->viewangles.y += 30;
-			flip = !flip;
-			if (cmd->mousedx > 0.5 || flip)
-			{
-				cmd->viewangles.y += 2;
-				cmd->sidemove = 450.0f;
-			}
-			else if (!flip || cmd->mousedx < 0.5)
-			{
-				cmd->viewangles.y -= 2;
-				cmd->sidemove = -450.0f;
-			}
-			cmd->viewangles.Normalize();
-		}
-		*/
-
+		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
+		
 		G::CM_Start(cmd, pSendPacket);
 
-		G::cmd->buttons |= IN_BULLRUSH;	//fast duck
-
-
-		if (cmd->buttons & IN_JUMP && G::Localplayer->GetHealth() > 0 && G::Localplayer->GetMoveType() != MOVETYPE_LADDER) // && Config::bhop
-		{
-			// bhop
-			if (!(G::Localplayer->GetFlags() & FL_ONGROUND))
-				cmd->buttons &= ~IN_JUMP;
-			// auto strafe
-			Vec Velocity = G::Localplayer->GetVecVelocity();
-			if (Velocity.VecLength2D() > 25) // only autostrafe if we're moving at least 25u/s
-			{
-				// oh god no
-				int MouseDeltaX = cmd->mousedx;
-				if (MouseDeltaX > 0)
-				{
-					cmd->sidemove = 450;
-					cmd->buttons |= IN_MOVERIGHT;
-					cmd->buttons &= ~IN_MOVELEFT;
-				}
-				else if (MouseDeltaX < 0)
-				{
-					cmd->sidemove = -450;
-					cmd->buttons |= IN_MOVELEFT;
-					cmd->buttons &= ~IN_MOVERIGHT;
-				}
-			}
-		}
-
-		//SlowWalk
-		if (false && G::Localplayer && G::Localplayer->GetHealth() > 0)
-		{
-			float maxSpeed = G::Localplayer->MaxAccurateSpeed();
-			if (G::cmd->forwardmove && G::cmd->sidemove) {
-				const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
-			}
-			else if (G::cmd->forwardmove) {
-				G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-			else if (G::cmd->sidemove) {
-				G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
-			}
-		}
-
-		//AA FIX
-		if (fabsf(G::cmd->sidemove) < 5.0f) {
-			G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
-		}
+		//Movement
+		movement->SlowWalk();
+		movement->AAMoveFix();
+		movement->BunnyHop();
+		movement->FastCrouch();
+			
+		
 
 		G::CM_MoveFixStart();
 
@@ -354,7 +285,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		}
 
 		antiaim->legit();
-		//antiaim->rage();
 
 		// decide when to enable desync
 		bool desync = true;
@@ -391,12 +321,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		if (!desync)
 			G::cmd->viewangles = G::CM_StartAngle;
 
-		//aimbot->Legit();
+		G::CM_MoveFixEnd();
 
-		//if (GetAsyncKeyState(VK_LMENU))
-		//	aimbot->Rage();
-
-		backtrack->run();
+		movement->RageAutoStrafe();
+		movement->LegitAutoStrafe();
 
 		G::CM_End();	
 	}
@@ -409,8 +337,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
-		Entity* Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-		if (!Localplayer || !I::engine->IsInGame() || !(Localplayer->GetHealth() > 0))
+		if (!G::Localplayer || !I::engine->IsInGame() || !(G::Localplayer->GetHealth() > 0))
 			return;
 
 		esp->Run();
@@ -423,6 +350,9 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	{
 		if (I::engine->IsInGame()) {
 			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+
+			if (!G::Localplayer)
+				return;
 
 			//this is for accurate angles (aa, etc)
 			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
@@ -446,6 +376,34 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		}
 	}
 
+	if (curStage == FRAME_RENDER_START) {
+		static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
+	
+		static auto sv_skyname = I::cvar->FindVar("sv_skyname");
+		sv_skyname->onChangeCallbacks.size = 0;
+
+		static auto r_3dsky = I::cvar->FindVar("r_3dsky");
+		r_3dsky->onChangeCallbacks.size = 0;
+		r_3dsky->SetValue(0);
+
+		load_named_sky("sky_csgo_night02");
+
+		for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
+		{
+			auto mat = I::materialsystem->GetMaterial(i);
+			if (!mat)
+				continue;
+
+			auto tex_name = mat->GetTextureGroupName();
+
+			if (strstr(tex_name, "World") || strstr(tex_name, "StaticProp") || strstr(tex_name, "SkyBox"))
+			{
+				mat->ColorModulate(20 / 255.f,
+					20 / 255.f, 30 / 255.f);
+			}
+		}
+	}
+	
 	return oFrameStageNotify(curStage);
 }
 
@@ -562,13 +520,6 @@ bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WO
 			const int	LocalIndex		= I::engine->GetLocalPlayer();
 			const int	UserIndex		= I::engine->GetPlayerForUserID(event->GetInt("userid"));
 			Entity*		Entity			= I::entitylist->GetClientEntity(UserIndex);
-
-			//if not localplayer and not on our team...
-			if (UserIndex != LocalIndex && G::Localplayer->GetTeam() != Entity->GetTeam() 
-				&& UserIndex < 65 && UserIndex >= 0)
-			{
-				backtrack->Records[UserIndex].front().Value += 20; //better value
-			}
 				
 		}
 		break;
@@ -677,8 +628,35 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && I::engine->GetPlayerInfo(info.entityIndex, &bInfo))
 	{
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
+		if (info.entityIndex == I::engine->GetLocalPlayer())
+		{
+			I::modelrender->ForcedMaterialOverride(nullptr);
+			static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
+			RotateBoneMatrix(Vec(0, antiaim->real.y - G::CM_StartAngle.y, 0), G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
+			oDrawModelExecute(thisptr, ctx, state, info, BoneMatrix);
 
-		if (isEnemy)
+			static Color color_desync = Color(255, 255, 255);
+			OverideMat(
+				false,	//viz thru wall?
+				false,	//wireframe?
+				false,	//transparent?
+				color_desync,
+				thisptr, ctx, state, info, G::FakeMatrix);
+
+			//oDrawModelExecute(thisptr, ctx, state, info, BoneMatrix);
+
+			/*
+
+			static Color color_local = Color(1, 250, 254);
+			OverideMat(
+				false,	//viz thru wall?
+				false,	//wireframe?
+				true,	//transparent?
+				color_local,
+				thisptr, ctx, state, info, BoneMatrix);
+				*/
+		}
+		else if (isEnemy)
 		{
 			OverideMat(
 				true,	//viz thru wall?
@@ -687,7 +665,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				color_blocked,
 				thisptr, ctx, state, info, customBoneToWorld);
 
-			//oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+			oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 
 			OverideMat(
 				false,	//viz thru wall?
@@ -696,33 +674,13 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				color_visible,
 				thisptr, ctx, state, info, customBoneToWorld);
 
-			//oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-		}
-		else if (info.entityIndex == I::engine->GetLocalPlayer())
-		{
+			//return;
 
-			static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
-			RotateBoneMatrix(Vec(0, antiaim->real.y - G::CM_StartAngle.y, 0), G::Localplayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
-
-			static Color color_local = Color(1, 250, 254);
-			OverideMat(
-				false,	//viz thru wall?
-				false,	//wireframe?
-				false,	//transparent?
-				color_local,
-				thisptr, ctx, state, info, BoneMatrix);
-
-			//RotateBoneMatrix(Vec(0, antiaim->fake.y - G::CM_StartAngle.y, 0), G::Localplayer->GetVecOrigin(), customBoneToWorld, G::FakeMatrix);
-			static Color color_desync = Color(255, 255, 255);
-			OverideMat(
-				false,	//viz thru wall?
-				true,	//wireframe?
-				false,	//transparent?
-				color_desync,
-				thisptr, ctx, state, info, G::FakeMatrix);
+			oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
 		else
 		{
+			/*
 			static Color color_team = Color(1, 1, 254);
 			OverideMat(
 				false,	//viz thru wall?
@@ -730,12 +688,15 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 				true,	//transparent?
 				color_team,
 				thisptr, ctx, state, info, customBoneToWorld);
-			oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+				*/
+			I::modelrender->ForcedMaterialOverride(nullptr);
+			return oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
 	}
 	else
 	{
-		oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+		I::modelrender->ForcedMaterialOverride(nullptr);
+		return oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 	}
 
 }

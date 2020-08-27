@@ -1,4 +1,12 @@
 #pragma once
+
+class CVerifiedUserCmd
+{
+public:
+	CUserCmd m_cmd;
+	unsigned long m_crc;
+};
+
 class CInput
 {
 public:
@@ -13,4 +21,27 @@ public:
 	int m_nCameraX;
 	int m_nCameraY;
 	bool m_CameraIsOrthographic;
+	Vec m_angPreviousViewAngles;
+	Vec m_angPreviousViewAnglesTilt;
+	float m_flLastForwardMove{};
+	int m_nClearInputState{};
+	CUserCmd* commands{};
+	CVerifiedUserCmd* verified_commands{};
+	CUserCmd* GetUserCmd(int sequence_number)
+	{
+		using OriginalFn = CUserCmd * (__thiscall*)(void*, int, int);
+		return GetVFunc<OriginalFn>(this, 8)(this, 0, sequence_number);
+	}
+
+	CUserCmd* GetUserCmd(int nSlot, int sequence_number)
+	{
+		typedef CUserCmd* (__thiscall* GetUserCmd_t)(void*, int, int);
+		return GetVFunc<GetUserCmd_t>(this, 8)(this, nSlot, sequence_number);
+	}
+
+	CVerifiedUserCmd* GetVerifiedCmd(int sequence_number)
+	{
+		auto verifiedCommands = *(CVerifiedUserCmd**)(reinterpret_cast<uint32_t>(this) + 0xF8);
+		return &verifiedCommands[sequence_number % 150];
+	}
 };

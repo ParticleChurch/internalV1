@@ -54,11 +54,6 @@ void AntiAim::legit()
 
 	fake.Normalize();
 	real.Normalize();
-
-	H::console.clear();
-	H::console.resize(0);
-	H::console.push_back(fake.str());
-	H::console.push_back(real.str());
 }
 
 bool AntiAim::LBYBreak()
@@ -88,8 +83,6 @@ void AntiAim::rage()
 
 	G::cmd->viewangles.x = 89;
 	G::cmd->viewangles.y += 180;
-
-
 
 	real = fake = G::cmd->viewangles;
 	real.Normalize();

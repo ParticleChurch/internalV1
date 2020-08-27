@@ -17,6 +17,12 @@ public:
 		*(BYTE*)((DWORD)this + offset) = val;
 	}
 
+	float GetInaccuracy()
+	{
+		typedef float(__thiscall* oGetInaccuracy)(void*);
+		return GetVFunc<oGetInaccuracy>(this, 482)(this);
+	}
+
 	WeaponData* GetWeaponData() {
 		typedef WeaponData* (__thiscall* ogetWeaponData)(void*);
 		return GetVFunc<ogetWeaponData>(this, 460)(this);
@@ -243,7 +249,7 @@ public:
 	float MaxAccurateSpeed() 
 	{ 
 		const WeaponData* WeaponData = this->GetActiveWeapon()->GetWeaponData();
-		return (this->IsScoped() ? WeaponData->MaxSpeedAlt : WeaponData->MaxSpeed) / 3; //alt and regular might be flipped lol
+		return (this->IsScoped() ? WeaponData->MaxSpeedAlt : WeaponData->MaxSpeed); //alt and regular might be flipped lol
 	}
 
 	float GetLBY() //LowerBodyYawTarget
@@ -318,6 +324,8 @@ public:
 		typedef bool(__thiscall* oAlive)(void*);
 		return GetVFunc<oAlive>(this, 155)(this);
 	}
+
+	
 
 	bool IsPlayer()
 	{

@@ -162,6 +162,7 @@
     <ClCompile Include="Hacks\Autowall.cpp" />
     <ClCompile Include="Hacks\Backtrack.cpp" />
     <ClCompile Include="Hacks\ESP.cpp" />
+    <ClCompile Include="Hacks\Movement.cpp" />
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="HTTP.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Hacks\Backtrack.hpp" />
     <ClInclude Include="Hacks\ESP.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
+    <ClInclude Include="Hacks\Movement.hpp" />
     <ClInclude Include="Hooks.hpp" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

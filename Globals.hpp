@@ -10,6 +10,7 @@ namespace G {
 
 	//CM stuff
 	extern CUserCmd* cmd;
+	extern int ChokeAmount;
 	extern bool* pSendPacket;
 	extern Vec CM_StartAngle;
 	extern Vec CM_EndAngle;
@@ -21,5 +22,6 @@ namespace G {
 	extern void CM_Clamp();
 	extern void CM_Start(CUserCmd*, bool*);
 	extern void CM_MoveFixStart();
+	extern void CM_MoveFixEnd();
 	extern void CM_End();
 };

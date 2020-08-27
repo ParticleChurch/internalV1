@@ -618,7 +618,6 @@ void DisplayMovementTab() {
 	ImGui::Separator();
 
 	ImGui::Checkbox("Bunny Hop###BHOP", &Config::movement.BunnyHop);
-	ImGui::Checkbox("Crouch In Air###CrouchInAir", &Config::movement.CrouchInAir);
 	ImGui::Checkbox("Fast Crouch###FastCrouch", &Config::movement.FastCrouch);
 	ImGui::Checkbox("Legit Auto Strafe###LegitAutoStrafe", &Config::movement.LegitAutoStrafe);
 	if (Config::movement.LegitAutoStrafe)
