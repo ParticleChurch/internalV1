@@ -20,4 +20,6 @@ namespace I
 	CVar* cvar = (CVar*)NewInterface->GetInterface((char*)"vstdlib.dll", (char*)"VEngineCvar007");
 	ModelRender* modelrender = (ModelRender*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VEngineModel016");
 	MaterialSystem* materialsystem = (MaterialSystem*)NewInterface->GetInterface((char*)"materialsystem.dll", (char*)"VMaterialSystem080");
+	Sound* sound = (Sound*)NewInterface->GetInterface((char*)"engine.dll", (char*)"IEngineSoundClient003");
+
 }

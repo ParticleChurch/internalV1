@@ -264,21 +264,21 @@ namespace ImGui
 		return Combo(label, currIndex, vector_getter, static_cast<void*>(&values), values.size());
 	}
 
-	void ColorPicker(std::string name, Color* COLOR) {
+	void ColorPicker(std::string name, Color* COLOR)
+	{
+		ImGui::Text(name.c_str());
+		ImGui::SameLine();
 		ImVec4 color = ImVec4(COLOR->color[0] / 255.f, COLOR->color[1] / 255.f, COLOR->color[2] / 255.f, 1.f);
 		bool open_popup = ImGui::ColorButton(name.c_str(), color);
-		ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
-		open_popup |= ImGui::Button((name + "pallet").c_str());
 		if (open_popup)
 		{
 			ImGui::OpenPopup((name + "picker").c_str());
-			//backup_color = color;
 		}
 
 		if (ImGui::BeginPopup((name + "picker").c_str()))
 		{
 			ImGui::SetNextItemWidth(100);
-			static float color_[3];
+			float color_[3] = { COLOR->color[0] / 255.f, COLOR->color[1] / 255.f, COLOR->color[2] / 255.f };
 			ImGui::ColorPicker3(name.c_str(), color_, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
 			*COLOR = Color(int(color_[0] * 255), int(color_[1] * 255), int(color_[2] * 255), 255);
 			color = ImVec4(color_[0], color_[1], color_[2], 1);
@@ -656,7 +656,7 @@ void DisplayVisualsTab() {
 	ImGui::Text("Players - ESP");
 	ImGui::Checkbox("Radar###VRadar", &Config::visuals.Radar);
 	ImGui::Checkbox("Boxes###VBoxes", &Config::visuals.Boxes);
-	ImGui::ColorPicker("Boxe Color###VBoxeColor", &Config::visuals.BoxColor);
+	ImGui::ColorPicker("Box Color", &Config::visuals.BoxColor);
 	ImGui::Checkbox("Skeleton###VSkeleton", &Config::visuals.Skeleton);
 	ImGui::Checkbox("Name###VName", &Config::visuals.Name);
 	ImGui::Checkbox("Health###VHealth", &Config::visuals.Health);
@@ -665,9 +665,9 @@ void DisplayVisualsTab() {
 
 	ImGui::Text("Players - Chams");
 	ImGui::Checkbox("Visible Chams###VVisibleCHams", &Config::visuals.VisibleChams);
-	ImGui::ColorPicker("Visible Cham Color###VVisChamColor", &Config::visuals.VisibleColor);
+	ImGui::ColorPicker("Visible Cham Color", &Config::visuals.VisibleColor);
 	ImGui::Checkbox("Through Wall Chams###VWallCHams", &Config::visuals.ThroughWallChams);
-	ImGui::ColorPicker("Through Wall Cham Color###VWallChamColor", &Config::visuals.ThroughWallColor);
+	ImGui::ColorPicker("Through Wall Cham Color", &Config::visuals.ThroughWallColor);
 
 }
 
@@ -714,7 +714,7 @@ bool GUI::FreeHackMenu()
 	}
 	
 
-	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
+	ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_Appearing);
 	ImGui::Begin("Hack (Free Version)", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar);
 	GUI::Rain();
 	

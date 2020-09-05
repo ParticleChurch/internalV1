@@ -1,3 +1,5 @@
+class Sound;
+
 namespace I
 {
 	//tool for creating new interfaces
@@ -20,4 +22,5 @@ namespace I
 	extern CInput* input;
 	extern ModelRender* modelrender;
 	extern MaterialSystem* materialsystem;
+	extern Sound* sound;
 }

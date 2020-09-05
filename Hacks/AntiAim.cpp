@@ -18,6 +18,9 @@ void AntiAim::legit()
 	if (G::Localplayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
 
+	if (!(G::Localplayer->GetFlags() & FL_ONGROUND))
+		return;
+
 	static float lastUpdate = 0;
 	if (GetAsyncKeyState(Config::antiaim.Legit.InverterKey) &&
 		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {

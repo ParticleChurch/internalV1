@@ -245,6 +245,9 @@ void Aimbot::Rage()
 	//if (!Config::ragebot.EnableAim)
 		//return;
 
+	if (!(G::Localplayer->GetHealth() > 0))
+		return;
+
 	if (!G::Localplayer->CanShoot())
 		return;
 
@@ -304,7 +307,7 @@ void Aimbot::Rage()
 	int tick_count;
 	bool ValidFound = false;
 
-	std::vector<Hitboxes> hitboxes = { HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };
+	std::vector<Hitboxes> hitboxes = { HITBOX_HEAD };//HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };
 	int HitGroup = 0;
 
 	for (auto HBOX : hitboxes)

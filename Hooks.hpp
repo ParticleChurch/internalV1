@@ -19,6 +19,17 @@ namespace H
     typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 	typedef void(__thiscall* DrawModelExecute)(void*, void*, void*, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
 
+	struct SoundData {
+		std::byte pad[4];
+		int entityIndex;
+		int channel;
+		const char* soundEntry;
+		std::byte pad1[8];
+		float volume;
+		std::byte pad2[44];
+	};
+	typedef void(__thiscall* EmitSound)(void*, SoundData);
+
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
 	extern long __stdcall ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters);
@@ -32,4 +43,7 @@ namespace H
     extern void __fastcall hkCamToFirstPeronHook();
     extern void __stdcall DoPostScreenEffectsHook(int param);
 	extern void __fastcall DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
+	
+	
+	extern void __stdcall EmitSoundHook(SoundData data);
 }

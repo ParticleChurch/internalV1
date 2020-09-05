@@ -14,6 +14,8 @@ namespace H
 	VMTManager inputVMT;
 	VMTManager modelrenderVMT;
 
+	VMTManager soundVMT;
+
 	EndScene oEndScene;
 	Reset oReset;
 	CreateMove oCreateMove;
@@ -25,6 +27,8 @@ namespace H
 	hkCamToFirstPeron ohkCamToFirstPeron;
 	DoPostScreenEffects oDoPostScreenEffects;
 	DrawModelExecute oDrawModelExecute;
+
+	EmitSound oEmitSound;
 
 	//GUI Vars
 	bool D3dInit = false;
@@ -59,6 +63,8 @@ void H::Init()
 	gameeventmanagerVMT.Initialise((DWORD*)I::gameeventmanager);
 	inputVMT.Initialise((DWORD*)I::input);
 	modelrenderVMT.Initialise((DWORD*)I::modelrender);
+	soundVMT.Initialise((DWORD*)I::sound);
+
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -135,6 +141,13 @@ void H::Init()
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
+
+	Sleep(200);
+
+	std::cout << "EmitSound...";
+	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
+	std::cout << "Success!" << std::endl;
+	I::engine->ClientCmd_Unrestricted("echo EmitSound...Success!");
 }
 
 void H::UnHook()
@@ -176,6 +189,10 @@ void H::UnHook()
 
 	std::cout << "clientVMT...";
 	clientVMT.RestoreOriginal();
+	std::cout << "Success!" << std::endl;
+
+	std::cout << "soundVMT...";
+	soundVMT.RestoreOriginal();
 	std::cout << "Success!" << std::endl;
 	
 	std::cout << "Freeing Console...Ejected!";
@@ -248,6 +265,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 	if (I::engine->IsInGame() && cmd && G::Localplayer) 
 	{
+		
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		if (GUI::ShowMenu) {
@@ -262,6 +280,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
+		
+
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
 		
 		G::CM_Start(cmd, pSendPacket);
@@ -271,9 +291,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->AAMoveFix();
 		movement->BunnyHop();
 		movement->FastCrouch();
-			
-		
-
+	
 		G::CM_MoveFixStart();
 
 		//toggle on and off third person
@@ -284,49 +302,59 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			ThirdPersonToggle = !ThirdPersonToggle;
 		}
 
+		
 		antiaim->legit();
 
 		// decide when to enable desync
 		bool desync = true;
-		if (cmd->buttons & IN_USE)
-			desync = false;
-		else
+		if (G::Localplayer->GetHealth() > 0)
 		{
-			auto ActiveWeapon = G::Localplayer->GetActiveWeapon();
-			auto WeaponData = ActiveWeapon->GetWeaponData();
-			bool UsingKnifeOrGun = WeaponData->IsGun() || WeaponData->Type == WeaponType::Knife;
-			if (UsingKnifeOrGun)
+			if (cmd->buttons & IN_USE)
+				desync = false;
+			else
 			{
-				bool CanAttack = (G::Localplayer->GetNextAttack() - ServerTime) <= 0;
-				bool CanPrimary = CanAttack && ((ActiveWeapon->GetNextPrimaryAttack() - ServerTime) <= 0) && (G::Localplayer->GetAmmo() > 0 || (WeaponData->Type == WeaponType::Knife));
-				bool CanSecondary = CanAttack && ((ActiveWeapon->GetNextSecondaryAttack() - ServerTime) <= 0);
+				auto ActiveWeapon = G::Localplayer->GetActiveWeapon();
+				auto WeaponData = ActiveWeapon->GetWeaponData();
+				bool UsingKnifeOrGun = WeaponData->IsGun() || WeaponData->Type == WeaponType::Knife;
+				if (UsingKnifeOrGun)
+				{
+					bool CanAttack = (G::Localplayer->GetNextAttack() - ServerTime) <= 0;
+					bool CanPrimary = CanAttack && ((ActiveWeapon->GetNextPrimaryAttack() - ServerTime) <= 0) && (G::Localplayer->GetAmmo() > 0 || (WeaponData->Type == WeaponType::Knife));
+					bool CanSecondary = CanAttack && ((ActiveWeapon->GetNextSecondaryAttack() - ServerTime) <= 0);
 
-				if (!CanPrimary)
-					cmd->buttons &= ~IN_ATTACK;
+					if (!CanPrimary)
+						cmd->buttons &= ~IN_ATTACK;
 
-				bool PrimaryAttack = CanPrimary && cmd->buttons & IN_ATTACK;
-				bool SecondaryAttack = CanSecondary && cmd->buttons & IN_ATTACK2 && WeaponData->Type == WeaponType::Knife;
+					bool PrimaryAttack = CanPrimary && cmd->buttons & IN_ATTACK;
+					bool SecondaryAttack = CanSecondary && cmd->buttons & IN_ATTACK2 && WeaponData->Type == WeaponType::Knife;
 
-				// disable desync for this tick
-				if (PrimaryAttack || SecondaryAttack)
+					// disable desync for this tick
+					if (PrimaryAttack || SecondaryAttack)
+						G::cmd->viewangles = G::CM_StartAngle;
+				}
+				else if (ActiveWeapon->GetGrenadeThrowTime() > 0)
+				{
+					// we are currently releasing a grenade, do not desync or the nade path will be fucked
 					G::cmd->viewangles = G::CM_StartAngle;
-			}
-			else if (ActiveWeapon->GetGrenadeThrowTime() > 0)
-			{
-				// we are currently releasing a grenade, do not desync or the nade path will be fucked
-				G::cmd->viewangles = G::CM_StartAngle;
+				}
 			}
 		}
 
 		if (!desync)
-			G::cmd->viewangles = G::CM_StartAngle;
+			G::cmd->viewangles = G::CM_StartAngle;	
 
+		if (GetAsyncKeyState(VK_LMENU))
+			aimbot->Rage();
+
+		backtrack->run();
+		
 		G::CM_MoveFixEnd();
 
 		movement->RageAutoStrafe();
 		movement->LegitAutoStrafe();
 
 		G::CM_End();	
+		
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
@@ -354,6 +382,9 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			if (!G::Localplayer)
 				return;
 
+			if (!(G::Localplayer->GetHealth() > 0))
+				return;
+
 			//this is for accurate angles (aa, etc)
 			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
 			if (offset == 0)
@@ -376,7 +407,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		}
 	}
 
-	if (curStage == FRAME_RENDER_START) {
+
+	if (curStage == FRAME_RENDER_START && G::Localplayer && G::Localplayer->GetHealth() > 0 && I::engine->IsInGame()) {
 		static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
 	
 		static auto sv_skyname = I::cvar->FindVar("sv_skyname");
@@ -395,7 +427,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 				continue;
 
 			auto tex_name = mat->GetTextureGroupName();
-
+			
 			if (strstr(tex_name, "World") || strstr(tex_name, "StaticProp") || strstr(tex_name, "SkyBox"))
 			{
 				mat->ColorModulate(20 / 255.f,
@@ -570,8 +602,7 @@ float GetCameraBoomLength(float distance)
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
-
-	if (I::engine->IsInGame()) {
+	if (I::engine->IsInGame() && G::Localplayer->GetHealth() > 0) {
 		if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
 		{
 			if (!(I::input->m_fCameraInThirdPerson))
@@ -620,7 +651,9 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 	bool is_flash = strstr(info.model->name, "flash") != nullptr;
 
 	static Color color_blocked = Color(200, 100, 100);
+	color_blocked = Config::visuals.ThroughWallColor;
 	static Color color_visible(100, 200, 100);
+	color_visible = Config::visuals.VisibleColor;
 	Entity* ent = I::entitylist->GetClientEntity(info.entityIndex);
 	Entity* local = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	static player_info_t bInfo;
@@ -699,4 +732,24 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 		return oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 	}
 
+}
+
+void __stdcall H::EmitSoundHook(SoundData data)
+{
+	static DWORD loc = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
+	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(loc);
+	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
+	{
+		H::console.clear();
+		H::console.resize(0);
+		H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
+		acceptMatch("accept");
+		/*auto window = FindWindowW(L"Valve001", NULL);
+		FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
+		FlashWindowEx(&flash);
+		ShowWindow(window, SW_RESTORE);*/
+
+		//Comment multiple lines of code: [ctrl] + [shift] + [/]
+	}
+	return oEmitSound(I::sound, data);
 }
