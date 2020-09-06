@@ -167,8 +167,6 @@ bool GUI::LoginMenu()
 		style.Colors[ImGuiCol_Border] = ImVec4(1, 1, 1, 0.5f);
 	}
 
-	bool PressedEject = false;
-
 	ImGui::SetNextWindowSize(ImVec2(340, 110 + 45 + 45 + 45 + 10), ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
 	ImGui::Begin("Login", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
