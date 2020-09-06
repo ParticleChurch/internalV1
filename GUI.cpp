@@ -73,68 +73,155 @@ void GUI::ProcessingLoginMenu()
 	ImGui::End();
 }
 
+ImFont* FontDefault;
+ImFont* Consolas16;
+ImFont* Consolas12;
+ImFont* Consolas8;
+
+namespace ImGui
+{
+	void DrawRect(int x, int y, int w, int h, ImU32 color)
+	{
+		ImVec2 window = ImGui::GetWindowPos();
+		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window.x + x, window.y + y), ImVec2(window.x + x + w, window.y + y + h), color);
+	}
+
+	bool TextInputWithPlaceholder(const char* Placeholder, int width, const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL)
+	{
+		ImVec2 CursorBefore = ImGui::GetCursorPos();
+		ImGui::SetCursorPos(ImVec2(CursorBefore.x + 3, CursorBefore.y));
+		ImGui::SetNextItemWidth(width - 6);
+		bool changed = ImGui::InputText(label, buf, buf_size, flags, callback, user_data);
+
+		bool placeholderAbove = ImGui::IsItemActive() || buf[0] != 0;
+
+		if (placeholderAbove)
+			ImGui::PushFont(Consolas12);
+
+		ImVec4* Colors = ImGui::GetStyle().Colors;
+		ImVec4 ColorBefore = Colors[ImGuiCol_Text];
+		ImVec2 CursorAfter = ImGui::GetCursorPos();
+
+		ImGui::SetCursorPos(placeholderAbove ? ImVec2(CursorBefore.x, CursorBefore.y - 14) : ImVec2(CursorBefore.x + 3, CursorBefore.y));
+		Colors[ImGuiCol_Text] = ImVec4(ColorBefore.x, ColorBefore.y, ColorBefore.z, ColorBefore.w / 2);
+		ImGui::Text(Placeholder);
+
+		Colors[ImGuiCol_Text] = ColorBefore;
+		ImGui::SetCursorPos(CursorAfter);
+
+		if (placeholderAbove)
+			ImGui::PopFont();
+
+		ImGui::DrawRect(CursorBefore.x, CursorBefore.y + ImGui::GetFontSize() + 2, width, 1, ImGui::ColorConvertFloat4ToU32(placeholderAbove ? ColorBefore : ImVec4(ColorBefore.x, ColorBefore.y, ColorBefore.z, ColorBefore.w * 0.75f)));
+
+		return changed;
+	}
+}
+
+void GUI::LoadFonts(ImGuiIO& io)
+{
+	FontDefault = io.Fonts->AddFontDefault();
+	Consolas16 = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f);
+	Consolas12 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 12.f);
+	Consolas8 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 8.f);
+}
+
 bool GUI::LoginMenu()
 {
+	ImGuiIO& io = ImGui::GetIO();
 	static bool init = false;
-	static float MainColor = 20.f / 255.f;
+	bool isEjecting = false;
 	if (!init)
 	{
 		init = true;
 
-		ImGuiStyle* style = &ImGui::GetStyle();
+		ImGuiStyle& style = ImGui::GetStyle();
 
 		// turn off all default rounding and padding
-		style->WindowRounding = 0.0f;
-		style->WindowPadding = ImVec2(0, 0);
-		style->ChildRounding = 0.0f;
-		style->FrameRounding = 0.0f;
-		style->FramePadding = ImVec2(0, 0);
-		style->GrabRounding = 0.0f;
-		style->PopupRounding = 0.0f;
-		style->ScrollbarRounding = 0.0f;
-		style->FrameBorderSize = 1.f;
-		style->ItemSpacing = ImVec2(0, 0);
-		style->ItemInnerSpacing = ImVec2(0, 0);
+		style.WindowRounding = 6.f;
+		style.WindowPadding = ImVec2(0, 0);
+		style.ChildRounding = 0.0f;
+		style.FrameRounding = 3.f;
+		style.FramePadding = ImVec2(0, 0);
+		style.GrabRounding = 0.0f;
+		style.PopupRounding = 0.0f;
+		style.ScrollbarRounding = 0.0f;
+		style.FrameBorderSize = 0.f;
+		style.ItemSpacing = ImVec2(0, 0);
+		style.ItemInnerSpacing = ImVec2(0, 0);
+		style.ChildBorderSize = 0.f;
+		style.FrameBorderSize = 0.f;
+		style.WindowBorderSize = 0.f;
+		style.PopupBorderSize = 0.f;
+		style.TabBorderSize = 0;
 
 		// main window outline solid 1px white
-		style->Colors[ImGuiCol_Border] = ImVec4(1.f, 1.f, 1.f, 1.f);
-		style->Colors[ImGuiCol_WindowBg] = ImVec4(MainColor, MainColor, MainColor, 1.f);
-		style->Colors[ImGuiCol_FrameBg] = ImVec4(MainColor, MainColor, MainColor, 0.f);
+		style.Colors[ImGuiCol_Border] = ImVec4(0, 0, 0, 0);
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(25.f / 255.f, 25.f / 255.f, 25.f / 255.f, 1.f);
+		style.Colors[ImGuiCol_FrameBg] = ImVec4(25.f / 255.f, 25.f / 255.f, 25.f / 255.f, 0.f);
 
 		// buttons
-		style->Colors[ImGuiCol_Button] = ImVec4(MainColor, MainColor, MainColor, 0.5f);
-		style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
-		style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.5f, 0.5f, 0.5f, 1.f);
+		style.Colors[ImGuiCol_Button] = ImVec4(25.f / 255.f, 25.f / 255.f, 25.f / 255.f, 0.f);
+		style.Colors[ImGuiCol_ButtonHovered] = ImVec4(1, 1, 1, 0.3f);
+		style.Colors[ImGuiCol_ButtonActive] = ImVec4(1, 1, 1, 0.6f);
+		style.Colors[ImGuiCol_Border] = ImVec4(1, 1, 1, 0.5f);
 	}
 
 	bool PressedEject = false;
 
-	ImGuiIO& io = ImGui::GetIO();
-	ImGui::SetNextWindowSize(ImVec2(440, 114));
-	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), 0, ImVec2(0.5f, 0.5f));
-	ImGui::Begin("Login", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::SetNextWindowSize(ImVec2(340, 110 + 45 + 45 + 45 + 10), ImGuiCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+	ImGui::Begin("Login", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
 
-	// Login Form
+	GUI::Rain(ImVec4(.5f, .5f, .5f, 1.f));
+
+	/*
+		LOGIN FORM
+	*/
+	ImGui::PushFont(Consolas16);
 	ImGui::GetStyle().FrameBorderSize = 0.f;
+
+	// Email
 	static char Email[257] = "";
-	ImGui::SetCursorPos(ImVec2(59, 30));
-	ImGui::Text("Email:"); ImGui::SameLine();
-	ImGui::InputText("###Email", Email, 257);
+	ImGui::SetCursorPos(ImVec2(20, 32));
+	ImGui::TextInputWithPlaceholder("Email Address", 300, "###Email", Email, 257);
 
+	// Password
 	static char Password[65] = "";
-	ImGui::SetCursorPos(ImVec2(38, 55));
-	ImGui::Text("Password:"); ImGui::SameLine();
-	ImGui::InputText("###Password", Password, 65);
+	ImGui::SetCursorPos(ImVec2(20, 70));
+	ImGui::TextInputWithPlaceholder("Password", 300, "###Password", Password, 257);
 
-	// Eject button
+	ImGui::PopFont();
+
+	/*
+		Buttons
+	*/
+	ImGui::PushFont(Consolas16);
 	ImGui::GetStyle().FrameBorderSize = 1.f;
-	ImGui::SetCursorPos(ImVec2(10, 83));
-	if (ImGui::Button("Eject", ImVec2(99, 20)))
-		PressedEject = true;
 
-	// Free2Play button
-	ImGui::SetCursorPos(ImVec2(10 + 99 + 8, 83));
-	if (ImGui::Button("Free Version", ImVec2(99, 20)))
+	// Login
+	ImGui::SetCursorPos(ImVec2(20, 110));
+	if (ImGui::Button("Login", ImVec2(300, 35)))
+	{
+		// reset old data
+		LoginAttemptIndex++;
+		Config::UserInfo.AuthStatus = AUTH_STATUS_PROCESSING;
+
+		// fill LoginInformation with recent data (malloc thread will still have access once scope deconstructs)
+		// p.s. thread has to free this malloc, to prevent a *tiny*, but still existent, memory leak
+		LoginInformation* Info = (LoginInformation*)malloc(sizeof(LoginInformation));
+		Info->AttemptID = LoginAttemptIndex;
+		strcpy(Info->Email, Email);
+		strcpy(Info->Password, Password);
+
+		// start login thread
+		CreateThread(0, 0, LPTHREAD_START_ROUTINE(AttemptLogin), Info, 0, 0);
+		Sleep(0); // let thread begin
+	}
+
+	// Play Free
+	ImGui::SetCursorPos(ImVec2(20, 110 + 45));
+	if (ImGui::Button("Play Free", ImVec2(300, 35)))
 	{
 		Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
 		Config::UserInfo.Email = "free@a4g4.com";
@@ -143,10 +230,26 @@ bool GUI::LoginMenu()
 		Config::UserInfo.Developer = false;
 	}
 
+	// Eject
+	ImGui::SetCursorPos(ImVec2(20, 110 + 45 + 45));
+	isEjecting = ImGui::Button("Eject Now", ImVec2(300, 35));
+
+	// Login
+	/*ImGui::GetStyle().FrameBorderSize = 1.f;
+	ImGui::SetCursorPos(ImVec2(10, 83));
+	if (ImGui::Button("Eject", ImVec2(99, 20)))
+		PressedEject = true;
+
+	// Free2Play button
+	ImGui::SetCursorPos(ImVec2(10 + 99 + 8, 83));
+	if (ImGui::Button("Free Version", ImVec2(99, 20)))
+	{
+	}
+
 	// Register button
 	ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8, 83));
 	if (ImGui::Button("Register", ImVec2(99, 20)))
-		ShellExecute(NULL, TEXT("open"), TEXT("https://www.a4g4.com"), NULL, NULL, 0);
+		ShellExecute(NULL, TEXT("open"), TEXT("https://www.a4g4.com/register"), NULL, NULL, 0);
 
 	// Login button
 	ImGui::SetCursorPos(ImVec2(10 + 99 + 8 + 99 + 8 + 99 + 8, 83));
@@ -169,14 +272,16 @@ bool GUI::LoginMenu()
 	}
 
 	LoginWindowPosition = ImGui::GetWindowPos();
-	ImGui::End();
+	*/
+	ImGui::PopFont();
 
-	return PressedEject;
+	ImGui::End();
+	return isEjecting;
 }
 
 bool GUI::Main()
 {
-	bool PressedEject = false;
+	bool isEjecting = false;
 	int WindowSizeX, WindowSizeY;
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
 	ImVec2 WindowCenter(WindowSizeX / 2.f, WindowSizeY / 2.f);
@@ -184,9 +289,9 @@ bool GUI::Main()
 	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
 	{
 		if (Config::UserInfo.Paid || Config::UserInfo.Developer)
-			PressedEject = PaidHackMenu();
+			isEjecting = PaidHackMenu();
 		else
-			PressedEject = FreeHackMenu();
+			isEjecting = FreeHackMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
@@ -196,10 +301,10 @@ bool GUI::Main()
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
 	{
 		GUI::ShowMenu = true;
-		PressedEject = LoginMenu();
+		isEjecting = LoginMenu();
 	}
 
-	return PressedEject;
+	return isEjecting;
 }
 
 //Paid Hack Func
@@ -813,7 +918,8 @@ bool GUI::FreeHackMenu()
 }
 
 
-#define randf() static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+#define randf() (static_cast <float> (rand()) / static_cast <float> (RAND_MAX))
+#define randint(m, n) (int)(floor(randf() * (n + 1.f - m) + m))
 #define square(x) (x)*(x)
 #define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
 
@@ -823,63 +929,132 @@ inline float lerp(float a, float b, float f)
 }
 
 struct Raindrop {
-	float x, y, z = -1.f;
+	float x, y, z;
 	int height;
-	float secondsToFall;
-	ImU32 color;
+	float speed; // pixels per second
+	float opacity;
+
+	Raindrop(float x, float y)
+	{
+		this->x = x;
+		this->y = y;
+		this->z = pow(randf(), 2.f);
+		this->opacity = lerp(0.2, 1, this->z);
+		this->speed = lerp(15.f, 30.f, this->z);
+		this->height = floor(lerp(8, 15, this->z));
+	}
 };
 
-bool RaindropsInitialized = false;
-std::chrono::steady_clock::time_point RainLastMovedTime;
+/*
+	From here to EOF is for drawing rain
+	ported from javascript on a4g4 lol
+*/
+std::chrono::steady_clock::time_point rain_time = std::chrono::high_resolution_clock::now();
+std::vector<Raindrop> rain_drops;
+ImVec2 rain_windowPos;
+int rain_lx = 0;
+int rain_ly = 0;
+int rain_cx = 0;
+int rain_cy = 0;
+float rain_density = 0.2f;
 
-void GUI::Rain()
+void GUI::Rain(ImVec4 Color)
 {
-	/* get imgui window factors */
-	ImVec2 WindowMin = ImGui::GetWindowPos();
-	ImVec2 WindowMax = addImVec2(WindowMin, ImGui::GetWindowSize());
-	ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-	/* initalize raindrops */
-	static Raindrop* Raindrops = (Raindrop*)malloc(sizeof(Raindrop) * Config::RaindropCount);
-	if (!RaindropsInitialized)
+	static bool rain_random_init = false;
+	if (!rain_random_init)
 	{
-		for (unsigned int i = 0; i < Config::RaindropCount; i++)
+		rain_random_init = true;
+		srand(time(nullptr));
+	}
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+	rain_windowPos = ImGui::GetWindowPos();
+	rain_cx = ImGui::GetWindowWidth();
+	rain_cy = ImGui::GetWindowHeight();
+
+	int newXRect[] = { rain_lx, -15, rain_cx, rain_cy };
+	int newYRect[] = { 0, rain_ly, rain_lx, rain_cy };
+
+	if (rain_cx > rain_lx)
+	{
+		int pixelsPerRaindrop = (1000.f / rain_density) / (float)(max(newXRect[3], 1));
+		float count = float(newXRect[2] - newXRect[0]) / float(pixelsPerRaindrop);
+		if (randf() < count) // don't ask
+			for (int i = newXRect[0]; i < newXRect[2]; i += pixelsPerRaindrop)
+			{
+				Raindrop drop(lerp(newXRect[0], newXRect[2], randf()), lerp(newXRect[1], newXRect[3], randf()));
+				rain_drops.push_back(drop);
+			}
+	}
+	else if (rain_cx < rain_lx)
+	{
+		for (size_t i = 0; i < rain_drops.size(); i++)
 		{
-			Raindrops[i].x = randf();
-			Raindrops[i].y = randf();
-			Raindrops[i].z = square(randf());
-			Raindrops[i].color = IM_COL32(255, 255, 255, 55 + 200 * Raindrops[i].z);
-			Raindrops[i].height = (int)lerp(10, 15, Raindrops[i].z);
-			Raindrops[i].secondsToFall = lerp(30, 10, Raindrops[i].z);
+			if (rain_drops.at(i).x > rain_cx)
+			{
+				rain_drops.erase(rain_drops.begin() + i);
+				i--;
+			}
 		}
-		RaindropsInitialized = true;
 	}
 
-	/* timings */
-	auto Now = std::chrono::high_resolution_clock::now();
-	double SecondsSinceLastUpdate = ((double)std::chrono::duration_cast<std::chrono::microseconds>(Now - RainLastMovedTime).count()) / 1e6f;
-	RainLastMovedTime = Now;
-
-	/* draw rain */
-	ImVec2 top, bottom;
-	for (unsigned int i = 0; i < Config::RaindropCount; i++)
+	if (rain_cy > rain_ly)
 	{
-		/* fall downwards */
-		Raindrops[i].y += SecondsSinceLastUpdate / Raindrops[i].secondsToFall;
-		if (Raindrops[i].y >= 1.f)
+		int pixelsPerRaindrop = (1000.f / rain_density) / (float)(max(newYRect[2], 1));
+		float count = float(newYRect[3] - newXRect[1]) / float(pixelsPerRaindrop);
+		if (randf() < count) // blah blah if count < 1 still needa chance but random to decide
+			for (int i = newYRect[1]; i < newYRect[3]; i += pixelsPerRaindrop)
+			{
+				Raindrop drop(lerp(newYRect[0], newYRect[2], randf()), lerp(newYRect[1], newYRect[3], randf()));
+				rain_drops.push_back(drop);
+			}
+	}
+	else if (rain_cy < rain_ly)
+	{
+		for (size_t i = 0; i < rain_drops.size(); i++)
 		{
-			Raindrops[i].y = fmod(Raindrops[i].y, 1.f);
-			Raindrops[i].x = randf();
+			if (rain_drops.at(i).y >= rain_cy)
+			{
+				rain_drops.erase(rain_drops.begin() + i);
+				i--;
+			}
+		}
+	}
+
+	auto now = std::chrono::high_resolution_clock::now();
+	double secondsPassed = ((double)std::chrono::duration_cast<std::chrono::microseconds>(now - rain_time).count()) / 1e6f;
+	rain_time = now;
+
+	ImVec2 top, bottom;
+	for (size_t i = 0; i < rain_drops.size(); i++)
+	{
+		Raindrop* drop = &rain_drops.at(i);
+		if (drop->y > rain_cy)
+		{ // hit bottom as result of resize
+			rain_drops.erase(rain_drops.begin() + i);
+			i--;
+			continue;
 		}
 
-		/* calculate position in pixels */
-		top.x = lerp(WindowMin.x, WindowMax.x, Raindrops[i].x);
+		drop->y += drop->speed * secondsPassed;
+		if (drop->y > rain_cy)
+		{ // hit bottom as result of gravity
+			drop->y = -15.f;
+			drop->x = lerp(0, rain_cx, randf());
+		}
+
+		top.x = rain_windowPos.x + drop->x;
 		bottom.x = top.x + 1;
 
-		top.y = lerp(WindowMin.y - Raindrops[i].height, WindowMax.y, Raindrops[i].y);
-		bottom.y = top.y + Raindrops[i].height;
+		top.y = rain_windowPos.y + drop->y;
+		bottom.y = top.y + drop->height;
 
-		/* add to draw queue */
-		draw_list->AddRectFilled(top, bottom, Raindrops[i].color);
+		draw_list->AddRectFilled(
+				top,
+				bottom,
+				ImGui::ColorConvertFloat4ToU32(ImVec4(Color.x, Color.y, Color.z, Color.w * drop->opacity))
+			);
 	}
+
+	rain_lx = rain_cx;
+	rain_ly = rain_cy;
 }

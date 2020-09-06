@@ -214,6 +214,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 
+		GUI::LoadFonts(io);
+
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
 	}
