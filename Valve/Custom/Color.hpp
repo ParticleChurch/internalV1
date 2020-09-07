@@ -32,19 +32,19 @@ public:
 		return &clr[0];
 	}
 
-	float r() {
+	inline float r() {
 		return color[0];
 	}
 
-	float g() {
+	inline float g() {
 		return color[1];
 	}
 
-	float b() {
+	inline float b() {
 		return color[2];
 	}
 
-	float a() {
+	inline float a() {
 		return color[3];
 	}
 

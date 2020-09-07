@@ -12,3 +12,8 @@ namespace Config
 
 	unsigned int RaindropCount = 100;
 }
+
+/* V2 stuff i guess*/
+namespace Config {
+}
+	

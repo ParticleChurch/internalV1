@@ -216,3 +216,70 @@ namespace Config {
 
 	extern unsigned int RaindropCount;
 }
+
+/* V2 stuff i guess*/
+enum PropertyType {
+	ColorValue = 0,
+	DecimalValue,
+	BooleanValue,
+	_count
+};
+
+struct Property {
+private:
+	void* Value;
+public:
+	PropertyType Type;
+
+	void Set(Color New)
+	{
+		this->Value = new Color(New.r(), New.g(), New.b(), New.a());
+	}
+	void Set(double New)
+	{
+		this->Value = new double(New);
+	}
+	void Set(bool New)
+	{
+		this->Value = new bool(New);
+	}
+
+	void Get(void* buffer)
+	{
+		size_t Size;
+		switch (this->Type)
+		{
+		case PropertyType::ColorValue:
+			Size = sizeof(Color);
+			break;
+		case PropertyType::DecimalValue:
+			Size = sizeof(double);
+			break;
+		case PropertyType::BooleanValue:
+			Size = sizeof(bool);
+			break;
+		default:
+			Size = 0;
+		}
+		memcpy(buffer, this->Value, Size);
+	}
+
+	std::string DumpToString()
+	{
+		return std::string("bruh");
+	}
+	bool LoadToString(std::string Input)
+	{
+		return true;
+	}
+};
+
+struct Widget {
+	std::string Name;
+	std::vector<Property> Properties;
+};
+
+struct Tab {
+	std::string Name;
+	std::vector<Widget> Widgets;
+};
