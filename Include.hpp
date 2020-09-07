@@ -15,6 +15,7 @@
 #include <algorithm>			 //for use of std::clamp (initailly for entity.hpp)
 #include <intrin.h>				 //for _ReturnAddress() (intitially for hooks.cpp)
 #include <chrono>                // time
+#include <map>                   // make config lookups fast
 
 #pragma warning(disable:4996)    //disables warning printing console
 #pragma warning(disable:4244)    //gets rid of const int to float warning

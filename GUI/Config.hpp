@@ -1,5 +1,8 @@
 #pragma once
 #include "../Valve/Custom/Color.hpp"
+#include <map>
+#include <vector>
+//#include "../Include.hpp"
 
 /*
 	Web API shit
@@ -226,60 +229,53 @@ enum PropertyType {
 };
 
 struct Property {
-private:
 	void* Value;
-public:
 	PropertyType Type;
+	std::string Name;
+	std::string FriendlyName;
+	std::string Description;
 
-	void Set(Color New)
+	Property(PropertyType Type, std::string Name, std::string FriendlyName, std::string Description, void* Default)
 	{
-		this->Value = new Color(New.r(), New.g(), New.b(), New.a());
-	}
-	void Set(double New)
-	{
-		this->Value = new double(New);
-	}
-	void Set(bool New)
-	{
-		this->Value = new bool(New);
-	}
-
-	void Get(void* buffer)
-	{
-		size_t Size;
-		switch (this->Type)
-		{
-		case PropertyType::ColorValue:
-			Size = sizeof(Color);
-			break;
-		case PropertyType::DecimalValue:
-			Size = sizeof(double);
-			break;
-		case PropertyType::BooleanValue:
-			Size = sizeof(bool);
-			break;
-		default:
-			Size = 0;
-		}
-		memcpy(buffer, this->Value, Size);
-	}
-
-	std::string DumpToString()
-	{
-		return std::string("bruh");
-	}
-	bool LoadToString(std::string Input)
-	{
-		return true;
+		this->Type = Type;
+		this->Name = Name;
+		this->FriendlyName = FriendlyName;
+		this->Description = Description;
+		this->Value = Default;
 	}
 };
 
 struct Widget {
 	std::string Name;
 	std::vector<Property> Properties;
+
+	Widget(std::string Name)
+	{
+		this->Name = Name;
+	}
 };
 
 struct Tab {
 	std::string Name;
 	std::vector<Widget> Widgets;
+
+	Tab(std::string Name)
+	{
+		this->Name = Name;
+	}
 };
+
+namespace Config {
+	extern std::vector<Tab> Tabs;
+	extern std::map<std::string, Property*> PropertyLookup;
+
+	extern void Init();
+
+	extern bool GetBool(std::string Name);
+	extern float GetFloat(std::string Name);
+	extern Color GetColor(std::string Name);
+
+	extern void SetBool(std::string Name, bool Value);
+	extern void SetFloat(std::string Name, float Value);
+	extern void SetColor(std::string Name, Color Value);
+}
