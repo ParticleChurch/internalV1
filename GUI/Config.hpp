@@ -234,14 +234,16 @@ struct Property {
 	std::string Name;
 	std::string FriendlyName;
 	std::string Description;
+	bool IsPremium;
 
-	Property(PropertyType Type, std::string Name, std::string FriendlyName, std::string Description, void* Default)
+	Property(bool IsPremium, PropertyType Type, std::string Name, std::string FriendlyName, std::string Description, void* Default)
 	{
 		this->Type = Type;
 		this->Name = Name;
 		this->FriendlyName = FriendlyName;
 		this->Description = Description;
 		this->Value = Default;
+		this->IsPremium = IsPremium;
 	}
 };
 

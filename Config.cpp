@@ -25,17 +25,31 @@ namespace Config {
 		{
 			Widget General("General");
 			{
-				General.Properties.push_back(Property(BooleanValue, "enable-visuals", "Enable", "Enable/Disable All Visuals", new bool(true)));
-				General.Properties.push_back(Property(BooleanValue, "recoil-crosshair", "Recoil Crosshair", "Show Recoil Crosshair On Screen", new bool(true)));
-				General.Properties.push_back(Property(BooleanValue, "third-person", "Third Person", "Play in Third Person", new bool(true)));
+				General.Properties.push_back(
+					Property(false, BooleanValue, "enable-visuals", "Enable", "Enable/Disable All Visuals", new bool(true))
+				);
+				General.Properties.push_back(
+					Property(true, BooleanValue, "recoil-crosshair", "Recoil Crosshair", "Show Recoil Crosshair On Screen", new bool(true))
+				);
+				General.Properties.push_back(
+					Property(false, BooleanValue, "third-person", "Third Person", "Play in Third Person", new bool(true))
+				);
 			} Visuals.Widgets.push_back(General);
 
 			Widget World("World");
 			{
-				General.Properties.push_back(Property(BooleanValue, "transparent-walls", "Transparent Walls", "Enable/Disable Transparent Walls", new bool(true)));
-				General.Properties.push_back(Property(DecimalValue, "transparent-walls-value", "Wall Transparency", "How 'See-Through' the Walls Are", new float(0.5)));
-				General.Properties.push_back(Property(BooleanValue, "transparent-props", "Transparent Props", "Enable/Disable Transparent Props", new bool(true)));
-				General.Properties.push_back(Property(DecimalValue, "transparent-props-value", "Props Transparency", "How 'See-Through' the Props Are", new float(0.5)));
+				General.Properties.push_back(
+					Property(false, BooleanValue, "transparent-walls", "Transparent Walls", "Enable/Disable Transparent Walls", new bool(true))
+				);
+				General.Properties.push_back(
+					Property(false, DecimalValue, "transparent-walls-value", "Wall Transparency", "How 'See-Through' the Walls Are", new float(0.5))
+				);
+				General.Properties.push_back(
+					Property(false, BooleanValue, "transparent-props", "Transparent Props", "Enable/Disable Transparent Props", new bool(true))
+				);
+				General.Properties.push_back(
+					Property(false, DecimalValue, "transparent-props-value", "Props Transparency", "How 'See-Through' the Props Are", new float(0.5))
+				);
 			} Visuals.Widgets.push_back(World);
 
 		} Tabs.push_back(Visuals);
@@ -45,7 +59,9 @@ namespace Config {
 		{
 			Widget General("General");
 			{
-				General.Properties.push_back(Property(BooleanValue, "enable-legitbot", "Enable", "Enable/Disable Legit Aimbot", new bool(true)));
+				General.Properties.push_back(
+					Property(false, BooleanValue, "enable-legitbot", "Enable", "Enable/Disable Legit Aimbot", new bool(true))
+				);
 			} LegitAimbot.Widgets.push_back(General);
 
 		} Tabs.push_back(LegitAimbot);
