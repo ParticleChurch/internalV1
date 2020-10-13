@@ -1,5 +1,6 @@
 #include "Include.hpp"
 #include "GUI/HTTP.hpp"
+#define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
 
 namespace GUI
 {
@@ -77,6 +78,8 @@ ImFont* FontDefault;
 ImFont* Consolas16;
 ImFont* Consolas12;
 ImFont* Consolas8;
+ImFont* Arial16;
+ImFont* Arial16Italics;
 
 namespace ImGui
 {
@@ -121,9 +124,18 @@ namespace ImGui
 void GUI::LoadFonts(ImGuiIO& io)
 {
 	FontDefault = io.Fonts->AddFontDefault();
-	Consolas16 = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f);
-	Consolas12 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 12.f);
-	Consolas8 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 8.f);
+	if (!(Consolas16 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f))) goto problemo;
+	if (!(Consolas12 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 12.f))) goto problemo;
+	if (!(Consolas8 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 8.f))) goto problemo;
+	if (!(Arial16 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f))) goto problemo;
+	if (!(Arial16Italics = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\ariali.ttf", 16.f))) goto problemo;
+	
+	return;
+problemo:
+	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
+	// segfault lol
+	int x = *(int*)0;
+	std::cout << x << std::endl;
 }
 
 bool GUI::LoginMenu()
@@ -286,10 +298,13 @@ bool GUI::Main()
 
 	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
 	{
+		isEjecting = HackMenu();
+		/*
 		if (Config::UserInfo.Paid || Config::UserInfo.Developer)
 			isEjecting = PaidHackMenu();
 		else
 			isEjecting = FreeHackMenu();
+		*/
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
@@ -773,6 +788,123 @@ void DisplayVisualsTab() {
 	ImGui::ColorPicker("Through Wall Cham Color", &Config::visuals.ThroughWallColor);
 
 }
+Config::Tab* CurrentTab = 0;
+bool GUI::HackMenu()
+{
+	if (!ShowMenu)
+		return false;
+
+	bool eject = false;
+	if ((!CurrentTab) && (Config::Tabs.size() > 0))
+		CurrentTab = &Config::Tabs.at(0);
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	// dimensions
+	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
+	ImGui::SetNextWindowPos(WindowCenter, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(WindowCenter, ImGuiCond_Once);
+
+	// Styles
+	int TitleBarHeight = 20;
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowMinSize = ImVec2(400, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
+	style.FrameBorderSize = 0.f;
+	style.ChildRounding = 0.f;
+	style.WindowBorderSize = 0.f;
+	style.WindowRounding = 5;
+	style.Colors[ImGuiCol_Button] = ImVec4(0.f, 0.f, 0.f, 0.f);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.f, 0.f, 0.f, 0.f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.f, 0.f, 0.f, 0.f);
+	style.Colors[ImGuiCol_ChildBg] = ImVec4(50.f, 50.f, 50.f, 1.f);
+	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.f, 0.f, 0.f, 0.5f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f);
+	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
+	
+	// set title bar size to 20px with font = Arial16
+	ImFont* font_before = ImGui::GetFont();
+	ImGui::PushFont(Arial16Italics);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
+	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	ImGui::PushFont(font_before);
+	ImGui::PopStyleVar();
+	ImVec2 WindowPos = ImGui::GetWindowPos();
+
+	// draw tab handles
+	ImDrawList* DrawList = ImGui::GetWindowDrawList();
+	ImU32 UnselectedTabHandleBackgroundColor = ImGui::ColorConvertFloat4ToU32(ImVec4(15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f));
+	ImU32 SelectedTabHandleBackgroundColor = ImGui::ColorConvertFloat4ToU32(ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
+	ImGui::PushFont(Arial16);
+	for (size_t i = 0; i < Config::Tabs.size(); i++)
+	{
+		Config::Tab* Tab = &Config::Tabs.at(i);
+		bool IsCurrent = Tab == CurrentTab;
+
+		ImVec2 TabHandlePos = ImVec2(IsCurrent ? (WindowPos.x) : (WindowPos.x + 10), TitleBarHeight + WindowPos.y + (30 * i));
+		bool hovering = !IsCurrent && ImGui::IsMouseHoveringRect(ImVec2(WindowPos.x + 5, TabHandlePos.y), ImVec2(WindowPos.x + 90, TabHandlePos.y + 30), false);
+		ImVec2 TabHandleSize = IsCurrent ? ImVec2(90, 30) : (hovering ? ImVec2(85, 30) : ImVec2(80, 30));
+		if (hovering)
+			TabHandlePos.x -= 5;
+
+		DrawList->AddRectFilled(TabHandlePos,
+			ImVec2(TabHandlePos.x + TabHandleSize.x, TabHandlePos.y + TabHandleSize.y),
+			IsCurrent ? SelectedTabHandleBackgroundColor: UnselectedTabHandleBackgroundColor,
+			6.f, ImDrawCornerFlags_Left
+		);
+		ImGui::SetCursorPos(ImVec2(TabHandlePos.x - WindowPos.x, TabHandlePos.y - WindowPos.y));
+		if (ImGui::Button(Tab->Name.c_str(), TabHandleSize))
+			CurrentTab = Tab;
+		if (!IsCurrent && ImGui::IsItemHovered())
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+	}
+	// draw eject button
+	{
+		ImVec2 TabHandlePos = ImVec2(WindowPos.x + 10, 5 + TitleBarHeight + WindowPos.y + (30 * Config::Tabs.size()));
+		bool hovering = ImGui::IsMouseHoveringRect(ImVec2(WindowPos.x + 5, TabHandlePos.y), ImVec2(WindowPos.x + 90, TabHandlePos.y + 30), false);
+		ImVec2 TabHandleSize = hovering ? ImVec2(85, 30) : ImVec2(80, 30);
+		if (hovering)
+			TabHandlePos.x -= 5;
+		DrawList->AddRectFilled(TabHandlePos,
+			ImVec2(TabHandlePos.x + TabHandleSize.x, TabHandlePos.y + TabHandleSize.y),
+			ImGui::ColorConvertFloat4ToU32(ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f)),
+			6.f, ImDrawCornerFlags_Left
+		);
+		ImGui::SetCursorPos(ImVec2(TabHandlePos.x - WindowPos.x, TabHandlePos.y - WindowPos.y));
+		ImGui::PushFont(Arial16Italics);
+		eject = ImGui::Button("Eject", TabHandleSize);
+		if (ImGui::IsItemHovered())
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+		ImGui::PopFont();
+	}
+	ImGui::PopFont();
+
+	// check that we have a selected tab
+	if (!CurrentTab)
+	{
+		eject = true;
+		goto END;
+	}
+
+	// draw selected tab
+	style.Colors[ImGuiCol_WindowBg] = style.Colors[ImGuiCol_ChildBg] = style.Colors[ImGuiCol_FrameBg] = ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f);
+	ImGui::SetCursorPos(ImVec2(90, TitleBarHeight));
+	ImGui::BeginChildFrame(ImGui::GetID("page"), ImVec2(0, 0), 0);
+	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
+	{
+		Config::Widget Widget = CurrentTab->Widgets.at(i);
+
+		ImGui::Text("Hello");
+	}
+	ImGui::EndChildFrame();
+
+END:
+	// weird pops are required to set the font of the title bar
+	ImGui::PopFont();
+	ImGui::End();
+	ImGui::PopFont();
+	return eject;
+}
 
 bool GUI::FreeHackMenu()
 {
@@ -919,7 +1051,6 @@ bool GUI::FreeHackMenu()
 #define randf() (static_cast <float> (rand()) / static_cast <float> (RAND_MAX))
 #define randint(m, n) (int)(floor(randf() * (n + 1.f - m) + m))
 #define square(x) (x)*(x)
-#define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
 
 inline float lerp(float a, float b, float f)
 {

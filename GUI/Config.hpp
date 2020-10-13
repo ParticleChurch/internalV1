@@ -220,54 +220,105 @@ namespace Config {
 	extern unsigned int RaindropCount;
 }
 
-/* V2 stuff i guess*/
-enum PropertyType {
-	ColorValue = 0,
-	DecimalValue,
-	BooleanValue,
-	_count
-};
+	namespace Config {
+	enum PropertyType {
+		COLOR = 0,
+		FLOAT,
+		BOOLEAN,
+		_count
+	};
 
-struct Property {
-	void* Value;
-	PropertyType Type;
-	std::string Name;
-	std::string FriendlyName;
-	std::string Description;
-	bool IsPremium;
-
-	Property(bool IsPremium, PropertyType Type, std::string Name, std::string FriendlyName, std::string Description, void* Default)
+	struct CFloat
 	{
-		this->Type = Type;
-		this->Name = Name;
-		this->FriendlyName = FriendlyName;
-		this->Description = Description;
-		this->Value = Default;
-		this->IsPremium = IsPremium;
-	}
-};
+	private:
+		float value;
+	public:
+		float minimum, maximum, percision;
+		CFloat(float min, float max, float value, float percision = 0.01)
+		{
+			this->minimum = min;
+			this->maximum = max;
+			this->percision = percision;
+			this->value = value;
+		}
 
-struct Widget {
-	std::string Name;
-	std::vector<Property> Properties;
+		void set(float v)
+		{
+			v = floor(v / this->percision + 0.5) * this->percision;
+			this->value = min(max(this->minimum, v), this->maximum);
+		}
 
-	Widget(std::string Name)
-	{
-		this->Name = Name;
-	}
-};
+		float get()
+		{
+			return this->value;
+		}
+	};
 
-struct Tab {
-	std::string Name;
-	std::vector<Widget> Widgets;
+	struct Property {
+		void* Value = nullptr;
+		PropertyType Type;
+		std::string Name;
+		std::string VisibleName;
+		std::string Description;
+		bool IsPremium;
 
-	Tab(std::string Name)
-	{
-		this->Name = Name;
-	}
-};
+		Property(bool IsPremium, PropertyType Type, std::string Name, std::string VisibleName, std::string Description, void* Default)
+		{
+			this->Type = Type;
+			this->Name = Name;
+			this->VisibleName = VisibleName;
+			this->Description = Description;
+			this->Value = Default;
+			this->IsPremium = IsPremium;
+		}
+	};
 
-namespace Config {
+	struct Widget {
+		std::string Name;
+		std::vector<Property> Properties;
+
+		Widget(std::string Name)
+		{
+			this->Name = Name;
+		}
+
+		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, bool* Default)
+		{
+			Property* p = new Property(IsPremium, PropertyType::BOOLEAN, Name, VisibleName, Description, Default);
+			this->Properties.push_back(*p);
+			return *p;
+		}
+		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Color* Default)
+		{
+			Property* p = new Property(IsPremium, PropertyType::COLOR, Name, VisibleName, Description, Default);
+			this->Properties.push_back(*p);
+			return *p;
+		}
+		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Config::CFloat* Default)
+		{
+			Property* p = new Property(IsPremium, PropertyType::FLOAT, Name, VisibleName, Description, Default);
+			this->Properties.push_back(*p);
+			return *p;
+		}
+	};
+
+	struct Tab {
+		std::string Name;
+		std::vector<Widget> Widgets;
+
+		Tab(std::string Name)
+		{
+			this->Name = Name;
+		}
+
+		Widget& AddWidget(std::string Name)
+		{
+			Widget* w = new Widget(Name);
+			this->Widgets.push_back(*w);
+			return *w;
+		}
+	};
+
 	extern std::vector<Tab> Tabs;
 	extern std::map<std::string, Property*> PropertyLookup;
 

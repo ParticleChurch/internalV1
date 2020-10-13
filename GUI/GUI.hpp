@@ -7,6 +7,8 @@ namespace GUI {
 	extern void ProcessingLoginMenu();
 	extern bool LoginMenu();
 
+	extern bool HackMenu();
+
 
 	//Paid Hack Helpers
 	extern bool PaidHackMenu();
