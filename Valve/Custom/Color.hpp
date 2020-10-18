@@ -1,4 +1,5 @@
 #pragma once
+
 class Color
 {
 public:
@@ -33,19 +34,27 @@ public:
 	}
 
 	inline float r() {
-		return color[0];
+		return (float)color[0];
 	}
 
 	inline float g() {
-		return color[1];
+		return (float)color[1];
 	}
 
 	inline float b() {
-		return color[2];
+		return (float)color[2];
 	}
 
 	inline float a() {
-		return color[3];
+		return (float)color[3];
 	}
 
+	std::string Stringify()
+	{
+		//(rrr, ggg, bbb, aaa)
+		// 20 + 1 for null terminator
+		char buf[21];
+		snprintf(buf, 21, "(%u, %u, %u, %u)", this->color[0], this->color[1], this->color[2], this->color[3]);
+		return std::string(buf);
+	}
 };

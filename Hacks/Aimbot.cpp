@@ -304,7 +304,6 @@ void Aimbot::Rage()
 	WeaponData* WeapData = Weapon->GetWeaponData();
 
 	QAngle Angle;
-	int tick_count;
 	bool ValidFound = false;
 
 	std::vector<Hitboxes> hitboxes = { HITBOX_HEAD };//HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };

@@ -75,11 +75,30 @@ void GUI::ProcessingLoginMenu()
 }
 
 ImFont* FontDefault;
-ImFont* Consolas16;
-ImFont* Consolas12;
-ImFont* Consolas8;
+ImFont* Arial12;
+ImFont* Arial14;
 ImFont* Arial16;
+ImFont* Arial18;
+ImFont* Arial12Italics;
 ImFont* Arial16Italics;
+#define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
+void GUI::LoadFonts(ImGuiIO& io)
+{
+	FontDefault = io.Fonts->AddFontDefault();
+	AYO_LOAD_FONT_BRUH(Arial12, "C:\\Windows\\Fonts\\arial.ttf", 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14, "C:\\Windows\\Fonts\\arial.ttf", 14.f);
+	AYO_LOAD_FONT_BRUH(Arial16, "C:\\Windows\\Fonts\\arial.ttf", 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18, "C:\\Windows\\Fonts\\arial.ttf", 18.f);
+	AYO_LOAD_FONT_BRUH(Arial12Italics, "C:\\Windows\\Fonts\\ariali.ttf", 12.f);
+	AYO_LOAD_FONT_BRUH(Arial16Italics, "C:\\Windows\\Fonts\\ariali.ttf", 16.f);
+
+	return;
+problemo:
+	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
+	// segfault lol
+	int x = *(int*)0;
+	std::cout << x << std::endl;
+}
 
 namespace ImGui
 {
@@ -99,7 +118,7 @@ namespace ImGui
 		bool placeholderAbove = ImGui::IsItemActive() || buf[0] != 0;
 
 		if (placeholderAbove)
-			ImGui::PushFont(Consolas12);
+			ImGui::PushFont(Arial12);
 
 		ImVec4* Colors = ImGui::GetStyle().Colors;
 		ImVec4 ColorBefore = Colors[ImGuiCol_Text];
@@ -119,23 +138,6 @@ namespace ImGui
 
 		return changed;
 	}
-}
-
-void GUI::LoadFonts(ImGuiIO& io)
-{
-	FontDefault = io.Fonts->AddFontDefault();
-	if (!(Consolas16 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f))) goto problemo;
-	if (!(Consolas12 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 12.f))) goto problemo;
-	if (!(Consolas8 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 8.f))) goto problemo;
-	if (!(Arial16 = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 16.f))) goto problemo;
-	if (!(Arial16Italics = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\ariali.ttf", 16.f))) goto problemo;
-	
-	return;
-problemo:
-	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
-	// segfault lol
-	int x = *(int*)0;
-	std::cout << x << std::endl;
 }
 
 bool GUI::LoginMenu()
@@ -188,7 +190,7 @@ bool GUI::LoginMenu()
 	/*
 		LOGIN FORM
 	*/
-	ImGui::PushFont(Consolas16);
+	ImGui::PushFont(Arial16);
 	ImGui::GetStyle().FrameBorderSize = 0.f;
 
 	// Email
@@ -206,7 +208,7 @@ bool GUI::LoginMenu()
 	/*
 		Buttons
 	*/
-	ImGui::PushFont(Consolas16);
+	ImGui::PushFont(Arial16);
 	ImGui::GetStyle().FrameBorderSize = 1.f;
 
 	// Login
@@ -788,6 +790,7 @@ void DisplayVisualsTab() {
 	ImGui::ColorPicker("Through Wall Cham Color", &Config::visuals.ThroughWallColor);
 
 }
+
 Config::Tab* CurrentTab = 0;
 bool GUI::HackMenu()
 {
@@ -796,7 +799,7 @@ bool GUI::HackMenu()
 
 	bool eject = false;
 	if ((!CurrentTab) && (Config::Tabs.size() > 0))
-		CurrentTab = &Config::Tabs.at(0);
+		CurrentTab = Config::Tabs.at(0);
 
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -806,7 +809,7 @@ bool GUI::HackMenu()
 	ImGui::SetNextWindowSize(WindowCenter, ImGuiCond_Once);
 
 	// Styles
-	int TitleBarHeight = 20;
+	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowMinSize = ImVec2(400, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
@@ -822,9 +825,9 @@ bool GUI::HackMenu()
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 	
-	// set title bar size to 20px with font = Arial16
+	// set title bar size to 16px with font = Arial16
 	ImFont* font_before = ImGui::GetFont();
-	ImGui::PushFont(Arial16Italics);
+	ImGui::PushFont(Arial12Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	ImGui::PushFont(font_before);
@@ -838,7 +841,7 @@ bool GUI::HackMenu()
 	ImGui::PushFont(Arial16);
 	for (size_t i = 0; i < Config::Tabs.size(); i++)
 	{
-		Config::Tab* Tab = &Config::Tabs.at(i);
+		Config::Tab* Tab = Config::Tabs.at(i);
 		bool IsCurrent = Tab == CurrentTab;
 
 		ImVec2 TabHandlePos = ImVec2(IsCurrent ? (WindowPos.x) : (WindowPos.x + 10), TitleBarHeight + WindowPos.y + (30 * i));
@@ -887,19 +890,44 @@ bool GUI::HackMenu()
 	}
 
 	// draw selected tab
-	style.Colors[ImGuiCol_WindowBg] = style.Colors[ImGuiCol_ChildBg] = style.Colors[ImGuiCol_FrameBg] = ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f);
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
 	ImGui::SetCursorPos(ImVec2(90, TitleBarHeight));
-	ImGui::BeginChildFrame(ImGui::GetID("page"), ImVec2(0, 0), 0);
+	ImGui::BeginChild("###page", ImVec2(0, 0), 0);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 5.f));
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.f, 1.f, 1.f, 0.5f));
+
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
-		Config::Widget Widget = CurrentTab->Widgets.at(i);
+		ImGui::SetCursorPos(ImVec2(5, ImGui::GetCursorPosY() + 5));
 
-		ImGui::Text("Hello");
+
+		Config::Widget* Widget = CurrentTab->Widgets.at(i);
+		ImGui::BeginChildFrame(ImGui::GetID(("###" + Widget->Name).c_str()), ImVec2(ImGui::GetWindowWidth() - 10, Widget->CalculateHeight()));
+
+		// title
+		ImGui::PushFont(Arial18);
+		ImGui::Text(("=== " + Widget->Name + " ===").c_str());
+		ImGui::PopFont();
+
+		// properties
+		ImGui::PushFont(Arial14);
+		for (size_t j = 0; j < Widget->Properties.size(); j++)
+		{
+			Config::Property* Property = Widget->Properties.at(j);
+			ImGui::Text((" -> " + Property->VisibleName + " : " + Property->Stringify()).c_str());
+		}
+		ImGui::PopFont();
+		ImGui::EndChild();
 	}
+	ImGui::PopStyleVar(3);
+	ImGui::PopStyleColor(3);
 	ImGui::EndChildFrame();
 
 END:
-	// weird pops are required to set the font of the title bar
 	ImGui::PopFont();
 	ImGui::End();
 	ImGui::PopFont();

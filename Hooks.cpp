@@ -305,7 +305,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		}
 
 		
-		antiaim->legit();
+		antiaim->rage();
 
 		// decide when to enable desync
 		bool desync = true;
@@ -432,8 +432,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			
 			if (strstr(tex_name, "World") || strstr(tex_name, "StaticProp") || strstr(tex_name, "SkyBox"))
 			{
-				mat->ColorModulate(20 / 255.f,
-					20 / 255.f, 30 / 255.f);
+				// TODO: bruh this literally just makes my screen black
+				//mat->ColorModulate(20 / 255.f, 20 / 255.f, 30 / 255.f);
 			}
 		}
 	}

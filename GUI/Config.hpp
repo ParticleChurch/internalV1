@@ -221,7 +221,7 @@ namespace Config {
 }
 
 	namespace Config {
-	enum PropertyType {
+	enum class PropertyType {
 		COLOR = 0,
 		FLOAT,
 		BOOLEAN,
@@ -244,13 +244,18 @@ namespace Config {
 
 		void set(float v)
 		{
-			v = floor(v / this->percision + 0.5) * this->percision;
+			v = floor(v / this->percision + 0.5f) * this->percision;
 			this->value = min(max(this->minimum, v), this->maximum);
 		}
 
 		float get()
 		{
 			return this->value;
+		}
+
+		std::string Stringify()
+		{
+			return "0";
 		}
 	};
 
@@ -271,55 +276,86 @@ namespace Config {
 			this->Value = Default;
 			this->IsPremium = IsPremium;
 		}
+
+		std::string Stringify()
+		{
+			switch (this->Type)
+			{
+			case PropertyType::COLOR:
+				return (*(Color*)this->Value).Stringify();
+			case PropertyType::FLOAT:
+				return (*(CFloat*)this->Value).Stringify();
+			case PropertyType::BOOLEAN:
+				return *(bool*)this->Value ? "true" : "false";
+			default:
+				return "[error]";
+			}
+		}
 	};
 
 	struct Widget {
+	private:
+		bool HeightInit = false;
+		int Height = 20;
+	public:
 		std::string Name;
-		std::vector<Property> Properties;
+		std::vector<Property*> Properties;
 
 		Widget(std::string Name)
 		{
 			this->Name = Name;
 		}
 
-		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, bool* Default)
+		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, bool* Default)
 		{
 			Property* p = new Property(IsPremium, PropertyType::BOOLEAN, Name, VisibleName, Description, Default);
-			this->Properties.push_back(*p);
-			return *p;
+			this->Properties.push_back(p);
+			return p;
 		}
-		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Color* Default)
+		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Color* Default)
 		{
 			Property* p = new Property(IsPremium, PropertyType::COLOR, Name, VisibleName, Description, Default);
-			this->Properties.push_back(*p);
-			return *p;
+			this->Properties.push_back(p);
+			return p;
 		}
-		Property& AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Config::CFloat* Default)
+		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Config::CFloat* Default)
 		{
 			Property* p = new Property(IsPremium, PropertyType::FLOAT, Name, VisibleName, Description, Default);
-			this->Properties.push_back(*p);
-			return *p;
+			this->Properties.push_back(p);
+			return p;
+		}
+
+		int CalculateHeight(bool changed = false)
+		{
+			if (changed || !this->HeightInit)
+			{
+				this->HeightInit = true;
+
+				// TODO: calculate
+				this->Height = 50;
+			}
+			return this->Height;
 		}
 	};
 
 	struct Tab {
 		std::string Name;
-		std::vector<Widget> Widgets;
+		std::vector<Widget*> Widgets;
 
 		Tab(std::string Name)
 		{
 			this->Name = Name;
 		}
 
-		Widget& AddWidget(std::string Name)
+		Widget* AddWidget(std::string Name)
 		{
 			Widget* w = new Widget(Name);
-			this->Widgets.push_back(*w);
-			return *w;
+			this->Widgets.push_back(w);
+			return w;
 		}
 	};
 
-	extern std::vector<Tab> Tabs;
+	extern std::vector<Tab*> Tabs;
 	extern std::map<std::string, Property*> PropertyLookup;
 
 	extern void Init();
