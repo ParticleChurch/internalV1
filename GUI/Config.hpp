@@ -294,10 +294,7 @@ namespace Config {
 	};
 
 	struct Widget {
-	private:
-		bool HeightInit = false;
 		int Height = 20;
-	public:
 		std::string Name;
 		std::vector<Property*> Properties;
 
@@ -323,18 +320,6 @@ namespace Config {
 			Property* p = new Property(IsPremium, PropertyType::FLOAT, Name, VisibleName, Description, Default);
 			this->Properties.push_back(p);
 			return p;
-		}
-
-		int CalculateHeight(bool changed = false)
-		{
-			if (changed || !this->HeightInit)
-			{
-				this->HeightInit = true;
-
-				// TODO: calculate
-				this->Height = 50;
-			}
-			return this->Height;
 		}
 	};
 

@@ -792,6 +792,7 @@ void DisplayVisualsTab() {
 }
 
 Config::Tab* CurrentTab = 0;
+bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
 	if (!ShowMenu)
@@ -809,7 +810,7 @@ bool GUI::HackMenu()
 	ImGui::SetNextWindowSize(WindowCenter, ImGuiCond_Once);
 
 	// Styles
-	int TitleBarHeight = 16;
+	int TitleBarHeight = 18;
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowMinSize = ImVec2(400, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
@@ -827,7 +828,7 @@ bool GUI::HackMenu()
 	
 	// set title bar size to 16px with font = Arial16
 	ImFont* font_before = ImGui::GetFont();
-	ImGui::PushFont(Arial12Italics);
+	ImGui::PushFont(Arial16Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	ImGui::PushFont(font_before);
@@ -882,6 +883,7 @@ bool GUI::HackMenu()
 	}
 	ImGui::PopFont();
 
+
 	// check that we have a selected tab
 	if (!CurrentTab)
 	{
@@ -890,15 +892,20 @@ bool GUI::HackMenu()
 	}
 
 	// draw selected tab
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
 	ImGui::SetCursorPos(ImVec2(90, TitleBarHeight));
-	ImGui::BeginChild("###page", ImVec2(0, 0), 0);
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
+	ImGui::BeginChildFrame(ImGui::GetID("###page"), ImVec2(0, 0), 0);
+	ImGui::PopStyleColor();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 5.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.f, 1.f, 1.f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.f, 1.f, 1.f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(1.f, 1.f, 1.f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
 
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
@@ -906,25 +913,30 @@ bool GUI::HackMenu()
 
 
 		Config::Widget* Widget = CurrentTab->Widgets.at(i);
-		ImGui::BeginChildFrame(ImGui::GetID(("###" + Widget->Name).c_str()), ImVec2(ImGui::GetWindowWidth() - 10, Widget->CalculateHeight()));
+		ImGui::BeginChildFrame(ImGui::GetID(Widget->Name.c_str()), ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height));
 
 		// title
 		ImGui::PushFont(Arial18);
-		ImGui::Text(("=== " + Widget->Name + " ===").c_str());
+		ImGui::Text(Widget->Name.c_str());
 		ImGui::PopFont();
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 3));
+		ImGui::Separator();
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 3));
 
 		// properties
-		ImGui::PushFont(Arial14);
+		ImGui::PushFont(Arial16);
 		for (size_t j = 0; j < Widget->Properties.size(); j++)
 		{
 			Config::Property* Property = Widget->Properties.at(j);
-			ImGui::Text((" -> " + Property->VisibleName + " : " + Property->Stringify()).c_str());
+			ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
 		}
 		ImGui::PopFont();
+		Widget->Height -= ImGui::GetContentRegionAvail().y;
 		ImGui::EndChild();
 	}
 	ImGui::PopStyleVar(3);
-	ImGui::PopStyleColor(3);
+	ImGui::PopStyleColor(5);
+	HackMenuPageHasScrollbar = ImGui::GetContentRegionAvail().y < 0; // its gonna be a frame late, rip
 	ImGui::EndChildFrame();
 
 END:
