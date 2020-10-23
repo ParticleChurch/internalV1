@@ -41,7 +41,9 @@ public:
 
 		// yaw
 		if (y > 180 || y <= -180)
-			y = (isinf(y) || isnan(y)) ? 0 : fmodf(fmodf(y + 180, 360) + 360, 360) - 180;
+			y = isinf(y) ? 0 : fmodf(fmodf(y + 180, 360) + 360, 360) - 180;
+		else if (isnan(y))
+			y = 0;
 
 		// roll
 		z = 0;
