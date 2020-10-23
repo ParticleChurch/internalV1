@@ -44,11 +44,9 @@ inline void AngleVectors(const QAngle& angles, Vec* forward, Vec* right, Vec* up
 
 inline void MatrixCopy(const Matrix3x4& source, Matrix3x4& target)
 {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 4; j++) {
-			target.c[i][j] = source[i][j];
-		}
-	}
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 4; ++j)
+			target.c[i][j] = source.c[i][j];
 }
 
 inline void MatrixSetColumn(const Vec& in, int column, Matrix3x4& out)

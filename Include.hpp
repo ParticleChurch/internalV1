@@ -1,4 +1,11 @@
 #pragma once
+#pragma warning(disable:4244)    //gets rid of "conversion from 'x' to 'y', possible loss of data" warnings
+/*
+//these aren't really necessary
+#pragma warning(disable:4996)    //disables warning printing console
+#pragma warning(disable:4305)    //gets rid of argument truncation warnings
+*/
+
 #define _USE_MATH_DEFINES		 //to enable the use of mathmatecial constants   (like pi)
 
 #include <Windows.h>             //allows use of windows api
@@ -16,10 +23,6 @@
 #include <intrin.h>				 //for _ReturnAddress() (intitially for hooks.cpp)
 #include <chrono>                // time
 #include <map>                   // make config lookups fast
-
-#pragma warning(disable:4996)    //disables warning printing console
-#pragma warning(disable:4244)    //gets rid of const int to float warning
-#pragma warning(disable:4305)    //gets rid of double to float warning
 
 #include "Utils/Utils.hpp"       //includes all utils...
 

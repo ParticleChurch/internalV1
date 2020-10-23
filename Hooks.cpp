@@ -575,7 +575,7 @@ Vec GetIdealCameraPos(float distance)
 	QAngle FPAng = G::CM_StartAngle;				//flipped player angle
 	FPAng.x *= -1;
 	FPAng.y += 180;
-	FPAng.Normalize();
+	FPAng.NormalizeAngle();
 
 	Ideal.z += distance * sin(DEG2RAD(FPAng.x));
 	float Hz = distance * cos(DEG2RAD(FPAng.x)); //horizonal distance
@@ -632,7 +632,7 @@ void OverideMat(bool ignorez, bool wireframe, bool transparent, Color rgba, void
 		rgba.b() / 255.0f);
 
 	if (transparent)
-		normal->AlphaModulate(0.45);
+		normal->AlphaModulate(0.45f);
 
 	normal->SetMaterialVarFlag(MaterialVarFlag::IGNOREZ, ignorez);
 	normal->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, wireframe);

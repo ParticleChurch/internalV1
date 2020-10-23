@@ -928,6 +928,8 @@ bool GUI::HackMenu()
 		for (size_t j = 0; j < Widget->Properties.size(); j++)
 		{
 			Config::Property* Property = Widget->Properties.at(j);
+
+			// TODO display property + option to change and tooltip
 			ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
 		}
 		ImGui::PopFont();
@@ -1078,7 +1080,7 @@ bool GUI::FreeHackMenu()
 	if (ImGui::Button("Eject"))//, ImVec2(70, 20)))
 		PressedEject = true;
 
-	ImGui::GetStyle().Alpha = 0.7;
+	ImGui::GetStyle().Alpha = 0.7f;
 	ImGui::GetStyle().FrameBorderSize = 0.f;
 	ImGui::GetStyle().Colors[ImGuiCol_Border] = ImVec4(1.f, 1.f, 1.f, 0.f);
 
@@ -1108,9 +1110,9 @@ struct Raindrop {
 		this->x = x;
 		this->y = y;
 		this->z = pow(randf(), 2.f);
-		this->opacity = lerp(0.2, 1, this->z);
+		this->opacity = lerp(0.2f, 1.f, this->z);
 		this->speed = lerp(15.f, 30.f, this->z);
-		this->height = floor(lerp(8, 15, this->z));
+		this->height = floor(lerp(8.f, 15.f, this->z));
 	}
 };
 

@@ -17,7 +17,7 @@ Vec Aimbot::CalculateAngle(Vec Target)
 	Angle.x = RAD2DEG(asin(Height / Distance));									//yaw angle
 	Angle.y = RAD2DEG(atan2(EyePos.y - Target.y, EyePos.x - Target.x)) - 180;	//pitch angle
 
-	Angle.Normalize();	//making sure the angles are proper
+	Angle.NormalizeAngle();	//making sure the angles are proper
 	return Angle;
 }
 
@@ -33,7 +33,7 @@ Vec Aimbot::CalculateAngle(Vec Source, Vec Target)
 	Angle.x = RAD2DEG(asin(Height / Distance));									//yaw angle
 	Angle.y = RAD2DEG(atan2(Source.y - Target.y, Source.x - Target.x)) - 180;	//pitch angle
 
-	Angle.Normalize();	//making sure the angles are proper
+	Angle.NormalizeAngle();	//making sure the angles are proper
 	return Angle;
 }
 
@@ -41,9 +41,9 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 {
 	static Vec cur;
 	cur = G::CM_StartAngle;
-	cur.Normalize();
+	cur.NormalizeAngle();
 	cur += G::Localplayer->GetAimPunchAngle();
-	cur.Normalize();
+	cur.NormalizeAngle();
 
 	//turn to 0-360 degrees
 	TargetAngle.y += 180;
@@ -189,11 +189,11 @@ void Aimbot::Smooth(Vec& Angle, int ConfigIndex)
 	float SmoothYaw = Config::legitbot.weapon[ConfigIndex].YawSpeed / 100.f;
 	float SmoothPitch = Config::legitbot.weapon[ConfigIndex].PitchSpeed / 100.f;
 
-	G::CM_StartAngle.Normalize();
-	Angle.Normalize();
+	G::CM_StartAngle.NormalizeAngle();
+	Angle.NormalizeAngle();
 	Vec Delta = G::CM_StartAngle - Angle;
 
-	Delta.Normalize();
+	Delta.NormalizeAngle();
 
 	if (FastToSlow)
 	{
@@ -233,7 +233,7 @@ void Aimbot::Smooth(Vec& Angle, int ConfigIndex)
 	}
 
 	Angle = G::CM_StartAngle + Delta;
-	Angle.Normalize();
+	Angle.NormalizeAngle();
 }
 
 //rage functions
@@ -260,26 +260,26 @@ void Aimbot::Rage()
 	float BestCrossDist = FLT_MAX;
 	for (int i = 1; i < 65; i++) {
 		Entity* Ent = I::entitylist->GetClientEntity(i);
-		if (!Ent) //if not nullptr
+		if (!Ent) //if nullptr
 			continue;
 		
 		static player_info_t info;
-		if (!I::engine->GetPlayerInfo(i, &info)) //if player
+		if (!I::engine->GetPlayerInfo(i, &info)) //if not player
 			continue;
 		
-		if (G::Localplayer == Ent) //if player not localplayer
+		if (G::Localplayer == Ent) //if localplayer
 			continue;
 		
-		if (i == I::engine->GetLocalPlayer()) //if player localplayer
+		if (i == I::engine->GetLocalPlayer()) //if localplayer
 			continue;
 		
-		if (!(Ent->GetHealth() > 0)) //if health isn't greater than 0
+		if (Ent->GetHealth() <= 0) //if health isn't greater than 0
 			continue;
 		
 		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if on local players team
 			continue;
 		
-		if (Ent->IsDormant()) //if out of range... (def cant hit)
+		if (Ent->IsDormant()) //if csgo servers have not sent us updated information about this entity
 			continue;
 
 		Vec		Location	= Ent->GetBone(HITBOX_HEAD);

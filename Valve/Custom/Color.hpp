@@ -22,7 +22,7 @@ public:
 		color[3] = (unsigned char) a;
 	}
 
-	float* Base()
+	float* Base() // unused, kinda useless too
 	{
 		float clr[3];
 
@@ -52,9 +52,11 @@ public:
 	std::string Stringify()
 	{
 		//(rrr, ggg, bbb, aaa)
-		// 20 + 1 for null terminator
+		// 1 + 3 + 2 + 3 + 2 + 3 + 2 + 3 + 1
+		// 20 + 1 for terminator
 		char buf[21];
-		snprintf(buf, 21, "(%u, %u, %u, %u)", this->color[0], this->color[1], this->color[2], this->color[3]);
+		snprintf(buf, 20, "(%u, %u, %u, %u)", this->color[0], this->color[1], this->color[2], this->color[3]);
+		buf[20] = 0;
 		return std::string(buf);
 	}
 };

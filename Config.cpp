@@ -42,15 +42,15 @@ namespace Config {
 
 				w->AddProperty(false, "esp-enemy-visible-chams", "Visible Chams", "show chams for visible enemies", new bool(true));
 				w->AddProperty(false, "esp-enemy-visible-cham-color", "Visible Cham Color", "color of visible enemy chams", new Color(50, 230, 50, 255));
-				w->AddProperty(false, "esp-enemy-visible-cham-opacity", "Visible Cham Opacity", "0 is seethrough, 1 is opaque. see \"Visible Chams\"", new Config::CFloat(0, 1, 0.25, 0.001));
+				w->AddProperty(false, "esp-enemy-visible-cham-opacity", "Visible Cham Opacity", "0 is seethrough, 1 is opaque. see \"Visible Chams\"", new Config::CFloat(0.f, 1.f, 0.25f, 0.001f));
 
 				w->AddProperty(false, "esp-enemy-wall-chams", "Thru Wall Chams", "show chams for enemies behind walls", new bool(true));
 				w->AddProperty(false, "esp-enemy-wall-cham-color", "Thru Wall Color", "color of enemy chams behind walls", new Color(230, 50, 50, 255));
-				w->AddProperty(false, "esp-enemy-wall-cham-opacity", "Thru Wall Cham Opacity", "0 is seethrough, 1 is opaque. see \"Thru Wall Chams\"", new Config::CFloat(0, 1, 0.75, 0.001));
+				w->AddProperty(false, "esp-enemy-wall-cham-opacity", "Thru Wall Cham Opacity", "0 is seethrough, 1 is opaque. see \"Thru Wall Chams\"", new Config::CFloat(0.f, 1.f, 0.75f, 0.001f));
 
 				w->AddProperty(false, "esp-enemy-bounding-box", "Bounding Box", "show rectangle outline of enemies", new bool(true));
 				w->AddProperty(false, "esp-enemy-bounding-box-color", "Bounding Box Color", "color of enemys' \"Bounding Box\"", new Color(255, 255, 255));
-				w->AddProperty(false, "esp-enemy-bounding-box-opacity", "Bounding Box Opacity", "0 is seethrough, 1 is opaque. see \"Bounding Box\"", new Config::CFloat(0, 1, 1, 0.001));
+				w->AddProperty(false, "esp-enemy-bounding-box-opacity", "Bounding Box Opacity", "0 is seethrough, 1 is opaque. see \"Bounding Box\"", new Config::CFloat(0.f, 1.f, 1.f, 0.001f));
 
 				w->AddProperty(false, "esp-enemy-loadout", "Loadout", "show weapons, grenades, etc. for each enemy (currently held item will be highlighted)", new bool(true));
 				w->AddProperty(false, "esp-enemy-extra-info", "Extra Info", "enemy: is flashed? is reloading? out of ammo? etc.", new bool(true));

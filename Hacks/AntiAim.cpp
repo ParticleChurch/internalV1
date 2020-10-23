@@ -55,8 +55,8 @@ void AntiAim::legit()
 		real.y = G::cmd->viewangles.y + (Delta * side * -1);
 	}
 
-	fake.Normalize();
-	real.Normalize();
+	fake.NormalizeAngle();
+	real.NormalizeAngle();
 }
 
 bool AntiAim::LBYBreak()
@@ -88,8 +88,8 @@ void AntiAim::rage()
 	G::cmd->viewangles.y += 180;
 
 	real = fake = G::cmd->viewangles;
-	real.Normalize();
-	fake.Normalize();
+	real.NormalizeAngle();
+	fake.NormalizeAngle();
 
 	bool BreakLBY = LBYBreak();
 	float Delta = G::Localplayer->GetMaxDesyncAngle();
@@ -113,6 +113,6 @@ void AntiAim::rage()
 	else
 		real = G::cmd->viewangles;
 
-	real.Normalize();
-	fake.Normalize();
+	real.NormalizeAngle();
+	fake.NormalizeAngle();
 }

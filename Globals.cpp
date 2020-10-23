@@ -101,7 +101,7 @@ namespace G
 	}
 	void CM_End()
 	{
-		cmd->viewangles.Normalize(); //prevent csgo from hating us
+		cmd->viewangles.NormalizeAngle(); //prevent csgo from hating us
 		CM_EndAngle = cmd->viewangles;
 
 		if (*G::pSendPacket) {
