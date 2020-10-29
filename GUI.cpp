@@ -75,21 +75,25 @@ void GUI::ProcessingLoginMenu()
 }
 
 ImFont* FontDefault;
+ImFont* Arial8;
 ImFont* Arial12;
 ImFont* Arial14;
 ImFont* Arial16;
 ImFont* Arial18;
 ImFont* Arial12Italics;
+ImFont* Arial14Italics;
 ImFont* Arial16Italics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
 	FontDefault = io.Fonts->AddFontDefault();
+	AYO_LOAD_FONT_BRUH(Arial8, "C:\\Windows\\Fonts\\arial.ttf", 8.f);
 	AYO_LOAD_FONT_BRUH(Arial12, "C:\\Windows\\Fonts\\arial.ttf", 12.f);
 	AYO_LOAD_FONT_BRUH(Arial14, "C:\\Windows\\Fonts\\arial.ttf", 14.f);
 	AYO_LOAD_FONT_BRUH(Arial16, "C:\\Windows\\Fonts\\arial.ttf", 16.f);
 	AYO_LOAD_FONT_BRUH(Arial18, "C:\\Windows\\Fonts\\arial.ttf", 18.f);
 	AYO_LOAD_FONT_BRUH(Arial12Italics, "C:\\Windows\\Fonts\\ariali.ttf", 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14Italics, "C:\\Windows\\Fonts\\ariali.ttf", 14.f);
 	AYO_LOAD_FONT_BRUH(Arial16Italics, "C:\\Windows\\Fonts\\ariali.ttf", 16.f);
 
 	return;
@@ -97,7 +101,7 @@ problemo:
 	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
 	// segfault lol
 	int x = *(int*)0;
-	std::cout << x << std::endl;
+	std::cout << x << std::endl; // prevent dumbass compiler from ignoring our segfault >:(
 }
 
 namespace ImGui
@@ -810,7 +814,7 @@ bool GUI::HackMenu()
 	ImGui::SetNextWindowSize(WindowCenter, ImGuiCond_Once);
 
 	// Styles
-	int TitleBarHeight = 18;
+	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowMinSize = ImVec2(400, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
@@ -821,14 +825,15 @@ bool GUI::HackMenu()
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ChildBg] = ImVec4(50.f, 50.f, 50.f, 1.f);
-	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.f, 0.f, 0.f, 0.5f);
+	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = ImVec4(20.f / 255.f, 20.f / 255.f, 20.f / 255.f, 1.f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(1.f, 1.f, 1.f, 1.f);
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 	
 	// set title bar size to 16px with font = Arial16
 	ImFont* font_before = ImGui::GetFont();
-	ImGui::PushFont(Arial16Italics);
+	ImGui::PushFont(Arial14Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	ImGui::PushFont(font_before);
@@ -919,18 +924,53 @@ bool GUI::HackMenu()
 		ImGui::PushFont(Arial18);
 		ImGui::Text(Widget->Name.c_str());
 		ImGui::PopFont();
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 3));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 		ImGui::Separator();
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 3));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
 
 		// properties
 		ImGui::PushFont(Arial16);
 		for (size_t j = 0; j < Widget->Properties.size(); j++)
 		{
 			Config::Property* Property = Widget->Properties.at(j);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 
-			// TODO display property + option to change and tooltip
-			ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
+			switch (Property->Type)
+			{
+			case Config::PropertyType::BOOLEAN:
+
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1.f, -1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+				if (*(bool*)Property->Value) // checked
+				{
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 117.f / 255.f, 1.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.f, 92.f / 255.f, 200.f / 255.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(55.f / 255.f, 147.f / 255.f, 1.f, 1.f));
+				}
+				else // unchecked
+				{
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.f, 1.f, 1.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.85f, 0.85f, 0.85f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.7f, 0.7f, 0.7f, 1.f));
+				}
+
+				ImGui::Checkbox(("###" + Property->Name).c_str(), (bool*)Property->Value);
+
+				ImGui::PopStyleVar(3);
+				ImGui::PopStyleColor(3);
+
+				ImGui::SameLine();
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4);
+				ImGui::Text(Property->VisibleName.c_str());
+
+				break;
+			default:
+				// TODO: CFloat and Color values
+				ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
+				break;
+			}
 		}
 		ImGui::PopFont();
 		Widget->Height -= ImGui::GetContentRegionAvail().y;
