@@ -34,6 +34,7 @@
 
 //All necessary ImGui libraries
 #include "ImGui/imgui.h"
+#include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
 #include "GUI/Config.hpp"

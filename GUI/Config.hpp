@@ -220,7 +220,7 @@ namespace Config {
 	extern unsigned int RaindropCount;
 }
 
-	namespace Config {
+namespace Config {
 	enum class PropertyType {
 		COLOR = 0,
 		FLOAT,

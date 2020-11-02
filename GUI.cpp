@@ -970,8 +970,12 @@ bool GUI::HackMenu()
 			case Config::PropertyType::FLOAT:
 			{
 				Config::CFloat* f = (Config::CFloat*)Property->Value;
+				float v = f->get();
 
+				// Custom slider because imgui slider is hot garbage
+				ImGui::SliderFloatEx(/* TODO */("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
 
+				f->set(v);
 
 				break;
 			}
