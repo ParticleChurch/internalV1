@@ -938,7 +938,7 @@ bool GUI::HackMenu()
 			switch (Property->Type)
 			{
 			case Config::PropertyType::BOOLEAN:
-
+			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1.f, -1.f));
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
@@ -966,10 +966,21 @@ bool GUI::HackMenu()
 				ImGui::Text(Property->VisibleName.c_str());
 
 				break;
+			}
+			case Config::PropertyType::FLOAT:
+			{
+				Config::CFloat* f = (Config::CFloat*)Property->Value;
+
+
+
+				break;
+			}
 			default:
-				// TODO: CFloat and Color values
+			{
+				// TODO: Color values
 				ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
 				break;
+			}
 			}
 		}
 		ImGui::PopFont();
