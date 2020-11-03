@@ -972,8 +972,11 @@ bool GUI::HackMenu()
 				Config::CFloat* f = (Config::CFloat*)Property->Value;
 				float v = f->get();
 
+				ImGui::Text((Property->VisibleName + ": " + std::to_string(v)).c_str());
+
 				// Custom slider because imgui slider is hot garbage
-				ImGui::SliderFloatEx(/* TODO */("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+				ImGui::SliderFloatEx(("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
 
 				f->set(v);
 
@@ -982,7 +985,7 @@ bool GUI::HackMenu()
 			default:
 			{
 				// TODO: Color values
-				ImGui::Text((Property->VisibleName + " : " + Property->Stringify()).c_str());
+				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
 				break;
 			}
 			}
