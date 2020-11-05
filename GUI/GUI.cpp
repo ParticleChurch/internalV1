@@ -395,7 +395,7 @@ namespace ImGui
 		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
 		
 		// button
-		if (ImGui::ColorButton(("###" + id).c_str(), imColor))
+		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, ImVec2(15.f, 15.f)))
 			ImGui::OpenPopup(("###" + id + "-picker").c_str());
 
 		// picker
@@ -828,7 +828,7 @@ bool GUI::HackMenu()
 	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ChildBg] = ImVec4(50.f, 50.f, 50.f, 1.f);
 	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = ImVec4(20.f / 255.f, 20.f / 255.f, 20.f / 255.f, 1.f);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 0.5f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(1.f, 1.f, 1.f, 1.f);
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -988,15 +988,18 @@ bool GUI::HackMenu()
 			{
 				Color* c = (Color*)Property->Value;
 
-				//ImGui::PushStyleVar(ImGuiStyleVar, 1);
-				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 117.f / 255.f, 1.f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.f, 4.f));
+				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
 
 				ImGui::ColorPicker(Property->Name, Property->VisibleName, c);
 				ImGui::SameLine();
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
 				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
 
-				//ImGui::PopStyleVar(3);
-				//ImGui::PopStyleColor(3);
+				ImGui::PopStyleVar(3);
+				ImGui::PopStyleColor(1);
 
 				break;
 			}
