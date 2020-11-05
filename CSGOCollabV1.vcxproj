@@ -162,6 +162,7 @@
     <ClCompile Include="Hacks\AntiAim.cpp" />
     <ClCompile Include="Hacks\Autowall.cpp" />
     <ClCompile Include="Hacks\Backtrack.cpp" />
+    <ClCompile Include="Hacks\Chams.cpp" />
     <ClCompile Include="Hacks\ESP.cpp" />
     <ClCompile Include="Hacks\Movement.cpp" />
     <ClCompile Include="Hooks.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Hacks\AntiAim.hpp" />
     <ClInclude Include="Hacks\Autowall.hpp" />
     <ClInclude Include="Hacks\Backtrack.hpp" />
+    <ClInclude Include="Hacks\Chams.hpp" />
     <ClInclude Include="Hacks\ESP.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
     <ClInclude Include="Hacks\Movement.hpp" />
@@ -242,6 +244,7 @@
     <ClInclude Include="Valve\SDK\Ray_t.hpp" />
     <ClInclude Include="Valve\SDK\RecvProp.hpp" />
     <ClInclude Include="Valve\SDK\RecvTable.hpp" />
+    <ClInclude Include="Valve\SDK\SoundData.hpp" />
     <ClInclude Include="Valve\SDK\Studio.hpp" />
     <ClInclude Include="Valve\SDK\SurfaceData.hpp" />
     <ClInclude Include="Valve\SDK\trace_t.hpp" />

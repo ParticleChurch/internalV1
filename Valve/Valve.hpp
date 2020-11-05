@@ -28,6 +28,7 @@
 #include "SDK/UtlVector.hpp"
 #include "SDK/Material.h"
 #include "SDK/KeyValues.h"
+#include "SDK/SoundData.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"

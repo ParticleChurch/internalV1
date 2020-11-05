@@ -18,17 +18,23 @@ namespace H
     typedef void(__thiscall* hkCamToFirstPeron)(void*);
     typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 	typedef void(__thiscall* DrawModelExecute)(void*, void*, void*, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
-
-	struct SoundData {
-		std::byte pad[4];
-		int entityIndex;
-		int channel;
-		const char* soundEntry;
-		std::byte pad1[8];
-		float volume;
-		std::byte pad2[44];
-	};
 	typedef void(__thiscall* EmitSound)(void*, SoundData);
+
+	extern EndScene oEndScene;
+	extern Reset oReset;
+	extern CreateMove oCreateMove;
+	extern PaintTraverse oPaintTraverse;
+	extern FrameStageNotify oFrameStageNotify;
+	extern LockCursor oLockCursor;
+	extern FireEventClientSide oFireEventClientSide;
+	extern FireEvent oFireEvent;
+	extern hkCamToFirstPeron ohkCamToFirstPeron;
+	extern DoPostScreenEffects oDoPostScreenEffects;
+	extern DrawModelExecute oDrawModelExecute;
+	extern EmitSound oEmitSound;
+
+	
+	
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
