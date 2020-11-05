@@ -1,5 +1,6 @@
-#include "Include.hpp"
-#include "GUI/HTTP.hpp"
+#include "../Include.hpp"
+#include "HTTP.hpp"
+
 #define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
 
 namespace GUI

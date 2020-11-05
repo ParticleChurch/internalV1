@@ -49,7 +49,7 @@ void Movement::RageAutoStrafe()
 		bool Frwd = (Forward || Backward) && !(Forward && Backward);
 
 		float Goal = 0;
-		Goal += Side ? (Frwd ? (Left ? 90  + (Forward ? -45 : 45): 270 + (Forward ? 45 : -45)) : (Left ? 90 : 270)) : (Frwd ? (Forward ? 0 : 180) : 0);
+		Goal += Side ? (Frwd ? (Left ? 90 + (Forward ? -45 : 45) : 270 + (Forward ? 45 : -45)) : (Left ? 90 : 270)) : (Frwd ? (Forward ? 0 : 180) : 0);
 
 		Vec Vel = G::Localplayer->GetVecVelocity();
 
@@ -59,7 +59,7 @@ void Movement::RageAutoStrafe()
 			float desync = fabsf(G::Localplayer->GetMaxDesyncAngle()) * 0.9;
 			yaw_change = desync * fabsf(desync / Vel.VecLength2D());
 		}
-			
+
 
 		float Velocity = RAD2DEG(atan2(Vel.y, Vel.x));
 		float VelDelta = G::CM_StartAngle.y - Velocity;

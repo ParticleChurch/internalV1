@@ -25,16 +25,10 @@
     <ClCompile Include="Interfaces.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="GUI.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Netvars.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Config.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="HTTP.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Hacks\Aimbot.cpp">
@@ -63,6 +57,12 @@
     </ClCompile>
     <ClCompile Include="Hacks\Movement.cpp">
       <Filter>Source\Hacks</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\GUI.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\HTTP.cpp">
+      <Filter>Source\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -319,6 +319,9 @@
     </Filter>
     <Filter Include="Source\Hacks">
       <UniqueIdentifier>{6f9f016a-4e60-464c-9a96-307a1773eed6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GUI">
+      <UniqueIdentifier>{9453fa03-f8d4-49de-8892-4d79f5710bc6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

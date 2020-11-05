@@ -156,7 +156,8 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GlobalVars.cpp" />
-    <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="GUI\GUI.cpp" />
+    <ClCompile Include="GUI\HTTP.cpp" />
     <ClCompile Include="Hacks\Aimbot.cpp" />
     <ClCompile Include="Hacks\AntiAim.cpp" />
     <ClCompile Include="Hacks\Autowall.cpp" />
@@ -164,7 +165,6 @@
     <ClCompile Include="Hacks\ESP.cpp" />
     <ClCompile Include="Hacks\Movement.cpp" />
     <ClCompile Include="Hooks.cpp" />
-    <ClCompile Include="HTTP.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />

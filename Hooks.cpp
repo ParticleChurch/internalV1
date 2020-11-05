@@ -249,7 +249,7 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_KEYDOWN && wParam == VK_INSERT)
+	/*if (uMsg == WM_KEYDOWN && wParam == VK_INSERT)
 		GUI::ShowMenu = !GUI::ShowMenu;
 
 	if (D3dInit && GUI::ShowMenu)
@@ -257,6 +257,26 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 		return true;
 	}
+	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);*/
+
+	if (uMsg == WM_KEYDOWN) {
+		if (wParam == VK_INSERT) {
+			GUI::ShowMenu = !GUI::ShowMenu;
+		}
+	}
+	if (D3dInit && GUI::ShowMenu && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+
+		return true;
+	}
+	if (wParam == 0x57 || wParam == 0x41 || wParam == 0x53 || wParam == 0x44)
+	{
+		I::inputsystem->EnableInput(true);
+	}
+	else
+	{
+		I::inputsystem->EnableInput(!GUI::ShowMenu);
+	}
+
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 

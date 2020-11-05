@@ -1,4 +1,4 @@
-#include "GUI/HTTP.hpp"
+#include "HTTP.hpp"
 
 std::string HTTP::URLEncode(const std::string& value) {
     std::ostringstream escaped;
