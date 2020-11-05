@@ -402,10 +402,10 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 
 			if (!G::Localplayer)
-				return;
+				return oFrameStageNotify(curStage);;
 
 			if (!(G::Localplayer->GetHealth() > 0))
-				return;
+				return oFrameStageNotify(curStage);;
 
 			//this is for accurate angles (aa, etc)
 			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
@@ -453,7 +453,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			if (strstr(tex_name, "World") || strstr(tex_name, "StaticProp") || strstr(tex_name, "SkyBox"))
 			{
 				// TODO: bruh this literally just makes my screen black
-				//mat->ColorModulate(20 / 255.f, 20 / 255.f, 30 / 255.f);
+				mat->ColorModulate(20 / 255.f, 20 / 255.f, 30 / 255.f);
+				// I::modelrender->ForcedMaterialOverride(mat);
 			}
 		}
 	}
