@@ -22,17 +22,6 @@ public:
 		color[3] = (unsigned char) a;
 	}
 
-	float* Base() // unused, kinda useless too
-	{
-		float clr[3];
-
-		clr[0] = color[0] / 255.0f;
-		clr[1] = color[1] / 255.0f;
-		clr[2] = color[2] / 255.0f;
-
-		return &clr[0];
-	}
-
 	inline float r() {
 		return (float)color[0];
 	}

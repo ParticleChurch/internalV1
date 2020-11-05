@@ -389,24 +389,25 @@ namespace ImGui
 		return Combo(label, currIndex, vector_getter, static_cast<void*>(&values), values.size());
 	}
 
-	void ColorPicker(std::string name, Color* COLOR)
+	void ColorPicker(std::string id, std::string name, Color* oColor)
 	{
-		ImGui::Text(name.c_str());
-		ImGui::SameLine();
-		ImVec4 color = ImVec4(COLOR->color[0] / 255.f, COLOR->color[1] / 255.f, COLOR->color[2] / 255.f, 1.f);
-		bool open_popup = ImGui::ColorButton(name.c_str(), color);
-		if (open_popup)
-		{
-			ImGui::OpenPopup((name + "picker").c_str());
-		}
+		float colArray[] = { oColor->color[0] / 255.f , oColor->color[1] / 255.f , oColor->color[2] / 255.f };
+		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
+		
+		// button
+		if (ImGui::ColorButton(("###" + id).c_str(), imColor))
+			ImGui::OpenPopup(("###" + id + "-picker").c_str());
 
-		if (ImGui::BeginPopup((name + "picker").c_str()))
+		// picker
+		if (ImGui::BeginPopup(("###" + id + "-picker").c_str()))
 		{
-			ImGui::SetNextItemWidth(100);
-			float color_[3] = { COLOR->color[0] / 255.f, COLOR->color[1] / 255.f, COLOR->color[2] / 255.f };
-			ImGui::ColorPicker3(name.c_str(), color_, ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview);
-			*COLOR = Color(int(color_[0] * 255), int(color_[1] * 255), int(color_[2] * 255), 255);
-			color = ImVec4(color_[0], color_[1], color_[2], 1);
+			ImGui::SetNextItemWidth(200);
+
+			ImGui::ColorPicker3(name.c_str(), colArray);
+
+			oColor->color[0] = (unsigned char)(colArray[0] * 255);
+			oColor->color[1] = (unsigned char)(colArray[1] * 255);
+			oColor->color[2] = (unsigned char)(colArray[2] * 255);
 
 			ImGui::EndPopup();
 		}
@@ -707,7 +708,7 @@ void DisplayAntiAimTab() {
 	if (Config::antiaim.FakeLag.Enable || Config::antiaim.Legit.Enable || Config::antiaim.Rage.Enable)
 	{
 		ImGui::Checkbox("Visualize###AAVisualize", &Config::antiaim.Visualize);
-		ImGui::ColorPicker("Fake Color", &Config::antiaim.Fake);
+		ImGui::ColorPicker("Fake Color", "Fake Color", &Config::antiaim.Fake);
 		ImGui::SliderInt("Opacity", &Config::antiaim.Opacity, 0, 100);
 		ImGui::Separator();
 	}
@@ -781,7 +782,7 @@ void DisplayVisualsTab() {
 	ImGui::Text("Players - ESP");
 	ImGui::Checkbox("Radar###VRadar", &Config::visuals.Radar);
 	ImGui::Checkbox("Boxes###VBoxes", &Config::visuals.Boxes);
-	ImGui::ColorPicker("Box Color", &Config::visuals.BoxColor);
+	ImGui::ColorPicker("Box Color", "Box Color", &Config::visuals.BoxColor);
 	ImGui::Checkbox("Skeleton###VSkeleton", &Config::visuals.Skeleton);
 	ImGui::Checkbox("Name###VName", &Config::visuals.Name);
 	ImGui::Checkbox("Health###VHealth", &Config::visuals.Health);
@@ -790,9 +791,9 @@ void DisplayVisualsTab() {
 
 	ImGui::Text("Players - Chams");
 	ImGui::Checkbox("Visible Chams###VVisibleCHams", &Config::visuals.VisibleChams);
-	ImGui::ColorPicker("Visible Cham Color", &Config::visuals.VisibleColor);
+	ImGui::ColorPicker("Visible Cham Color", "Visible Cham Color", &Config::visuals.VisibleColor);
 	ImGui::Checkbox("Through Wall Chams###VWallCHams", &Config::visuals.ThroughWallChams);
-	ImGui::ColorPicker("Through Wall Cham Color", &Config::visuals.ThroughWallColor);
+	ImGui::ColorPicker("Through Wall Cham Color", "Through Wall Cham Color", &Config::visuals.ThroughWallColor);
 
 }
 
@@ -980,6 +981,22 @@ bool GUI::HackMenu()
 				ImGui::SliderFloatEx(("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
 
 				f->set(v);
+
+				break;
+			}
+			case Config::PropertyType::COLOR:
+			{
+				Color* c = (Color*)Property->Value;
+
+				//ImGui::PushStyleVar(ImGuiStyleVar, 1);
+				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 117.f / 255.f, 1.f, 1.f));
+
+				ImGui::ColorPicker(Property->Name, Property->VisibleName, c);
+				ImGui::SameLine();
+				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
+
+				//ImGui::PopStyleVar(3);
+				//ImGui::PopStyleColor(3);
 
 				break;
 			}
