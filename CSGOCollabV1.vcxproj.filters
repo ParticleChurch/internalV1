@@ -28,9 +28,6 @@
     <ClCompile Include="Netvars.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Config.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Hacks\Aimbot.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
@@ -62,6 +59,9 @@
       <Filter>Source\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GUI\HTTP.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Config.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
   </ItemGroup>
