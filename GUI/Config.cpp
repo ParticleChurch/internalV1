@@ -80,6 +80,41 @@ namespace Config {
 		/* MISC TAB */
 		{
 			Tab* t = new Tab("Misc");
+			{
+				Widget* w = t->AddWidget("Movement");
+
+				w->AddProperty(false, "movement-bhop", "Bunny Hop", "automatically jumps for you perfectly to \"bhop\"", new bool(false));
+				
+				w->AddProperty(false, "movement-slow-walk", "Slow Walk", "automatically slows your speed to increase weapon accuracy", new bool(false));
+				w->AddProperty(false, "movement-slow-walk-speed", "Slow Walk Speed", "0 is stopped, 1 is max speed while accurate", new Config::CFloat(0.f, 1.f, 1.f, 0.001f));
+				w->AddProperty(false, "movement-slow-walk-key", "SLOW WALK KEY, PLZ ADD KEY BINDING", "the key to slow walk", new bool(false));
+
+				w->AddProperty(false, "movement-air-stuck", "Air Stuck", "stops you in air and hovers (only works on some community servers)", new bool(false));
+				w->AddProperty(false, "movement-air-stuck-key", "AIR STUCK KEY, PLZ ADD KEY BINDING", "the key to air stuck", new bool(false));
+
+				w->AddProperty(false, "movement-fast-crouch", "Fast Crouch", "makes your crouching speed faster", new bool(false));
+
+				w->AddProperty(false, "movement-fake-duck", "Fake Duck", "Makes server beleive your'e ducking even though you aren't", new bool(false));
+				w->AddProperty(false, "movement-fake-duck-key", "FAKE DUCK KEY, PLZ ADD KEY BINDING", "the key to fake duck", new bool(false));
+
+				w->AddProperty(false, "movement-autostrafe", "ADD UNIQUE SELECTOR FOR AUTOSTRAFE", "automatically strafes in air for you", new bool(false));
+			}
+
+			{
+				Widget* w = t->AddWidget("Other");
+
+				w->AddProperty(false, "other-auto-accept", "Auto Accept", "automatically accept a competitive match", new bool(false));
+				w->AddProperty(false, "other-vote-indicator", "Vote Indicator", "lists the last vote, and who voted what", new bool(false));
+				w->AddProperty(false, "other-spectator-list", "Spectator List", "shows who is spectating you when your'e alive", new bool(false));
+				w->AddProperty(false, "other-team-damage-list", "Team Damage List", "shows who has done what amount of damage to their teamates", new bool(false));
+				w->AddProperty(false, "other-kill-say", "Kill Say", "Insults enemies after you kill them in chat", new bool(false));
+				w->AddProperty(false, "other-auto-pistol", "Auto Pistol", "makes all pistols automatic", new bool(false));
+				/*
+				Fake Unbox - I want the user to be able to type what they want to say, then shoot a teamate and have it pop up, this means
+				that we need to have an input
+				Clantag - I want the user to be able to type what they want for their clantag
+				*/
+			}
 
 			Tabs.push_back(t);
 		}
