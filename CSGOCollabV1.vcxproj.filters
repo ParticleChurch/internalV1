@@ -64,6 +64,9 @@
     <ClCompile Include="GUI\Config.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Chams.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -284,6 +287,12 @@
     </ClInclude>
     <ClInclude Include="Hacks\Movement.hpp">
       <Filter>Headers\Hacks</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Chams.hpp">
+      <Filter>Headers\Hacks</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\SoundData.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
