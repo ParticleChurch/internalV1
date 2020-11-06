@@ -1,4 +1,5 @@
 #pragma once
+#include "../../ImGui/imgui.h"
 
 class Color
 {
@@ -47,5 +48,10 @@ public:
 		snprintf(buf, 21, "(%u, %u, %u, %u)", this->color[0], this->color[1], this->color[2], this->color[3]);
 		buf[20] = 0;
 		return std::string(buf);
+	}
+
+	operator ImVec4()
+	{
+		return ImVec4(r() / 255.f, g() / 255.f, b() / 255.f, a() / 255.f);
 	}
 };

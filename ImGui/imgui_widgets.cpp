@@ -2769,35 +2769,30 @@ bool ImGui::SliderScalarEx(const char* label, ImGuiDataType data_type, void* p_d
     if (value_changed)
         MarkItemEdited(id);
 
-    //COLORS -- thanks google chrome ;)
-    bool active = g.ActiveId == id;
-    ImColor color_filled = active ? ImColor(55, 147, 255) : hovered ? ImColor(0, 92, 200) : ImColor(0, 117, 255);
-    ImColor color_empty = active ? ImColor(245, 245, 245) : hovered ? ImColor(229, 229, 229) : ImColor(239, 239, 239);
-    ImColor color_border_filled = ImColor(color_filled.Value.x, color_filled.Value.y, color_filled.Value.z, 0.616666f);
-    ImColor color_border_empty = ImColor(color_empty.Value.x, color_empty.Value.y, color_empty.Value.z, 0.616666f);
-
     // draw frame
     ImVec2 grab_center = grab_bb.GetCenter();
     PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-    PushStyleColor(ImGuiCol_Border, (ImVec4)color_border_filled);
-    PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f,0.f,0.f,0.f));
+    PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
+    // filled
+    PushStyleColor(ImGuiCol_Border, GetColorU32(ImGuiCol_Button, 0.6166667f));
     RenderFrame(
         ImVec2(frame_bb.Min.x + 2, grab_center.y - bar_height / 2),
         ImVec2(grab_center.x, grab_center.y + bar_height / 2),
-        color_filled, true, (float)bar_height
+        GetColorU32(ImGuiCol_Button), true, (float)bar_height
     );
-    PushStyleColor(ImGuiCol_Border, (ImVec4)color_border_empty);
+    // empty
+    PushStyleColor(ImGuiCol_Border, GetColorU32(ImGuiCol_ButtonHovered, 0.6166667f));
     RenderFrame(
         ImVec2(grab_center.x, grab_center.y - bar_height / 2),
         ImVec2(frame_bb.Max.x - 2, grab_center.y + bar_height / 2),
-        color_empty, true, (float)bar_height
+        GetColorU32(ImGuiCol_ButtonHovered), true, (float)bar_height
     );
     PopStyleColor(3);
     PopStyleVar();
 
     // Render grab
     if (grab_bb.Max.x > grab_bb.Min.x)
-        window->DrawList->AddCircleFilled(grab_center, (float)grab_radius, color_filled);
+        window->DrawList->AddCircleFilled(grab_center, (float)grab_radius, GetColorU32(ImGuiCol_Button));
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
     return value_changed;
 }

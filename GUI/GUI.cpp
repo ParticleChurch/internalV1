@@ -1,13 +1,6 @@
 #include "../Include.hpp"
 #include "HTTP.hpp"
 
-#define addImVec2(a, b) ImVec2((a).x + (b).x, (a).y + (b).y)
-
-namespace GUI
-{
-	bool ShowMenu = false;
-}
-
 // will be set to the screen center
 ImVec2 LoginWindowPosition(100, 100);
 
@@ -105,8 +98,42 @@ problemo:
 	std::cout << x << std::endl; // prevent dumbass compiler from ignoring our segfault >:(
 }
 
+// random imgui utils
 namespace ImGui
 {
+#define vec4toU32(v) ImGui::ColorConvertFloat4ToU32(v)
+
+	inline float lerp(float a, float b, float f)
+	{
+		return (b - a) * f + a;
+	}
+
+	inline double lerp(double a, double b, double f)
+	{
+		return (b - a) * f + a;
+	}
+
+	ImVec4 lerp(ImVec4 a, ImVec4 b, float f)
+	{
+		return ImVec4(
+			lerp(a.x, b.x, f),
+			lerp(a.y, b.y, f),
+			lerp(a.z, b.z, f),
+			lerp(a.w, b.w, f)
+		);
+	}
+
+	template <typename T>
+	T clamp(const T& n, const T& lower, const T& upper) {
+		return max(lower, min(n, upper));
+	}
+
+	inline double easeInOutQuint(double x)
+	{
+		// https://easings.net/#easeInOutQuint
+		return x < 0.5 ? 16.0 * x * x * x * x * x : 1.0 - powf(-2.0 * x + 2.0, 5.0) / 2.0;
+	}
+
 	void DrawRect(int x, int y, int w, int h, ImU32 color)
 	{
 		ImVec2 window = ImGui::GetWindowPos();
@@ -142,6 +169,90 @@ namespace ImGui
 		ImGui::DrawRect(CursorBefore.x, CursorBefore.y + ImGui::GetFontSize() + 2, width, 1, ImGui::ColorConvertFloat4ToU32(placeholderAbove ? ColorBefore : ImVec4(ColorBefore.x, ColorBefore.y, ColorBefore.z, ColorBefore.w * 0.75f)));
 
 		return changed;
+	}
+	struct switchData {
+		std::chrono::steady_clock::time_point TimeChanged;
+		bool LastValue;
+		switchData(std::chrono::steady_clock::time_point TimeChanged, bool LastValue)
+		{
+			this->TimeChanged = TimeChanged;
+			this->LastValue = LastValue;
+		}
+	};
+	std::map<ImGuiID, switchData> boolSwitchTimings;
+	bool SwitchButton(std::string identifier, ImVec2 size, float animationTime, bool* value, int clearance = 2)
+	{
+		/*
+			SETUP
+		*/
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID(("###" + identifier).c_str());
+
+		// current time
+		std::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
+
+		// track this element
+		auto timingRecord = boolSwitchTimings.find(id);
+		if (timingRecord == boolSwitchTimings.end())
+		{
+			// say that it switched 10 seconds ago so that we dont play the animation
+			boolSwitchTimings.insert(std::make_pair(id, switchData(now - std::chrono::seconds(10), *value)));
+			timingRecord = boolSwitchTimings.find(id);
+		}
+		if (timingRecord->second.LastValue != *value)
+			timingRecord->second.TimeChanged = now;
+		// seconds
+		double timeSinceChange = std::chrono::duration_cast<std::chrono::microseconds>(now - timingRecord->second.TimeChanged).count() / (double)1e6;
+		timingRecord->second.LastValue = *value;
+
+		const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + size);
+		ItemSize(frame_bb, style.FramePadding.y);
+		if (!ItemAdd(frame_bb, id, &frame_bb))
+			return false;
+
+		/*
+			BEHAVIOR
+		*/
+		bool hovered, held;
+		bool pressed = ButtonBehavior(frame_bb, id, &hovered, &held);
+		const bool clicked = (hovered && g.IO.MouseClicked[0]);
+		if (pressed)
+		{
+			*value = !(*value);
+			MarkItemEdited(id);
+			timeSinceChange = 0;
+		}
+
+		double animFactor = easeInOutQuint(clamp(timeSinceChange / animationTime, 0.0, 1.0));
+		double enabledFactor = /* 1 = enabled, 0 = disabled*/ (*value) ? animFactor : 1.0 - animFactor;
+
+		/*
+			DRAW
+		*/
+		ImVec4 accentColor = style.Colors[ImGuiCol_Button];
+		ImVec4 baseColor = style.Colors[ImGuiCol_ButtonHovered];
+		ImVec4 backgroundColor = lerp(baseColor, accentColor, enabledFactor);
+		//ImVec4 backgroundBorderColor = backgroundColor; backgroundBorderColor.w = 0.2f;
+		ImVec4 grabColor = lerp(accentColor, baseColor, enabledFactor);
+		//ImVec4 grabBorderColor = grabColor; grabBorderColor.w = 0.2f;
+
+		ImVec2 grabCenter(
+			lerp(frame_bb.Min.x + size.y/2, frame_bb.Max.x - size.y / 2, (float)enabledFactor),
+			(frame_bb.Min.y + frame_bb.Max.y) / 2.f
+		);
+
+		window->DrawList->AddRectFilled(frame_bb.Min, frame_bb.Max, vec4toU32(backgroundColor), size.y / 2 + 2.f, ImDrawCornerFlags_All);
+		//window->DrawList->AddRect(frame_bb.Min - ImVec2(1,1), frame_bb.Max + ImVec2(1, 1), vec4toU32(backgroundBorderColor), (size.y + 2.f) / 2 + 2.f, ImDrawCornerFlags_All); // border
+		window->DrawList->AddCircleFilled(grabCenter, (size.y / 2) - clearance, vec4toU32(grabColor));
+		//window->DrawList->AddCircle(grabCenter, ((size.y / 2) - clearance) + 1.f, vec4toU32(grabBorderColor)); // border
+
+		RenderNavHighlight(frame_bb, id);
+		return clicked;
 	}
 }
 
@@ -315,12 +426,12 @@ bool GUI::Main()
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
-		GUI::ShowMenu = true;
+		Config::SetBool("config-show-menu", true);
 		ProcessingLoginMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
 	{
-		GUI::ShowMenu = true;
+		Config::SetBool("config-show-menu", true);
 		isEjecting = LoginMenu();
 	}
 
@@ -332,7 +443,7 @@ bool GUI::PaidHackMenu()
 {
 	bool PressedEject = false;
 
-	if (!ShowMenu)			//if they arent displaying the menu... just return
+	if (!Config::GetBool("config-show-menu"))			//if they arent displaying the menu... just return
 		return PressedEject;
 
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Appearing);
@@ -403,7 +514,7 @@ namespace ImGui
 		{
 			ImGui::SetNextItemWidth(200);
 
-			ImGui::ColorPicker3(name.c_str(), colArray);
+			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
 
 			oColor->color[0] = (unsigned char)(colArray[0] * 255);
 			oColor->color[1] = (unsigned char)(colArray[1] * 255);
@@ -801,7 +912,7 @@ Config::Tab* CurrentTab = 0;
 bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
-	if (!ShowMenu)
+	if (!Config::GetBool("config-show-menu"))
 		return false;
 
 	bool eject = false;
@@ -890,7 +1001,6 @@ bool GUI::HackMenu()
 	}
 	ImGui::PopFont();
 
-
 	// check that we have a selected tab
 	if (!CurrentTab)
 	{
@@ -913,7 +1023,9 @@ bool GUI::HackMenu()
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
-
+	ImGui::PushStyleColor(ImGuiCol_Button, Config::GetColor("menu-accent-color"));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(230.f / 255.f, 230.f / 255.f, 230.f / 255.f, 1.f));
+	
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
 		ImGui::SetCursorPos(ImVec2(5, ImGui::GetCursorPosY() + 5));
@@ -941,29 +1053,10 @@ bool GUI::HackMenu()
 			{
 			case Config::PropertyType::BOOLEAN:
 			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1.f, -1.f));
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
-				if (*(bool*)Property->Value) // checked
-				{
-					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 117.f / 255.f, 1.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.f, 92.f / 255.f, 200.f / 255.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(55.f / 255.f, 147.f / 255.f, 1.f, 1.f));
-				}
-				else // unchecked
-				{
-					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.f, 1.f, 1.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.85f, 0.85f, 0.85f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.7f, 0.7f, 0.7f, 1.f));
-				}
-
-				ImGui::Checkbox(("###" + Property->Name).c_str(), (bool*)Property->Value);
-
-				ImGui::PopStyleVar(3);
-				ImGui::PopStyleColor(3);
+				ImGui::SwitchButton(Property->Name, ImVec2(35, 20), 0.2f, (bool*)Property->Value, 2);
 
 				ImGui::SameLine();
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4);
 				ImGui::Text(Property->VisibleName.c_str());
 
@@ -974,7 +1067,7 @@ bool GUI::HackMenu()
 				Config::CFloat* f = (Config::CFloat*)Property->Value;
 				float v = f->get();
 
-				ImGui::Text((Property->VisibleName + ": " + std::to_string(v)).c_str());
+				ImGui::Text((Property->VisibleName + ": " + f->Stringify()).c_str());
 
 				// Custom slider because imgui slider is hot garbage
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
@@ -996,7 +1089,7 @@ bool GUI::HackMenu()
 				ImGui::ColorPicker(Property->Name, Property->VisibleName, c);
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
+				ImGui::Text(Property->VisibleName.c_str());
 
 				ImGui::PopStyleVar(3);
 				ImGui::PopStyleColor(1);
@@ -1016,7 +1109,7 @@ bool GUI::HackMenu()
 		ImGui::EndChild();
 	}
 	ImGui::PopStyleVar(3);
-	ImGui::PopStyleColor(5);
+	ImGui::PopStyleColor(7);
 	HackMenuPageHasScrollbar = ImGui::GetContentRegionAvail().y < 0; // its gonna be a frame late, rip
 	ImGui::EndChildFrame();
 
@@ -1031,7 +1124,7 @@ bool GUI::FreeHackMenu()
 {
 	bool PressedEject = false;
 
-	if (!ShowMenu)			//if they arent displaying the menu... just return
+	if (!Config::GetBool("config-show-menu"))			//if they arent displaying the menu... just return
 		return PressedEject;
 
 	static bool init = false;
@@ -1173,11 +1266,6 @@ bool GUI::FreeHackMenu()
 #define randint(m, n) (int)(floor(randf() * (n + 1.f - m) + m))
 #define square(x) (x)*(x)
 
-inline float lerp(float a, float b, float f)
-{
-	return (b - a) * f + a;
-}
-
 struct Raindrop {
 	float x, y, z;
 	int height;
@@ -1189,9 +1277,9 @@ struct Raindrop {
 		this->x = x;
 		this->y = y;
 		this->z = pow(randf(), 2.f);
-		this->opacity = lerp(0.2f, 1.f, this->z);
-		this->speed = lerp(15.f, 30.f, this->z);
-		this->height = floor(lerp(8.f, 15.f, this->z));
+		this->opacity = ImGui::lerp(0.2f, 1.f, this->z);
+		this->speed = ImGui::lerp(15.f, 30.f, this->z);
+		this->height = floor(ImGui::lerp(8.f, 15.f, this->z));
 	}
 };
 
@@ -1231,7 +1319,7 @@ void GUI::Rain(ImVec4 Color)
 		if (randf() < count) // don't ask
 			for (int i = newXRect[0]; i < newXRect[2]; i += pixelsPerRaindrop)
 			{
-				Raindrop drop(lerp(newXRect[0], newXRect[2], randf()), lerp(newXRect[1], newXRect[3], randf()));
+				Raindrop drop(ImGui::lerp(newXRect[0], newXRect[2], randf()), ImGui::lerp(newXRect[1], newXRect[3], randf()));
 				rain_drops.push_back(drop);
 			}
 	}
@@ -1254,7 +1342,7 @@ void GUI::Rain(ImVec4 Color)
 		if (randf() < count) // blah blah if count < 1 still needa chance but random to decide
 			for (int i = newYRect[1]; i < newYRect[3]; i += pixelsPerRaindrop)
 			{
-				Raindrop drop(lerp(newYRect[0], newYRect[2], randf()), lerp(newYRect[1], newYRect[3], randf()));
+				Raindrop drop(ImGui::lerp(newYRect[0], newYRect[2], randf()), ImGui::lerp(newYRect[1], newYRect[3], randf()));
 				rain_drops.push_back(drop);
 			}
 	}
@@ -1289,7 +1377,7 @@ void GUI::Rain(ImVec4 Color)
 		if (drop->y > rain_cy)
 		{ // hit bottom as result of gravity
 			drop->y = -15.f;
-			drop->x = lerp(0, rain_cx, randf());
+			drop->x = ImGui::lerp(0, rain_cx, randf());
 		}
 
 		top.x = rain_windowPos.x + drop->x;

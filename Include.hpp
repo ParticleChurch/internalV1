@@ -23,6 +23,7 @@
 #include <intrin.h>				 //for _ReturnAddress() (intitially for hooks.cpp)
 #include <chrono>                // time
 #include <map>                   // make config lookups fast
+#include <initializer_list>      // for vararg functions
 
 #include "Utils/Utils.hpp"       //includes all utils...
 
@@ -32,7 +33,8 @@
 
 #include "Globals.hpp"
 
-//All necessary ImGui libraries
+// imgui
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx9.h"

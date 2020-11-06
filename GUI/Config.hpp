@@ -233,25 +233,35 @@ namespace Config {
 		pro,
 		_count
 	};
+	enum class KeybindType {
+		Toggle = 0,
+		HoldToEnable,
+		HoldToDisable,
+	};
 
 	struct CFloat
 	{
 	private:
 		float value;
+		size_t decimals;
+		float percision;
+
 	public:
 		float minimum, maximum;
-		int decimals;
-		CFloat(float min, float max, float value, int decimals = 2)
+
+		CFloat(float min, float max, float value, size_t decimals = 2)
 		{
 			this->minimum = min;
 			this->maximum = max;
-			this->decimals = decimals;
+			this->decimals = max(min(decimals, 6), 0);
+			this->percision = (float)pow(10, this->decimals);
 			this->value = value;
 		}
 
 		void set(float v)
 		{
-			v = floor(v * this->decimals + 0.5f) / (float)this->decimals;
+			v = floorf(v * this->percision + 0.5f) / this->percision;
+			// clamp
 			this->value = min(max(this->minimum, v), this->maximum);
 		}
 
@@ -262,8 +272,50 @@ namespace Config {
 
 		std::string Stringify()
 		{
-			// TODO
-			return "0";
+			if (this->decimals < 1) return std::to_string((int)(this->value + 0.5f));
+
+			std::string s = std::to_string(this->value);
+			size_t i = s.find(".");
+			if (i == std::string::npos)
+				return s + "." + std::string(this->decimals, '0');
+
+			size_t dcount = s.size() - (i + 1);
+			if (dcount == this->decimals) return s;
+			if (dcount < this->decimals) return s + std::string(this->decimals - dcount, '0');
+			if (dcount > this->decimals) return s.substr(0, i + this->decimals + 1);
+			return "ALL PATHS RETURN A VALUE DUMBASS LINTER";
+		}
+	};
+
+
+	struct CDropdown
+	{
+	private:
+		size_t selected = 0;
+	public:
+		std::vector<std::string> options;
+
+
+		CDropdown(std::initializer_list<const char*> options)
+		{
+			for (const char* opt : options) this->options.push_back(opt);
+		}
+
+		void select(size_t i)
+		{
+			if (i >= this->options.size()) return;
+			this->selected = i;
+		}
+
+		size_t get()
+		{
+			return this->selected;
+		}
+
+		std::string Stringify()
+		{
+			if (this->options.empty()) return "[null]";
+			return this->options.at(selected);
 		}
 	};
 
@@ -276,7 +328,11 @@ namespace Config {
 		std::string VisibleName;
 		bool IsPremium;
 		int Complexity;
-		unsigned char Key;
+
+		// only applies to boolean values
+		KeybindType BindType = KeybindType::Toggle;
+		int KeyBind = 0;
+
 
 		Property(PropertyType Type, bool IsPremium, int Complexity, std::string Name, std::string VisibleName, void* FreeDefault, void* PremiumDefault)
 		{
@@ -287,7 +343,6 @@ namespace Config {
 			this->FreeDefault = FreeDefault;
 			this->PremiumDefault = PremiumDefault;
 			this->Complexity = Complexity;
-			this->Key = Name == "config-show-menu" ? VK_INSERT : 0;
 		}
 
 		std::string Stringify()
@@ -316,20 +371,23 @@ namespace Config {
 			this->Name = Name;
 		}
 
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool* FreeDefault, bool* PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault)
 		{
-			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
+			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, new bool(FreeDefault), new bool(PremiumDefault));
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CFloat* FreeDefault, CFloat* PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, float Min, float Max, int Decimals , float FreeDefault, float PremiumDefault)
 		{
-			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
+			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, new CFloat(Min, Max, FreeDefault, Decimals), new CFloat(Min, Max, PremiumDefault, Decimals));
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault = nullptr)
 		{
+			if (!PremiumDefault)
+				PremiumDefault = new Color(*FreeDefault);
+
 			Property* p = new Property(PropertyType::COLOR, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
 			this->Properties.push_back(p);
 			return p;
@@ -365,4 +423,11 @@ namespace Config {
 	extern void SetBool(std::string Name, bool Value);
 	extern void SetFloat(std::string Name, float Value);
 	extern void SetColor(std::string Name, Color Value);
+
+	/* Keybind Stuff */
+	extern std::map<int, std::vector<Property*>*> Keybinds;
+	extern void Bind(Property* Prop, WPARAM KeyCode);
+	extern void Unbind(Property* Prop);
+	extern void KeyPressed(WPARAM KeyCode);
+	extern void KeyReleased(WPARAM KeyCode);
 }

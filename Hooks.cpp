@@ -71,28 +71,28 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "FrameStageNotify...";
 	backtrack->Init();
@@ -100,49 +100,49 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "FireEventClientSide...";
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "DoPostScreenEffects...";
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "DrawModelExecute...";
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
 
-	Sleep(200);
+	//Sleep(200);
 
 	std::cout << "EmitSound...";
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
@@ -152,6 +152,8 @@ void H::Init()
 
 void H::UnHook()
 {
+	I::inputsystem->EnableInput(true);
+
 	std::cout << "WndProc...";
 	D3dInit = false; //for wndproc... haven't found better solution
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
@@ -249,6 +251,18 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	/*
+		TRACK KEYS PRESSED
+	*/
+	// TODO: check if they are:
+	//     - typing in the menu
+	//     - typing in csgo chat
+	//     - typing in steam overlay
+	if (uMsg == WM_KEYDOWN)
+		Config::KeyPressed(wParam);
+	if (uMsg == WM_KEYUP)
+		Config::KeyReleased(wParam);
+
 	/*if (uMsg == WM_KEYDOWN && wParam == VK_INSERT)
 		GUI::ShowMenu = !GUI::ShowMenu;
 
@@ -258,23 +272,17 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);*/
-
-	if (uMsg == WM_KEYDOWN) {
-		if (wParam == VK_INSERT) {
-			GUI::ShowMenu = !GUI::ShowMenu;
-		}
-	}
-	if (D3dInit && GUI::ShowMenu && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+	if (D3dInit && Config::GetBool("config-show-menu") && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
 
 		return true;
 	}
-	if (wParam == 0x57 || wParam == 0x41 || wParam == 0x53 || wParam == 0x44)
+	if (wParam == 'W' || wParam == 'A'|| wParam == 'S' || wParam == 'D' || wParam == VK_SPACE)
 	{
 		I::inputsystem->EnableInput(true);
 	}
 	else
 	{
-		I::inputsystem->EnableInput(!GUI::ShowMenu);
+		I::inputsystem->EnableInput(!Config::GetBool("config-show-menu"));
 	}
 
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
@@ -290,7 +298,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
-		if (GUI::ShowMenu) {
+		if (Config::GetBool("config-show-menu")) {
 			cmd->buttons = 0;
 			cmd->upmove = 0;
 			cmd->weaponselect = 0;
@@ -464,7 +472,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 void __stdcall H::LockCursorHook()
 {
-	if (GUI::ShowMenu) {
+	if (Config::GetBool("config-show-menu")) {
 		return I::surface->UnlockCursor();
 	}
 	return oLockCursor(I::surface);
