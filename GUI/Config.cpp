@@ -29,7 +29,7 @@ namespace Config {
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", new bool(true), new bool(true));
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", new bool(true), new bool(true));
 
-				// gun options
+				// todo: gun options
 			}
 			{
 				Widget* w = t->AddWidget("Triggerbot");
