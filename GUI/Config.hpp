@@ -107,7 +107,7 @@ struct Config_RageBot {
 		bool AutoSlow = false;		//if see enemy --> slow to good speed
 		int ShotDelay = 0;			//delay between seeing target and shooting
 		int HitChance = 100;		//radius away from center of hitbox...
-		
+
 	}weapon[7];
 };
 
@@ -122,7 +122,7 @@ struct Config_AntiAim {
 	int Opacity = 100;		//how opaque the fake player is (0 is invisible)
 
 	//Fakelag
-	struct FakeLag 
+	struct FakeLag
 	{
 		bool Enable = false;	//if fake lag is enabled
 		int FakeLagTicks = 0;	//number of lagging ticks (note, if aa on, this is autoset to 1 (cuz desync))
@@ -199,7 +199,7 @@ struct Config_Visuals {
 	bool Name = false;							//if names are displayed
 	bool Health = false;						//if health is displayed
 	bool Ammo = false;							//if ammo displayed
-	
+
 
 	//Players - chams
 	bool VisibleChams = false;		//enables visible chams
@@ -227,24 +227,31 @@ namespace Config {
 		BOOLEAN,
 		_count
 	};
+	enum class PropertyComplexity {
+		beginner = 0,
+		intermediate,
+		pro,
+		_count
+	};
 
 	struct CFloat
 	{
 	private:
 		float value;
 	public:
-		float minimum, maximum, percision;
-		CFloat(float min, float max, float value, float percision = 0.01)
+		float minimum, maximum;
+		int decimals;
+		CFloat(float min, float max, float value, int decimals = 2)
 		{
 			this->minimum = min;
 			this->maximum = max;
-			this->percision = percision;
+			this->decimals = decimals;
 			this->value = value;
 		}
 
 		void set(float v)
 		{
-			v = floor(v / this->percision + 0.5f) * this->percision;
+			v = floor(v * this->decimals + 0.5f) / (float)this->decimals;
 			this->value = min(max(this->minimum, v), this->maximum);
 		}
 
@@ -262,20 +269,25 @@ namespace Config {
 
 	struct Property {
 		void* Value = nullptr;
+		void* FreeDefault = nullptr;
+		void* PremiumDefault = nullptr;
 		PropertyType Type;
 		std::string Name;
 		std::string VisibleName;
-		std::string Description;
 		bool IsPremium;
+		int Complexity;
+		unsigned char Key;
 
-		Property(bool IsPremium, PropertyType Type, std::string Name, std::string VisibleName, std::string Description, void* Default)
+		Property(PropertyType Type, bool IsPremium, int Complexity, std::string Name, std::string VisibleName, void* FreeDefault, void* PremiumDefault)
 		{
 			this->Type = Type;
 			this->Name = Name;
 			this->VisibleName = VisibleName;
-			this->Description = Description;
-			this->Value = Default;
-			this->IsPremium = IsPremium;
+			this->Value = FreeDefault;
+			this->FreeDefault = FreeDefault;
+			this->PremiumDefault = PremiumDefault;
+			this->Complexity = Complexity;
+			this->Key = Name == "config-show-menu" ? VK_INSERT : 0;
 		}
 
 		std::string Stringify()
@@ -304,21 +316,21 @@ namespace Config {
 			this->Name = Name;
 		}
 
-		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, bool* Default)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool* FreeDefault, bool* PremiumDefault)
 		{
-			Property* p = new Property(IsPremium, PropertyType::BOOLEAN, Name, VisibleName, Description, Default);
+			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Color* Default)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CFloat* FreeDefault, CFloat* PremiumDefault)
 		{
-			Property* p = new Property(IsPremium, PropertyType::COLOR, Name, VisibleName, Description, Default);
+			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddProperty(bool IsPremium, std::string Name, std::string VisibleName, std::string Description, Config::CFloat* Default)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault)
 		{
-			Property* p = new Property(IsPremium, PropertyType::FLOAT, Name, VisibleName, Description, Default);
+			Property* p = new Property(PropertyType::COLOR, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
 			this->Properties.push_back(p);
 			return p;
 		}
