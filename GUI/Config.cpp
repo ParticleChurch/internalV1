@@ -20,13 +20,27 @@ namespace Config {
 
 	void Init()
 	{
-		/* GENERAL TAB */
+		/* AIMBOT TAB */
 		{
-			Tab* t = new Tab("General");
+			Tab* t = new Tab("Aimbot");
+
+			Tabs.push_back(t);
+		}
+
+		/* ANTI-AIM TAB */
+		{
+			Tab* t = new Tab("Anti-Aim");
 			{
-				Widget* w = t->AddWidget("General");
-				w->AddProperty(false, "master-enable-general", "Enable", "cock", new bool(true));
+				Widget* w = t->AddWidget("Fake Lag");
 			}
+			{
+				Widget* w = t->AddWidget("Legit Anti-Aim"); 
+			}
+			{
+				Widget* w = t->AddWidget("Rage Anti-Aim");
+			}
+			
+
 			Tabs.push_back(t);
 		}
 
@@ -61,22 +75,6 @@ namespace Config {
 			Tabs.push_back(t);
 		}
 
-		/* AIMBOT TAB */
-		{
-			Tab* t = new Tab("Aimbot");
-
-			Tabs.push_back(t);
-		}
-
-
-		/* CONFIG TAB */
-		{
-			Tab* t = new Tab("Config");
-
-			Tabs.push_back(t);
-		}
-
-
 		/* MISC TAB */
 		{
 			Tab* t = new Tab("Misc");
@@ -84,19 +82,14 @@ namespace Config {
 				Widget* w = t->AddWidget("Movement");
 
 				w->AddProperty(false, "movement-bhop", "Bunny Hop", "automatically jumps for you perfectly to \"bhop\"", new bool(false));
-				
 				w->AddProperty(false, "movement-slow-walk", "Slow Walk", "automatically slows your speed to increase weapon accuracy", new bool(false));
 				w->AddProperty(false, "movement-slow-walk-speed", "Slow Walk Speed", "0 is stopped, 1 is max speed while accurate", new Config::CFloat(0.f, 1.f, 1.f, 0.001f));
 				w->AddProperty(false, "movement-slow-walk-key", "SLOW WALK KEY, PLZ ADD KEY BINDING", "the key to slow walk", new bool(false));
-
 				w->AddProperty(false, "movement-air-stuck", "Air Stuck", "stops you in air and hovers (only works on some community servers)", new bool(false));
 				w->AddProperty(false, "movement-air-stuck-key", "AIR STUCK KEY, PLZ ADD KEY BINDING", "the key to air stuck", new bool(false));
-
 				w->AddProperty(false, "movement-fast-crouch", "Fast Crouch", "makes your crouching speed faster", new bool(false));
-
 				w->AddProperty(false, "movement-fake-duck", "Fake Duck", "Makes server beleive your'e ducking even though you aren't", new bool(false));
 				w->AddProperty(false, "movement-fake-duck-key", "FAKE DUCK KEY, PLZ ADD KEY BINDING", "the key to fake duck", new bool(false));
-
 				w->AddProperty(false, "movement-autostrafe", "ADD UNIQUE SELECTOR FOR AUTOSTRAFE", "automatically strafes in air for you", new bool(false));
 			}
 
@@ -119,7 +112,12 @@ namespace Config {
 			Tabs.push_back(t);
 		}
 
+		/* CONFIG TAB */
+		{
+			Tab* t = new Tab("Config");
 
+			Tabs.push_back(t);
+		}
 
 		/* LOAD INTO HASHMAP FOR FAST LOOKUPS */
 		for (size_t i = 0; i < Tabs.size(); i++)
