@@ -95,8 +95,10 @@ problemo:
 	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
 	// segfault lol
 	int x = *(int*)0;
-	std::cout << x << std::endl; // prevent dumbass compiler from ignoring our segfault >:(
+	// prevent dumbass compiler from ignoring our segfault >:(
+	std::cout << x << std::endl;
 }
+Config::Property* GUI::CurrentlyChoosingKeybindFor = nullptr;
 
 // random imgui utils
 namespace ImGui
@@ -180,7 +182,7 @@ namespace ImGui
 		}
 	};
 	std::map<ImGuiID, switchData> boolSwitchTimings;
-	bool SwitchButton(std::string identifier, ImVec2 size, float animationTime, bool* value, int clearance = 2)
+	bool SwitchButton(std::string identifier, ImVec2 size, float animationTime, bool* value, int clearance = 2, bool clickable = true)
 	{
 		/*
 			SETUP
@@ -218,8 +220,9 @@ namespace ImGui
 		/*
 			BEHAVIOR
 		*/
-		bool hovered, held;
-		bool pressed = ButtonBehavior(frame_bb, id, &hovered, &held);
+		bool hovered = false;
+		bool held = false;
+		bool pressed = clickable && ButtonBehavior(frame_bb, id, &hovered, &held);
 		const bool clicked = (hovered && g.IO.MouseClicked[0]);
 		if (pressed)
 		{
@@ -506,7 +509,7 @@ namespace ImGui
 		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
 		
 		// button
-		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, ImVec2(15.f, 15.f)))
+		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, ImVec2(30.f, 20.f)))
 			ImGui::OpenPopup(("###" + id + "-picker").c_str());
 
 		// picker
@@ -1017,7 +1020,7 @@ bool GUI::HackMenu()
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 5.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
@@ -1032,10 +1035,19 @@ bool GUI::HackMenu()
 
 
 		Config::Widget* Widget = CurrentTab->Widgets.at(i);
-		ImGui::BeginChildFrame(ImGui::GetID(Widget->Name.c_str()), ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height));
+		if (!ImGui::BeginChildFrame(
+			ImGui::GetID(Widget->Name.c_str()),
+			ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height + 2),
+			0 //ImGuiWindowFlags_NoScrollbar
+		))
+		{
+			ImGui::EndChild();
+			continue;
+		}
 
 		// title
 		ImGui::PushFont(Arial18);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 		ImGui::Text(Widget->Name.c_str());
 		ImGui::PopFont();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
@@ -1053,24 +1065,123 @@ bool GUI::HackMenu()
 			{
 			case Config::PropertyType::BOOLEAN:
 			{
-				ImGui::SwitchButton(Property->Name, ImVec2(35, 20), 0.2f, (bool*)Property->Value, 2);
+				if (GUI::CurrentlyChoosingKeybindFor == Property)
+				{
+					ImGui::PushFont(Arial14);
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(200.f / 300.f, 75.f / 300.f, 75.f / 300.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(200.f / 210.f, 75.f / 210.f, 75.f / 210.f, 1.f));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+
+					// note for warning C6011: Property will never be null, and VS2019 is high
+					ImGui::BeginChildFrame(ImGui::GetID((Property->Name + "-keybind").c_str()), ImVec2(79, 20));
+					ImGui::SetCursorPos(ImVec2(3, 3));
+					ImGui::Text("[press a key]");
+					ImGui::EndChild(); ImGui::SameLine();
+
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+					if (ImGui::Button("Clear", ImVec2(40, 20)))
+					{
+						// if you try to clear the menu button, set it to whatever it was, or insert
+						if (Property->Name == "config-show-menu")
+							Config::Bind(Property, Property->KeyBind ? Property->KeyBind : VK_INSERT);
+						else
+							Config::Unbind(Property);
+
+						GUI::CurrentlyChoosingKeybindFor = nullptr;
+					}
+
+					ImGui::PopStyleVar(1);
+					ImGui::PopStyleColor(4);
+					ImGui::PopFont();
+				}
+				else if (Property->KeyBind != 0)
+				{
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+
+					std::string Key = I::inputsystem->VirtualKeyToString(Property->KeyBind);
+					Key = "[" + Key + "]";
+
+					ImGui::PushFont(Arial14);
+					ImVec2 KeySize = ImGui::CalcTextSize(Key.c_str());
+					ImVec2 FrameSize(2 + 30 + 3 + KeySize.x + 3, 20);
+					ImGuiID KeybindFrameId = ImGui::GetID((Property->Name + "-keybind").c_str());
+					ImVec2 CursorPos = ImGui::GetCursorPos();
+
+					if (ImGui::BeginChildFrame(KeybindFrameId, FrameSize))
+					{
+						ImGui::SetCursorPos(ImVec2(2, 2));
+						ImGui::SwitchButton(Property->Name, ImVec2(30, 16), 0.2f, (bool*)Property->Value, 2, false);
+
+						ImGui::SetCursorPos(ImVec2(35, 2));
+						ImGui::Text(Key.c_str());
+
+						// invisible button for clickable behavior
+						ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.1f));
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.2f));
+						ImGui::SetCursorPos(ImVec2(0, 0));
+						if (ImGui::Button(("##" + Property->Name + "-invis-button").c_str(), FrameSize))
+						{
+							GUI::CurrentlyChoosingKeybindFor = Property;
+						}
+						ImGui::PopStyleColor(4);
+					}
+					ImGui::PopStyleVar(1);
+					ImGui::PopStyleColor(1);
+					ImGui::PopFont();
+					ImGui::EndChild();
+				}
+				else
+				{
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
+					ImGui::SwitchButton(Property->Name, ImVec2(30, 16), 0.2f, (bool*)Property->Value, 2);
+					ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
+
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(100.f / 255.f, 100.f / 255.f, 100.f / 255.f, 1.f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(160.f / 255.f, 160.f / 255.f, 160.f / 255.f, 1.f));
+					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f); 
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+
+					ImGui::PushFont(Arial14);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
+					if (ImGui::Button(("Bind##" + Property->Name).c_str(), ImVec2(34, 20)))
+					{
+						GUI::CurrentlyChoosingKeybindFor = Property;
+					}
+					ImGui::PopFont();
+
+					ImGui::PopStyleColor(3);
+					ImGui::PopStyleVar(2);
+				}
+
 
 				ImGui::SameLine();
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3);
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
 				ImGui::Text(Property->VisibleName.c_str());
 
+				//ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
 				break;
 			}
 			case Config::PropertyType::FLOAT:
 			{
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 4);
 				Config::CFloat* f = (Config::CFloat*)Property->Value;
 				float v = f->get();
 
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
 				ImGui::Text((Property->VisibleName + ": " + f->Stringify()).c_str());
 
 				// Custom slider because imgui slider is hot garbage
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1);
 				ImGui::SliderFloatEx(("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
 
 				f->set(v);
@@ -1086,9 +1197,12 @@ bool GUI::HackMenu()
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.f, 4.f));
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
 
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
 				ImGui::ColorPicker(Property->Name, Property->VisibleName, c);
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
 				ImGui::Text(Property->VisibleName.c_str());
 
 				ImGui::PopStyleVar(3);
@@ -1105,7 +1219,7 @@ bool GUI::HackMenu()
 			}
 		}
 		ImGui::PopFont();
-		Widget->Height -= ImGui::GetContentRegionAvail().y;
+		Widget->Height = ImGui::GetCurrentWindow()->ContentSize.y;
 		ImGui::EndChild();
 	}
 	ImGui::PopStyleVar(3);

@@ -258,10 +258,22 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	//     - typing in the menu
 	//     - typing in csgo chat
 	//     - typing in steam overlay
-	if (uMsg == WM_KEYDOWN)
-		Config::KeyPressed(wParam);
-	if (uMsg == WM_KEYUP)
-		Config::KeyReleased(wParam);
+	if (GUI::CurrentlyChoosingKeybindFor)
+	{
+		switch (uMsg)
+		{
+		case WM_KEYDOWN:
+			Config::Bind(GUI::CurrentlyChoosingKeybindFor, wParam);
+			GUI::CurrentlyChoosingKeybindFor = nullptr;
+		}
+	}
+	else
+	{
+		if (uMsg == WM_KEYDOWN)
+			Config::KeyPressed(wParam);
+		if (uMsg == WM_KEYUP)
+			Config::KeyReleased(wParam);
+	}
 
 	/*if (uMsg == WM_KEYDOWN && wParam == VK_INSERT)
 		GUI::ShowMenu = !GUI::ShowMenu;

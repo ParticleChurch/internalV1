@@ -1,5 +1,6 @@
 #pragma once
 #pragma warning(disable:4244)    //gets rid of "conversion from 'x' to 'y', possible loss of data" warnings
+#pragma warning(disable:6011)    //deref null pointer warning (super bugged and annoying)
 /*
 //these aren't really necessary
 #pragma warning(disable:4996)    //disables warning printing console

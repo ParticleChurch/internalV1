@@ -6,6 +6,7 @@ namespace GUI {
 	extern void ProcessingLoginMenu();
 	extern bool LoginMenu();
 
+	extern Config::Property* CurrentlyChoosingKeybindFor;
 	extern bool HackMenu();
 
 

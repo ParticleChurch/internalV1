@@ -425,7 +425,7 @@ namespace Config {
 	extern void SetColor(std::string Name, Color Value);
 
 	/* Keybind Stuff */
-	extern std::map<int, std::vector<Property*>*> Keybinds;
+	extern std::map<int, std::vector<Property*>*> KeybindMap; // virtural keycode: list of properties bound to that keycode
 	extern void Bind(Property* Prop, WPARAM KeyCode);
 	extern void Unbind(Property* Prop);
 	extern void KeyPressed(WPARAM KeyCode);

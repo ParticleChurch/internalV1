@@ -129,19 +129,19 @@ namespace Config {
 	}
 
 	/* Keybind Stuff */
-	std::map<int, std::vector<Property*>*> Keybinds;
+	std::map<int, std::vector<Property*>*> KeybindMap;
 	void Bind(Property* Prop, WPARAM KeyCode)
 	{
 		if (Prop->Type != PropertyType::BOOLEAN) return; // bruh
 		if (KeyCode == 0) return Unbind(Prop); // binding a key to 0 is the same as unbinding
 		if (Prop->KeyBind != 0) Unbind(Prop); // this key is already bound, first unbind it before preceeding
 
-		auto Keys = Keybinds.find(KeyCode);
+		auto KeyIterator = KeybindMap.find(KeyCode);
 		std::vector<Property*>* PropertyList = nullptr;
-		if (Keys == Keybinds.end())
-			Keybinds.insert(std::pair<int, std::vector<Property*>*>(KeyCode, PropertyList = new std::vector<Property*>));
+		if (KeyIterator == KeybindMap.end())
+			KeybindMap.insert(std::pair<int, std::vector<Property*>*>(KeyCode, PropertyList = new std::vector<Property*>));
 		else
-			PropertyList = Keys->second;
+			PropertyList = KeyIterator->second;
 
 		Prop->KeyBind = KeyCode;
 		PropertyList->push_back(Prop);
@@ -151,8 +151,8 @@ namespace Config {
 		if (Prop->Type != PropertyType::BOOLEAN) return; // bruh
 		if (Prop->KeyBind == 0) return; // already unbound
 		
-		auto Keys = Keybinds.find(Prop->KeyBind);
-		if (Keys == Keybinds.end())
+		auto KeyIterator = KeybindMap.find(Prop->KeyBind);
+		if (KeyIterator == KeybindMap.end())
 		{
 			// this property isn't actually bound
 			Prop->KeyBind = 0;
@@ -160,12 +160,13 @@ namespace Config {
 		}
 		
 		// search for the property, and delete it from the list
-		std::vector<Property*>* PropertyList = Keys->second;
+		std::vector<Property*>* PropertyList = KeyIterator->second;
 		for (size_t i = 0; i < PropertyList->size(); i++)
 		{
 			if (PropertyList->at(i) == Prop)
 			{
 				PropertyList->erase(PropertyList->begin() + i);
+				Prop->KeyBind = 0;
 				break;
 			}
 		}
@@ -173,7 +174,7 @@ namespace Config {
 		// if the vector is now empty, free it and remove it from the map
 		if (PropertyList->empty())
 		{
-			Keybinds.erase(Prop->KeyBind);
+			KeybindMap.erase(KeyIterator);
 			free(PropertyList);
 		}
 	};
@@ -182,10 +183,10 @@ namespace Config {
 		if (KeyCode == 0) return;
 
 		// get a list of keys that have this bind
-		auto Keys = Keybinds.find(KeyCode);
-		if (Keys == Keybinds.end()) return; // there are no keys with this bind
+		auto KeyIterator = KeybindMap.find(KeyCode);
+		if (KeyIterator == KeybindMap.end()) return; // there are no keys with this bind
 
-		std::vector<Property*>* PropertyList = Keys->second;
+		std::vector<Property*>* PropertyList = KeyIterator->second;
 		for (size_t i = 0; i < PropertyList->size(); i++)
 		{
 			Property* prop = PropertyList->at(i);
@@ -214,10 +215,10 @@ namespace Config {
 		if (KeyCode == 0) return;
 
 		// get a list of keys that have this bind
-		auto Keys = Keybinds.find(KeyCode);
-		if (Keys == Keybinds.end()) return; // there are no keys with this bind
+		auto KeyIterator = KeybindMap.find(KeyCode);
+		if (KeyIterator == KeybindMap.end()) return; // there are no keys with this bind
 
-		std::vector<Property*>* PropertyList = Keys->second;
+		std::vector<Property*>* PropertyList = KeyIterator->second;
 		for (size_t i = 0; i < PropertyList->size(); i++)
 		{
 			Property* prop = PropertyList->at(i);
