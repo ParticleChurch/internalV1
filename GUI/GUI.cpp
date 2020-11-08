@@ -99,6 +99,7 @@ problemo:
 	std::cout << x << std::endl;
 }
 Config::Property* GUI::CurrentlyChoosingKeybindFor = nullptr;
+bool GUI::IgnoreLButton = false;
 
 // random imgui utils
 namespace ImGui
@@ -412,6 +413,10 @@ bool GUI::LoginMenu()
 
 bool GUI::Main()
 {
+	// by default, do not ignore
+	// gui code will set to true if hovering over a button
+	GUI::IgnoreLButton = false;
+
 	bool isEjecting = false;
 	int WindowSizeX, WindowSizeY;
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
@@ -511,6 +516,7 @@ namespace ImGui
 		// button
 		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, ImVec2(30.f, 20.f)))
 			ImGui::OpenPopup(("###" + id + "-picker").c_str());
+		GUI::IgnoreLButton |= ImGui::IsItemHovered();
 
 		// picker
 		if (ImGui::BeginPopup(("###" + id + "-picker").c_str()))
@@ -518,6 +524,7 @@ namespace ImGui
 			ImGui::SetNextItemWidth(200);
 
 			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
+			GUI::IgnoreLButton |= ImGui::IsItemHovered();
 
 			oColor->color[0] = (unsigned char)(colArray[0] * 255);
 			oColor->color[1] = (unsigned char)(colArray[1] * 255);
@@ -952,32 +959,38 @@ bool GUI::HackMenu()
 	ImGui::PushFont(Arial14Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	GUI::IgnoreLButton |= ImGui::IsItemHovered();
 	ImGui::PushFont(font_before);
 	ImGui::PopStyleVar();
 	ImVec2 WindowPos = ImGui::GetWindowPos();
 
 	// draw tab handles
 	ImDrawList* DrawList = ImGui::GetWindowDrawList();
-	ImU32 UnselectedTabHandleBackgroundColor = ImGui::ColorConvertFloat4ToU32(ImVec4(15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f));
-	ImU32 SelectedTabHandleBackgroundColor = ImGui::ColorConvertFloat4ToU32(ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
+	ImU32 UnselectedTabHandleColor = vec4toU32(ImVec4(15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f));
+	ImU32 SelectedTabHandleColor = vec4toU32(ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
 	ImGui::PushFont(Arial16);
 	for (size_t i = 0; i < Config::Tabs.size(); i++)
 	{
 		Config::Tab* Tab = Config::Tabs.at(i);
+		ImVec2 TabHandlePos = ImVec2(WindowPos.x, TitleBarHeight + WindowPos.y + (30 * i));
+		bool hovering = ImGui::IsMouseHoveringRect(TabHandlePos, TabHandlePos + ImVec2(90, 30), false);
 		bool IsCurrent = Tab == CurrentTab;
+		GUI::IgnoreLButton |= hovering && !IsCurrent;
 
-		ImVec2 TabHandlePos = ImVec2(IsCurrent ? (WindowPos.x) : (WindowPos.x + 10), TitleBarHeight + WindowPos.y + (30 * i));
-		bool hovering = !IsCurrent && ImGui::IsMouseHoveringRect(ImVec2(WindowPos.x + 5, TabHandlePos.y), ImVec2(WindowPos.x + 90, TabHandlePos.y + 30), false);
-		ImVec2 TabHandleSize = IsCurrent ? ImVec2(90, 30) : (hovering ? ImVec2(85, 30) : ImVec2(80, 30));
-		if (hovering)
-			TabHandlePos.x -= 5;
+		ImVec2 TabHandleSize = ImVec2(90, 30);
+		if (!IsCurrent)
+		{
+			TabHandleSize.x -= hovering ? 5 : 10;
+			TabHandlePos.x += hovering ? 5 : 10;
+		}
 
-		DrawList->AddRectFilled(TabHandlePos,
-			ImVec2(TabHandlePos.x + TabHandleSize.x, TabHandlePos.y + TabHandleSize.y),
-			IsCurrent ? SelectedTabHandleBackgroundColor: UnselectedTabHandleBackgroundColor,
+		DrawList->AddRectFilled(
+			TabHandlePos,
+			TabHandlePos + TabHandleSize,
+			IsCurrent ? SelectedTabHandleColor : UnselectedTabHandleColor,
 			6.f, ImDrawCornerFlags_Left
 		);
-		ImGui::SetCursorPos(ImVec2(TabHandlePos.x - WindowPos.x, TabHandlePos.y - WindowPos.y));
+		ImGui::SetCursorPos(TabHandlePos - WindowPos);
 		if (ImGui::Button(Tab->Name.c_str(), TabHandleSize))
 			CurrentTab = Tab;
 		if (!IsCurrent && ImGui::IsItemHovered())
@@ -985,17 +998,19 @@ bool GUI::HackMenu()
 	}
 	// draw eject button
 	{
-		ImVec2 TabHandlePos = ImVec2(WindowPos.x + 10, 5 + TitleBarHeight + WindowPos.y + (30 * Config::Tabs.size()));
-		bool hovering = ImGui::IsMouseHoveringRect(ImVec2(WindowPos.x + 5, TabHandlePos.y), ImVec2(WindowPos.x + 90, TabHandlePos.y + 30), false);
+		ImVec2 TabHandlePos = ImVec2(WindowPos.x + 5, WindowPos.y + TitleBarHeight + 30 * Config::Tabs.size() + 5);
+		bool hovering = ImGui::IsMouseHoveringRect(TabHandlePos, TabHandlePos + ImVec2(85, 30), false);
+		if (!hovering) TabHandlePos.x += 5;
 		ImVec2 TabHandleSize = hovering ? ImVec2(85, 30) : ImVec2(80, 30);
-		if (hovering)
-			TabHandlePos.x -= 5;
-		DrawList->AddRectFilled(TabHandlePos,
-			ImVec2(TabHandlePos.x + TabHandleSize.x, TabHandlePos.y + TabHandleSize.y),
-			ImGui::ColorConvertFloat4ToU32(ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f)),
+		GUI::IgnoreLButton |= hovering; // i mean... if you're clicking eject, does it really matter?
+
+		DrawList->AddRectFilled(
+			TabHandlePos,
+			TabHandlePos + TabHandleSize,
+			vec4toU32(ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f)),
 			6.f, ImDrawCornerFlags_Left
 		);
-		ImGui::SetCursorPos(ImVec2(TabHandlePos.x - WindowPos.x, TabHandlePos.y - WindowPos.y));
+		ImGui::SetCursorPos(TabHandlePos - WindowPos);
 		ImGui::PushFont(Arial16Italics);
 		eject = ImGui::Button("Eject", TabHandleSize);
 		if (ImGui::IsItemHovered())
@@ -1092,6 +1107,7 @@ bool GUI::HackMenu()
 
 						GUI::CurrentlyChoosingKeybindFor = nullptr;
 					}
+					GUI::IgnoreLButton |= ImGui::IsItemHovered();
 
 					ImGui::PopStyleVar(1);
 					ImGui::PopStyleColor(4);
@@ -1130,6 +1146,8 @@ bool GUI::HackMenu()
 						{
 							GUI::CurrentlyChoosingKeybindFor = Property;
 						}
+						GUI::IgnoreLButton |= ImGui::IsItemHovered();
+
 						ImGui::PopStyleColor(4);
 					}
 					ImGui::PopStyleVar(1);
@@ -1141,6 +1159,7 @@ bool GUI::HackMenu()
 				{
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
 					ImGui::SwitchButton(Property->Name, ImVec2(30, 16), 0.2f, (bool*)Property->Value, 2);
+					GUI::IgnoreLButton |= ImGui::IsItemHovered();
 					ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
 
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
@@ -1155,6 +1174,7 @@ bool GUI::HackMenu()
 					{
 						GUI::CurrentlyChoosingKeybindFor = Property;
 					}
+					GUI::IgnoreLButton |= ImGui::IsItemHovered();
 					ImGui::PopFont();
 
 					ImGui::PopStyleColor(3);
@@ -1166,8 +1186,6 @@ bool GUI::HackMenu()
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
 				ImGui::Text(Property->VisibleName.c_str());
-
-				//ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
 				break;
 			}
 			case Config::PropertyType::FLOAT:
@@ -1183,6 +1201,7 @@ bool GUI::HackMenu()
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1);
 				ImGui::SliderFloatEx(("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
+				GUI::IgnoreLButton |= ImGui::IsItemHovered();
 
 				f->set(v);
 

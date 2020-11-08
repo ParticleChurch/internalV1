@@ -251,8 +251,36 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
+
+	// keydowns
+	int KeyDown = -1;
+	if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
+		KeyDown = wParam;
+	else if (uMsg == WM_LBUTTONDOWN)
+		KeyDown = VK_LBUTTON;
+	else if (uMsg == WM_RBUTTONDOWN)
+		KeyDown = VK_RBUTTON;
+	else if (uMsg == WM_XBUTTONDOWN)
+		KeyDown = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
+	else if (uMsg == WM_MBUTTONDOWN)
+		KeyDown = VK_MBUTTON;
+
+	// keyups
+	int KeyUp = -1;
+	if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)
+		KeyUp = wParam;
+	else if (uMsg == WM_LBUTTONUP)
+		KeyUp = VK_LBUTTON;
+	else if (uMsg == WM_RBUTTONUP)
+		KeyUp = VK_RBUTTON;
+	else if (uMsg == WM_XBUTTONUP)
+		KeyUp = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
+	else if (uMsg == WM_MBUTTONUP)
+		KeyUp = VK_MBUTTON;
+
 	/*
-		TRACK KEYS PRESSED
+		check keybinds
 	*/
 	// TODO: check if they are:
 	//     - typing in the menu
@@ -260,43 +288,28 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	//     - typing in steam overlay
 	if (GUI::CurrentlyChoosingKeybindFor)
 	{
-		switch (uMsg)
+		if (KeyDown > 0 && KeyDown != VK_LBUTTON)
 		{
-		case WM_KEYDOWN:
-			Config::Bind(GUI::CurrentlyChoosingKeybindFor, wParam);
+			Config::Bind(GUI::CurrentlyChoosingKeybindFor, KeyDown);
+			GUI::CurrentlyChoosingKeybindFor = nullptr;
+		}
+		else if (KeyUp == VK_LBUTTON && !GUI::IgnoreLButton)
+		{
+			Config::Bind(GUI::CurrentlyChoosingKeybindFor, VK_LBUTTON);
 			GUI::CurrentlyChoosingKeybindFor = nullptr;
 		}
 	}
-	else
-	{
-		if (uMsg == WM_KEYDOWN)
-			Config::KeyPressed(wParam);
-		if (uMsg == WM_KEYUP)
-			Config::KeyReleased(wParam);
-	}
+	else if (KeyDown > 0 && !(KeyDown == VK_LBUTTON && GUI::IgnoreLButton))
+		Config::KeyPressed(KeyDown);
+	else if (KeyUp > 0 && !(KeyUp == VK_LBUTTON && GUI::IgnoreLButton))
+		Config::KeyReleased(KeyUp);
 
-	/*if (uMsg == WM_KEYDOWN && wParam == VK_INSERT)
-		GUI::ShowMenu = !GUI::ShowMenu;
-
-	if (D3dInit && GUI::ShowMenu)
-	{
-		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-		return true;
-	}
-	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);*/
+	// give imgui input
 	if (D3dInit && Config::GetBool("config-show-menu") && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
-
 		return true;
 	}
-	if (wParam == 'W' || wParam == 'A'|| wParam == 'S' || wParam == 'D' || wParam == VK_SPACE)
-	{
-		I::inputsystem->EnableInput(true);
-	}
-	else
-	{
-		I::inputsystem->EnableInput(!Config::GetBool("config-show-menu"));
-	}
 
+	I::inputsystem->EnableInput(IsKeyboardInput || !Config::GetBool("config-show-menu"));
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 

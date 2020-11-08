@@ -97,7 +97,7 @@ namespace Config {
 		}
 		/* CONFIG/MENU TAB */
 		{
-			Tab* t = new Tab("Menu/Config");
+			Tab* t = new Tab("Config");
 			{
 				Widget* w = t->AddWidget("Menu");
 

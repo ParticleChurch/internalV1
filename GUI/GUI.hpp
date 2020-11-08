@@ -7,6 +7,7 @@ namespace GUI {
 	extern bool LoginMenu();
 
 	extern Config::Property* CurrentlyChoosingKeybindFor;
+	extern bool IgnoreLButton;
 	extern bool HackMenu();
 
 
