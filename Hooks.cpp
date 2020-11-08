@@ -257,13 +257,13 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	int KeyDown = -1;
 	if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
 		KeyDown = wParam;
-	else if (uMsg == WM_LBUTTONDOWN)
+	else if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK)
 		KeyDown = VK_LBUTTON;
-	else if (uMsg == WM_RBUTTONDOWN)
+	else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONDBLCLK)
 		KeyDown = VK_RBUTTON;
-	else if (uMsg == WM_XBUTTONDOWN)
+	else if (uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK)
 		KeyDown = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
-	else if (uMsg == WM_MBUTTONDOWN)
+	else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK)
 		KeyDown = VK_MBUTTON;
 
 	// keyups

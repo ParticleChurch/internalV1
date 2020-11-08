@@ -524,7 +524,10 @@ namespace ImGui
 			ImGui::SetNextItemWidth(200);
 
 			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
-			GUI::IgnoreLButton |= ImGui::IsItemHovered();
+
+			// if we are hovering, ignore because we're changing the color
+			// if we are not hovering, ignore because we're closing the color picker
+			GUI::IgnoreLButton = true;
 
 			oColor->color[0] = (unsigned char)(colArray[0] * 255);
 			oColor->color[1] = (unsigned char)(colArray[1] * 255);
