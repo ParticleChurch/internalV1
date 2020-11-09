@@ -1104,7 +1104,7 @@ bool GUI::HackMenu()
 					{
 						// if you try to clear the menu button, set it to whatever it was, or insert
 						if (Property->Name == "config-show-menu")
-							Config::Bind(Property, Property->KeyBind ? Property->KeyBind : VK_INSERT);
+							Config::Bind(Property, VK_INSERT);
 						else
 							Config::Unbind(Property);
 
