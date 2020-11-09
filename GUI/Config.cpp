@@ -188,6 +188,9 @@ namespace Config {
 		if (KeyCode == 0) return Unbind(Prop); // binding a key to 0 is the same as unbinding
 		if (Prop->KeyBind != 0) Unbind(Prop); // this key is already bound, first unbind it before preceeding
 
+		if (KeyCode == VK_ESCAPE)
+			return Unbind(Prop);
+
 		auto KeyIterator = KeybindMap.find(KeyCode);
 		std::vector<Property*>* PropertyList = nullptr;
 		if (KeyIterator == KeybindMap.end())
@@ -202,6 +205,9 @@ namespace Config {
 	{
 		if (Prop->Type != PropertyType::BOOLEAN) return; // bruh
 		if (Prop->KeyBind == 0) return; // already unbound
+
+		if (Prop->Name == "config-show-menu")
+			return Bind(Prop, VK_INSERT);
 		
 		auto KeyIterator = KeybindMap.find(Prop->KeyBind);
 		if (KeyIterator == KeybindMap.end())

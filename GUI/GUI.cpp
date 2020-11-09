@@ -1103,10 +1103,10 @@ bool GUI::HackMenu()
 					if (ImGui::Button("Clear", ImVec2(40, 20)))
 					{
 						// if you try to clear the menu button, set it to whatever it was, or insert
-						if (Property->Name == "config-show-menu")
-							Config::Bind(Property, VK_INSERT);
-						else
-							Config::Unbind(Property);
+						//if (Property->Name == "config-show-menu")
+						//	Config::Bind(Property, VK_INSERT);
+						//else
+						Config::Unbind(Property);
 
 						GUI::CurrentlyChoosingKeybindFor = nullptr;
 					}
