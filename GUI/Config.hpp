@@ -238,6 +238,14 @@ namespace Config {
 		HoldToEnable,
 		HoldToDisable,
 	};
+	enum class KeybindOptions {
+		None = 0,
+		Toggle = 1 << 0,
+		HoldToEnable = 1 << 1,
+		HoldToDisable = 1 << 2,
+		Hold = HoldToEnable | HoldToDisable,
+		All = Hold | Toggle,
+	};
 
 	struct CFloat
 	{
@@ -332,6 +340,7 @@ namespace Config {
 		// only applies to boolean values
 		KeybindType BindType = KeybindType::Toggle;
 		int KeyBind = 0;
+		KeybindOptions Keybindability = KeybindOptions::None; // not a word lol
 
 
 		Property(PropertyType Type, bool IsPremium, int Complexity, std::string Name, std::string VisibleName, void* FreeDefault, void* PremiumDefault)
@@ -371,9 +380,10 @@ namespace Config {
 			this->Name = Name;
 		}
 
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions::None)
 		{
 			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, new bool(FreeDefault), new bool(PremiumDefault));
+			p->Keybindability = KeybindTypes;
 			this->Properties.push_back(p);
 			return p;
 		}
@@ -427,7 +437,7 @@ namespace Config {
 	/* Keybind Stuff */
 	extern std::map<int, std::vector<Property*>*> KeybindMap; // virtural keycode: list of properties bound to that keycode
 	extern void Bind(Property* Prop, WPARAM KeyCode);
-	extern void Unbind(Property* Prop);
+	extern void Unbind(Property* Prop, bool __FORCE = false /* ONLY Config::Bind SHOULD SET ME TO TRUE*/);
 	extern void KeyPressed(WPARAM KeyCode);
 	extern void KeyReleased(WPARAM KeyCode);
 }

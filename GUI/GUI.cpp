@@ -105,6 +105,7 @@ bool GUI::IgnoreLButton = false;
 namespace ImGui
 {
 #define vec4toU32(v) ImGui::ColorConvertFloat4ToU32(v)
+#define styleColor(r,g,b,a) (ImVec4((float)(r) / 255.f, (float)(g) / 255.f, (float)(b) / 255.f, (float)(a)))
 
 	inline float lerp(float a, float b, float f)
 	{
@@ -173,6 +174,36 @@ namespace ImGui
 
 		return changed;
 	}
+
+	void ColorPicker(Color* oColor, std::string id, std::string name, ImVec2 PreviewSize, int PickerWidth = 200)
+	{
+		float colArray[] = { oColor->color[0] / 255.f , oColor->color[1] / 255.f , oColor->color[2] / 255.f };
+		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
+
+		// button
+		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, PreviewSize))
+			ImGui::OpenPopup(("###" + id + "-picker").c_str());
+		GUI::IgnoreLButton |= ImGui::IsItemHovered();
+
+		// picker
+		if (ImGui::BeginPopup(("###" + id + "-picker").c_str()))
+		{
+			ImGui::SetNextItemWidth(PickerWidth);
+
+			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
+
+			// if we are hovering, ignore because we're changing the color
+			// if we are not hovering, ignore because we're closing the color picker
+			GUI::IgnoreLButton = true;
+
+			oColor->color[0] = (unsigned char)(colArray[0] * 255);
+			oColor->color[1] = (unsigned char)(colArray[1] * 255);
+			oColor->color[2] = (unsigned char)(colArray[2] * 255);
+
+			ImGui::EndPopup();
+		}
+	}
+
 	struct switchData {
 		std::chrono::steady_clock::time_point TimeChanged;
 		bool LastValue;
@@ -183,7 +214,7 @@ namespace ImGui
 		}
 	};
 	std::map<ImGuiID, switchData> boolSwitchTimings;
-	bool SwitchButton(std::string identifier, ImVec2 size, float animationTime, bool* value, int clearance = 2, bool clickable = true)
+	bool SwitchButton(std::string identifier, ImVec2 size, float animationTime, bool* value, bool clickable = true, int clearance = 2)
 	{
 		/*
 			SETUP
@@ -257,6 +288,177 @@ namespace ImGui
 
 		RenderNavHighlight(frame_bb, id);
 		return clicked;
+	}
+
+	void DrawBooleanProperty(Config::Property* p)
+	{
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - ImGui::GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); ImGui::SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// 3 cases, in order of importance
+		bool IsMidBind = GUI::CurrentlyChoosingKeybindFor == p;
+		bool IsBound = p->KeyBind != 0;
+		bool IsBindable = p->Keybindability != Config::KeybindOptions::None;
+
+		// move over to second column
+		SetCursorPosX(120);
+
+		// universal vars from here on out
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+		PushFont(Arial14);
+		if (IsMidBind)
+		{
+			// draw a frame to hold text
+			std::string Label = "press any key";
+			ImVec2 TextSize = ImGui::CalcTextSize(Label.c_str());
+
+			// size = padding + text + padding
+			ImVec2 ChildSize = ImVec2(4 + TextSize.x + 4, 20);
+			PushStyleColor(ImGuiCol_FrameBg, styleColor(120, 120, 120, 1.f));
+			BeginChildFrame(GetID((p->Name + "-keybind-prompt").c_str()), ChildSize);
+
+			// draw text
+			SetCursorPos(ImVec2(4, 3));
+			Text(Label.c_str());
+
+			// close child and pop its backgound color
+			EndChild(); SameLine();
+			PopStyleColor(1);
+
+			// TODO: draw p->Keybindability dropdown
+
+			// go back to top of line
+			SetCursorPosY(LinePosY);
+
+			// padding, clear button
+			SetCursorPosX(GetCursorPosX() + 5);
+
+			PushStyleColor(ImGuiCol_Button, styleColor(200, 75, 75, 1.f));
+			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(180, 60, 60, 1.f));
+			PushStyleColor(ImGuiCol_ButtonActive, styleColor(220, 90, 90, 1.f));
+
+			if (ImGui::Button("Clear", ImVec2(40, 20)))
+			{
+				Config::Unbind(p);
+				GUI::CurrentlyChoosingKeybindFor = nullptr;
+			}
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			PopStyleColor(3);
+		}
+		else if (IsBound)
+		{
+			// get keyname text
+			std::string KeyName = I::inputsystem->VirtualKeyToString(p->KeyBind);
+			ImVec2 KeyTextSize = ImGui::CalcTextSize(KeyName.c_str());
+
+			// draw switch in a child frame contains: padding + switch + padding + keyname + padding
+			ImVec2 ChildSize = ImVec2(2 + 30 + 4 + KeyTextSize.x + 4, 20);
+			PushStyleColor(ImGuiCol_FrameBg, styleColor(120, 120, 120, 1.f));
+			BeginChildFrame(GetID((p->Name + "-keybind-vis").c_str()), ChildSize);
+
+			// center switch on the left
+			SetCursorPos(ImVec2(2, 2));
+			SwitchButton(p->Name, ImVec2(30, 16), 0.2f, (bool*)p->Value, false); SameLine();
+
+			// draw text on the right
+			SetCursorPos(ImVec2(2 + 30 + 4, 3));
+			Text(KeyName.c_str());
+
+			// draw an invisible button across the whole child to detect clicks
+			PushStyleColor(ImGuiCol_Border, styleColor(0, 0, 0, 0.f));
+			PushStyleColor(ImGuiCol_Button, styleColor(0, 0, 0, 0.f));
+			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(0, 0, 0, 0.1f));
+			PushStyleColor(ImGuiCol_ButtonActive, styleColor(0, 0, 0, 0.2f));
+
+			SetCursorPos(ImVec2(0, 0));
+			if (Button(("##" + p->Name + "-binded-button").c_str(), ChildSize))
+				GUI::CurrentlyChoosingKeybindFor = p;
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			PopStyleColor(4);
+
+			// close child and pop its backgound color
+			EndChild();
+			PopStyleColor(1);
+		}
+		else // not bound
+		{
+			SetCursorPosY(LinePosY + 2); // move down to draw switch in center of line
+			SetCursorPosX(GetCursorPosX() + 2); // move over to line up with binded properties
+			SwitchButton(p->Name, ImVec2(30, 16), 0.2f, (bool*)p->Value);
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			if (IsBindable)
+			{
+				SameLine(); // move to after the switch
+				SetCursorPosY(LinePosY); // move back to top of line
+				SetCursorPosX(GetCursorPosX() + 5); // add padding after switch
+
+				// draw "Bind" button
+				PushStyleColor(ImGuiCol_Border, styleColor(255, 255, 255, 0.5f));
+				PushStyleColor(ImGuiCol_Button, styleColor(120, 120, 120, 1.f));
+				PushStyleColor(ImGuiCol_ButtonHovered, styleColor(100, 100, 100, 1.f));
+				PushStyleColor(ImGuiCol_ButtonActive, styleColor(160, 160, 160, 1.f));
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+				PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+
+				if (ImGui::Button(("Bind##" + p->Name).c_str(), ImVec2(34, 20)))
+					GUI::CurrentlyChoosingKeybindFor = p;
+				GUI::IgnoreLButton |= IsItemHovered();
+				
+				PopStyleColor(4);
+				PopStyleVar(2);
+			}
+		}
+
+		// cleanup, leave cursor on next line
+		PopFont();
+		PopStyleVar(1);
+		SetCursorPosY(LinePosY + 20);
+	}
+
+	void DrawColorProperty(Config::Property* p)
+	{
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - ImGui::GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); ImGui::SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// move over to second column
+		SetCursorPosX(120);
+
+		// draw color picker preview button thing
+		Color* c = (Color*)p->Value;
+
+		PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.f, 4.f));
+		PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.5f)); // white
+
+		SetCursorPosX(GetCursorPosX() + 2); // move over to line up with binded properties
+		ColorPicker(c, p->Name, p->VisibleName, ImVec2(30, 20));
+
+		PopStyleVar(3);
+		PopStyleColor(1);
 	}
 }
 
@@ -506,35 +708,6 @@ namespace ImGui
 	{
 		if (values.empty()) { return false; }
 		return Combo(label, currIndex, vector_getter, static_cast<void*>(&values), values.size());
-	}
-
-	void ColorPicker(std::string id, std::string name, Color* oColor)
-	{
-		float colArray[] = { oColor->color[0] / 255.f , oColor->color[1] / 255.f , oColor->color[2] / 255.f };
-		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
-		
-		// button
-		if (ImGui::ColorButton(("###" + id).c_str(), imColor, 0, ImVec2(30.f, 20.f)))
-			ImGui::OpenPopup(("###" + id + "-picker").c_str());
-		GUI::IgnoreLButton |= ImGui::IsItemHovered();
-
-		// picker
-		if (ImGui::BeginPopup(("###" + id + "-picker").c_str()))
-		{
-			ImGui::SetNextItemWidth(200);
-
-			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
-
-			// if we are hovering, ignore because we're changing the color
-			// if we are not hovering, ignore because we're closing the color picker
-			GUI::IgnoreLButton = true;
-
-			oColor->color[0] = (unsigned char)(colArray[0] * 255);
-			oColor->color[1] = (unsigned char)(colArray[1] * 255);
-			oColor->color[2] = (unsigned char)(colArray[2] * 255);
-
-			ImGui::EndPopup();
-		}
 	}
 }
 
@@ -832,7 +1005,7 @@ void DisplayAntiAimTab() {
 	if (Config::antiaim.FakeLag.Enable || Config::antiaim.Legit.Enable || Config::antiaim.Rage.Enable)
 	{
 		ImGui::Checkbox("Visualize###AAVisualize", &Config::antiaim.Visualize);
-		ImGui::ColorPicker("Fake Color", "Fake Color", &Config::antiaim.Fake);
+		//ImGui::ColorPicker("Fake Color", "Fake Color", &Config::antiaim.Fake);
 		ImGui::SliderInt("Opacity", &Config::antiaim.Opacity, 0, 100);
 		ImGui::Separator();
 	}
@@ -906,7 +1079,7 @@ void DisplayVisualsTab() {
 	ImGui::Text("Players - ESP");
 	ImGui::Checkbox("Radar###VRadar", &Config::visuals.Radar);
 	ImGui::Checkbox("Boxes###VBoxes", &Config::visuals.Boxes);
-	ImGui::ColorPicker("Box Color", "Box Color", &Config::visuals.BoxColor);
+	//ImGui::ColorPicker("Box Color", "Box Color", &Config::visuals.BoxColor);
 	ImGui::Checkbox("Skeleton###VSkeleton", &Config::visuals.Skeleton);
 	ImGui::Checkbox("Name###VName", &Config::visuals.Name);
 	ImGui::Checkbox("Health###VHealth", &Config::visuals.Health);
@@ -915,9 +1088,9 @@ void DisplayVisualsTab() {
 
 	ImGui::Text("Players - Chams");
 	ImGui::Checkbox("Visible Chams###VVisibleCHams", &Config::visuals.VisibleChams);
-	ImGui::ColorPicker("Visible Cham Color", "Visible Cham Color", &Config::visuals.VisibleColor);
+	//ImGui::ColorPicker("Visible Cham Color", "Visible Cham Color", &Config::visuals.VisibleColor);
 	ImGui::Checkbox("Through Wall Chams###VWallCHams", &Config::visuals.ThroughWallChams);
-	ImGui::ColorPicker("Through Wall Cham Color", "Through Wall Cham Color", &Config::visuals.ThroughWallColor);
+	//ImGui::ColorPicker("Through Wall Cham Color", "Through Wall Cham Color", &Config::visuals.ThroughWallColor);
 
 }
 
@@ -1055,7 +1228,7 @@ bool GUI::HackMenu()
 		Config::Widget* Widget = CurrentTab->Widgets.at(i);
 		if (!ImGui::BeginChildFrame(
 			ImGui::GetID(Widget->Name.c_str()),
-			ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height + 2),
+			ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height + 6),
 			0 //ImGuiWindowFlags_NoScrollbar
 		))
 		{
@@ -1070,7 +1243,7 @@ bool GUI::HackMenu()
 		ImGui::PopFont();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1);
 
 		// properties
 		ImGui::PushFont(Arial16);
@@ -1083,112 +1256,7 @@ bool GUI::HackMenu()
 			{
 			case Config::PropertyType::BOOLEAN:
 			{
-				if (GUI::CurrentlyChoosingKeybindFor == Property)
-				{
-					ImGui::PushFont(Arial14);
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(200.f / 300.f, 75.f / 300.f, 75.f / 300.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(200.f / 210.f, 75.f / 210.f, 75.f / 210.f, 1.f));
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
-
-					// note for warning C6011: Property will never be null, and VS2019 is high
-					ImGui::BeginChildFrame(ImGui::GetID((Property->Name + "-keybind").c_str()), ImVec2(79, 20));
-					ImGui::SetCursorPos(ImVec2(3, 3));
-					ImGui::Text("[press a key]");
-					ImGui::EndChild(); ImGui::SameLine();
-
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-					if (ImGui::Button("Clear", ImVec2(40, 20)))
-					{
-						// if you try to clear the menu button, set it to whatever it was, or insert
-						//if (Property->Name == "config-show-menu")
-						//	Config::Bind(Property, VK_INSERT);
-						//else
-						Config::Unbind(Property);
-
-						GUI::CurrentlyChoosingKeybindFor = nullptr;
-					}
-					GUI::IgnoreLButton |= ImGui::IsItemHovered();
-
-					ImGui::PopStyleVar(1);
-					ImGui::PopStyleColor(4);
-					ImGui::PopFont();
-				}
-				else if (Property->KeyBind != 0)
-				{
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
-					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
-
-					std::string Key = I::inputsystem->VirtualKeyToString(Property->KeyBind);
-					Key = "[" + Key + "]";
-
-					ImGui::PushFont(Arial14);
-					ImVec2 KeySize = ImGui::CalcTextSize(Key.c_str());
-					ImVec2 FrameSize(2 + 30 + 3 + KeySize.x + 3, 20);
-					ImGuiID KeybindFrameId = ImGui::GetID((Property->Name + "-keybind").c_str());
-					ImVec2 CursorPos = ImGui::GetCursorPos();
-
-					if (ImGui::BeginChildFrame(KeybindFrameId, FrameSize))
-					{
-						ImGui::SetCursorPos(ImVec2(2, 2));
-						ImGui::SwitchButton(Property->Name, ImVec2(30, 16), 0.2f, (bool*)Property->Value, 2, false);
-
-						ImGui::SetCursorPos(ImVec2(35, 2));
-						ImGui::Text(Key.c_str());
-
-						// invisible button for clickable behavior
-						ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.1f));
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.2f));
-						ImGui::SetCursorPos(ImVec2(0, 0));
-						if (ImGui::Button(("##" + Property->Name + "-invis-button").c_str(), FrameSize))
-						{
-							GUI::CurrentlyChoosingKeybindFor = Property;
-						}
-						GUI::IgnoreLButton |= ImGui::IsItemHovered();
-
-						ImGui::PopStyleColor(4);
-					}
-					ImGui::PopStyleVar(1);
-					ImGui::PopStyleColor(1);
-					ImGui::PopFont();
-					ImGui::EndChild();
-				}
-				else
-				{
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
-					ImGui::SwitchButton(Property->Name, ImVec2(30, 16), 0.2f, (bool*)Property->Value, 2);
-					GUI::IgnoreLButton |= ImGui::IsItemHovered();
-					ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
-
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(120.f / 255.f, 120.f / 255.f, 120.f / 255.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(100.f / 255.f, 100.f / 255.f, 100.f / 255.f, 1.f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(160.f / 255.f, 160.f / 255.f, 160.f / 255.f, 1.f));
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f); 
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
-
-					ImGui::PushFont(Arial14);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
-					if (ImGui::Button(("Bind##" + Property->Name).c_str(), ImVec2(34, 20)))
-					{
-						GUI::CurrentlyChoosingKeybindFor = Property;
-					}
-					GUI::IgnoreLButton |= ImGui::IsItemHovered();
-					ImGui::PopFont();
-
-					ImGui::PopStyleColor(3);
-					ImGui::PopStyleVar(2);
-				}
-
-
-				ImGui::SameLine();
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
-				ImGui::Text(Property->VisibleName.c_str());
+				ImGui::DrawBooleanProperty(Property);
 				break;
 			}
 			case Config::PropertyType::FLOAT:
@@ -1212,29 +1280,12 @@ bool GUI::HackMenu()
 			}
 			case Config::PropertyType::COLOR:
 			{
-				Color* c = (Color*)Property->Value;
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.f, 4.f));
-				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2);
-				ImGui::ColorPicker(Property->Name, Property->VisibleName, c);
-				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
-				ImGui::Text(Property->VisibleName.c_str());
-
-				ImGui::PopStyleVar(3);
-				ImGui::PopStyleColor(1);
-
+				ImGui::DrawColorProperty(Property);
 				break;
 			}
 			default:
 			{
-				// TODO: Color values
+				// TODO:
 				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
 				break;
 			}

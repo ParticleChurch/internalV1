@@ -26,7 +26,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
-				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true);
+				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions::All);
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
 				//w->MarkSeperator();
@@ -36,7 +36,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Triggerbot");
 
-				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true);
+				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions::All);
 				w->AddProperty(false, 1, "triggerbot-through-wall", "Through Wall", true, true);
 				w->AddProperty(false, 0, "triggerbot-delay", "Delay (ms)", 0, 1000, 0, 0, 0);
 				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);
@@ -110,7 +110,7 @@ namespace Config {
 				w->AddProperty(false, 0, "menu-accent-color", "Accent Color", new Color(0, 150, 255));
 				//w->MarkSeperator();
 
-				w->AddProperty(false, 0, "config-show-menu", "Show Menu", true, true);
+				w->AddProperty(false, 0, "config-show-menu", "Show Menu", true, true, KeybindOptions::Toggle);
 			}
 			{
 				Widget* w = t->AddWidget("Config");
@@ -184,11 +184,11 @@ namespace Config {
 	std::map<int, std::vector<Property*>*> KeybindMap;
 	void Bind(Property* Prop, WPARAM KeyCode)
 	{
-		if (Prop->Type != PropertyType::BOOLEAN) return; // bruh
+		assert(Prop->Type == PropertyType::BOOLEAN);
 		if (KeyCode == 0) return Unbind(Prop); // binding a key to 0 is the same as unbinding
-		if (Prop->KeyBind != 0) Unbind(Prop); // this key is already bound, first unbind it before preceeding
-		if (KeyCode == VK_ESCAPE)
-			return Unbind(Prop);
+		if (Prop->KeyBind != 0) Unbind(Prop, true); // this key is already bound, first unbind it before preceeding
+		if (KeyCode == VK_ESCAPE) return Unbind(Prop); // binding to escape just unbinds
+			
 
 		auto KeyIterator = KeybindMap.find(KeyCode);
 		std::vector<Property*>* PropertyList = nullptr;
@@ -200,9 +200,9 @@ namespace Config {
 		Prop->KeyBind = KeyCode;
 		PropertyList->push_back(Prop);
 	};
-	void Unbind(Property* Prop)
+	void Unbind(Property* Prop, bool __FORCE /* SEE DECLARATION B4 SETTING TRUE */)
 	{
-		if (Prop->Type != PropertyType::BOOLEAN) return; // bruh
+		assert(Prop->Type == PropertyType::BOOLEAN);
 		if (Prop->KeyBind == 0) return; // already unbound
 		
 		auto KeyIterator = KeybindMap.find(Prop->KeyBind);
@@ -232,7 +232,7 @@ namespace Config {
 			free(PropertyList);
 		}
 
-		if (Prop->Name == "config-show-menu")
+		if (!__FORCE && Prop->Name == "config-show-menu")
 			return Bind(Prop, VK_INSERT);
 	};
 	void KeyPressed(WPARAM KeyCode)
