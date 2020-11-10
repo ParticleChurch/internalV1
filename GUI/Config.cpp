@@ -41,13 +41,16 @@ namespace Config {
 				Widget* w = t->AddWidget("Fake Lag");
 				//TODO - add dropdown menu for type of fake lag
 				//TODO - add amount of the type of fake lag based on the type (distance vs ticks/time)
+				w->AddProperty(false, 0, "antiaim-fakelag-amount", "Amount", "ticks", 0, 16, 0, 0, 0);
+				
 			}
 			{
 				Widget* w = t->AddWidget("Legit");
 
 				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", true, true);
 				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "antiaim-legit-invert", "Inverter AA", false, false);
+				//w->AddProperty(false, 1, "antiaim-legit-invert", "Inverter AA", false, false);
+				//TODO - add the inverter for invert aa here
 			}
 			{
 				Widget* w = t->AddWidget("Rage");
@@ -79,6 +82,111 @@ namespace Config {
 				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize Real", false, false);
 				w->AddProperty(false, 1, "antiaim-visual-real-color", "Real Color", new Color(0, 150, 255));
 				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Real Opacity", "%", 0, 100, 1, 100, 100);
+			}
+			Tabs.push_back(t);
+		}
+		/* VISUALS TAB */
+		{
+			Tab* t = new Tab("Visuals");
+			{
+				Widget* w = t->AddWidget("Chams");
+
+				//Enemy
+				w->AddProperty(false, 0, "visuals-cham-enemy-enable", "Enemy Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-enemy-color", "Color", new Color(0, 150, 255));
+				//TODO - add dropdown type option... (flat, normal, pearlescent, etc..)
+
+				//Friends
+				w->AddProperty(false, 0, "visuals-cham-friend-enable", "Friend Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-friend-color", "Color", new Color(0, 150, 255));
+				//TODO - add dropdown type option... (flat, normal, pearlescent, etc..)
+			}
+			{
+				Widget* w = t->AddWidget("ESP");
+				//Enemy
+				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enemy ESP", false, false);
+				w->AddProperty(false, 0, "visuals-esp-enemy-box", "Box", false, false);
+				w->AddProperty(false, 1, "visuals-esp-enemy-box-color", "Box", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-enemy-name", "Box", false, false);
+				w->AddProperty(false, 1, "visuals-esp-enemy-name-color", "Name", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-enemy-snapline", "Snaplines", false, false);
+				w->AddProperty(false, 1, "visuals-esp-enemy-snapline-color", "Snaplines", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-enemy-health", "Health", false, false);
+				w->AddProperty(false, 2, "visuals-esp-enemy-health-color", "Health", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-esp-enemy-health-bgcolor", "Health Background", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-enemy-ammo", "Ammo", false, false);
+				w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color", "Ammo", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-esp-enemy-ammo-bgcolor", "Ammo Background", new Color(0, 150, 255));
+				//TODO - Add dropdown for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
+				//Friend
+				w->AddProperty(false, 0, "visuals-esp-friend-enable", "Friend ESP", false, false);
+				w->AddProperty(false, 0, "visuals-esp-friend-box", "Box", false, false);
+				w->AddProperty(false, 1, "visuals-esp-friend-box-color", "Box", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-friend-name", "Box", false, false);
+				w->AddProperty(false, 1, "visuals-esp-friend-name-color", "Name", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-friend-snapline", "Snaplines", false, false);
+				w->AddProperty(false, 1, "visuals-esp-friend-snapline-color", "Snaplines", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-friend-health", "Health", false, false);
+				w->AddProperty(false, 2, "visuals-esp-friend-health-color", "Health", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-esp-friend-health-bgcolor", "Health Background", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-friend-ammo", "Ammo", false, false);
+				w->AddProperty(false, 2, "visuals-esp-friend-ammo-color", "Ammo", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-esp-friend-ammo-bgcolor", "Ammo Background", new Color(0, 150, 255));
+				//TODO - Add dropdown for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
+				//Other
+				w->AddProperty(false, 1, "visuals-esp-other-grenadebox", "Grenade Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp-other-weapon-box", "Weapon Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp-other-weapon-name", "Weapon Names", false, false);
+			}
+			{
+				Widget* w = t->AddWidget("World");
+				//World
+				w->AddProperty(false, 1, "visuals-world-enable", "World Changes", false, false);
+				w->AddProperty(false, 2, "visuals-world-color", "World", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-world-opacity", "World Opacity", "%", 0, 100, 0, 0, 0);
+				//Prop
+				w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
+				w->AddProperty(false, 2, "visuals-world-prop-color", "Prop", new Color(0, 150, 255));
+				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);
+				//Skybox
+				w->AddProperty(false, 1, "visuals-world-skybox-enable", "Skybox Changes", false, false);
+				//TODO - Add skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List
+				w->AddProperty(false, 2, "visuals-world-skybox-color", "Skybox", new Color(0, 150, 255));
+
+			}
+			{
+				Widget* w = t->AddWidget("Misc");
+				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions::All);
+				w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
+				w->AddProperty(false, 1, "visuals-misc-spec-list", "Spectator List", false, false);
+				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);
+			}
+			Tabs.push_back(t);
+		}
+		/* MISC TAB */
+		{
+			Tab* t = new Tab("Misc");
+			{
+				Widget* w = t->AddWidget("Movement");
+				w->AddProperty(false, 0, "misc-movement-bhop", "Bunnyhop", false, false);
+				w->AddProperty(false, 1, "misc-movement-slowwalk", "Slow Walk", false, false, KeybindOptions::All);
+				w->AddProperty(false, 2, "misc-movement-slowwalk-speed", "Slow-Walk Speed", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 2, "misc-movement-airstuck", "Airstuck", false, false, KeybindOptions::All);
+				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
+				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions::All);
+				//TODO - add autostrafe dropdown (with option for none to be on, with one on at max) (or just add a bool idk yet lol)
+			}
+			{
+				Widget* w = t->AddWidget("Other");
+				w->AddProperty(false, 0, "misc-other-autoaccept", "AutoAccept", false, false);
+				w->AddProperty(false, 2, "misc-other-killsay", "Kill Say", false, false);
+				//TODO - add input area for custom killsay insult
+				w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
+				w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
+				//TODO - add area to input what they are unboxing
+				w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);
+				//TODO - add area to input what clantag they are displaying
+				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
 			Tabs.push_back(t);
 		}
