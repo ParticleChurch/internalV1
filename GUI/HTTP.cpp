@@ -67,7 +67,6 @@ bool HTTP::APIGET(std::string Cmd, Arguments Data, T* Output)
     return HTTP::StructuredGET<T>("www.a4g4.com", "/API/api.php", Data.String, Output);
 }
 
-
 APIResponseFormat_LoginAttempt HTTP::APILogin(std::string Email, std::string Password)
 {
     APIResponseFormat_LoginAttempt Response{};

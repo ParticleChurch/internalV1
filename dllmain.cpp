@@ -7,6 +7,7 @@ void Init()
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
 
+
     std::cout << "Successfully Injected\n";
 
     Config::Init();

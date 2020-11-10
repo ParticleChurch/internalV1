@@ -1,5 +1,6 @@
 #include "../Include.hpp"
 #include "HTTP.hpp"
+// TODO: organize GUI namespace
 
 // will be set to the screen center
 ImVec2 LoginWindowPosition(100, 100);
@@ -80,6 +81,12 @@ ImFont* Arial16Italics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
+
+	int out = 0;
+	std::string url = "https://www.a4g4.com/API/dll.php";
+	bool succ = HTTP::Post<int, int>(url, 419, &out);
+	std::cout << "HTTP::POST CALL: " << succ << ", " << out << std::endl;
+
 	FontDefault = io.Fonts->AddFontDefault();
 	AYO_LOAD_FONT_BRUH(Arial8, "C:\\Windows\\Fonts\\arial.ttf", 8.f);
 	AYO_LOAD_FONT_BRUH(Arial12, "C:\\Windows\\Fonts\\arial.ttf", 12.f);

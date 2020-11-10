@@ -34,9 +34,9 @@ namespace Config {
 			}
 			Tabs.push_back(t);
 		}
-		/* ANTI-AIM  TAB */
+		/* DEFENSE TAB */
 		{
-			Tab* t = new Tab("Anti-Aim");
+			Tab* t = new Tab("Defense");
 			{
 				Widget* w = t->AddWidget("Fake Lag");
 				//TODO - add dropdown menu for type of fake lag
