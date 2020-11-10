@@ -22,8 +22,9 @@ void AntiAim::legit()
 		return;
 
 	static float lastUpdate = 0;
-	if (GetAsyncKeyState(Config::antiaim.Legit.InverterKey) &&
-		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
+	if ( // TODO: Config::GetState("antiaim-inversion")
+		fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f
+	) {
 
 		lastUpdate = I::globalvars->m_curTime;
 		Left = !Left;

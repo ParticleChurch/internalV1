@@ -349,14 +349,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
-		//toggle on and off third person
-		static float lastUpdate = 0;
-		if (GetAsyncKeyState(Config::visuals.ThirdPersonKey) &&
-			fabsf(lastUpdate - I::globalvars->m_curTime) > 0.2f) {
-			lastUpdate = I::globalvars->m_curTime;
-			ThirdPersonToggle = !ThirdPersonToggle;
-		}
-
 		
 		antiaim->rage();
 
@@ -617,8 +609,6 @@ bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WO
 
 void __fastcall H::hkCamToFirstPeronHook()
 {
-	if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
-		return;
 	ohkCamToFirstPeron(I::input);
 }
 
@@ -659,16 +649,14 @@ float GetCameraBoomLength(float distance)
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
 	if (I::engine->IsInGame() && G::Localplayer->GetHealth() > 0) {
-		if (Config::visuals.Enable && Config::visuals.ThirdPerson && ThirdPersonToggle)
+		if (true)
 		{
-			if (!(I::input->m_fCameraInThirdPerson))
-				I::input->m_fCameraInThirdPerson = true;
+			I::input->m_fCameraInThirdPerson = true;
 			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, GetCameraBoomLength(150.f));
 		}
 		else
 		{
-			if ((I::input->m_fCameraInThirdPerson))
-				I::input->m_fCameraInThirdPerson = false;
+			I::input->m_fCameraInThirdPerson = false;
 			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 0);
 		}
 	}

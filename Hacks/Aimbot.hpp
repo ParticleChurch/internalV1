@@ -7,7 +7,7 @@ public:
 	float CrosshairDist(Vec TargetAngle);
 	//functions for legit
 	void Legit();
-	void Smooth(Vec& Angle, int ConfigIndex);
+	void Smooth(Vec& Angle);
 	//functions for rage
 	void Rage();
 };

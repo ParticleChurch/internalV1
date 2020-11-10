@@ -63,38 +63,12 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 //legit functions
 void Aimbot::Legit()
 {
-	using namespace Config;
-	if (!legitbot.Enable) return;
-
-	if (!legitbot.EnableAim) return;
-
 	if (!G::Localplayer) return;
 
 	if (!(G::Localplayer->GetHealth() > 0)) return;
 
 	Entity* ActiveWeapon = G::Localplayer->GetActiveWeapon();
 	if (!ActiveWeapon) return;
-
-	if (!((bool)GetAsyncKeyState(legitbot.AimKey))) return;
-
-	//Config Stuff (for certain weapons)
-	int ConfigIndex = -1;
-	WeaponId WeaponID = ActiveWeapon->GetWeaponId();
-	int WeaponClass = GetWeaponClass(WeaponID);
-	if (WeaponClass == 35) //pistol
-		ConfigIndex = 0;
-	else if (WeaponClass == 37)
-		ConfigIndex = 1;
-	else if (WeaponClass == 36)
-		ConfigIndex = 2;
-	else if (WeaponClass == 38)
-	{
-		if (GetWeaponIndex(WeaponID) <= 34 && GetWeaponIndex(WeaponID) >= 32)
-			ConfigIndex = 4;
-		else if (GetWeaponIndex(WeaponID) <= 31 && GetWeaponIndex(WeaponID) >= 24)
-			ConfigIndex = 3;
-	}
-	if (ConfigIndex == -1) return; //if not holding a weapon...
 
 	//get closest Entity
 	Vec BestAngle;
@@ -126,7 +100,8 @@ void Aimbot::Legit()
 		if (backtrack->Records[i].empty()) continue; //if the record is empty...
 
 		//general hitboxes
-		for (auto hitbox : legitbot.weapon[ConfigIndex].Hitboxes)
+		int Hitboxes[] = { HITBOX_HEAD, HITBOX_CHEST};
+		for (auto hitbox : Hitboxes)
 		{
 			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(hitbox);
 			if (!StudioBox) continue;	//if cant get the hitbox...
@@ -140,17 +115,10 @@ void Aimbot::Legit()
 
 			Vec Angle = CalculateAngle(loc);
 			float CrossDist = CrosshairDist(Angle);
-			if (CrossDist > legitbot.weapon[ConfigIndex].Fov) //if not in fov
+			if (CrossDist > 30) //if not in fov
 				continue;
 
-			bool InPriority = false;
-			for (auto a : legitbot.weapon[ConfigIndex].Priority)
-			{
-				if (a == hitbox) {
-					InPriority = true;
-
-				}
-			}
+			bool InPriority = hitbox == HITBOX_HEAD;
 			
 			if (CrossDist < BestCrossDist && !InPriority)
 			{
@@ -168,11 +136,8 @@ void Aimbot::Legit()
 		
 	}
 
-	if(G::Localplayer->GetShotsFired() > 1 &&		//shots 
-		legitbot.weapon[ConfigIndex].RecoilControl)	//recoil enabled
-		BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
-
-	Smooth(BestAngle, ConfigIndex);
+	BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
+	Smooth(BestAngle);
 
 	if (ValidTargetFound)
 	{
@@ -181,13 +146,13 @@ void Aimbot::Legit()
 		
 } 
 
-void Aimbot::Smooth(Vec& Angle, int ConfigIndex)
+void Aimbot::Smooth(Vec& Angle)
 {
 	bool FastToSlow = false;
 	bool Constant = true;
 	bool SlowToFast = false;
-	float SmoothYaw = Config::legitbot.weapon[ConfigIndex].YawSpeed / 100.f;
-	float SmoothPitch = Config::legitbot.weapon[ConfigIndex].PitchSpeed / 100.f;
+	float SmoothYaw = 50.f / 100.f;
+	float SmoothPitch = 50.f / 100.f;
 
 	G::CM_StartAngle.NormalizeAngle();
 	Angle.NormalizeAngle();

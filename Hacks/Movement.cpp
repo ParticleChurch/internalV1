@@ -11,10 +11,6 @@ void Movement::AAMoveFix()
 
 void Movement::BunnyHop()
 {
-	if (!Config::movement.Enable)
-		return;
-	if (!Config::movement.BunnyHop)
-		return;
 	if ((G::cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
 		&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
 		G::cmd->buttons &= ~IN_JUMP;
@@ -23,20 +19,12 @@ void Movement::BunnyHop()
 
 void Movement::FastCrouch()
 {
-	if (!Config::movement.Enable)
-		return;
-	if (!Config::movement.FastCrouch)
-		return;
 	if (G::Localplayer->GetHealth() > 0)
 		G::cmd->buttons |= IN_BULLRUSH;
 }
 
 void Movement::RageAutoStrafe()
 {
-	if (!Config::movement.Enable)
-		return;
-	if (!Config::movement.RageAutoStrafe)
-		return;
 	static bool flip = false;
 	if (G::pSendPacket && !(*G::pSendPacket) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
 		&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
@@ -103,10 +91,6 @@ void Movement::RageAutoStrafe()
 
 void Movement::LegitAutoStrafe()
 {
-	if (!Config::movement.Enable)
-		return;
-	if (!Config::movement.LegitAutoStrafe)
-		return;
 	bool valid = (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
 	if (!valid)
 		return;
@@ -119,13 +103,6 @@ void Movement::LegitAutoStrafe()
 
 void Movement::SlowWalk(float fraction)
 {
-	if (!Config::movement.Enable)
-		return;
-	if (!Config::movement.SlowWalk)
-		return;
-	if (!GetAsyncKeyState(Config::movement.SlowWalkKey))
-		return;
-
 	bool valid = (G::Localplayer->GetHealth() > 0) && (G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
 	if (!valid)
 		return;
