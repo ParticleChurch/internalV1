@@ -128,7 +128,7 @@ namespace ImGui
 	}
 
 	template <typename T>
-	T clamp(const T& n, const T& lower, const T& upper) {
+	inline T clamp(const T& n, const T& lower, const T& upper) {
 		return max(lower, min(n, upper));
 	}
 
@@ -269,8 +269,8 @@ namespace ImGui
 		/*
 			DRAW
 		*/
-		ImVec4 accentColor = style.Colors[ImGuiCol_Button];
-		ImVec4 baseColor = style.Colors[ImGuiCol_ButtonHovered];
+		ImVec4 accentColor = Config::GetColor("menu-accent-color");
+		ImVec4 baseColor = Config::GetColor("menu-base-color");
 		ImVec4 backgroundColor = lerp(baseColor, accentColor, enabledFactor);
 		//ImVec4 backgroundBorderColor = backgroundColor; backgroundBorderColor.w = 0.2f;
 		ImVec4 grabColor = lerp(accentColor, baseColor, enabledFactor);
@@ -296,11 +296,11 @@ namespace ImGui
 		int LinePosY = GetCursorPosY();
 
 		// line height = 20px, move down to draw text in center
-		int TextOffset = (20 - ImGui::GetFontSize()) / 2;
+		int TextOffset = (20 - GetFontSize()) / 2;
 		SetCursorPosY(LinePosY + TextOffset);
 
 		// draw property name
-		Text(p->VisibleName.c_str()); ImGui::SameLine();
+		Text(p->VisibleName.c_str()); SameLine();
 
 		// move back up to top of line
 		SetCursorPosY(LinePosY);
@@ -311,7 +311,7 @@ namespace ImGui
 		bool IsBindable = p->Keybindability != Config::KeybindOptions::None;
 
 		// move over to second column
-		SetCursorPosX(120);
+		SetCursorPosX(135);
 
 		// universal vars from here on out
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
@@ -320,7 +320,7 @@ namespace ImGui
 		{
 			// draw a frame to hold text
 			std::string Label = "press any key";
-			ImVec2 TextSize = ImGui::CalcTextSize(Label.c_str());
+			ImVec2 TextSize = CalcTextSize(Label.c_str());
 
 			// size = padding + text + padding
 			ImVec2 ChildSize = ImVec2(4 + TextSize.x + 4, 20);
@@ -347,7 +347,7 @@ namespace ImGui
 			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(180, 60, 60, 1.f));
 			PushStyleColor(ImGuiCol_ButtonActive, styleColor(220, 90, 90, 1.f));
 
-			if (ImGui::Button("Clear", ImVec2(40, 20)))
+			if (Button("Clear", ImVec2(40, 20)))
 			{
 				Config::Unbind(p);
 				GUI::CurrentlyChoosingKeybindFor = nullptr;
@@ -360,7 +360,7 @@ namespace ImGui
 		{
 			// get keyname text
 			std::string KeyName = I::inputsystem->VirtualKeyToString(p->KeyBind);
-			ImVec2 KeyTextSize = ImGui::CalcTextSize(KeyName.c_str());
+			ImVec2 KeyTextSize = CalcTextSize(KeyName.c_str());
 
 			// draw switch in a child frame contains: padding + switch + padding + keyname + padding
 			ImVec2 ChildSize = ImVec2(2 + 30 + 4 + KeyTextSize.x + 4, 20);
@@ -413,7 +413,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 				PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
 
-				if (ImGui::Button(("Bind##" + p->Name).c_str(), ImVec2(34, 20)))
+				if (Button(("Bind##" + p->Name).c_str(), ImVec2(34, 20)))
 					GUI::CurrentlyChoosingKeybindFor = p;
 				GUI::IgnoreLButton |= IsItemHovered();
 				
@@ -434,17 +434,17 @@ namespace ImGui
 		int LinePosY = GetCursorPosY();
 
 		// line height = 20px, move down to draw text in center
-		int TextOffset = (20 - ImGui::GetFontSize()) / 2;
+		int TextOffset = (20 - GetFontSize()) / 2;
 		SetCursorPosY(LinePosY + TextOffset);
 
 		// draw property name
-		Text(p->VisibleName.c_str()); ImGui::SameLine();
+		Text(p->VisibleName.c_str()); SameLine();
 
 		// move back up to top of line
 		SetCursorPosY(LinePosY);
 
 		// move over to second column
-		SetCursorPosX(120);
+		SetCursorPosX(135);
 
 		// draw color picker preview button thing
 		Color* c = (Color*)p->Value;
@@ -459,6 +459,112 @@ namespace ImGui
 
 		PopStyleVar(3);
 		PopStyleColor(1);
+	}
+
+	void DrawFloatProperty(Config::Property* p, int GrabClearance = 2)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// draw slider
+		// AbsWidth = 120 (for label) + 2 (padding to line up with switches) + slider + 5 + 100 (label and unit)
+		// solve for slider width: slider = AbsWidth - 120 - 2 - 5 - 100;
+		int AbsWidth = GetContentRegionMaxAbs().x - window->Pos.x;
+		int SliderWidth = AbsWidth - 135 - 2 - 5 - 100;
+		int SliderHeight = 16;
+		ImVec2 SliderCursorPos(135 + 2, (20 - SliderHeight) / 2 + LinePosY);
+		ImVec2 SliderPos = window->Pos - window->Scroll + SliderCursorPos;
+		ImVec2 SliderSize(SliderWidth, SliderHeight);
+		ImRect SliderBB(SliderPos, SliderPos + SliderSize);
+		ImGuiID SliderID = GetID((p->Name + "-slider").c_str());
+
+		// register this as a hoverable item in imgui
+		ItemAdd(SliderBB, SliderID);
+		bool hovered = ItemHoverable(SliderBB, SliderID);
+		bool clicked = (hovered && g.IO.MouseClicked[0]);
+		if (clicked)
+		{
+			SetActiveID(SliderID, window);
+			SetFocusID(SliderID, window);
+			FocusWindow(window);
+		}
+
+		// calculations
+		Config::CFloat* CValue = (Config::CFloat*)p->Value;
+		double Factor = (CValue->get() - CValue->minimum) / (CValue->maximum - CValue->minimum);
+		int SliderLeftCenterX = SliderBB.Min.x + SliderHeight / 2;
+		int SliderRightCenterX = SliderBB.Max.x - SliderHeight / 2;
+		int SliderCenterY = SliderBB.Min.y + SliderHeight / 2;
+		int SliderEndsCenterWidth = SliderRightCenterX - SliderLeftCenterX;
+		int PixelsMoveGrab = round((double)SliderEndsCenterWidth * Factor);
+
+		// draw background
+		ImU32 AccentColor = vec4toU32(Config::GetColor("menu-accent-color"));
+		ImU32 BaseColor = vec4toU32(Config::GetColor("menu-base-color"));
+		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, AccentColor, SliderHeight / 2 + 2);
+		window->DrawList->AddRectFilled(SliderBB.Min + ImVec2(2, 2), SliderBB.Max - ImVec2(2, 2), BaseColor, SliderHeight / 2 + 2);
+
+		// draw bar + grab
+		ImVec2 GrabCenter(SliderLeftCenterX + PixelsMoveGrab, SliderCenterY);
+		window->DrawList->AddRectFilled(SliderBB.Min, ImVec2(GrabCenter.x + SliderHeight / 2, SliderBB.Max.y), AccentColor, SliderHeight / 2 + 2);
+		window->DrawList->AddCircleFilled(GrabCenter, SliderHeight / 2 - GrabClearance, BaseColor);
+
+		// slider behavior
+		if (g.ActiveId == SliderID)
+		{
+			if (g.ActiveIdSource == ImGuiInputSource_Mouse && g.IO.MouseDown[0])
+			{
+				float MousePosX = g.IO.MousePos.x;
+				double MouseClickedFactor = ((double)MousePosX - (double)SliderLeftCenterX) / (double)SliderEndsCenterWidth;
+				MouseClickedFactor = clamp(MouseClickedFactor, 0.0, 1.0);
+				float ClickedValue = MouseClickedFactor * (CValue->maximum - CValue->minimum) + CValue->minimum;
+				CValue->set(ClickedValue);
+			}
+			else
+				ClearActiveID(); // only allow mouse1 activation
+		}
+		// input and unit, unit gets 25px, input gets 65, 10 goes to padding
+		PushFont(Arial14);
+
+		// draw input box
+		SetCursorPosX(AbsWidth - 100);
+		SetCursorPosY(LinePosY);
+		float v = CValue->get();
+		
+		SetNextItemWidth(65);
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((20 - GetFontSize()) / 2, (20 - GetFontSize()) / 2));
+		PushStyleColor(ImGuiCol_Border, styleColor(255, 255, 255, 0.5f));
+		PushStyleColor(ImGuiCol_FrameBg, styleColor(120, 120, 120, 1.f));
+		PushStyleColor(ImGuiCol_FrameBgHovered, styleColor(100, 100, 100, 1.f));
+		PushStyleColor(ImGuiCol_FrameBgActive, styleColor(120, 120, 120, 1.f));
+
+		if (InputFloat(("##" + p->Name + "-input").c_str(), &v, 0.f, 0.f, ("%." + std::to_string(CValue->decimals) + "f").c_str()))
+			CValue->set(v);
+
+		PopStyleColor(4);
+		PopStyleVar(1);
+		SameLine();
+
+		// draw unit
+		SetCursorPosX(AbsWidth - 25 - 6);
+		SetCursorPosY(LinePosY);
+		TextEx(p->UnitLabel.c_str());
+
+		PopFont();
+
+		// put cursor on the next line
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
 	}
 }
 
@@ -1115,7 +1221,7 @@ bool GUI::HackMenu()
 	// Styles
 	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
-	style.WindowMinSize = ImVec2(400, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
+	style.WindowMinSize = ImVec2(420, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
 	style.ChildRounding = 0.f;
 	style.WindowBorderSize = 0.f;
@@ -1217,19 +1323,15 @@ bool GUI::HackMenu()
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
-	ImGui::PushStyleColor(ImGuiCol_Button, Config::GetColor("menu-accent-color"));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(230.f / 255.f, 230.f / 255.f, 230.f / 255.f, 1.f));
 	
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
 		ImGui::SetCursorPos(ImVec2(5, ImGui::GetCursorPosY() + 5));
-
-
 		Config::Widget* Widget = CurrentTab->Widgets.at(i);
 		if (!ImGui::BeginChildFrame(
 			ImGui::GetID(Widget->Name.c_str()),
 			ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height + 6),
-			0 //ImGuiWindowFlags_NoScrollbar
+			ImGuiWindowFlags_NoScrollbar
 		))
 		{
 			ImGui::EndChild();
@@ -1251,6 +1353,7 @@ bool GUI::HackMenu()
 		{
 			Config::Property* Property = Widget->Properties.at(j);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+			ImGui::SetCursorPosX(5);
 
 			switch (Property->Type)
 			{
@@ -1261,21 +1364,7 @@ bool GUI::HackMenu()
 			}
 			case Config::PropertyType::FLOAT:
 			{
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 4);
-				Config::CFloat* f = (Config::CFloat*)Property->Value;
-				float v = f->get();
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
-				ImGui::Text((Property->VisibleName + ": " + f->Stringify()).c_str());
-
-				// Custom slider because imgui slider is hot garbage
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1);
-				ImGui::SliderFloatEx(("###" + Property->Name).c_str(), &v, f->minimum, f->maximum, "", 1.f);
-				GUI::IgnoreLButton |= ImGui::IsItemHovered();
-
-				f->set(v);
-
+				ImGui::DrawFloatProperty(Property);
 				break;
 			}
 			case Config::PropertyType::COLOR:
@@ -1296,7 +1385,7 @@ bool GUI::HackMenu()
 		ImGui::EndChild();
 	}
 	ImGui::PopStyleVar(3);
-	ImGui::PopStyleColor(7);
+	ImGui::PopStyleColor(5);
 	HackMenuPageHasScrollbar = ImGui::GetContentRegionAvail().y < 0; // its gonna be a frame late, rip
 	ImGui::EndChildFrame();
 

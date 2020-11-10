@@ -38,12 +38,12 @@ namespace Config {
 
 				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions::All);
 				w->AddProperty(false, 1, "triggerbot-through-wall", "Through Wall", true, true);
-				w->AddProperty(false, 0, "triggerbot-delay", "Delay (ms)", 0, 1000, 0, 0, 0);
+				w->AddProperty(false, 0, "triggerbot-delay", "Delay", "MS", 0, 1000, 0, 0, 0);
 				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);
 			}
 			{
 				Widget* w = t->AddWidget("Other");
-				w->AddProperty(false, 1, "backtracking-time", "Max Macktracking Time (ms)", 0, 200, 0, 0, 0);
+				w->AddProperty(false, 1, "backtracking-time", "Backtracking Time", "MS", 0, 200, 0, 0, 0);
 			}
 			Tabs.push_back(t);
 		}
@@ -59,7 +59,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Legit");
 
 				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", true, true);
-				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle (%%)", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 1, "antiaim-legit-invert", "Inverter AA", false, false);
 			}
 			{
@@ -71,13 +71,13 @@ namespace Config {
 				//TODO - add dropdown pitch option... (up, down, and trolling (up/down))
 
 				//Yaw - Real
-				w->AddProperty(false, 2, "antiaim-rage-real", "Real Offset", -180, 180, 0, 0, 0);
-				w->AddProperty(false, 2, "antiaim-rage-real-jitter", "Real Jitter Offset (deg)", 0, 180, 0, 0, 0);
+				w->AddProperty(false, 2, "antiaim-rage-real", "Real Offset", "DEG", -180, 180, 0, 0, 0);
+				w->AddProperty(false, 2, "antiaim-rage-real-jitter", "Real Jitter Offset", "DEG", 0, 180, 0, 0, 0);
 				//TODO - add 3 keybinds for manual antiaim (left, right, and back) //we need just keybinds lol
 
 				//Yaw - Fake
-				w->AddProperty(false, 2, "antiaim-rage-fake", "Fake Offset (%%)", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 2, "antiaim-rage-fake-jitter", "Fake Jitter Offset (%%)", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 2, "antiaim-rage-fake", "Fake Offset", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 2, "antiaim-rage-fake-jitter", "Fake Jitter Offset", "%", 0, 100, 1, 100, 100);
 				w->AddProperty(false, 2, "antiaim-rage-fake-invert", "Invert on Hit", false, false);
 			}
 			{
@@ -86,12 +86,12 @@ namespace Config {
 				w->AddProperty(false, 0, "antiaim-visual-fake", "Visualize Fake", false, false);
 				w->AddProperty(false, 2, "antiaim-visual-fake-lag", "Visualize Lag", false, false);
 				w->AddProperty(false, 1, "antiaim-visual-fake-color", "Fake Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-fake-opacity", "Fake Opacity", 0, 1, 3, 1, 1);
+				w->AddProperty(false, 1, "antiaim-visual-fake-opacity", "Fake Opacity", "%", 0, 100, 1, 100, 100);
 
 				//Real
 				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize Real", false, false);
 				w->AddProperty(false, 1, "antiaim-visual-real-color", "Real Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Real Opacity", 0, 1, 3, 1, 1);
+				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Real Opacity", "%", 0, 100, 1, 100, 100);
 			}
 			Tabs.push_back(t);
 		}
@@ -106,7 +106,8 @@ namespace Config {
 				//w->MarkSeperator();
 				
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);
-				w->AddProperty(false, 0, "menu-transparency", "Opacity", 0, 1, 3, 1, 1);
+				w->AddProperty(false, 0, "menu-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->AddProperty(false, 0, "menu-base-color", "Base Color", new Color(230, 230, 230));
 				w->AddProperty(false, 0, "menu-accent-color", "Accent Color", new Color(0, 150, 255));
 				//w->MarkSeperator();
 

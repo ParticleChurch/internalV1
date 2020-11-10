@@ -251,11 +251,11 @@ namespace Config {
 	{
 	private:
 		float value;
-		size_t decimals;
 		float percision;
 
 	public:
 		float minimum, maximum;
+		size_t decimals;
 
 		CFloat(float min, float max, float value, size_t decimals = 2)
 		{
@@ -266,6 +266,11 @@ namespace Config {
 			this->value = value;
 		}
 
+		float get()
+		{
+			return this->value;
+		}
+
 		void set(float v)
 		{
 			v = floorf(v * this->percision + 0.5f) / this->percision;
@@ -273,10 +278,6 @@ namespace Config {
 			this->value = min(max(this->minimum, v), this->maximum);
 		}
 
-		float get()
-		{
-			return this->value;
-		}
 
 		std::string Stringify()
 		{
@@ -342,6 +343,9 @@ namespace Config {
 		int KeyBind = 0;
 		KeybindOptions Keybindability = KeybindOptions::None; // not a word lol
 
+		// only applies to CFloat values
+		std::string UnitLabel = "err";
+
 
 		Property(PropertyType Type, bool IsPremium, int Complexity, std::string Name, std::string VisibleName, void* FreeDefault, void* PremiumDefault)
 		{
@@ -387,9 +391,10 @@ namespace Config {
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, float Min, float Max, int Decimals , float FreeDefault, float PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, std::string Unit, float Min, float Max, int Decimals, float FreeDefault, float PremiumDefault)
 		{
 			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, new CFloat(Min, Max, FreeDefault, Decimals), new CFloat(Min, Max, PremiumDefault, Decimals));
+			p->UnitLabel = Unit;
 			this->Properties.push_back(p);
 			return p;
 		}

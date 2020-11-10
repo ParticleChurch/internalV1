@@ -2722,81 +2722,6 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_dat
     return value_changed;
 }
 
-bool ImGui::SliderScalarEx(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format, float power, int grab_radius, int bar_height)
-{
-    bar_height += bar_height % 2;
-     
-    ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems)
-        return false;
-
-    ImGuiContext& g = *GImGui;
-    const ImGuiStyle& style = g.Style;
-    const ImGuiID id = window->GetID(label);
-    float w = GetContentRegionAvail().x;
-    // GetContentRegionAvail().x; // CalcItemWidth();
-
-    const ImVec2 label_size = ImVec2(0,0);
-    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, bar_height > (grab_radius*2) ? (float)bar_height : (float)grab_radius * 2.f));
-    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
-
-    ItemSize(total_bb, style.FramePadding.y);
-    if (!ItemAdd(total_bb, id, &frame_bb))
-        return false;
-
-    // Default format string when passing NULL
-    if (format == NULL)
-        format = DataTypeGetInfo(data_type)->PrintFmt;
-    else if (data_type == ImGuiDataType_S32 && strcmp(format, "%d") != 0) // (FIXME-LEGACY: Patch old "%.0f" format string to use "%d", read function more details.)
-        format = PatchFormatStringFloatToInt(format);
-
-    // Tabbing or CTRL-clicking on Slider turns it into an input box
-    const bool hovered = ItemHoverable(frame_bb, id);
-    const bool clicked = (hovered && g.IO.MouseClicked[0]);
-    if (clicked || g.NavActivateId == id || g.NavInputId == id)
-    {
-        SetActiveID(id, window);
-        SetFocusID(id, window);
-        FocusWindow(window);
-    }
-
-    // nav highlight
-    RenderNavHighlight(frame_bb, id);
-
-    // Slider behavior
-    ImRect grab_bb;
-    const bool value_changed = SliderBehavior(frame_bb, id, data_type, p_data, p_min, p_max, format, power, ImGuiSliderFlags_None, &grab_bb);
-    if (value_changed)
-        MarkItemEdited(id);
-
-    // draw frame
-    ImVec2 grab_center = grab_bb.GetCenter();
-    PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-    PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.f, 0.f, 0.f, 0.f));
-    // filled
-    PushStyleColor(ImGuiCol_Border, GetColorU32(ImGuiCol_Button, 0.6166667f));
-    RenderFrame(
-        ImVec2(frame_bb.Min.x + 2, grab_center.y - bar_height / 2),
-        ImVec2(grab_center.x, grab_center.y + bar_height / 2),
-        GetColorU32(ImGuiCol_Button), true, (float)bar_height
-    );
-    // empty
-    PushStyleColor(ImGuiCol_Border, GetColorU32(ImGuiCol_ButtonHovered, 0.6166667f));
-    RenderFrame(
-        ImVec2(grab_center.x, grab_center.y - bar_height / 2),
-        ImVec2(frame_bb.Max.x - 2, grab_center.y + bar_height / 2),
-        GetColorU32(ImGuiCol_ButtonHovered), true, (float)bar_height
-    );
-    PopStyleColor(3);
-    PopStyleVar();
-
-    // Render grab
-    if (grab_bb.Max.x > grab_bb.Min.x)
-        window->DrawList->AddCircleFilled(grab_center, (float)grab_radius, GetColorU32(ImGuiCol_Button));
-    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
-    return value_changed;
-}
-
 // Add multiple sliders on 1 line for compact edition of multiple components
 bool ImGui::SliderScalarN(const char* label, ImGuiDataType data_type, void* v, int components, const void* v_min, const void* v_max, const char* format, float power)
 {
@@ -2836,11 +2761,6 @@ bool ImGui::SliderScalarN(const char* label, ImGuiDataType data_type, void* v, i
 bool ImGui::SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format, float power)
 {
     return SliderScalar(label, ImGuiDataType_Float, v, &v_min, &v_max, format, power);
-}
-
-bool ImGui::SliderFloatEx(const char* label, float* v, float v_min, float v_max, const char* format, float power)
-{
-    return SliderScalarEx(label, ImGuiDataType_Float, v, &v_min, &v_max, format, power, 8, 8);
 }
 
 bool ImGui::SliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* format, float power)
