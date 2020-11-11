@@ -81,12 +81,6 @@ ImFont* Arial16Italics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
-
-	int out = 0;
-	std::string url = "https://www.a4g4.com/API/dll.php";
-	bool succ = HTTP::Post<int, int>(url, 419, &out);
-	std::cout << "HTTP::POST CALL: " << succ << ", " << out << std::endl;
-
 	FontDefault = io.Fonts->AddFontDefault();
 	AYO_LOAD_FONT_BRUH(Arial8, "C:\\Windows\\Fonts\\arial.ttf", 8.f);
 	AYO_LOAD_FONT_BRUH(Arial12, "C:\\Windows\\Fonts\\arial.ttf", 12.f);
@@ -276,8 +270,9 @@ namespace ImGui
 		/*
 			DRAW
 		*/
-		ImVec4 accentColor = Config::GetColor("menu-accent-color");
-		ImVec4 baseColor = Config::GetColor("menu-base-color");
+		ImVec4 accentColor = Config::GetColor("menu-property-accent-color");
+		ImVec4 baseColor = Config::GetColor("menu-property-base-color");
+		baseColor.w = accentColor.w = style.Alpha;
 		ImVec4 backgroundColor = lerp(baseColor, accentColor, enabledFactor);
 		//ImVec4 backgroundBorderColor = backgroundColor; backgroundBorderColor.w = 0.2f;
 		ImVec4 grabColor = lerp(accentColor, baseColor, enabledFactor);
@@ -315,10 +310,10 @@ namespace ImGui
 		// 3 cases, in order of importance
 		bool IsMidBind = GUI::CurrentlyChoosingKeybindFor == p;
 		bool IsBound = p->KeyBind != 0;
-		bool IsBindable = p->Keybindability != Config::KeybindOptions::None;
+		bool IsBindable = p->Keybindability.Count() > 0;
 
 		// move over to second column
-		SetCursorPosX(135);
+		SetCursorPosX(GUI::PropertyLabelsWidth);
 
 		// universal vars from here on out
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
@@ -342,7 +337,32 @@ namespace ImGui
 			EndChild(); SameLine();
 			PopStyleColor(1);
 
-			// TODO: draw p->Keybindability dropdown
+			// Dropdown for Keybindability
+			SetCursorPosX(GetCursorPosX() + 5);
+			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5., (20 - GetFontSize()) / 2));
+			SetNextItemWidth(115);
+			if (ImGui::BeginCombo(("##" + p->Name + "-keybind-mode-dropdown").c_str(), Config::StringifyKeybindType(p->BindType).c_str(), 0))
+			{
+				GUI::IgnoreLButton = true;
+				for (int i = 0; i < 3; i++)
+				{
+					Config::KeybindType bt = (Config::KeybindType)i;
+					if (p->Keybindability.IsEnabled(bt))
+					{
+						std::string txt = Config::StringifyKeybindType(bt).c_str();
+						const bool is_selected = bt == p->BindType;
+						if (Selectable(txt.c_str(), is_selected))
+							p->BindType = bt;
+						if (is_selected)
+							SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			GUI::IgnoreLButton |= IsItemHovered();
+			PopStyleVar();
+			SameLine();
+
 
 			// go back to top of line
 			SetCursorPosY(LinePosY);
@@ -437,6 +457,9 @@ namespace ImGui
 
 	void DrawColorProperty(Config::Property* p)
 	{
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+
 		// draw this property at the current height
 		int LinePosY = GetCursorPosY();
 
@@ -451,7 +474,7 @@ namespace ImGui
 		SetCursorPosY(LinePosY);
 
 		// move over to second column
-		SetCursorPosX(135);
+		SetCursorPosX(GUI::PropertyLabelsWidth);
 
 		// draw color picker preview button thing
 		Color* c = (Color*)p->Value;
@@ -472,6 +495,7 @@ namespace ImGui
 	{
 		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
 
 		// draw this property at the current height
 		int LinePosY = GetCursorPosY();
@@ -487,9 +511,9 @@ namespace ImGui
 		// AbsWidth = 120 (for label) + 2 (padding to line up with switches) + slider + 5 + 100 (label and unit)
 		// solve for slider width: slider = AbsWidth - 120 - 2 - 5 - 100;
 		int AbsWidth = GetContentRegionMaxAbs().x - window->Pos.x;
-		int SliderWidth = AbsWidth - 135 - 2 - 5 - 100;
+		int SliderWidth = AbsWidth - GUI::PropertyLabelsWidth - 2 - 5 - 100;
 		int SliderHeight = 16;
-		ImVec2 SliderCursorPos(135 + 2, (20 - SliderHeight) / 2 + LinePosY);
+		ImVec2 SliderCursorPos(GUI::PropertyLabelsWidth + 2, (20 - SliderHeight) / 2 + LinePosY);
 		ImVec2 SliderPos = window->Pos - window->Scroll + SliderCursorPos;
 		ImVec2 SliderSize(SliderWidth, SliderHeight);
 		ImRect SliderBB(SliderPos, SliderPos + SliderSize);
@@ -516,8 +540,12 @@ namespace ImGui
 		int PixelsMoveGrab = round((double)SliderEndsCenterWidth * Factor);
 
 		// draw background
-		ImU32 AccentColor = vec4toU32(Config::GetColor("menu-accent-color"));
-		ImU32 BaseColor = vec4toU32(Config::GetColor("menu-base-color"));
+		ImVec4 v4AccentColor = Config::GetColor("menu-property-accent-color");
+		ImVec4 v4BaseColor = Config::GetColor("menu-property-base-color");
+		v4BaseColor.w = v4AccentColor.w = style.Alpha;
+		ImU32 AccentColor = vec4toU32(v4AccentColor);
+		ImU32 BaseColor = vec4toU32(v4BaseColor);
+
 		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, AccentColor, SliderHeight / 2 + 2);
 		window->DrawList->AddRectFilled(SliderBB.Min + ImVec2(2, 2), SliderBB.Max - ImVec2(2, 2), BaseColor, SliderHeight / 2 + 2);
 
@@ -746,12 +774,14 @@ bool GUI::HackMenu()
 	style.ChildRounding = 0.f;
 	style.WindowBorderSize = 0.f;
 	style.WindowRounding = 5;
+	style.Alpha = Config::GetFloat("menu-opacity") / 100.f;
+	style.Colors[ImGuiCol_Text] = Config::GetColor("menu-text-color");
 	style.Colors[ImGuiCol_Button] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ChildBg] = ImVec4(50.f, 50.f, 50.f, 1.f);
-	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = ImVec4(20.f / 255.f, 20.f / 255.f, 20.f / 255.f, 1.f);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 0.5f);
+	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = Config::GetColor("menu-background-color2");
+	style.Colors[ImGuiCol_WindowBg] = Config::GetColor("menu-background-color1");
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(1.f, 1.f, 1.f, 1.f);
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -768,8 +798,10 @@ bool GUI::HackMenu()
 
 	// draw tab handles
 	ImDrawList* DrawList = ImGui::GetWindowDrawList();
-	ImU32 UnselectedTabHandleColor = vec4toU32(ImVec4(15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f));
-	ImU32 SelectedTabHandleColor = vec4toU32(ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
+	Color UnselectedColor = Config::GetColor("menu-background-color2");
+	Color SelectedColor = Config::GetColor("menu-background-color3");
+	ImU32 UnselectedTabHandleColor = IM_COL32(UnselectedColor.r(), UnselectedColor.g(), UnselectedColor.b(), style.Alpha * 255.f);
+	ImU32 SelectedTabHandleColor = IM_COL32(SelectedColor.r(), SelectedColor.g(), SelectedColor.b(), style.Alpha * 255.f);
 	ImGui::PushFont(Arial16);
 	for (size_t i = 0; i < Config::Tabs.size(); i++)
 	{
@@ -805,11 +837,11 @@ bool GUI::HackMenu()
 		if (!hovering) TabHandlePos.x += 5;
 		ImVec2 TabHandleSize = hovering ? ImVec2(85, 30) : ImVec2(80, 30);
 		GUI::IgnoreLButton |= hovering; // i mean... if you're clicking eject, does it really matter?
-
+		Color col = Config::GetColor("menu-eject-color");
 		DrawList->AddRectFilled(
 			TabHandlePos,
 			TabHandlePos + TabHandleSize,
-			vec4toU32(ImVec4(200.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f)),
+			IM_COL32(col.r(), col.g(), col.b(), style.Alpha * 255.f),
 			6.f, ImDrawCornerFlags_Left
 		);
 		ImGui::SetCursorPos(TabHandlePos - WindowPos);
@@ -831,8 +863,12 @@ bool GUI::HackMenu()
 	// draw selected tab
 	ImGui::SetCursorPos(ImVec2(90, TitleBarHeight));
 
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(50.f / 255.f, 50.f / 255.f, 50.f / 255.f, 1.f));
-	ImGui::BeginChildFrame(ImGui::GetID("###page"), ImVec2(0, 0), 0);
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, Config::GetColor("menu-background-color3"));
+	DrawList->AddRectFilled(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize(), vec4toU32(style.Colors[ImGuiCol_FrameBg]), style.FrameRounding, ImDrawCornerFlags_Bot);
+	//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 5.f));
+	ImGui::BeginChildFrame(ImGui::GetID(("##page-" + CurrentTab->Name).c_str()), ImVec2(0, 0), 0);
+	//ImGui::PopStyleVar();
 	ImGui::PopStyleColor();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
@@ -842,12 +878,12 @@ bool GUI::HackMenu()
 	ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(1.f, 1.f, 1.f, 0.5f));
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(75.f / 255.f, 75.f / 255.f, 75.f / 255.f, 1.f));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, Config::GetColor("menu-background-color4"));
 	
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
-		ImGui::SetCursorPos(ImVec2(5, ImGui::GetCursorPosY() + 5));
 		Config::Widget* Widget = CurrentTab->Widgets.at(i);
+		ImGui::SetCursorPos(ImVec2(5, ImGui::GetCursorPosY() + 5));
 		if (!ImGui::BeginChildFrame(
 			ImGui::GetID(Widget->Name.c_str()),
 			ImVec2(ImGui::GetWindowWidth() - (HackMenuPageHasScrollbar ? 24 : 10), Widget->Height + 6),
@@ -873,37 +909,50 @@ bool GUI::HackMenu()
 		{
 			Config::Property* Property = Widget->Properties.at(j);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
-			ImGui::SetCursorPosX(5);
+			ImGui::SetCursorPosX(5 + Property->Indentation);
 
 			switch (Property->Type)
 			{
-			case Config::PropertyType::BOOLEAN:
-			{
-				ImGui::DrawBooleanProperty(Property);
-				break;
+				case Config::PropertyType::BOOLEAN:
+				{
+					ImGui::DrawBooleanProperty(Property);
+					break;
+				}
+				case Config::PropertyType::FLOAT:
+				{
+					ImGui::DrawFloatProperty(Property);
+					break;
+				}
+				case Config::PropertyType::COLOR:
+				{
+					ImGui::DrawColorProperty(Property);
+					break;
+				}
+				case Config::PropertyType::TEXT:
+				{
+					ImGui::Text(Property->VisibleName.c_str());
+					break;
+				}
+				default:
+				{
+					ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
+					break;
+				}
 			}
-			case Config::PropertyType::FLOAT:
+
+			// check separator
+			if (Property->HasSeparatorAfter)
 			{
-				ImGui::DrawFloatProperty(Property);
-				break;
-			}
-			case Config::PropertyType::COLOR:
-			{
-				ImGui::DrawColorProperty(Property);
-				break;
-			}
-			default:
-			{
-				// TODO:
-				ImGui::Text((Property->VisibleName + ": " + Property->Stringify()).c_str());
-				break;
-			}
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+				ImGui::Separator();
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1);
 			}
 		}
 		ImGui::PopFont();
 		Widget->Height = ImGui::GetCurrentWindow()->ContentSize.y;
 		ImGui::EndChild();
 	}
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // add some padding to the bottom
 	ImGui::PopStyleVar(3);
 	ImGui::PopStyleColor(5);
 	HackMenuPageHasScrollbar = ImGui::GetContentRegionAvail().y < 0; // its gonna be a frame late, rip

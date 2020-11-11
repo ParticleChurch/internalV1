@@ -1,6 +1,14 @@
 #include "../Include.hpp"
 
 namespace Config {
+	std::string StringifyKeybindType(KeybindType type)
+	{
+		return
+			type == KeybindType::Toggle ? "Toggle" :
+			type == KeybindType::HoldToEnable ? "Hold To Enable" :
+			"Hold To Disable";
+	}
+
 	UserInfoT UserInfo = UserInfoT{};
 	std::vector<Tab*> Tabs = {};
 	std::map<std::string, Property*> PropertyLookup;
@@ -13,7 +21,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
-				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions::All);
+				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
 				//w->MarkSeperator();
@@ -23,7 +31,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Triggerbot");
 
-				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions::All);
+				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 1, "triggerbot-through-wall", "Through Wall", true, true);
 				w->AddProperty(false, 0, "triggerbot-delay", "Delay", "MS", 0, 1000, 0, 0, 0);
 				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);
@@ -72,16 +80,19 @@ namespace Config {
 			}
 			{
 				Widget* w = t->AddWidget("Visuals");
-				//Fake
-				w->AddProperty(false, 0, "antiaim-visual-fake", "Visualize Fake", false, false);
-				w->AddProperty(false, 2, "antiaim-visual-fake-lag", "Visualize Lag", false, false);
-				w->AddProperty(false, 1, "antiaim-visual-fake-color", "Fake Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-fake-opacity", "Fake Opacity", "%", 0, 100, 1, 100, 100);
 
-				//Real
-				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize Real", false, false);
-				w->AddProperty(false, 1, "antiaim-visual-real-color", "Real Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Real Opacity", "%", 0, 100, 1, 100, 100);
+				w->AddText("Fake"); w->BeginIndent();
+				w->AddProperty(false, 0, "antiaim-visual-fake", "Visualize", false, false);
+				w->AddProperty(false, 2, "antiaim-visual-fake-lag", "Visualize Lag", false, false);
+				w->AddProperty(false, 1, "antiaim-visual-fake-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 1, "antiaim-visual-fake-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->EndIndent(); w->AddSeparator();
+
+				w->AddText("Real"); w->BeginIndent();
+				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize", false, false);
+				w->AddProperty(false, 1, "antiaim-visual-real-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->EndIndent();
 			}
 			Tabs.push_back(t);
 		}
@@ -156,7 +167,7 @@ namespace Config {
 			}
 			{
 				Widget* w = t->AddWidget("Misc");
-				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions::All);
+				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
 				w->AddProperty(false, 1, "visuals-misc-spec-list", "Spectator List", false, false);
 				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);
@@ -169,11 +180,11 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Movement");
 				w->AddProperty(false, 0, "misc-movement-bhop", "Bunnyhop", false, false);
-				w->AddProperty(false, 1, "misc-movement-slowwalk", "Slow Walk", false, false, KeybindOptions::All);
+				w->AddProperty(false, 1, "misc-movement-slowwalk", "Slow Walk", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 2, "misc-movement-slowwalk-speed", "Slow-Walk Speed", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 2, "misc-movement-airstuck", "Airstuck", false, false, KeybindOptions::All);
+				w->AddProperty(false, 2, "misc-movement-airstuck", "Airstuck", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
-				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions::All);
+				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add autostrafe dropdown (with option for none to be on, with one on at max) (or just add a bool idk yet lol)
 			}
 			{
@@ -196,21 +207,25 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Menu");
 
-				//w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", 0, 0, new CDropdown{ "beginner", "intermediate", "pro" });
+				w->AddProperty(false, 0, "config-show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
 				w->AddProperty(false, 0, "show-help-link", "Show Help Link", true, true);
-				//w->MarkSeperator();
-				
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);
-				w->AddProperty(false, 0, "menu-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
-				w->AddProperty(false, 0, "menu-base-color", "Base Color", new Color(230, 230, 230));
-				w->AddProperty(false, 0, "menu-accent-color", "Accent Color", new Color(0, 150, 255));
-				//w->MarkSeperator();
+				w->AddSeparator();
 
-				w->AddProperty(false, 0, "config-show-menu", "Show Menu", true, true, KeybindOptions::Toggle);
+				w->AddProperty(false, 0, "menu-opacity", "Opacity", "%", 15, 100, 1, 100, 100);
+				w->AddProperty(false, 0, "menu-property-base-color", "Option Color 1", new Color(230, 230, 230));
+				w->AddProperty(false, 0, "menu-property-accent-color", "Option Color 2", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "menu-background-color1", "Background Color 1", new Color(30, 30, 30));
+				w->AddProperty(false, 0, "menu-background-color2", "Background Color 2", new Color(20, 20, 20));
+				w->AddProperty(false, 0, "menu-background-color3", "Background Color 3", new Color(50, 50, 50));
+				w->AddProperty(false, 0, "menu-background-color4", "Background Color 4", new Color(75, 75, 75));
+				w->AddProperty(false, 0, "menu-text-color", "Text Color", new Color(255, 255, 255));
+				w->AddProperty(false, 0, "menu-eject-color", "Eject Color", new Color(200,75,75));
 			}
 			{
 				Widget* w = t->AddWidget("Config");
 
+				w->AddText("[insert config options here]");
 			}
 			Tabs.push_back(t);
 		}

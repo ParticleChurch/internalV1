@@ -1,12 +1,13 @@
 #pragma once
 
 namespace GUI {
-	extern bool Main();
-	extern void ProcessingLoginMenu();
-	extern bool LoginMenu();
-
+	constexpr int PropertyLabelsWidth = 150;
+	extern bool IgnoreLButton; // ignore mouse1 click (don't toggle switches bound to mouse1)
 	extern Config::Property* CurrentlyChoosingKeybindFor;
-	extern bool IgnoreLButton;
-	extern bool HackMenu();
+
 	extern void LoadFonts(ImGuiIO& io);
+	extern bool Main();
+	extern bool HackMenu();
+	extern bool LoginMenu();
+	extern void ProcessingLoginMenu();
 }

@@ -37,6 +37,7 @@ namespace Config {
 		COLOR = 0,
 		FLOAT,
 		BOOLEAN,
+		TEXT,
 		_count
 	};
 	enum class PropertyComplexity {
@@ -50,13 +51,31 @@ namespace Config {
 		HoldToEnable,
 		HoldToDisable,
 	};
-	enum class KeybindOptions {
-		None = 0,
-		Toggle = 1 << 0,
-		HoldToEnable = 1 << 1,
-		HoldToDisable = 1 << 2,
-		Hold = HoldToEnable | HoldToDisable,
-		All = Hold | Toggle,
+	extern std::string StringifyKeybindType(KeybindType type);
+	struct KeybindOptions
+	{
+	private:
+		bool Toggle = false;
+		bool HoldToEnable = false;
+		bool HoldToDisable = false;
+	public:
+		KeybindOptions(bool Toggle = false, bool HoldToEnable = false, bool HoldToDisable = false)
+		{
+			this->Toggle = Toggle;
+			this->HoldToEnable = HoldToEnable;
+			this->HoldToDisable = HoldToDisable;
+		}
+		int Count()
+		{
+			return (int)Toggle + (int)HoldToEnable + (int)HoldToDisable;
+		}
+		bool IsEnabled(KeybindType type)
+		{
+			return
+				type == KeybindType::Toggle ? this->Toggle :
+				type == KeybindType::HoldToEnable ? this->HoldToEnable :
+				this->HoldToDisable;
+		}
 	};
 
 	struct CFloat
@@ -150,10 +169,13 @@ namespace Config {
 		bool IsPremium;
 		int Complexity;
 
+		int Indentation = 0;
+		bool HasSeparatorAfter = false;
+
 		// only applies to boolean values
 		KeybindType BindType = KeybindType::Toggle;
 		int KeyBind = 0;
-		KeybindOptions Keybindability = KeybindOptions::None; // not a word lol
+		KeybindOptions Keybindability{}; // not a word lol
 
 		// only applies to CFloat values
 		std::string UnitLabel = "err";
@@ -180,6 +202,8 @@ namespace Config {
 				return (*(CFloat*)this->Value).Stringify();
 			case PropertyType::BOOLEAN:
 				return *(bool*)this->Value ? "true" : "false";
+			case Config::PropertyType::TEXT:
+				return this->VisibleName;
 			default:
 				return "[error]";
 			}
@@ -187,7 +211,8 @@ namespace Config {
 	};
 
 	struct Widget {
-		int Height = 20;
+		int Height = 20; // default, will be changed on first frame rendered
+		unsigned int Indentation = 0; // pixels 
 		std::string Name;
 		std::vector<Property*> Properties;
 
@@ -196,26 +221,64 @@ namespace Config {
 			this->Name = Name;
 		}
 
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions::None)
+		void SetIndent(unsigned int Pixels)
+		{
+			this->Indentation = Pixels;
+		}
+
+		void BeginIndent()
+		{
+			this->SetIndent(20);
+		}
+
+		void EndIndent()
+		{
+			this->SetIndent(0);
+		}
+		
+		void AddSeparator()
+		{
+			assert(this->Properties.size() > 0);
+			this->Properties.at(this->Properties.size() - 1)->HasSeparatorAfter = true;
+		}
+
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions())
 		{
 			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, new bool(FreeDefault), new bool(PremiumDefault));
+			
 			p->Keybindability = KeybindTypes;
+			p->Indentation = this->Indentation;
+
 			this->Properties.push_back(p);
 			return p;
 		}
 		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, std::string Unit, float Min, float Max, int Decimals, float FreeDefault, float PremiumDefault)
 		{
 			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, new CFloat(Min, Max, FreeDefault, Decimals), new CFloat(Min, Max, PremiumDefault, Decimals));
+
 			p->UnitLabel = Unit;
+			p->Indentation = this->Indentation;
+			
 			this->Properties.push_back(p);
 			return p;
 		}
 		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault = nullptr)
 		{
-			if (!PremiumDefault)
-				PremiumDefault = new Color(*FreeDefault);
+			if (!PremiumDefault) PremiumDefault = new Color(*FreeDefault);
 
 			Property* p = new Property(PropertyType::COLOR, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
+
+			p->Indentation = this->Indentation;
+			
+			this->Properties.push_back(p);
+			return p;
+		}
+		Property* AddText(const char* Text)
+		{
+			Property* p = new Property(PropertyType::TEXT, false, 0, "__text-label-YOU-ARENT-SUPPOSED-TO-SEE-THIS-EVER-LOL-SORRY__", Text, (void*)Text, (void*)Text);
+
+			p->Indentation = this->Indentation;
+
 			this->Properties.push_back(p);
 			return p;
 		}
