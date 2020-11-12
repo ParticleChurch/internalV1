@@ -38,6 +38,8 @@ namespace Config {
 		FLOAT,
 		BOOLEAN,
 		TEXT,
+		DROPDOWN,
+		INVERTER,
 		_count
 	};
 	enum class PropertyComplexity {
@@ -127,35 +129,63 @@ namespace Config {
 		}
 	};
 
+	struct CInverter
+	{
+		bool State = false;
+		std::string State0 = "";
+		std::string State1 = "";
+		CInverter(std::string State0 = "", std::string State1 = "")
+		{
+			this->State0 = State0;
+			this->State1 = State1;
+		}
+		std::string Stringify()
+		{
+			return State ? State1 : State0;
+		}
+	};
+
 
 	struct CDropdown
 	{
 	private:
-		size_t selected = 0;
+		size_t SelectedIndex = 0;
 	public:
-		std::vector<std::string> options;
+		std::vector<std::string> Options;
+		bool IsBindable = false;
 
-
-		CDropdown(std::initializer_list<const char*> options)
+		CDropdown(std::initializer_list<const char*> Options)
 		{
-			for (const char* opt : options) this->options.push_back(opt);
+			for (const char* opt : Options) this->Options.push_back(opt);
 		}
 
-		void select(size_t i)
+		CDropdown(const CDropdown& Other)
 		{
-			if (i >= this->options.size()) return;
-			this->selected = i;
+			// copy options
+			for (std::string opt: Other.Options) this->Options.push_back(opt);
+
+			// copy selections
+			this->Select(Other.SelectedIndex);
+
+			// copy bindability
+			this->IsBindable = Other.IsBindable;
 		}
 
-		size_t get()
+		void Select(size_t Index)
 		{
-			return this->selected;
+			if (Index >= this->Options.size()) return;
+			this->SelectedIndex = Index;
 		}
 
-		std::string Stringify()
+		size_t GetSelection()
 		{
-			if (this->options.empty()) return "[null]";
-			return this->options.at(selected);
+			return this->SelectedIndex;
+		}
+
+		std::string Stringify(size_t Index)
+		{
+			if (Index >= this->Options.size()) return "[null]";
+			return this->Options.at(Index);
 		}
 	};
 
@@ -204,6 +234,11 @@ namespace Config {
 				return *(bool*)this->Value ? "true" : "false";
 			case Config::PropertyType::TEXT:
 				return this->VisibleName;
+			case Config::PropertyType::DROPDOWN:
+			{
+				CDropdown* v = (CDropdown*)this->Value;
+				return v->Stringify(v->GetSelection());
+			}
 			default:
 				return "[error]";
 			}
@@ -242,6 +277,7 @@ namespace Config {
 			this->Properties.at(this->Properties.size() - 1)->HasSeparatorAfter = true;
 		}
 
+		// boolean switches
 		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions())
 		{
 			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, new bool(FreeDefault), new bool(PremiumDefault));
@@ -252,6 +288,8 @@ namespace Config {
 			this->Properties.push_back(p);
 			return p;
 		}
+
+		// float values (use decimals = 0 for ints)
 		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, std::string Unit, float Min, float Max, int Decimals, float FreeDefault, float PremiumDefault)
 		{
 			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, new CFloat(Min, Max, FreeDefault, Decimals), new CFloat(Min, Max, PremiumDefault, Decimals));
@@ -262,6 +300,8 @@ namespace Config {
 			this->Properties.push_back(p);
 			return p;
 		}
+
+		// color values
 		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault = nullptr)
 		{
 			if (!PremiumDefault) PremiumDefault = new Color(*FreeDefault);
@@ -269,7 +309,38 @@ namespace Config {
 			Property* p = new Property(PropertyType::COLOR, IsPremium, Complexity, Name, VisibleName, FreeDefault, PremiumDefault);
 
 			p->Indentation = this->Indentation;
+
+			this->Properties.push_back(p);
+			return p;
+		}
+
+		// inverter values
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CInverter* Inverter = nullptr)
+		{
+			if (!Inverter) Inverter = new CInverter();
+
+			Property* p = new Property(PropertyType::INVERTER, IsPremium, Complexity, Name, VisibleName, Inverter, Inverter);
+
+			p->Indentation = this->Indentation;
+
+			this->Properties.push_back(p);
+			return p;
+		}
+
+		// dropdown list values
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CDropdown List, bool IsBindable = false, size_t FreeDefault = 0, size_t PremiumDefault = 0)
+		{
+			List.IsBindable = IsBindable;
+
+			CDropdown* Free = new CDropdown(List);
+			CDropdown* Premium = new CDropdown(List);
+			Free->Select(FreeDefault);
+			Premium->Select(PremiumDefault);
 			
+			Property* p = new Property(PropertyType::DROPDOWN, IsPremium, Complexity, Name, VisibleName, Free, Premium);
+
+			p->Indentation = this->Indentation;
+
 			this->Properties.push_back(p);
 			return p;
 		}

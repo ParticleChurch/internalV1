@@ -601,6 +601,51 @@ namespace ImGui
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
+
+	void DrawDropdownProperty(Config::Property* p)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// move over to second column
+		SetCursorPosX(GUI::PropertyLabelsWidth);
+
+		// draw the dropdown
+		Config::CDropdown* DD = (Config::CDropdown*)p->Value;
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
+		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 5);
+		if (ImGui::BeginCombo(("##" + p->Name).c_str(), DD->Stringify(DD->GetSelection()).c_str(), 0))
+		{
+			GUI::IgnoreLButton = true;
+			size_t CurrentSelection = DD->GetSelection();
+			for (size_t i = 0; i < DD->Options.size(); i++)
+			{
+				const bool IsSelection = i == CurrentSelection;
+				std::string txt = DD->Stringify(i);
+				if (Selectable(txt.c_str(), IsSelection))
+					DD->Select(i);
+				if (IsSelection)
+					SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		GUI::IgnoreLButton |= IsItemHovered();
+		PopStyleVar();
+	}
 }
 
 bool GUI::LoginMenu()
@@ -736,12 +781,12 @@ bool GUI::Main()
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
 	{
-		Config::SetBool("config-show-menu", true);
+		Config::SetBool("show-menu", true);
 		ProcessingLoginMenu();
 	}
 	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
 	{
-		Config::SetBool("config-show-menu", true);
+		Config::SetBool("show-menu", true);
 		isEjecting = LoginMenu();
 	}
 
@@ -752,7 +797,7 @@ Config::Tab* CurrentTab = 0;
 bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
-	if (!Config::GetBool("config-show-menu"))
+	if (!Config::GetBool("show-menu"))
 		return false;
 
 	bool eject = false;
@@ -865,10 +910,11 @@ bool GUI::HackMenu()
 
 
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, Config::GetColor("menu-background-color3"));
-	DrawList->AddRectFilled(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize(), vec4toU32(style.Colors[ImGuiCol_FrameBg]), style.FrameRounding, ImDrawCornerFlags_Bot);
-	//ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 5.f));
+	{
+		ImVec4 _framebgcol = style.Colors[ImGuiCol_FrameBg];
+		DrawList->AddRectFilled(ImGui::GetWindowPos() + ImGui::GetCursorPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize(), IM_COL32(_framebgcol.x, _framebgcol.y, _framebgcol.z, style.Alpha), style.FrameRounding, ImDrawCornerFlags_Bot);
+	}
 	ImGui::BeginChildFrame(ImGui::GetID(("##page-" + CurrentTab->Name).c_str()), ImVec2(0, 0), 0);
-	//ImGui::PopStyleVar();
 	ImGui::PopStyleColor();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
@@ -931,6 +977,11 @@ bool GUI::HackMenu()
 				case Config::PropertyType::TEXT:
 				{
 					ImGui::Text(Property->VisibleName.c_str());
+					break;
+				}
+				case Config::PropertyType::DROPDOWN:
+				{
+					ImGui::DrawDropdownProperty(Property);
 					break;
 				}
 				default:

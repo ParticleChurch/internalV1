@@ -305,11 +305,11 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		Config::KeyReleased(KeyUp);
 
 	// give imgui input
-	if (D3dInit && Config::GetBool("config-show-menu") && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+	if (D3dInit && Config::GetBool("show-menu") && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
 		return true;
 	}
 
-	I::inputsystem->EnableInput(IsKeyboardInput || !Config::GetBool("config-show-menu"));
+	I::inputsystem->EnableInput(IsKeyboardInput || !Config::GetBool("show-menu"));
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
@@ -323,7 +323,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
-		if (Config::GetBool("config-show-menu")) {
+		if (Config::GetBool("show-menu")) {
 			cmd->buttons = 0;
 			cmd->upmove = 0;
 			cmd->weaponselect = 0;
@@ -489,7 +489,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 void __stdcall H::LockCursorHook()
 {
-	if (Config::GetBool("config-show-menu")) {
+	if (Config::GetBool("show-menu")) {
 		return I::surface->UnlockCursor();
 	}
 	return oLockCursor(I::surface);

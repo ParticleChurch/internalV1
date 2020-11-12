@@ -207,7 +207,8 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Menu");
 
-				w->AddProperty(false, 0, "config-show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
+				w->AddProperty(false, 0, "show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
+				w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", CDropdown{"Beginner", "Intermediate", "Professional"});
 				w->AddProperty(false, 0, "show-help-link", "Show Help Link", true, true);
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);
 				w->AddSeparator();
@@ -246,8 +247,8 @@ namespace Config {
 		}
 
 		// default keybinds
-		Bind(PropertyLookup.at("config-show-menu"), VK_INSERT);
-		PropertyLookup.at("config-show-menu")->BindType = KeybindType::Toggle;
+		Bind(PropertyLookup.at("show-menu"), VK_INSERT);
+		PropertyLookup.at("show-menu")->BindType = KeybindType::Toggle;
 
 		// assume all keys are not pressed
 		for (int i = 0; i < 256; i++)
@@ -271,8 +272,22 @@ namespace Config {
 	Color GetColor(std::string Name)
 	{
 		Property* prop = PropertyLookup.at(Name);
-		if (!prop) return Color(0,0,0);
+		if (!prop) return Color(0, 0, 0);
 		return *(Color*)prop->Value;
+	}
+	size_t GetState(std::string Name)
+	{
+		Property* prop = PropertyLookup.at(Name);
+		if (!prop) return 0;
+		if (prop->Type == PropertyType::DROPDOWN)
+		{
+			return ((CDropdown*)prop->Value)->GetSelection();
+		}
+		else if (prop->Type == PropertyType::INVERTER)
+		{
+			return (size_t)(*(bool*)prop->Value);
+		}
+		return 0;
 	}
 
 	void SetBool(std::string Name, bool Value)
@@ -314,13 +329,14 @@ namespace Config {
 	void Unbind(Property* Prop, bool __FORCE /* SEE DECLARATION B4 SETTING TRUE */)
 	{
 		assert(Prop->Type == PropertyType::BOOLEAN);
-		if (Prop->KeyBind == 0) return; // already unbound
 		
 		auto KeyIterator = KeybindMap.find(Prop->KeyBind);
 		if (KeyIterator == KeybindMap.end())
 		{
 			// this property isn't actually bound
 			Prop->KeyBind = 0;
+			if (!__FORCE && Prop->Name == "show-menu")
+				return Bind(Prop, VK_INSERT);
 			return;
 		}
 		
@@ -342,8 +358,7 @@ namespace Config {
 			KeybindMap.erase(KeyIterator);
 			free(PropertyList);
 		}
-
-		if (!__FORCE && Prop->Name == "config-show-menu")
+		if (!__FORCE && Prop->Name == "show-menu")
 			return Bind(Prop, VK_INSERT);
 	};
 	void KeyPressed(WPARAM KeyCode)
