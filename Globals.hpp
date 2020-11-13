@@ -7,6 +7,8 @@ namespace G {
 
 	//for hacks
 	extern Entity* Localplayer;
+	extern bool LocalPlayerAlive;
+	extern int LocalPlayerIndex;
 
 	//CM stuff
 	extern CUserCmd* cmd;

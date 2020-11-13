@@ -8,6 +8,8 @@ namespace G
 
 	//Vars
 	Entity* Localplayer = new Entity();
+	bool LocalPlayerAlive = false;
+	int LocalPlayerIndex = 0;
 
 	//Createmove
 	CUserCmd* cmd;

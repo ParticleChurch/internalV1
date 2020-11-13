@@ -423,40 +423,43 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-	/*
-	if (curStage == FRAME_RENDER_START)
+	
+	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
-		if (I::engine->IsInGame()) {
-			G::Localplayer = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
+		G::Localplayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 
-			if (!G::Localplayer)
-				return oFrameStageNotify(curStage);;
+		if (!G::Localplayer)
+		{
+			G::LocalPlayerAlive = false;
+			return oFrameStageNotify(curStage);
+		}
 
-			if (!(G::Localplayer->GetHealth() > 0))
-				return oFrameStageNotify(curStage);;
+		G::LocalPlayerAlive = G::Localplayer->GetHealth() > 0;
 
-			//this is for accurate angles (aa, etc)
-			static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
-			if (offset == 0)
-				offset = N::GetOffset("DT_CSPlayer", "deadflag");
+		if (!G::LocalPlayerAlive)
+			return oFrameStageNotify(curStage);
+
+		//this is for accurate angles (aa, etc)
+		/*static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "deadflag");*/
 
 			//if (I::input->m_fCameraInThirdPerson)
 			//	*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
 
-			backtrack->update();
+			//backtrack->update();
 
 			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
 
-			int LPIndex = I::engine->GetLocalPlayer();
-			for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
-				Entity* entity = I::entitylist->GetClientEntity(i);
-				if (!entity || i == LPIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
-				*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
-				*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
-			}
+		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
+			Entity* entity = I::entitylist->GetClientEntity(i);
+			if (!entity || i == G::LocalPlayerIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
+			*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
+			*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 		}
 	}
-	*/
+	
 	/*
 	if (curStage == FRAME_RENDER_START && G::Localplayer && G::Localplayer->GetHealth() > 0 && I::engine->IsInGame()) {
 		static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
