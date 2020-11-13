@@ -13,7 +13,6 @@ namespace H
 	VMTManager gameeventmanagerVMT;
 	VMTManager inputVMT;
 	VMTManager modelrenderVMT;
-
 	VMTManager soundVMT;
 
 	EndScene oEndScene;
@@ -27,7 +26,6 @@ namespace H
 	hkCamToFirstPeron ohkCamToFirstPeron;
 	DoPostScreenEffects oDoPostScreenEffects;
 	DrawModelExecute oDrawModelExecute;
-
 	EmitSound oEmitSound;
 
 	//GUI Vars
@@ -65,34 +63,35 @@ void H::Init()
 	modelrenderVMT.Initialise((DWORD*)I::modelrender);
 	soundVMT.Initialise((DWORD*)I::sound);
 
+	static int SleepTime = 200;
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "FrameStageNotify...";
 	backtrack->Init();
@@ -100,49 +99,49 @@ void H::Init()
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "FireEventClientSide...";
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "DoPostScreenEffects...";
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "DrawModelExecute...";
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
 
-	//Sleep(200);
+	Sleep(SleepTime);
 
 	std::cout << "EmitSound...";
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
@@ -339,20 +338,22 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
 		
-		G::CM_Start(cmd, pSendPacket);
+		//G::CM_Start(cmd, pSendPacket);
 
 		//Movement
-		movement->SlowWalk();
-		movement->AAMoveFix();
-		movement->BunnyHop();
-		movement->FastCrouch();
+		//movement->SlowWalk();
+		//movement->AAMoveFix();
+		//movement->BunnyHop();
+		//movement->FastCrouch();
 	
-		G::CM_MoveFixStart();
+		//G::CM_MoveFixStart();
 
 		
-		antiaim->rage();
+		//antiaim->rage();
 
 		// decide when to enable desync
+
+		/*
 		bool desync = true;
 		if (G::Localplayer->GetHealth() > 0)
 		{
@@ -394,13 +395,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			aimbot->Rage();
 
 		backtrack->run();
+		*/
 		
-		G::CM_MoveFixEnd();
+		//G::CM_MoveFixEnd();
 
-		movement->RageAutoStrafe();
-		movement->LegitAutoStrafe();
+		/*movement->RageAutoStrafe();
+		movement->LegitAutoStrafe();*/
 
-		G::CM_End();	
+		//G::CM_End();	
 		
 	}
 
@@ -415,12 +417,13 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		if (!G::Localplayer || !I::engine->IsInGame() || !(G::Localplayer->GetHealth() > 0))
 			return;
 
-		esp->Run();
+		/*esp->Run();*/
 	}
 }
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
+	/*
 	if (curStage == FRAME_RENDER_START)
 	{
 		if (I::engine->IsInGame()) {
@@ -453,8 +456,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			}
 		}
 	}
-
-
+	*/
+	/*
 	if (curStage == FRAME_RENDER_START && G::Localplayer && G::Localplayer->GetHealth() > 0 && I::engine->IsInGame()) {
 		static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
 	
@@ -483,6 +486,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			}
 		}
 	}
+	*/
 	
 	return oFrameStageNotify(curStage);
 }
@@ -648,7 +652,7 @@ float GetCameraBoomLength(float distance)
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
-	if (I::engine->IsInGame() && G::Localplayer->GetHealth() > 0) {
+	/*if (I::engine->IsInGame() && G::Localplayer->GetHealth() > 0) {
 		if (true)
 		{
 			I::input->m_fCameraInThirdPerson = true;
@@ -659,33 +663,34 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 			I::input->m_fCameraInThirdPerson = false;
 			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 0);
 		}
-	}
+	}*/
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }
 
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
-	chams->Init();
-	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
+	/*chams->Init();
+	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);*/
+	return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 }
 
 void __stdcall H::EmitSoundHook(SoundData data)
 {
-	static DWORD loc = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
-	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(loc);
-	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
-	{
-		H::console.clear();
-		H::console.resize(0);
-		H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
-		acceptMatch("accept");
-		/*auto window = FindWindowW(L"Valve001", NULL);
-		FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
-		FlashWindowEx(&flash);
-		ShowWindow(window, SW_RESTORE);*/
+	//static DWORD loc = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
+	//static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(loc);
+	//if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
+	//{
+	//	H::console.clear();
+	//	H::console.resize(0);
+	//	H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
+	//	acceptMatch("accept");
+	//	/*auto window = FindWindowW(L"Valve001", NULL);
+	//	FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
+	//	FlashWindowEx(&flash);
+	//	ShowWindow(window, SW_RESTORE);*/
 
-		//Comment multiple lines of code: [ctrl] + [shift] + [/]
-	}
+	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
+	//}
 	return oEmitSound(I::sound, data);
 }
