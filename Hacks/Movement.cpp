@@ -11,7 +11,13 @@ void Movement::AAMoveFix()
 
 void Movement::BunnyHop()
 {
-	if ((G::cmd->buttons & IN_JUMP) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
+	// If bhop is NOT enabled in config...
+	if (!Config::GetBool("misc-movement-bhop"))
+		return;
+
+	// If we are holding jump, localplayer alive, and we aren't on the ground, and we arent on a ladder...
+	// Inverse the jump (aka space will not send unless on ground when holding space)
+	if ((G::cmd->buttons & IN_JUMP) && G::LocalPlayerAlive && !(G::Localplayer->GetFlags() & FL_ONGROUND)
 		&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
 		G::cmd->buttons &= ~IN_JUMP;
 	}
@@ -19,8 +25,16 @@ void Movement::BunnyHop()
 
 void Movement::FastCrouch()
 {
-	if (G::Localplayer->GetHealth() > 0)
-		G::cmd->buttons |= IN_BULLRUSH;
+	// If FastCrouch is NOT enabled in config...
+	if (!Config::GetBool("misc-movement-fastcrouch"))
+		return;
+
+	// If the localplayer is not alive...
+	if (!G::Localplayer || !G::LocalPlayerAlive)
+		return;
+
+	// Fastcrouch
+	G::cmd->buttons |= IN_BULLRUSH;
 }
 
 void Movement::RageAutoStrafe()
@@ -101,13 +115,20 @@ void Movement::LegitAutoStrafe()
 		G::cmd->sidemove = 450;
 }
 
-void Movement::SlowWalk(float fraction)
+void Movement::SlowWalk() 
 {
-	bool valid = (G::Localplayer->GetHealth() > 0) && (G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
+	// If slowalk is NOT enabled in config...
+	if (!Config::GetBool("misc-movement-slowwalk"))
+		return;
+
+	// valid - valid time to slow walk
+	bool valid = G::Localplayer && G::LocalPlayerAlive && (G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
+	// If not a valid time to slow walk
 	if (!valid)
 		return;
 
-	float maxSpeed = G::Localplayer->MaxAccurateSpeed() * fraction;
+	float maxSpeed = G::Localplayer->MaxAccurateSpeed() * 0.333;
+	maxSpeed *= (Config::GetFloat("misc-movement-slowwalk-speed") / 100.f);
 
 	if (G::cmd->forwardmove && G::cmd->sidemove) {
 		const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
@@ -120,5 +141,52 @@ void Movement::SlowWalk(float fraction)
 	else if (G::cmd->sidemove) {
 		G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
 	}
+}
+
+void Movement::Airstuck()
+{
+	// If Airstuck is NOT enabled in config...
+	if (!Config::GetBool("misc-movement-airstuck"))
+		return;
+
+	// If the localplayer is not alive...
+	if (!G::Localplayer || !G::LocalPlayerAlive)
+		return;
+
+	// Airstuck
+	G::cmd->command_number = INT_MAX;
+	G::cmd->tick_count = INT_MAX;
+}
+
+void Movement::FakeDuck()
+{
+	// If the localplayer is not alive...
+	if (!G::Localplayer || !G::LocalPlayerAlive)
+		return;
+
+	// Set choke amount back to normal
+	static int PrevChokeAmount = 0;
+	static bool WasJustFakeducking = false;
+	if (!Config::GetBool("misc-movement-fakeduck"))
+	{
+		if (WasJustFakeducking)
+			G::ChokeAmount = PrevChokeAmount;
+		else
+			PrevChokeAmount = G::ChokeAmount;
+	}
+		
+	// If FakeDuck is enabled in config...
+	if (Config::GetBool("misc-movement-fakeduck"))
+	{
+		WasJustFakeducking = true;
+		// Start the fakeduck, need to implement restoration of chokeamount
+		G::ChokeAmount = 14;
+		G::cmd->buttons |= IN_BULLRUSH;
+		if (I::engine->GetNetChannelInfo()->ChokedPackets > (G::ChokeAmount / 2))
+			G::cmd->buttons |= IN_DUCK;
+		else
+			G::cmd->buttons &= ~IN_DUCK;
+	} else
+		WasJustFakeducking = false;
 }
 

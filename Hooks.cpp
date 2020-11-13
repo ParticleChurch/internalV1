@@ -334,17 +334,17 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
 		
 		G::CM_Start(cmd, pSendPacket);
 
 		//Movement
-		//movement->SlowWalk();
+		movement->BunnyHop();
+		movement->SlowWalk();
+		movement->FastCrouch();
 		//movement->AAMoveFix();
-		//movement->BunnyHop();
-		//movement->FastCrouch();
+		movement->FakeDuck();
 	
 		G::CM_MoveFixStart();
 
@@ -401,6 +401,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		/*movement->RageAutoStrafe();
 		movement->LegitAutoStrafe();*/
+		movement->Airstuck();
 
 		G::CM_End();	
 		

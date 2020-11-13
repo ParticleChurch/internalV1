@@ -14,6 +14,7 @@ namespace G {
 	extern Entity* Localplayer;
 	extern bool LocalPlayerAlive;
 	extern int LocalPlayerIndex;
+	//maybe add flags and movetype?
 
 	//CreateMove
 	extern CUserCmd* cmd;

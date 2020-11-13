@@ -6,8 +6,9 @@ public:
 	void FastCrouch();
 	void RageAutoStrafe();
 	void LegitAutoStrafe();
-	void SlowWalk(float fraction = 0.333f);
-	
+	void SlowWalk();
+	void Airstuck();
+	void FakeDuck();
 };
 
 extern Movement* movement;
