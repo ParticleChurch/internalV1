@@ -40,7 +40,7 @@ Vec Aimbot::CalculateAngle(Vec Source, Vec Target)
 float Aimbot::CrosshairDist(Vec TargetAngle)
 {
 	static Vec cur;
-	cur = G::CM_StartAngle;
+	cur = G::StartAngle;
 	cur.NormalizeAngle();
 	cur += G::Localplayer->GetAimPunchAngle();
 	cur.NormalizeAngle();
@@ -154,9 +154,9 @@ void Aimbot::Smooth(Vec& Angle)
 	float SmoothYaw = 50.f / 100.f;
 	float SmoothPitch = 50.f / 100.f;
 
-	G::CM_StartAngle.NormalizeAngle();
+	G::StartAngle.NormalizeAngle();
 	Angle.NormalizeAngle();
-	Vec Delta = G::CM_StartAngle - Angle;
+	Vec Delta = G::StartAngle - Angle;
 
 	Delta.NormalizeAngle();
 
@@ -197,7 +197,7 @@ void Aimbot::Smooth(Vec& Angle)
 		}
 	}
 
-	Angle = G::CM_StartAngle + Delta;
+	Angle = G::StartAngle + Delta;
 	Angle.NormalizeAngle();
 }
 

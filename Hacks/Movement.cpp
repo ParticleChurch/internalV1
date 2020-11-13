@@ -50,7 +50,7 @@ void Movement::RageAutoStrafe()
 
 
 		float Velocity = RAD2DEG(atan2(Vel.y, Vel.x));
-		float VelDelta = G::CM_StartAngle.y - Velocity;
+		float VelDelta = G::StartAngle.y - Velocity;
 		static float Angle = 180;
 		Angle = VelDelta + 180;
 		while (Angle > 180) {

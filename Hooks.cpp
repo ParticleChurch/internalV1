@@ -338,7 +338,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
 		
-		//G::CM_Start(cmd, pSendPacket);
+		G::CM_Start(cmd, pSendPacket);
 
 		//Movement
 		//movement->SlowWalk();
@@ -346,7 +346,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//movement->BunnyHop();
 		//movement->FastCrouch();
 	
-		//G::CM_MoveFixStart();
+		G::CM_MoveFixStart();
 
 		
 		//antiaim->rage();
@@ -397,12 +397,12 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		backtrack->run();
 		*/
 		
-		//G::CM_MoveFixEnd();
+		G::CM_MoveFixEnd();
 
 		/*movement->RageAutoStrafe();
 		movement->LegitAutoStrafe();*/
 
-		//G::CM_End();	
+		G::CM_End();	
 		
 	}
 
@@ -623,7 +623,7 @@ Vec GetIdealCameraPos(float distance)
 {
 	Vec PlayerPos = G::Localplayer->GetEyePos();	//pleyer center position
 	Vec Ideal = PlayerPos;							//Final ideal angle
-	QAngle FPAng = G::CM_StartAngle;				//flipped player angle
+	QAngle FPAng = G::StartAngle;				//flipped player angle
 	FPAng.x *= -1;
 	FPAng.y += 180;
 	FPAng.NormalizeAngle();

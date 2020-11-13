@@ -5,22 +5,23 @@ namespace G {
 	extern HMODULE DLLModule;
 	extern bool KillDLL;
 
-	//for hacks
+	//General Variables
+	extern int ChokeAmount;
+	extern QAngle StartAngle;
+	extern QAngle EndAngle;
+
+	//LocalPlayer
 	extern Entity* Localplayer;
 	extern bool LocalPlayerAlive;
 	extern int LocalPlayerIndex;
 
-	//CM stuff
+	//CreateMove
 	extern CUserCmd* cmd;
-	extern int ChokeAmount;
 	extern bool* pSendPacket;
-	extern Vec CM_StartAngle;
-	extern Vec CM_EndAngle;
-	extern QAngle RealAngle;
-	extern QAngle FakeAngle;
-	extern Matrix3x4 FakeMatrix[128];
 	extern float StartForwardMove;
 	extern float StartSideMove;
+
+	//Global Functions
 	extern void CM_Clamp();
 	extern void CM_Start(CUserCmd*, bool*);
 	extern void CM_MoveFixStart();

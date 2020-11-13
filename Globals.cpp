@@ -6,20 +6,19 @@ namespace G
 	HMODULE DLLModule = NULL;
 	bool KillDLL = false;
 
-	//Vars
+	//General Variables
+	int ChokeAmount = 2;
+	QAngle StartAngle;
+	QAngle EndAngle;
+
+	//LocalPlayer
 	Entity* Localplayer = new Entity();
 	bool LocalPlayerAlive = false;
-	int LocalPlayerIndex = 0;
+	int LocalPlayerIndex = 0;\
 
-	//Createmove
+	//CreateMove
 	CUserCmd* cmd;
-	int ChokeAmount = 2;
 	bool* pSendPacket;
-	Vec CM_StartAngle;
-	Vec CM_EndAngle;
-	QAngle RealAngle;
-	QAngle FakeAngle;
-	Matrix3x4 FakeMatrix[128];
 	float StartForwardMove;
 	float StartSideMove;
 
@@ -64,7 +63,7 @@ namespace G
 
 	void CM_Start(CUserCmd* cmd, bool* pSendPacket)
 	{
-		G::CM_StartAngle = cmd->viewangles;
+		G::StartAngle = cmd->viewangles;
 		G::cmd = cmd;
 		G::pSendPacket = pSendPacket;
 	}
@@ -81,10 +80,10 @@ namespace G
 		static float f1;
 		static float f2;
 
-		if (CM_StartAngle.y < 0.f)
-			f1 = 360.0f + CM_StartAngle.y;
+		if (StartAngle.y < 0.f)
+			f1 = 360.0f + StartAngle.y;
 		else
-			f1 = CM_StartAngle.y;
+			f1 = StartAngle.y;
 
 		if (cmd->viewangles.y < 0.0f)
 			f2 = 360.0f + cmd->viewangles.y;
@@ -104,14 +103,14 @@ namespace G
 	void CM_End()
 	{
 		cmd->viewangles.NormalizeAngle(); //prevent csgo from hating us
-		CM_EndAngle = cmd->viewangles;
+		EndAngle = cmd->viewangles;
 
-		if (*G::pSendPacket) {
+		/*if (*G::pSendPacket) {
 			G::FakeAngle = G::cmd->viewangles;
 			G::Localplayer->SetupBones(G::FakeMatrix, 128, 0x100, I::globalvars->m_curTime);
 		}
 		else
-			G::RealAngle = G::cmd->viewangles;
+			G::RealAngle = G::cmd->viewangles;*/
 
 		CM_Clamp();
 	}

@@ -90,7 +90,8 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			//	color_desync,
 			//	thisptr, ctx, state, info, G::FakeMatrix);
 
-			H::oDrawModelExecute(thisptr, ctx, state, info, G::FakeMatrix);
+			//H::oDrawModelExecute(thisptr, ctx, state, info, G::FakeMatrix);
+			H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
 		else if (isEnemy)
 		{
