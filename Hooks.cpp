@@ -352,6 +352,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//antiaim->rage();
 
 		// decide when to enable desync
+		// we need to implement in movefixend or something lol
 
 		/*
 		bool desync = true;
@@ -418,7 +419,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		if (!G::Localplayer || !I::engine->IsInGame() || !(G::Localplayer->GetHealth() > 0))
 			return;
 
-		/*esp->Run();*/
+		esp->Run();
 	}
 }
 

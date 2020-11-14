@@ -118,10 +118,12 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enemy ESP", false, false);
 				w->AddProperty(false, 0, "visuals-esp-enemy-box", "Box", false, false);
 				w->AddProperty(false, 1, "visuals-esp-enemy-box-color", "Box", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-esp-enemy-name", "Box", false, false);
+				w->AddProperty(false, 0, "visuals-esp-enemy-name", "Name", false, false);
 				w->AddProperty(false, 1, "visuals-esp-enemy-name-color", "Name", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-esp-enemy-snapline", "Snaplines", false, false);
 				w->AddProperty(false, 1, "visuals-esp-enemy-snapline-color", "Snaplines", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-enemy-skeleton", "Skeleton", false, false);
+				w->AddProperty(false, 1, "visuals-esp-enemy-skeleton-color", "Skeleton", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-esp-enemy-health", "Health", false, false);
 				w->AddProperty(false, 2, "visuals-esp-enemy-health-color", "Health", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-esp-enemy-health-bgcolor", "Health Background", new Color(0, 150, 255));
@@ -137,6 +139,8 @@ namespace Config {
 				w->AddProperty(false, 1, "visuals-esp-friend-name-color", "Name", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-esp-friend-snapline", "Snaplines", false, false);
 				w->AddProperty(false, 1, "visuals-esp-friend-snapline-color", "Snaplines", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-esp-friend-skeleton", "Skeleton", false, false);
+				w->AddProperty(false, 1, "visuals-esp-friend-skeleton-color", "Skeleton", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-esp-friend-health", "Health", false, false);
 				w->AddProperty(false, 2, "visuals-esp-friend-health-color", "Health", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-esp-friend-health-bgcolor", "Health Background", new Color(0, 150, 255));

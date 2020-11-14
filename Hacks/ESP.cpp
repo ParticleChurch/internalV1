@@ -25,7 +25,7 @@ void ESP::DrawBoxes(Vec TL, Vec BR)
 	I::surface->DrawOutlinedRect(TL.x, TL.y, BR.x, BR.y);
 }
 
-void ESP::DrawName(Vec TL, Vec BR, char Name[128]) //NEED TO FINISH
+void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 {
 	static DWORD FONT = I::surface->FontCreate();
 	static bool Once = true;
@@ -40,7 +40,7 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128]) //NEED TO FINISH
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 	
 	I::surface->DrawSetTextFont(FONT);
-	I::surface->DrawSetTextColor(Current);
+	I::surface->DrawSetTextColor(clr);
 	I::surface->DrawSetTextPos(TL.x, TL.y - 14);
 	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
@@ -53,17 +53,17 @@ void ESP::DrawSnapLines(Vec TL, Vec BR)
 	I::surface->DrawLine(xSize / 2, ySize, ((BR.x - TL.x) / 2) + TL.x, BR.y);
 }
 
-void ESP::DrawHealth(Vec TL, Vec BR, int Health)
+void ESP::DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg)
 {
 	int Height = BR.y - TL.y;
 
 	int HeightBar = (int)(Height * (Health / 100.0f));
 	int WidthBar = (int)(3 + Height / 100.0f);
 
-	I::surface->DrawSetColor(255, 0, 0, 255);		//red
+	I::surface->DrawSetColor(bg);		//red
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - Height, BR.x + WidthBar + 1, BR.y);
 
-	I::surface->DrawSetColor(0, 255, 0, 255);		//green
+	I::surface->DrawSetColor(fg);		//green
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
 }
 
@@ -153,7 +153,7 @@ void ESP::Run()
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
-		if (i == I::engine->GetLocalPlayer())
+		if (i == G::LocalPlayerIndex)
 			continue;
 
 		Entity* Ent = I::entitylist->GetClientEntity(i);
@@ -162,9 +162,6 @@ void ESP::Run()
 
 		player_info_t PlayerInfo;
 		if (!I::engine->GetPlayerInfo(i, &PlayerInfo))
-			continue;
-
-		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
 			continue;
 
 		if (!(Ent->GetHealth() > 0))
@@ -198,13 +195,73 @@ void ESP::Run()
 		BottomRight.x = int(Feet.x + Width / 2);
 		BottomRight.y = Feet.y;
 
-		I::surface->DrawSetColor(255, 255, 255, 255); //white
-		DrawBoxes(TopLeft, BottomRight);
-		DrawName(TopLeft, BottomRight, PlayerInfo.name);
-		DrawSnapLines(TopLeft, BottomRight);
-		DrawSkeleton(Ent);
-		DrawHealth(TopLeft, BottomRight, Ent->GetHealth());
+		//if on localplayer team...
+		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
+		{
+			//if friend esp not enabled
+			if (!Config::GetBool("visuals-esp-friend-enable"))
+				continue;
+
+			if (Config::GetBool("visuals-esp-friend-box"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-box-color"));
+				DrawBoxes(TopLeft, BottomRight);
+			}
+			if (Config::GetBool("visuals-esp-friend-name"))
+			{
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, Config::GetColor("visuals-esp-friend-name-color"));
+			}
+			if (Config::GetBool("visuals-esp-friend-snapline"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-snapline-color"));
+				DrawSnapLines(TopLeft, BottomRight);
+			}
+			if (Config::GetBool("visuals-esp-friend-health"))
+			{
+				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(),
+					Config::GetColor("visuals-esp-friend-health-color"),
+					Config::GetColor("visuals-esp-friend-health-bgcolor"));
+			}
+			if (Config::GetBool("visuals-esp-friend-skeleton"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-skeleton-color")); //white by defualt
+				DrawSkeleton(Ent);
+			}
+		}
+		else
+		{
+			//if enemy esp not enabled
+			if (!Config::GetBool("visuals-esp-enemy-enable"))
+				continue;
+
+			if (Config::GetBool("visuals-esp-enemy-box"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-box-color"));
+				DrawBoxes(TopLeft, BottomRight);
+			}
+			if (Config::GetBool("visuals-esp-enemy-name"))
+			{
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, Config::GetColor("visuals-esp-enemy-name-color"));
+			}
+			if (Config::GetBool("visuals-esp-enemy-snapline"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-snapline-color"));
+				DrawSnapLines(TopLeft, BottomRight);
+			}
+			if (Config::GetBool("visuals-esp-enemy-health"))
+			{
+				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(), 
+					Config::GetColor("visuals-esp-enemy-health-color"), 
+					Config::GetColor("visuals-esp-enemy-health-bgcolor"));
+			}
+			if (Config::GetBool("visuals-esp-enemy-skeleton"))
+			{
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-skeleton-color")); //white by defualt
+				DrawSkeleton(Ent);
+			}
+			
+		}
 		
 	}
-	DrawBacktrackingDots();
+	//DrawBacktrackingDots();
 }
