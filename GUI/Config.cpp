@@ -8,6 +8,11 @@ namespace Config {
 			type == KeybindType::HoldToEnable ? "Hold To Enable" :
 			"Hold To Disable";
 	}
+	std::string StringifyVK(int VirturalKey)
+	{
+		// TODO: make our own func, not valves retarded "CAPSLOCK" and "q"
+		return I::inputsystem->VirtualKeyToString(VirturalKey);
+	}
 
 	UserInfoT UserInfo = UserInfoT{};
 	std::vector<Tab*> Tabs = {};
@@ -57,7 +62,7 @@ namespace Config {
 
 				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", true, true);
 				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
-				//w->AddProperty(false, 1, "antiaim-legit-invert", "Inverter AA", false, false);
+				w->AddProperty(false, 1, "antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
 				//TODO - add the inverter for invert aa here
 			}
 			{
@@ -102,15 +107,19 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Chams");
 
-				//Enemy
-				w->AddProperty(false, 0, "visuals-cham-enemy-enable", "Enemy Chams", false, false);
+				w->AddText("Enemies"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-cham-enemy-enable", "Show Chams", false, false);
 				w->AddProperty(false, 0, "visuals-cham-enemy-color", "Color", new Color(0, 150, 255));
-				//TODO - add dropdown type option... (flat, normal, pearlescent, etc..)
+				w->AddProperty(false, 0, "visuals-cham-enemy-material", "Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->EndIndent();
 
-				//Friends
-				w->AddProperty(false, 0, "visuals-cham-friend-enable", "Friend Chams", false, false);
+				w->AddSeparator();
+
+				w->AddText("Teammates"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-cham-friend-enable", "Show Chams", false, false);
 				w->AddProperty(false, 0, "visuals-cham-friend-color", "Color", new Color(0, 150, 255));
-				//TODO - add dropdown type option... (flat, normal, pearlescent, etc..)
+				w->AddProperty(false, 0, "visuals-cham-friend-material", "Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->EndIndent();
 			}
 			{
 				Widget* w = t->AddWidget("ESP");
@@ -289,7 +298,7 @@ namespace Config {
 		}
 		else if (prop->Type == PropertyType::INVERTER)
 		{
-			return (size_t)(*(bool*)prop->Value);
+			return (size_t)(((CInverter*)prop->Value)->State);
 		}
 		return 0;
 	}
@@ -314,7 +323,6 @@ namespace Config {
 	std::map<int, std::vector<Property*>*> KeybindMap;
 	void Bind(Property* Prop, WPARAM KeyCode)
 	{
-		assert(Prop->Type == PropertyType::BOOLEAN);
 		if (KeyCode == 0) return Unbind(Prop); // binding a key to 0 is the same as unbinding
 		if (Prop->KeyBind != 0) Unbind(Prop, true); // this key is already bound, first unbind it before preceeding
 		if (KeyCode == VK_ESCAPE) return Unbind(Prop); // binding to escape just unbinds
@@ -332,8 +340,6 @@ namespace Config {
 	};
 	void Unbind(Property* Prop, bool __FORCE /* SEE DECLARATION B4 SETTING TRUE */)
 	{
-		assert(Prop->Type == PropertyType::BOOLEAN);
-		
 		auto KeyIterator = KeybindMap.find(Prop->KeyBind);
 		if (KeyIterator == KeybindMap.end())
 		{
@@ -377,8 +383,12 @@ namespace Config {
 		for (size_t i = 0; i < PropertyList->size(); i++)
 		{
 			Property* prop = PropertyList->at(i);
-			switch (prop->BindType)
+			switch (prop->Type)
 			{
+			case PropertyType::BOOLEAN:
+			{
+				switch (prop->BindType)
+				{
 				case KeybindType::Toggle:
 				{
 					*(bool*)prop->Value = !(*(bool*)prop->Value);
@@ -394,6 +404,19 @@ namespace Config {
 					*(bool*)prop->Value = false;
 					break;
 				}
+				}
+				break;
+			}
+			case PropertyType::INVERTER:
+			{
+				((CInverter*)prop->Value)->State = !((CInverter*)prop->Value)->State;
+				break;
+			}
+			case PropertyType::DROPDOWN:
+			{
+				// TODO
+				break;
+			}
 			}
 		}
 	};

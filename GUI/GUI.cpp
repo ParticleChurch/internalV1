@@ -339,7 +339,7 @@ namespace ImGui
 
 			// Dropdown for Keybindability
 			SetCursorPosX(GetCursorPosX() + 5);
-			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5., (20 - GetFontSize()) / 2));
+			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
 			SetNextItemWidth(115);
 			if (ImGui::BeginCombo(("##" + p->Name + "-keybind-mode-dropdown").c_str(), Config::StringifyKeybindType(p->BindType).c_str(), 0))
 			{
@@ -386,7 +386,7 @@ namespace ImGui
 		else if (IsBound)
 		{
 			// get keyname text
-			std::string KeyName = I::inputsystem->VirtualKeyToString(p->KeyBind);
+			std::string KeyName = Config::StringifyVK(p->KeyBind);
 			ImVec2 KeyTextSize = CalcTextSize(KeyName.c_str());
 
 			// draw switch in a child frame contains: padding + switch + padding + keyname + padding
@@ -529,6 +529,7 @@ namespace ImGui
 			SetFocusID(SliderID, window);
 			FocusWindow(window);
 		}
+		GUI::IgnoreLButton |= hovered;
 
 		// calculations
 		Config::CFloat* CValue = (Config::CFloat*)p->Value;
@@ -585,6 +586,7 @@ namespace ImGui
 
 		if (InputFloat(("##" + p->Name + "-input").c_str(), &v, 0.f, 0.f, ("%." + std::to_string(CValue->decimals) + "f").c_str()))
 			CValue->set(v);
+		GUI::IgnoreLButton |= IsItemHovered();
 
 		PopStyleColor(4);
 		PopStyleVar(1);
@@ -645,6 +647,160 @@ namespace ImGui
 		}
 		GUI::IgnoreLButton |= IsItemHovered();
 		PopStyleVar();
+
+		// put cursor on the next line
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
+	}
+
+	void DrawInverterProperty(Config::Property* p)
+	{
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// 3 cases, in order of importance
+		bool IsMidBind = GUI::CurrentlyChoosingKeybindFor == p;
+		bool IsBound = p->KeyBind != 0;
+
+		// move over to second column
+		SetCursorPosX(GUI::PropertyLabelsWidth);
+
+		// universal vars from here on out
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+		PushFont(Arial14);
+		if (IsMidBind)
+		{
+			// draw a frame to hold text
+			std::string Label = "press any key";
+			ImVec2 TextSize = CalcTextSize(Label.c_str());
+
+			// size = padding + text + padding
+			ImVec2 ChildSize = ImVec2(4 + TextSize.x + 4, 20);
+			PushStyleColor(ImGuiCol_FrameBg, styleColor(120, 120, 120, 1.f));
+			BeginChildFrame(GetID((p->Name + "-keybind-prompt").c_str()), ChildSize);
+
+			// draw text
+			SetCursorPos(ImVec2(4, 3));
+			Text(Label.c_str());
+
+			// close child and pop its backgound color
+			EndChild(); SameLine();
+			PopStyleColor(1);
+
+			// go back to top of line
+			SetCursorPosY(LinePosY);
+
+			// padding, clear button
+			SetCursorPosX(GetCursorPosX() + 5);
+
+			PushStyleColor(ImGuiCol_Button, styleColor(200, 75, 75, 1.f));
+			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(180, 60, 60, 1.f));
+			PushStyleColor(ImGuiCol_ButtonActive, styleColor(220, 90, 90, 1.f));
+
+			if (Button("Clear", ImVec2(40, 20)))
+			{
+				Config::Unbind(p);
+				GUI::CurrentlyChoosingKeybindFor = nullptr;
+			}
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			PopStyleColor(3);
+		}
+		else if (IsBound)
+		{
+			std::string ButtonText = Config::StringifyVK(p->KeyBind);
+			ImVec2 TextSize = CalcTextSize(ButtonText.c_str());
+
+			PushStyleColor(ImGuiCol_Border, styleColor(255, 255, 255, 0.5f));
+			PushStyleColor(ImGuiCol_Button, styleColor(120, 120, 120, 1.f));
+			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(100, 100, 100, 1.f));
+			PushStyleColor(ImGuiCol_ButtonActive, styleColor(160, 160, 160, 1.f));
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+
+			if (Button((ButtonText + "##" + p->Name).c_str(), ImVec2(TextSize.x + 10, 20)))
+				GUI::CurrentlyChoosingKeybindFor = p;
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			PopStyleColor(4);
+			PopStyleVar(2);
+		}
+		else // not bound
+		{
+			ImVec4 Color1 = Config::GetColor("menu-property-accent-color");
+			ImVec4 Color2 = Config::GetColor("menu-property-base-color");
+			
+			PushStyleColor(ImGuiCol_Button, Color1);
+			PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color1, Color2, 0.25f));
+			PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color1, Color2, 0.5f));
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+			if (Button(("Invert##" + p->Name + "-button").c_str(), ImVec2(40, 20)))
+			{
+				((Config::CInverter*)p->Value)->State = !((Config::CInverter*)p->Value)->State;
+			}
+			GUI::IgnoreLButton |= IsItemHovered();
+			PopStyleColor(3);
+			PopStyleVar(1);
+
+			SameLine(); // move to after the invert btn
+			SetCursorPosY(LinePosY); // move back to top of line
+			SetCursorPosX(GetCursorPosX() + 5); // add padding after switch
+
+			// draw "Bind" button
+			PushStyleColor(ImGuiCol_Border, styleColor(255, 255, 255, 0.5f));
+			PushStyleColor(ImGuiCol_Button, styleColor(120, 120, 120, 1.f));
+			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(100, 100, 100, 1.f));
+			PushStyleColor(ImGuiCol_ButtonActive, styleColor(160, 160, 160, 1.f));
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+
+			if (Button(("Bind##" + p->Name).c_str(), ImVec2(34, 20)))
+				GUI::CurrentlyChoosingKeybindFor = p;
+			GUI::IgnoreLButton |= IsItemHovered();
+
+			PopStyleColor(4);
+			PopStyleVar(2);
+		}
+
+		std::string StateText = ((Config::CInverter*)p->Value)->Stringify();
+		if (StateText.size() > 0 && !IsMidBind)
+		{
+			PushFont(Arial16);
+			SameLine();
+			SetCursorPosX(GetCursorPosX() + 5);
+
+			std::string text = "Current: " + StateText;
+			ImVec2 textsize = CalcTextSize(text.c_str());
+
+
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+			PushStyleColor(ImGuiCol_FrameBg, styleColor(0, 0, 0, 0.f));
+			BeginChildFrame(GetID((p->Name + "-weird-margins-frame-wtf-bruh").c_str()), ImVec2(textsize.x, 20));
+			PopStyleColor();
+			PopStyleVar();
+			
+			SetCursorPosY((20 - GetFontSize()) / 2);
+			Text(text.c_str());
+
+			EndChild();
+			PopFont();
+		}
+
+		// cleanup, leave cursor on next line
+		PopFont();
+		PopStyleVar(1);
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
 	}
 }
 
@@ -982,6 +1138,11 @@ bool GUI::HackMenu()
 				case Config::PropertyType::DROPDOWN:
 				{
 					ImGui::DrawDropdownProperty(Property);
+					break;
+				}
+				case Config::PropertyType::INVERTER:
+				{
+					ImGui::DrawInverterProperty(Property);
 					break;
 				}
 				default:

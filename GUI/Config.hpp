@@ -54,6 +54,7 @@ namespace Config {
 		HoldToDisable,
 	};
 	extern std::string StringifyKeybindType(KeybindType type);
+	extern std::string StringifyVK(int VirturalKey);
 	struct KeybindOptions
 	{
 	private:
@@ -380,6 +381,7 @@ namespace Config {
 	extern bool GetBool(std::string Name);
 	extern float GetFloat(std::string Name);
 	extern Color GetColor(std::string Name);
+	extern size_t GetState(std::string Name);
 
 	extern void SetBool(std::string Name, bool Value);
 	extern void SetFloat(std::string Name, float Value);
