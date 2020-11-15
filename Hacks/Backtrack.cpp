@@ -13,9 +13,12 @@ void Backtrack::Init()
 	MaxUnlag = I::cvar->FindVar("sv_maxunlag");
 }
 
-void Backtrack::update()
+void Backtrack::update(int CurStage)
 {
-	if (!I::engine->IsInGame() || !G::Localplayer || !(G::Localplayer->GetHealth() > 0)) {
+	if (CurStage != FRAME_RENDER_START)
+		return;
+
+	if (!I::engine->IsInGame() || !G::Localplayer || !G::LocalPlayerAlive) {
 		for (auto a : Records)
 			a.clear();
 		return;
@@ -71,7 +74,7 @@ void Backtrack::update()
 
 		Records[i].push_front(tick);
 
-		unsigned int Ticks = TimeToTicks(40000.f / 1000.f);
+		unsigned int Ticks = TimeToTicks(Config::GetFloat("backtracking-time") / 1000.f);
 		while (Records[i].size() > 3 && Records[i].size() > Ticks) {
 			Records[i].pop_back();
 		}
@@ -89,7 +92,7 @@ void Backtrack::run()
 	if (!(G::cmd->buttons & IN_ATTACK))
 		return;
 
-	if (!I::engine->IsInGame() || !G::Localplayer || !(G::Localplayer->GetHealth() > 0)) {
+	if (!I::engine->IsInGame() || !G::Localplayer || !G::LocalPlayerAlive) {
 		return;
 	}
 
@@ -126,7 +129,7 @@ void Backtrack::run()
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossTickDist)
 		{
-			BestTickCount = backtrack->TimeToTicks(tick.SimulationTime);// +GetLerp());
+			BestTickCount = backtrack->TimeToTicks(tick.SimulationTime - GetLerp());
 			CrossTickDist = CrossDist;
 			BestTick = tick;
 		}

@@ -395,9 +395,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		if (GetAsyncKeyState(VK_LMENU))
 			aimbot->Rage();
 
-		backtrack->run();
-		*/
 		
+		*/
+		backtrack->run();
 		G::CM_MoveFixEnd();
 
 		/*movement->RageAutoStrafe();
@@ -450,9 +450,10 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			//if (I::input->m_fCameraInThirdPerson)
 			//	*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
 
-			//backtrack->update();
+			
 
 			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
+		
 
 		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 			Entity* entity = I::entitylist->GetClientEntity(i);
@@ -461,6 +462,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 		}
 	}
+	backtrack->update(curStage);
 	world->Run(curStage);
 
 	/*
