@@ -31,9 +31,6 @@
     <ClCompile Include="Hacks\Aimbot.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
-    <ClCompile Include="Hacks\ESP.cpp">
-      <Filter>Source\Hacks</Filter>
-    </ClCompile>
     <ClCompile Include="Globals.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -64,11 +61,17 @@
     <ClCompile Include="GUI\Config.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="Hacks\Chams.cpp">
-      <Filter>Source\Hacks</Filter>
+    <ClCompile Include="Hacks\Visuals\Chams.cpp">
+      <Filter>Source\Hacks\Visuals</Filter>
     </ClCompile>
-    <ClCompile Include="Hacks\World.cpp">
-      <Filter>Source\Hacks</Filter>
+    <ClCompile Include="Hacks\Visuals\ESP.cpp">
+      <Filter>Source\Hacks\Visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Visuals\World.cpp">
+      <Filter>Source\Hacks\Visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Visuals\MiscVisuals.cpp">
+      <Filter>Source\Hacks\Visuals</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -210,9 +213,6 @@
     <ClInclude Include="Hacks\Aimbot.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\ESP.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
     <ClInclude Include="Hacks\Backtrack.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
@@ -291,14 +291,20 @@
     <ClInclude Include="Hacks\Movement.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\Chams.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\SDK\SoundData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\World.hpp">
-      <Filter>Headers\Hacks</Filter>
+    <ClInclude Include="Hacks\Visuals\Chams.hpp">
+      <Filter>Headers\Hacks\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Visuals\ESP.hpp">
+      <Filter>Headers\Hacks\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Visuals\World.hpp">
+      <Filter>Headers\Hacks\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Visuals\MiscVisuals.hpp">
+      <Filter>Headers\Hacks\Visuals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -337,6 +343,12 @@
     </Filter>
     <Filter Include="Source\GUI">
       <UniqueIdentifier>{9453fa03-f8d4-49de-8892-4d79f5710bc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Hacks\Visuals">
+      <UniqueIdentifier>{4377f9b8-2b31-42c1-af2a-417c9d7b61a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Hacks\Visuals">
+      <UniqueIdentifier>{20fb5db9-5c9f-45d2-80e2-8786cc4a7396}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

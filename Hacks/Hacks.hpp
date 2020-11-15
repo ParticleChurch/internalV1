@@ -7,3 +7,4 @@
 #include "Visuals/ESP.hpp"
 #include "Visuals/Chams.hpp"
 #include "Visuals/World.hpp"
+#include "Visuals/MiscVisuals.hpp"

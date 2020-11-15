@@ -619,57 +619,12 @@ bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WO
 
 void __fastcall H::hkCamToFirstPeronHook()
 {
-	ohkCamToFirstPeron(I::input);
-}
-
-Vec GetIdealCameraPos(float distance)
-{
-	Vec PlayerPos = G::Localplayer->GetEyePos();	//pleyer center position
-	Vec Ideal = PlayerPos;							//Final ideal angle
-	QAngle FPAng = G::StartAngle;				//flipped player angle
-	FPAng.x *= -1;
-	FPAng.y += 180;
-	FPAng.NormalizeAngle();
-
-	Ideal.z += distance * sin(DEG2RAD(FPAng.x));
-	float Hz = distance * cos(DEG2RAD(FPAng.x)); //horizonal distance
-
-	Ideal.x += Hz * cos(DEG2RAD(FPAng.y));
-	Ideal.y += Hz * sin(DEG2RAD(FPAng.y));
-
-	return Ideal;
-}
-
-float GetCameraBoomLength(float distance)
-{
-	Vec IdealCameraPos = GetIdealCameraPos(distance);	//ideal camera position
-	Vec PlayerPos = G::Localplayer->GetEyePos();		//player center position
-
-	trace_t Trace;
-	Ray_t Ray(PlayerPos, IdealCameraPos);
-	CTraceFilter Filter(I::entitylist->GetClientEntity(I::engine->GetLocalPlayer()));
-	I::enginetrace->TraceRay(Ray, MASK_ALL, &Filter, &Trace);
-
-	if (Trace.Fraction <= 1)
-		return distance * Trace.Fraction * 0.9;
-	else
-		return distance;
+	miscvisuals->ThirdPerson_hkCamToFirstPeron();
 }
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
-	/*if (I::engine->IsInGame() && G::Localplayer->GetHealth() > 0) {
-		if (true)
-		{
-			I::input->m_fCameraInThirdPerson = true;
-			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, GetCameraBoomLength(150.f));
-		}
-		else
-		{
-			I::input->m_fCameraInThirdPerson = false;
-			I::input->m_vecCameraOffset = Vec(G::CM_StartAngle.x, G::CM_StartAngle.y, 0);
-		}
-	}*/
+	miscvisuals->ThirdPerson_DoPostScreenEffects();
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }
