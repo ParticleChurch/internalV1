@@ -1,5 +1,4 @@
-#include "../Include.hpp"
-#include "Chams.hpp"
+#include "../../Include.hpp"
 
 Chams* chams = new Chams();
 

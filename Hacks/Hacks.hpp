@@ -1,9 +1,9 @@
 #pragma once
 #include "Backtrack.hpp"
-#include "ESP.hpp"
 #include "Autowall.hpp"
 #include "Aimbot.hpp"
 #include "AntiAim.hpp"
 #include "Movement.hpp"
-#include "Chams.hpp"
-#include "World.hpp"
+#include "Visuals/ESP.hpp"
+#include "Visuals/Chams.hpp"
+#include "Visuals/World.hpp"
