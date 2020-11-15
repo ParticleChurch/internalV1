@@ -67,6 +67,9 @@
     <ClCompile Include="Hacks\Chams.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\World.cpp">
+      <Filter>Source\Hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -293,6 +296,9 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\SoundData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\World.hpp">
+      <Filter>Headers\Hacks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

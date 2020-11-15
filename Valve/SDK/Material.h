@@ -73,6 +73,12 @@ public:
         return GetVFunc< ocolorModulate >(this, 28)(this, std::get<0>(color), std::get<1>(color), std::get<2>(color));
     }
 
+    //for our color class
+    void ColorModulate(Color a) noexcept
+    {
+        ColorModulate(a.r()/255.f, a.g()/255.f, a.b()/255.f);
+    }
+
     constexpr void SetMaterialVarFlag(MaterialVarFlag flag, bool on) noexcept
     {
         typedef void(__thiscall* osetMaterialVarFlag)(void*, MaterialVarFlag, bool);
