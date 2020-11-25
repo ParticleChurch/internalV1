@@ -343,17 +343,8 @@ namespace Config {
 	void SetBool(std::string Name, bool Value)
 	{
 		Property* prop = PropertyLookup.at(Name);
+		if (!prop) return;
 		*(bool*)prop->Value = Value;
-	}
-	void SetFloat(std::string Name, float Value)
-	{
-		Property* prop = PropertyLookup.at(Name);
-		*(float*)prop->Value = Value;
-	}
-	void SetColor(std::string Name, Color Value)
-	{
-		Property* prop = PropertyLookup.at(Name);
-		*(Color*)prop->Value = Value;
 	}
 
 	/* Keybind Stuff */

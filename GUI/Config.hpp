@@ -242,8 +242,6 @@ namespace Config {
 	extern size_t GetState(std::string Name);
 
 	extern void SetBool(std::string Name, bool Value);
-	extern void SetFloat(std::string Name, float Value);
-	extern void SetColor(std::string Name, Color Value);
 
 
 	struct Property {
