@@ -10,6 +10,8 @@ void Init()
 
     std::cout << "Successfully Injected\n";
 
+    std::cout << N::DumpTable() << std::endl;
+
     Config::Init();
     H::Init();
 

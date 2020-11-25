@@ -92,6 +92,59 @@ bool Autowall::IsVisible(Vec End, Entity* Ent)
     return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
 }
 
+float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire)
+{
+    if (!G::LocalPlayer) return 0;
+
+    Entity* weapon = G::LocalPlayer->GetActiveWeapon();
+    if (!weapon) return 0;
+
+    WeaponData* WeaponData = weapon->GetWeaponData();
+    if (!WeaponData) return 0;
+
+    float Damage = WeaponData->Damage;
+
+    Vec Start{ G::LocalPlayer->GetEyePos() };
+    Vec Dest{ Vec(Destination) };
+    Vec Direction{ Start - Dest };
+    Direction /= Direction.VecLength();
+
+    int hitsLeft = 4;
+
+    while (Damage >= 1.0f && hitsLeft > 0) {
+        trace_t Trace;
+        CTraceFilter Filter(G::LocalPlayer);
+        Ray_t Ray(Start, Destination);
+        I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
+
+        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
+            return 0;
+
+        if (Trace.Fraction == 1.0f)
+            break;
+
+        if (Trace.Entity == Ent && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
+            Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(WeaponData->RangeModifier, Trace.Fraction * WeaponData->Range / 500.0f);
+
+            float ArmorRatio = WeaponData->ArmorRatio / 2.0f;
+            if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
+                Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+            return Damage;
+        }
+
+        const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
+
+        if (SurfaceData->PenetrationModifier < 0.1f)
+            break;
+
+
+        Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, WeaponData->Penetration, Damage);
+        hitsLeft--;
+    }
+    return 0;
+}
+
 bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire)
 {
     if (!G::LocalPlayer)

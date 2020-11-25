@@ -6,19 +6,7 @@ Aimbot* aimbot = new Aimbot();
 Vec Aimbot::CalculateAngle(Vec Target)
 {
 	Vec EyePos = G::LocalPlayer->GetEyePos();//starting head position
-
-	static float Distance;	//Total distance between target and starting head position
-	Distance = sqrtf(pow(EyePos.x - Target.x, 2) + pow(EyePos.y - Target.y, 2) + pow(EyePos.z - Target.z, 2));
-
-	static float Height;	//total difference in height between target and starting head position
-	Height = EyePos.z - Target.z;
-
-	static Vec Angle;
-	Angle.x = RAD2DEG(asin(Height / Distance));									//yaw angle
-	Angle.y = RAD2DEG(atan2(EyePos.y - Target.y, EyePos.x - Target.x)) - 180;	//pitch angle
-
-	Angle.NormalizeAngle();	//making sure the angles are proper
-	return Angle;
+	return CalculateAngle(EyePos, Target);
 }
 
 Vec Aimbot::CalculateAngle(Vec Source, Vec Target)
@@ -201,11 +189,180 @@ void Aimbot::Smooth(Vec& Angle)
 	Angle.NormalizeAngle();
 }
 
+int Aimbot::GetHitGroup(int Hitbox)
+{
+	switch (Hitbox)
+	{
+	case HITBOX_CHEST:
+	case HITBOX_UPPER_CHEST:
+	case HITBOX_LOWER_CHEST:
+		return HITGROUP_CHEST;
+	case HITBOX_LEFT_THIGH:
+	case HITBOX_LEFT_CALF:
+	case HITBOX_LEFT_FOOT:
+		return HITGROUP_LEFTLEG;
+	case HITBOX_RIGHT_THIGH:
+	case HITBOX_RIGHT_CALF:
+	case HITBOX_RIGHT_FOOT:
+		return HITGROUP_RIGHTLEG;
+	case HITBOX_RIGHT_HAND:
+	case HITBOX_RIGHT_FOREARM:
+	case HITBOX_RIGHT_UPPER_ARM:
+		return HITGROUP_RIGHTARM;
+	case HITBOX_LEFT_HAND:
+	case HITBOX_LEFT_UPPER_ARM:
+	case HITBOX_LEFT_FOREARM:
+		return HITGROUP_LEFTARM;
+	case HITBOX_HEAD:
+	case HITBOX_NECK:
+		return HITGROUP_HEAD;
+	case HITBOX_STOMACH:
+		return HITGROUP_STOMACH;
+	case HITBOX_PELVIS:
+		return HITGROUP_GENERIC;
+	}
+	return 0;
+}
+
 void Aimbot::Run()
 {
+	if (!Config::GetBool("enable-aimbot")) return;
+
 	if (!G::LocalPlayer) return;
 
 	if (!G::LocalPlayerAlive) return;
+
+	if (!G::LocalPlayer->CanShoot()) return;
+
+	
+
+	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
+	if (!weapon) return;
+
+	// Playing for doing MAX damage
+	int DamageToDo = 0;
+	Vec AimLoc;
+	Entity* target = nullptr;
+	for (int i = 1; i < 65; i++) {
+		Entity* ent = I::entitylist->GetClientEntity(i);
+		if (!ent) //if nullptr
+			continue;
+
+		static player_info_t info;
+		if (!I::engine->GetPlayerInfo(i, &info)) //if not player
+			continue;
+
+		if (G::LocalPlayer == ent) //if localplayer
+			continue;
+
+		if (i == G::LocalPlayerIndex) //if localplayer
+			continue;
+
+		if (ent->GetHealth() <= 0) //if health isn't greater than 0
+			continue;
+
+		if (ent->GetTeam() == G::LocalPlayer->GetTeam()) //if on local players team
+			continue;
+
+		if (ent->IsDormant()) //if csgo servers have not sent us updated information about this entity
+			continue;
+
+		std::vector<Hitboxes> hitboxes = 
+		{ 
+		HITBOX_STOMACH,
+		HITBOX_LOWER_CHEST,
+		HITBOX_CHEST,
+		HITBOX_UPPER_CHEST,
+		HITBOX_RIGHT_THIGH,
+		HITBOX_LEFT_THIGH,
+		HITBOX_RIGHT_CALF,
+		HITBOX_LEFT_CALF,
+		HITBOX_RIGHT_FOOT,
+		HITBOX_LEFT_FOOT,
+		HITBOX_RIGHT_HAND,
+		HITBOX_LEFT_HAND,
+		HITBOX_RIGHT_UPPER_ARM,
+		HITBOX_RIGHT_FOREARM,
+		HITBOX_LEFT_UPPER_ARM,
+		HITBOX_LEFT_FOREARM,
+		HITBOX_HEAD,
+		HITBOX_NECK,
+		HITBOX_PELVIS };
+		int HitGroup = 0;
+		for (auto HBOX : hitboxes)
+		{
+			studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(ent->GetModel());
+			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HBOX);
+			if (!StudioBox) continue;	//if cant get the hitbox...
+			
+			HitGroup = GetHitGroup(HBOX);
+			static Matrix3x4 matrix[128];
+			ent->SetupBones(matrix, 128, 0x100);
+
+			Vec min = StudioBox->bbmin.Transform(matrix[StudioBox->bone]);
+			Vec minL = ent->GetLeft(min, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
+			Vec minR = ent->GetRight(min, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
+
+			Vec max = StudioBox->bbmax.Transform(matrix[StudioBox->bone]);
+			Vec maxL = ent->GetLeft(max, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
+			Vec maxR = ent->GetRight(max, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
+
+			int dam = autowall->GetDamage(ent, min, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = min;
+			}
+			dam = autowall->GetDamage(ent, minL, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = minL;
+			}
+			dam = autowall->GetDamage(ent, minR, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = minR;
+			}
+
+			dam = autowall->GetDamage(ent, max, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = max;
+			}
+			dam = autowall->GetDamage(ent, maxL, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = maxL;
+			}
+			dam = autowall->GetDamage(ent, maxR, true);
+			if (dam > DamageToDo)
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = maxR;
+			}
+		}
+
+	}
+
+	if (!(DamageToDo > 0)) return;
+
+	if (!Config::GetBool("aimbot-autowall") && target && autowall->IsVisible(AimLoc, target)) return;
+
+	QAngle angle = CalculateAngle(AimLoc);
+	angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
+	G::cmd->viewangles = angle;
+	if(Config::GetBool("aimbot-autoshoot"))
+		G::cmd->buttons |= IN_ATTACK;
 
 }
 

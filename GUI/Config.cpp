@@ -27,6 +27,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Aimbot");
 
 				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
 				//w->MarkSeperator();

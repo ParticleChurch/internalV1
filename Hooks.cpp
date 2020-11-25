@@ -36,6 +36,7 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
+	QAngle finalAngle = QAngle(0.f, 0.f, 0.f);
 }
 
 void H::Init()
@@ -348,7 +349,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
-		
+		aimbot->Run();
+
+		G::LocalPlayer->GetActiveWeapon();
+
 		//antiaim->rage();
 
 		// decide when to enable desync
@@ -405,6 +409,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->Airstuck();
 
 		G::CM_End();	
+		finalAngle = G::cmd->viewangles;
 		
 	}
 
@@ -443,12 +448,12 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			return oFrameStageNotify(curStage);
 
 		//this is for accurate angles (aa, etc)
-		/*static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
 		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "deadflag");*/
+			offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-			//if (I::input->m_fCameraInThirdPerson)
-			//	*(Vec*)((DWORD)G::Localplayer + offset + 4) = G::FakeAngle;
+			if (I::input->m_fCameraInThirdPerson)
+				*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = finalAngle;
 
 			
 

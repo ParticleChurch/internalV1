@@ -197,6 +197,8 @@ public:
 		return I::entitylist->GetClientEntityFromHandle(weaponHandle);
 	}
 
+	
+
 	bool CanShoot() {
 		if (!this || !this->GetActiveWeapon())
 			return false;

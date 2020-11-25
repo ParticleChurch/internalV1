@@ -13,6 +13,8 @@ public:
 
 	bool IsVisible(Vec Start, Vec End, Entity* Ent);
 	bool IsVisible(Vec End, Entity*); //FROM LOCAL PLAYER HEAD POS
+
+	float GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire);
 };
 
 extern Autowall* autowall;
