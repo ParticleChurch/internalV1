@@ -12,7 +12,7 @@ namespace G
 	QAngle EndAngle;
 
 	//LocalPlayer
-	Entity* Localplayer = new Entity();
+	Entity* LocalPlayer = new Entity();
 	bool LocalPlayerAlive = false;
 	int LocalPlayerIndex = 0;\
 

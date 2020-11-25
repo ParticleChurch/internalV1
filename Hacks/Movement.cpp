@@ -4,7 +4,7 @@ Movement* movement = new Movement();
 
 void Movement::AAMoveFix()
 {
-	if ((G::Localplayer->GetHealth() > 0) && fabsf(G::cmd->sidemove) < 5.0f) {
+	if ((G::LocalPlayer->GetHealth() > 0) && fabsf(G::cmd->sidemove) < 5.0f) {
 		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 	}
 }
@@ -17,8 +17,8 @@ void Movement::BunnyHop()
 
 	// If we are holding jump, localplayer alive, and we aren't on the ground, and we arent on a ladder...
 	// Inverse the jump (aka space will not send unless on ground when holding space)
-	if ((G::cmd->buttons & IN_JUMP) && G::LocalPlayerAlive && !(G::Localplayer->GetFlags() & FL_ONGROUND)
-		&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
+	if ((G::cmd->buttons & IN_JUMP) && G::LocalPlayerAlive && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
+		&& G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER) {
 		G::cmd->buttons &= ~IN_JUMP;
 	}
 }
@@ -30,7 +30,7 @@ void Movement::FastCrouch()
 		return;
 
 	// If the localplayer is not alive...
-	if (!G::Localplayer || !G::LocalPlayerAlive)
+	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
 
 	// Fastcrouch
@@ -40,8 +40,8 @@ void Movement::FastCrouch()
 void Movement::RageAutoStrafe()
 {
 	static bool flip = false;
-	if (G::pSendPacket && !(*G::pSendPacket) && (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND)
-		&& G::Localplayer->GetMoveType() != MOVETYPE_LADDER) {
+	if (G::pSendPacket && !(*G::pSendPacket) && (G::LocalPlayer->GetHealth() > 0) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
+		&& G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER) {
 		bool Left = G::cmd->sidemove > 300;
 		bool Right = G::cmd->sidemove < -300;
 		bool Side = (Left || Right) && !(Left && Right);
@@ -53,12 +53,12 @@ void Movement::RageAutoStrafe()
 		float Goal = 0;
 		Goal += Side ? (Frwd ? (Left ? 90 + (Forward ? -45 : 45) : 270 + (Forward ? 45 : -45)) : (Left ? 90 : 270)) : (Frwd ? (Forward ? 0 : 180) : 0);
 
-		Vec Vel = G::Localplayer->GetVecVelocity();
+		Vec Vel = G::LocalPlayer->GetVecVelocity();
 
 		float yaw_change = 0.f;
 		if (Vel.VecLength2D() > 50.f)
 		{
-			float desync = fabsf(G::Localplayer->GetMaxDesyncAngle()) * 0.9;
+			float desync = fabsf(G::LocalPlayer->GetMaxDesyncAngle()) * 0.9;
 			yaw_change = desync * fabsf(desync / Vel.VecLength2D());
 		}
 
@@ -105,7 +105,7 @@ void Movement::RageAutoStrafe()
 
 void Movement::LegitAutoStrafe()
 {
-	bool valid = (G::Localplayer->GetHealth() > 0) && !(G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
+	bool valid = (G::LocalPlayer->GetHealth() > 0) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
 	if (!valid)
 		return;
 
@@ -122,12 +122,12 @@ void Movement::SlowWalk()
 		return;
 
 	// valid - valid time to slow walk
-	bool valid = G::Localplayer && G::LocalPlayerAlive && (G::Localplayer->GetFlags() & FL_ONGROUND) && G::Localplayer->GetMoveType() != MOVETYPE_LADDER;
+	bool valid = G::LocalPlayer && G::LocalPlayerAlive && (G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
 	// If not a valid time to slow walk
 	if (!valid)
 		return;
 
-	float maxSpeed = G::Localplayer->MaxAccurateSpeed() * 0.333;
+	float maxSpeed = G::LocalPlayer->MaxAccurateSpeed() * 0.333;
 	maxSpeed *= (Config::GetFloat("misc-movement-slowwalk-speed") / 100.f);
 
 	if (G::cmd->forwardmove && G::cmd->sidemove) {
@@ -150,7 +150,7 @@ void Movement::Airstuck()
 		return;
 
 	// If the localplayer is not alive...
-	if (!G::Localplayer || !G::LocalPlayerAlive)
+	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
 
 	// Airstuck
@@ -161,7 +161,7 @@ void Movement::Airstuck()
 void Movement::FakeDuck()
 {
 	// If the localplayer is not alive...
-	if (!G::Localplayer || !G::LocalPlayerAlive)
+	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
 
 	// Set choke amount back to normal
@@ -188,5 +188,20 @@ void Movement::FakeDuck()
 			G::cmd->buttons &= ~IN_DUCK;
 	} else
 		WasJustFakeducking = false;
+}
+
+void Movement::FollowBot()
+{
+	/*Entity* Leader;
+
+	Vec cur_loc = G::Localplayer->GetVecOrigin();
+	Vec ent_loc = Leader->GetVecOrigin();
+
+	locs.push_back(ent_loc);
+	while (locs.size() > 20) {
+		locs.pop_front();
+	}*/
+
+
 }
 

@@ -317,7 +317,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd->command_number)
 		return true;
 
-	if (I::engine->IsInGame() && cmd && G::Localplayer) 
+	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
 	{
 		
 		float ServerTime = I::globalvars->ServerTime(cmd);
@@ -416,7 +416,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
-		if (!G::Localplayer || !I::engine->IsInGame() || !(G::Localplayer->GetHealth() > 0))
+		if (!G::LocalPlayer || !I::engine->IsInGame() || !(G::LocalPlayer->GetHealth() > 0))
 			return;
 
 		esp->Run();
@@ -429,15 +429,15 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
 		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
-		G::Localplayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
+		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 
-		if (!G::Localplayer)
+		if (!G::LocalPlayer)
 		{
 			G::LocalPlayerAlive = false;
 			return oFrameStageNotify(curStage);
 		}
 
-		G::LocalPlayerAlive = G::Localplayer->GetHealth() > 0;
+		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
 
 		if (!G::LocalPlayerAlive)
 			return oFrameStageNotify(curStage);

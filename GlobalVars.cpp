@@ -6,8 +6,8 @@ float GlobalVars::ServerTime(CUserCmd* cmd) noexcept
     static CUserCmd* lastCmd;
 
     if (cmd) {
-        if (G::Localplayer && (!lastCmd || lastCmd->hasbeenpredicted))
-            tick = G::Localplayer->GetTickBase();
+        if (G::LocalPlayer && (!lastCmd || lastCmd->hasbeenpredicted))
+            tick = G::LocalPlayer->GetTickBase();
         else
             tick++;
         lastCmd = cmd;

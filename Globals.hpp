@@ -11,7 +11,7 @@ namespace G {
 	extern QAngle EndAngle;
 
 	//LocalPlayer
-	extern Entity* Localplayer;
+	extern Entity* LocalPlayer;
 	extern bool LocalPlayerAlive;
 	extern int LocalPlayerIndex;
 	//maybe add flags and movetype?

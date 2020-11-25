@@ -9,16 +9,16 @@ void AntiAim::legit()
 	//if (!Config::antiaim.Legit.Enable)
 	//	return;
 
-	if (!G::Localplayer)
+	if (!G::LocalPlayer)
 		return;
 
-	if (!(G::Localplayer->GetHealth() > 0))
+	if (!G::LocalPlayerAlive)
 		return;
 		
-	if (G::Localplayer->GetMoveType() == MOVETYPE_LADDER)
+	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
 
-	if (!(G::Localplayer->GetFlags() & FL_ONGROUND))
+	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND))
 		return;
 
 	static float lastUpdate = 0;
@@ -32,7 +32,7 @@ void AntiAim::legit()
 	}
 
 	bool BreakLBY = LBYBreak();
-	float Delta = G::Localplayer->GetMaxDesyncAngle();
+	float Delta = G::LocalPlayer->GetMaxDesyncAngle();
 	
 	//side by default = left
 	if (!BreakLBY)
@@ -63,9 +63,9 @@ void AntiAim::legit()
 bool AntiAim::LBYBreak()
 {
 	static float NextUpdate = 0;
-	float velocity = G::Localplayer->GetVecVelocity().VecLength2D();
-	float time = G::Localplayer->GetServerTime();
-	if (!(G::Localplayer->GetFlags() & 1) || (!(G::Localplayer->IsAlive()))) {
+	float velocity = G::LocalPlayer->GetVecVelocity().VecLength2D();
+	float time = G::LocalPlayer->GetServerTime();
+	if (!(G::LocalPlayer->GetFlags() & 1) || (!(G::LocalPlayer->IsAlive()))) {
 		return false;
 	}
 	if (velocity > 0.1f) {
@@ -82,7 +82,7 @@ bool AntiAim::LBYBreak()
 
 void AntiAim::rage()
 {
-	if (!(G::Localplayer->GetHealth() > 0))
+	if (!(G::LocalPlayer->GetHealth() > 0))
 		return;
 
 	G::cmd->viewangles.x = 89;
@@ -93,7 +93,7 @@ void AntiAim::rage()
 	fake.NormalizeAngle();
 
 	bool BreakLBY = LBYBreak();
-	float Delta = G::Localplayer->GetMaxDesyncAngle();
+	float Delta = G::LocalPlayer->GetMaxDesyncAngle();
 
 	if (!BreakLBY)
 	{

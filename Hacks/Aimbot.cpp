@@ -5,7 +5,7 @@ Aimbot* aimbot = new Aimbot();
 //general help functions
 Vec Aimbot::CalculateAngle(Vec Target)
 {
-	Vec EyePos = G::Localplayer->GetEyePos();//starting head position
+	Vec EyePos = G::LocalPlayer->GetEyePos();//starting head position
 
 	static float Distance;	//Total distance between target and starting head position
 	Distance = sqrtf(pow(EyePos.x - Target.x, 2) + pow(EyePos.y - Target.y, 2) + pow(EyePos.z - Target.z, 2));
@@ -42,7 +42,7 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 	static Vec cur;
 	cur = G::StartAngle;
 	cur.NormalizeAngle();
-	cur += G::Localplayer->GetAimPunchAngle();
+	cur += G::LocalPlayer->GetAimPunchAngle();
 	cur.NormalizeAngle();
 
 	//turn to 0-360 degrees
@@ -61,90 +61,90 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 }
 
 //legit functions
-void Aimbot::Legit()
-{
-	if (!G::Localplayer) return;
-
-	if (!(G::Localplayer->GetHealth() > 0)) return;
-
-	Entity* ActiveWeapon = G::Localplayer->GetActiveWeapon();
-	if (!ActiveWeapon) return;
-
-	//get closest Entity
-	Vec BestAngle;
-	float BestCrossDist = FLT_MAX; //crosshair distance
-	bool ValidTargetFound = false;
-
-	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
-	{
-		player_info_t PlayerInfo;
-		if (!I::engine->GetPlayerInfo(i, &PlayerInfo)) //if not player
-			continue;
-
-		Entity* Ent = I::entitylist->GetClientEntity(i);
-		if (!Ent)
-			continue;
-
-		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if teamate
-			continue;
-
-		if (Ent->IsDormant()) //if dormant
-			continue;
-
-		if (!(Ent->GetHealth() > 0)) //if dead
-			continue;
-
-		studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
-		if (!StudioModel) continue; //if cant get the model
-
-		if (backtrack->Records[i].empty()) continue; //if the record is empty...
-
-		//general hitboxes
-		int Hitboxes[] = { HITBOX_HEAD, HITBOX_CHEST};
-		for (auto hitbox : Hitboxes)
-		{
-			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(hitbox);
-			if (!StudioBox) continue;	//if cant get the hitbox...
-
-			Vec min = StudioBox->bbmin.Transform(backtrack->Records[i].front().Matrix[StudioBox->bone]);
-			Vec max = StudioBox->bbmax.Transform(backtrack->Records[i].front().Matrix[StudioBox->bone]);
-			Vec loc = (max + min) / 2.f; //just getting middle of bone cuz not rage...
-
-			if (!autowall->IsVisible(loc, Ent)) //if not visible
-				continue;
-
-			Vec Angle = CalculateAngle(loc);
-			float CrossDist = CrosshairDist(Angle);
-			if (CrossDist > 30) //if not in fov
-				continue;
-
-			bool InPriority = hitbox == HITBOX_HEAD;
-			
-			if (CrossDist < BestCrossDist && !InPriority)
-			{
-				BestCrossDist = CrossDist;
-				BestAngle = Angle;
-				ValidTargetFound = true;
-			}
-			else if(InPriority)
-			{
-				BestCrossDist *= -1;
-				BestAngle = Angle;
-				ValidTargetFound = true;
-			}
-		}
-		
-	}
-
-	BestAngle -= (G::Localplayer->GetAimPunchAngle() * 2);
-	Smooth(BestAngle);
-
-	if (ValidTargetFound)
-	{
-		G::cmd->viewangles = BestAngle;
-	}
-		
-} 
+//void aimbot::legit()
+//{
+//	if (!g::localplayer) return;
+//
+//	if (!g::localplayeralive) return;
+//
+//	entity* activeweapon = g::localplayer->getactiveweapon();
+//	if (!activeweapon) return;
+//
+//	//get closest entity
+//	vec bestangle;
+//	float bestcrossdist = flt_max; //crosshair distance
+//	bool validtargetfound = false;
+//
+//	for (int i = 0; i < i::entitylist->gethighestentityindex(); i++)
+//	{
+//		player_info_t playerinfo;
+//		if (!i::engine->getplayerinfo(i, &playerinfo)) //if not player
+//			continue;
+//
+//		entity* ent = i::entitylist->getcliententity(i);
+//		if (!ent)
+//			continue;
+//
+//		if (ent->getteam() == g::localplayer->getteam()) //if teamate
+//			continue;
+//
+//		if (ent->isdormant()) //if dormant
+//			continue;
+//
+//		if (!(ent->gethealth() > 0)) //if dead
+//			continue;
+//
+//		studiohdr_t* studiomodel = i::modelinfo->getstudiomodel(ent->getmodel());
+//		if (!studiomodel) continue; //if cant get the model
+//
+//		if (backtrack->records[i].empty()) continue; //if the record is empty...
+//
+//		//general hitboxes
+//		int hitboxes[] = { hitbox_head, hitbox_chest};
+//		for (auto hitbox : hitboxes)
+//		{
+//			mstudiobbox_t* studiobox = studiomodel->gethitboxset(0)->gethitbox(hitbox);
+//			if (!studiobox) continue;	//if cant get the hitbox...
+//
+//			vec min = studiobox->bbmin.transform(backtrack->records[i].front().matrix[studiobox->bone]);
+//			vec max = studiobox->bbmax.transform(backtrack->records[i].front().matrix[studiobox->bone]);
+//			vec loc = (max + min) / 2.f; //just getting middle of bone cuz not rage...
+//
+//			if (!autowall->isvisible(loc, ent)) //if not visible
+//				continue;
+//
+//			vec angle = calculateangle(loc);
+//			float crossdist = crosshairdist(angle);
+//			if (crossdist > 30) //if not in fov
+//				continue;
+//
+//			bool inpriority = hitbox == hitbox_head;
+//			
+//			if (crossdist < bestcrossdist && !inpriority)
+//			{
+//				bestcrossdist = crossdist;
+//				bestangle = angle;
+//				validtargetfound = true;
+//			}
+//			else if(inpriority)
+//			{
+//				bestcrossdist *= -1;
+//				bestangle = angle;
+//				validtargetfound = true;
+//			}
+//		}
+//		
+//	}
+//
+//	bestangle -= (g::localplayer->getaimpunchangle() * 2);
+//	smooth(bestangle);
+//
+//	if (validtargetfound)
+//	{
+//		g::cmd->viewangles = bestangle;
+//	}
+//		
+//} 
 
 void Aimbot::Smooth(Vec& Angle)
 {
@@ -201,118 +201,123 @@ void Aimbot::Smooth(Vec& Angle)
 	Angle.NormalizeAngle();
 }
 
-//rage functions
-void Aimbot::Rage()
+void Aimbot::Run()
 {
-	//if (!Config::ragebot.Enable)
-		//return;
+	if (!G::LocalPlayer) return;
 
-	//if (!Config::ragebot.EnableAim)
-		//return;
+	if (!G::LocalPlayerAlive) return;
 
-	if (!(G::Localplayer->GetHealth() > 0))
-		return;
-
-	if (!G::Localplayer->CanShoot())
-		return;
-
-	if (!G::Localplayer->GetAmmo())
-		return;
-
-
-	//get closest Entity
-	int BestIndex = -1;
-	float BestCrossDist = FLT_MAX;
-	for (int i = 1; i < 65; i++) {
-		Entity* Ent = I::entitylist->GetClientEntity(i);
-		if (!Ent) //if nullptr
-			continue;
-		
-		static player_info_t info;
-		if (!I::engine->GetPlayerInfo(i, &info)) //if not player
-			continue;
-		
-		if (G::Localplayer == Ent) //if localplayer
-			continue;
-		
-		if (i == I::engine->GetLocalPlayer()) //if localplayer
-			continue;
-		
-		if (Ent->GetHealth() <= 0) //if health isn't greater than 0
-			continue;
-		
-		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if on local players team
-			continue;
-		
-		if (Ent->IsDormant()) //if csgo servers have not sent us updated information about this entity
-			continue;
-
-		Vec		Location	= Ent->GetBone(HITBOX_HEAD);
-		QAngle	Angle		= aimbot->CalculateAngle(Location);
-		float	CrossDist	= aimbot->CrosshairDist(Angle);
-		if (CrossDist < BestCrossDist)
-		{
-			BestCrossDist = CrossDist;
-			BestIndex = i;
-		}
-	}
-
-	//if a valid target hasn't been found
-	if (BestIndex == -1)
-		return;
-
-	Entity* Ent = I::entitylist->GetClientEntity(BestIndex);
-	if (!Ent) return; //if proper entity
-	
-	//absolute unit of a shit code
-	Entity* Weapon = G::Localplayer->GetActiveWeapon();
-	WeaponData* WeapData = Weapon->GetWeaponData();
-
-	QAngle Angle;
-	bool ValidFound = false;
-
-	std::vector<Hitboxes> hitboxes = { HITBOX_HEAD };//HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };
-	int HitGroup = 0;
-
-	for (auto HBOX : hitboxes)
-	{
-		studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
-		if (!StudioModel) continue; //if cant get the model
-
-		//if(!(tick.Value > 0)) continue; //if not onshot...
-
-			//GOIN FOR HEAD BB
-		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HBOX);
-		if (!StudioBox) continue;	//if cant get the hitbox...
-
-		if (HBOX == HITBOX_HEAD)
-			HitGroup = HITGROUP_HEAD;
-		else if (HBOX == HITBOX_PELVIS || HBOX == HITBOX_STOMACH)
-			HitGroup = HITGROUP_STOMACH;
-		else if (HBOX == HITBOX_LOWER_CHEST || HBOX == HITBOX_CHEST || HBOX == HITBOX_UPPER_CHEST)
-			HitGroup = HITGROUP_CHEST;
-		else if (HBOX == HITBOX_RIGHT_THIGH)
-			HitGroup = HITGROUP_RIGHTLEG;
-		else if (HBOX == HITBOX_LEFT_THIGH)
-			HitGroup = HITGROUP_LEFTLEG;
-
-		Vec loc = Ent->GetBone(HBOX);
-
-		if (!autowall->CanScanBacktrack(Ent, loc, WeapData, 1, true, HitGroup))
-			continue;
-
-		Angle = aimbot->CalculateAngle(loc);
-		ValidFound = true;
-	}
-	
-	if (!ValidFound) return;
-
-	//HIDE SHOTS
-	*G::pSendPacket = true;
-
-	//actual shit
-	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
-	G::cmd->viewangles = Angle;
-	G::cmd->buttons |= IN_ATTACK;
 }
+
+//rage functions
+//void Aimbot::Rage()
+//{
+//	if (!G::Localplayer)
+//		return;
+//
+//	if (!G::LocalPlayerAlive)
+//		return;
+//
+//	if (!G::Localplayer->CanShoot())
+//		return;
+//
+//	if (!G::Localplayer->GetAmmo())
+//		return;
+//
+//
+//	//get closest Entity
+//	int BestIndex = -1;
+//	float BestCrossDist = FLT_MAX;
+//	for (int i = 1; i < 65; i++) {
+//		Entity* Ent = I::entitylist->GetClientEntity(i);
+//		if (!Ent) //if nullptr
+//			continue;
+//		
+//		static player_info_t info;
+//		if (!I::engine->GetPlayerInfo(i, &info)) //if not player
+//			continue;
+//		
+//		if (G::Localplayer == Ent) //if localplayer
+//			continue;
+//		
+//		if (i == I::engine->GetLocalPlayer()) //if localplayer
+//			continue;
+//		
+//		if (Ent->GetHealth() <= 0) //if health isn't greater than 0
+//			continue;
+//		
+//		if (Ent->GetTeam() == G::Localplayer->GetTeam()) //if on local players team
+//			continue;
+//		
+//		if (Ent->IsDormant()) //if csgo servers have not sent us updated information about this entity
+//			continue;
+//
+//		Vec		Location	= Ent->GetBone(HITBOX_HEAD);
+//		QAngle	Angle		= aimbot->CalculateAngle(Location);
+//		float	CrossDist	= aimbot->CrosshairDist(Angle);
+//		if (CrossDist < BestCrossDist)
+//		{
+//			BestCrossDist = CrossDist;
+//			BestIndex = i;
+//		}
+//	}
+//
+//	//if a valid target hasn't been found
+//	if (BestIndex == -1)
+//		return;
+//
+//	Entity* Ent = I::entitylist->GetClientEntity(BestIndex);
+//	if (!Ent) return; //if proper entity
+//	
+//	//absolute unit of a shit code
+//	Entity* Weapon = G::Localplayer->GetActiveWeapon();
+//	WeaponData* WeapData = Weapon->GetWeaponData();
+//
+//	QAngle Angle;
+//	bool ValidFound = false;
+//
+//	std::vector<Hitboxes> hitboxes = { HITBOX_HEAD };//HITBOX_PELVIS, HITBOX_STOMACH, HITBOX_LOWER_CHEST, HITBOX_CHEST, HITBOX_UPPER_CHEST, HITBOX_RIGHT_THIGH, HITBOX_LEFT_THIGH, HITBOX_HEAD };
+//	int HitGroup = 0;
+//
+//	for (auto HBOX : hitboxes)
+//	{
+//		studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
+//		if (!StudioModel) continue; //if cant get the model
+//
+//		//if(!(tick.Value > 0)) continue; //if not onshot...
+//
+//			//GOIN FOR HEAD BB
+//		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HBOX);
+//		if (!StudioBox) continue;	//if cant get the hitbox...
+//
+//		if (HBOX == HITBOX_HEAD)
+//			HitGroup = HITGROUP_HEAD;
+//		else if (HBOX == HITBOX_PELVIS || HBOX == HITBOX_STOMACH)
+//			HitGroup = HITGROUP_STOMACH;
+//		else if (HBOX == HITBOX_LOWER_CHEST || HBOX == HITBOX_CHEST || HBOX == HITBOX_UPPER_CHEST)
+//			HitGroup = HITGROUP_CHEST;
+//		else if (HBOX == HITBOX_RIGHT_THIGH)
+//			HitGroup = HITGROUP_RIGHTLEG;
+//		else if (HBOX == HITBOX_LEFT_THIGH)
+//			HitGroup = HITGROUP_LEFTLEG;
+//
+//		Vec loc = Ent->GetBone(HBOX);
+//
+//		if (!autowall->CanScanBacktrack(Ent, loc, WeapData, 1, true, HitGroup))
+//			continue;
+//
+//		Angle = aimbot->CalculateAngle(loc);
+//		ValidFound = true;
+//	}
+//	
+//	if (!ValidFound) return;
+//
+//	//HIDE SHOTS
+//	*G::pSendPacket = true;
+//
+//	//actual shit
+//	Angle -= (G::Localplayer->GetAimPunchAngle() * 2);
+//	G::cmd->viewangles = Angle;
+//	G::cmd->buttons |= IN_ATTACK;
+//}
 

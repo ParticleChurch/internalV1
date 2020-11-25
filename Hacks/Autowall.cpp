@@ -74,7 +74,7 @@ bool Autowall::IsVisible(Vec Start, Vec End, Entity* Ent)
 {
     trace_t Trace;
     Ray_t Ray(Start, End);
-    CTraceFilter Filter(G::Localplayer);
+    CTraceFilter Filter(G::LocalPlayer);
     I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
 
     return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
@@ -82,11 +82,11 @@ bool Autowall::IsVisible(Vec Start, Vec End, Entity* Ent)
 
 bool Autowall::IsVisible(Vec End, Entity* Ent)
 {
-    Vec Start = G::Localplayer->GetEyePos();
+    Vec Start = G::LocalPlayer->GetEyePos();
 
     trace_t Trace;
     Ray_t Ray(Start, End);
-    CTraceFilter Filter(G::Localplayer);
+    CTraceFilter Filter(G::LocalPlayer);
     I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
 
     return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
@@ -94,12 +94,12 @@ bool Autowall::IsVisible(Vec End, Entity* Ent)
 
 bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire)
 {
-    if (!G::Localplayer)
+    if (!G::LocalPlayer)
         return false;
 
     float Damage = WeaponData->Damage;
 
-    Vec Start{ G::Localplayer->GetEyePos() };
+    Vec Start{ G::LocalPlayer->GetEyePos() };
     Vec Dest{ Vec(Destination) };
     Vec Direction{ Start - Dest };
     Direction /= Direction.VecLength();
@@ -108,11 +108,11 @@ bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* We
 
     while (Damage >= 1.0f && hitsLeft > 0) {
         trace_t Trace;
-        CTraceFilter Filter(G::Localplayer);
+        CTraceFilter Filter(G::LocalPlayer);
         Ray_t Ray(Start, Destination);
         I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
 
-        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::Localplayer->GetTeam() == Trace.Entity->GetTeam()))
+        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
             return false;
 
         if (Trace.Fraction == 1.0f)
@@ -142,12 +142,12 @@ bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* We
 
 bool Autowall::CanScanBacktrack(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire, int Hitgroup)
 {
-    if (!G::Localplayer)
+    if (!G::LocalPlayer)
         return false;
 
     float Damage = WeaponData->Damage;
 
-    Vec Start{ G::Localplayer->GetEyePos() };
+    Vec Start{ G::LocalPlayer->GetEyePos() };
     Vec Dest{ Vec(Destination) };
     Vec Direction{ Start - Dest };
     Direction /= Direction.VecLength();
@@ -156,11 +156,11 @@ bool Autowall::CanScanBacktrack(Entity* Ent, const Vec& Destination, const Weapo
 
     while (Damage >= 1.0f && hitsLeft > 0) {
         trace_t Trace;
-        CTraceFilter Filter(G::Localplayer);
+        CTraceFilter Filter(G::LocalPlayer);
         Ray_t Ray(Start, Destination);
         I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
 
-        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::Localplayer->GetTeam() == Trace.Entity->GetTeam()))
+        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
             return false;
 
         if (Trace.Fraction == 1.0f || (Trace.Entity == Ent && Trace.Hitgroup > HITGROUP_GENERIC&& Trace.Hitgroup <= HITGROUP_RIGHTLEG)) {

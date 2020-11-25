@@ -4,7 +4,7 @@ MiscVisuals* miscvisuals = new MiscVisuals();
 
 Vec MiscVisuals::GetIdealCameraPos(float distance)
 {
-	Vec PlayerPos = G::Localplayer->GetEyePos();	//pleyer center position
+	Vec PlayerPos = G::LocalPlayer->GetEyePos();	//pleyer center position
 	Vec Ideal = PlayerPos;							//Final ideal angle
 	QAngle FPAng = G::StartAngle;				//flipped player angle
 	FPAng.x *= -1;
@@ -23,7 +23,7 @@ Vec MiscVisuals::GetIdealCameraPos(float distance)
 float MiscVisuals::GetCameraBoomLength(float distance)
 {
 	Vec IdealCameraPos = GetIdealCameraPos(distance);	//ideal camera position
-	Vec PlayerPos = G::Localplayer->GetEyePos();		//player center position
+	Vec PlayerPos = G::LocalPlayer->GetEyePos();		//player center position
 
 	trace_t Trace;
 	Ray_t Ray(PlayerPos, IdealCameraPos);

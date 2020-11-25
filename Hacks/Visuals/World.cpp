@@ -43,7 +43,7 @@ void World::SkyboxMod(Material* mat)
 
 void World::Run(int CurStage)
 {
-	if (CurStage == FRAME_RENDER_START && G::Localplayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
+	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
 		//SkyboxLoad();
 		for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
 		{

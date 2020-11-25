@@ -18,7 +18,7 @@ void Backtrack::update(int CurStage)
 	if (CurStage != FRAME_RENDER_START)
 		return;
 
-	if (!I::engine->IsInGame() || !G::Localplayer || !G::LocalPlayerAlive) {
+	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {
 		for (auto a : Records)
 			a.clear();
 		return;
@@ -37,7 +37,7 @@ void Backtrack::update(int CurStage)
 			Records[i].clear();
 			continue;
 		}
-		if (G::Localplayer == Ent) //if player not localplayer
+		if (G::LocalPlayer == Ent) //if player not localplayer
 		{
 			Records[i].clear();
 			continue;
@@ -52,7 +52,7 @@ void Backtrack::update(int CurStage)
 			Records[i].clear();
 			continue;
 		}
-		if (Ent->GetTeam() == G::Localplayer->GetTeam())
+		if (Ent->GetTeam() == G::LocalPlayer->GetTeam())
 		{
 			Records[i].clear();
 			continue;
@@ -92,7 +92,7 @@ void Backtrack::run()
 	if (!(G::cmd->buttons & IN_ATTACK))
 		return;
 
-	if (!I::engine->IsInGame() || !G::Localplayer || !G::LocalPlayerAlive) {
+	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {
 		return;
 	}
 

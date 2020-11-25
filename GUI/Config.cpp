@@ -31,7 +31,18 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
 				//w->MarkSeperator();
 
-				// todo: gun options
+				// todo: gun options (do it properly lol)
+				//Temp variables for just current gun
+				w->AddProperty(false, 0, "aimbot-smoothing-method", "Smoothing Method", CDropdown{ "None", "EaseCubic", "EaseQuart", "Linear"});
+				w->AddProperty(false, 1, "aimbot-smoothing-amount", "Smoothing Amount", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "aimbot-aimstep", "Aimstep", "degrees", 0, 180, 0, 0, 0);
+				w->AddProperty(false, 1, "aimbot-FOV", "FOV", "degrees", 0, 180, 0, 0, 0);
+				// TODO - Add hitbox selection, not just priority
+				w->AddProperty(false, 0, "aimbot-hitbox-priority", "Priority Hitbox", CDropdown{ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" });
+				w->AddProperty(false, 1, "aimbot-mindamage-visible", "Visible Min Damage", "", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "aimbot-mindamage-hidden", "Hidden Min Damage", "", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "aimbot-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "aimbot-baimIfLethal", "Baim if Lethal", true, true);
 			}
 			{
 				Widget* w = t->AddWidget("Triggerbot");
@@ -52,10 +63,9 @@ namespace Config {
 			Tab* t = new Tab("Defense");
 			{
 				Widget* w = t->AddWidget("Fake Lag");
-				//TODO - add dropdown menu for type of fake lag
-				//TODO - add amount of the type of fake lag based on the type (distance vs ticks/time)
-				w->AddProperty(false, 0, "antiaim-fakelag-amount", "Amount", "ticks", 0, 16, 0, 0, 0);
-				
+
+				w->AddProperty(false, 0, "antiaim-fakelag-tick", "Amount", "ticks", 0, 16, 0, 0, 0);
+				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 4096, 0, 0, 0); //4096				
 			}
 			{
 				Widget* w = t->AddWidget("Legit");
@@ -63,7 +73,6 @@ namespace Config {
 				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", true, true);
 				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 1, "antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
-				//TODO - add the inverter for invert aa here
 			}
 			{
 				Widget* w = t->AddWidget("Rage");
@@ -71,7 +80,7 @@ namespace Config {
 				w->AddProperty(false, 0, "antiaim-rage-enable", "Enable", true, true);
 
 				//Pitch
-				//TODO - add dropdown pitch option... (up, down, and trolling (up/down))
+				w->AddProperty(false, 0, "antiaim-rage-pitch", "Pitch", CDropdown{ "Up", "Down", "Trolling" });
 
 				//Yaw - Real
 				w->AddProperty(false, 2, "antiaim-rage-real", "Real Offset", "DEG", -180, 180, 0, 0, 0);
@@ -123,6 +132,7 @@ namespace Config {
 			}
 			{
 				Widget* w = t->AddWidget("ESP");
+
 				//Enemy
 				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enemy ESP", false, false);
 				w->AddProperty(false, 0, "visuals-esp-enemy-box", "Box", false, false);
