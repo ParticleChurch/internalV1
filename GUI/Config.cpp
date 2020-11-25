@@ -328,13 +328,14 @@ namespace Config {
 	{
 		Property* prop = PropertyLookup.at(Name);
 		if (!prop) return 0;
-		if (prop->Type == PropertyType::DROPDOWN)
+		switch (prop->Type)
 		{
+		case PropertyType::DROPDOWN:
 			return ((CDropdown*)prop->Value)->GetSelection();
-		}
-		else if (prop->Type == PropertyType::INVERTER)
-		{
+		case PropertyType::INVERTER:
 			return (size_t)(((CInverter*)prop->Value)->State);
+		case PropertyType::EDITGROUP:
+			return ((CEditGroup*)prop->Value)->SelectedGroup;
 		}
 		return 0;
 	}

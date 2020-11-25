@@ -296,6 +296,8 @@ namespace Config {
 				CDropdown* v = (CDropdown*)this->Value;
 				return v->Stringify(v->GetSelection());
 			}
+			case Config::PropertyType::EDITGROUP:
+				return ((CEditGroup*)this->Value)->GetCurrent();
 			default:
 				return "[error]";
 			}
