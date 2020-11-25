@@ -59,6 +59,7 @@ namespace Config {
 			}
 			Tabs.push_back(t);
 		}
+
 		/* DEFENSE TAB */
 		{
 			Tab* t = new Tab("Defense");
@@ -111,6 +112,7 @@ namespace Config {
 			}
 			Tabs.push_back(t);
 		}
+
 		/* VISUALS TAB */
 		{
 			Tab* t = new Tab("Visuals");
@@ -134,7 +136,13 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("ESP");
 
-				//Enemy
+				w->AddProperty(false, 1, "visuals-esp-other-grenadebox", "Grenade Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp-other-weapon-box", "Weapon Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp-other-weapon-name", "Weapon Names", false, false);
+				
+				CEditGroup* ESPGroup = w->AddEditGroup("visuals-esp-");
+
+				ESPGroup->AddGroup("enemy-", "Enemies");
 				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enemy ESP", false, false);
 				w->AddProperty(false, 0, "visuals-esp-enemy-box", "Box", false, false);
 				w->AddProperty(false, 1, "visuals-esp-enemy-box-color", "Box", new Color(0, 150, 255));
@@ -150,8 +158,9 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-enemy-ammo", "Ammo", false, false);
 				w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color", "Ammo", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-esp-enemy-ammo-bgcolor", "Ammo Background", new Color(0, 150, 255));
-				//TODO - Add dropdown for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
-				//Friend
+				//TODO - Add multiselect for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
+
+				ESPGroup->AddGroup("friend-", "Friends");
 				w->AddProperty(false, 0, "visuals-esp-friend-enable", "Friend ESP", false, false);
 				w->AddProperty(false, 0, "visuals-esp-friend-box", "Box", false, false);
 				w->AddProperty(false, 1, "visuals-esp-friend-box-color", "Box", new Color(0, 150, 255));
@@ -167,11 +176,14 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-friend-ammo", "Ammo", false, false);
 				w->AddProperty(false, 2, "visuals-esp-friend-ammo-color", "Ammo", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-esp-friend-ammo-bgcolor", "Ammo Background", new Color(0, 150, 255));
-				//TODO - Add dropdown for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
-				//Other
-				w->AddProperty(false, 1, "visuals-esp-other-grenadebox", "Grenade Box", false, false);
-				w->AddProperty(false, 2, "visuals-esp-other-weapon-box", "Weapon Box", false, false);
-				w->AddProperty(false, 2, "visuals-esp-other-weapon-name", "Weapon Names", false, false);
+				//TODO - Add multiselect for flags (Current Weapon, CanShoot, InAir, Scoped, Isflashed, Dormant)
+
+
+				ESPGroup->AddGroup("a-", "Some");
+				ESPGroup->AddGroup("b-", "Empty");
+				ESPGroup->AddGroup("c-", "Groups");
+				ESPGroup->AddGroup("d-", "For");
+				ESPGroup->AddGroup("e-", "Test");
 			}
 			{
 				Widget* w = t->AddWidget("World");
@@ -198,6 +210,7 @@ namespace Config {
 			}
 			Tabs.push_back(t);
 		}
+
 		/* MISC TAB */
 		{
 			Tab* t = new Tab("Misc");
@@ -225,19 +238,21 @@ namespace Config {
 			}
 			Tabs.push_back(t);
 		}
-		/* CONFIG/MENU TAB */
+
+		/* MENU TAB */
 		{
-			Tab* t = new Tab("Config");
+			Tab* t = new Tab("Menu");
 			{
 				Widget* w = t->AddWidget("Menu");
 
 				w->AddProperty(false, 0, "show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
-				w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", CDropdown{"Beginner", "Intermediate", "Professional"});
+				w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", CDropdown{ "Beginner", "Intermediate", "Professional" });
 				w->AddProperty(false, 0, "show-help-link", "Show Help Link", true, true);
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);
-				w->AddSeparator();
+			}
+			{
+				Widget* w = t->AddWidget("Colors");
 
-				w->AddProperty(false, 0, "menu-opacity", "Opacity", "%", 15, 100, 1, 100, 100);
 				w->AddProperty(false, 0, "menu-property-base-color", "Option Color 1", new Color(230, 230, 230));
 				w->AddProperty(false, 0, "menu-property-accent-color", "Option Color 2", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "menu-background-color1", "Background Color 1", new Color(30, 30, 30));
@@ -245,11 +260,21 @@ namespace Config {
 				w->AddProperty(false, 0, "menu-background-color3", "Background Color 3", new Color(50, 50, 50));
 				w->AddProperty(false, 0, "menu-background-color4", "Background Color 4", new Color(75, 75, 75));
 				w->AddProperty(false, 0, "menu-text-color", "Text Color", new Color(255, 255, 255));
-				w->AddProperty(false, 0, "menu-eject-color", "Eject Color", new Color(200,75,75));
+				w->AddProperty(false, 0, "menu-eject-color", "Eject Color", new Color(200, 75, 75));
 			}
 			{
-				Widget* w = t->AddWidget("Config");
+				Widget* w = t->AddWidget("Opacities");
 
+				w->AddProperty(false, 0, "menu-opacity", "Opacity", "%", 15, 100, 1, 100, 100);
+			}
+			Tabs.push_back(t);
+		}
+
+		/* CONFIG TAB */
+		{
+			Tab* t = new Tab("Config");
+			{
+				Widget* w = t->AddWidget("bruh");
 				w->AddText("[insert config options here]");
 			}
 			Tabs.push_back(t);

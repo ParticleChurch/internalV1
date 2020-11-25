@@ -40,6 +40,7 @@ namespace Config {
 		TEXT,
 		DROPDOWN,
 		INVERTER,
+		EDITGROUP,
 		_count
 	};
 	enum class PropertyComplexity {
@@ -78,6 +79,51 @@ namespace Config {
 				type == KeybindType::Toggle ? this->Toggle :
 				type == KeybindType::HoldToEnable ? this->HoldToEnable :
 				this->HoldToDisable;
+		}
+	};
+
+	struct _CGroup_DontUse // only used to store string pairs in a vector
+	{
+		std::string Name, VisibleName;
+	};
+
+	struct CEditGroup
+	{
+	public:
+		size_t SelectedGroup = 0;
+		std::vector<_CGroup_DontUse*> Groups;
+		std::string Prefix;
+
+		// a property is considered part of this group if:
+		//   - it is in the same widget
+		//   - it's `Property::Name` starts with `CEditGroup::Prefix`
+		// a property in the group is shown if:
+		//   - the `Property::Name` has the `CEditGroup::SelectedGroup` right after its prefix
+		// example:
+		//   - Prefix = "gun-"
+		//   - SelectedGroup = "pistol"
+		//   + hidden: "gun-sniper-max-backtrack-ticks"
+		//   + hidden: "gun-sniper-recoil-control"
+		//   + shown : "gun-pistol-max-backtrack-ticks"
+		//   + shown : "gun-pistol-recoil-control"
+		//   + hidden: "gun-rifle-max-backtrack-ticks"
+		//   + hidden: "gun-rifle-recoil-control"
+		//   + shown (not in editgroup): "esp-grenade-box"
+
+		CEditGroup(std::string Prefix)
+		{
+			this->Prefix = Prefix;
+		}
+
+		void AddGroup(std::string Name, std::string VisibleName)
+		{
+			this->Groups.push_back(new _CGroup_DontUse{ Name, VisibleName });
+		}
+
+		std::string GetCurrent()
+		{
+			_CGroup_DontUse* g = this->Groups.at(SelectedGroup);
+			return g ? g->Name : "";
 		}
 	};
 
@@ -190,6 +236,16 @@ namespace Config {
 		}
 	};
 
+	extern bool GetBool(std::string Name);
+	extern float GetFloat(std::string Name);
+	extern Color GetColor(std::string Name);
+	extern size_t GetState(std::string Name);
+
+	extern void SetBool(std::string Name, bool Value);
+	extern void SetFloat(std::string Name, float Value);
+	extern void SetColor(std::string Name, Color Value);
+
+
 	struct Property {
 		void* Value = nullptr;
 		void* FreeDefault = nullptr;
@@ -248,16 +304,17 @@ namespace Config {
 
 	struct Widget {
 		int Height = 20; // default, will be changed on first frame rendered
-		unsigned int Indentation = 0; // pixels 
+		int Indentation = 0; // pixels 
 		std::string Name;
 		std::vector<Property*> Properties;
+		std::vector<Property*> EditGroups;
 
 		Widget(std::string Name)
 		{
 			this->Name = Name;
 		}
 
-		void SetIndent(unsigned int Pixels)
+		void SetIndent(int Pixels)
 		{
 			this->Indentation = Pixels;
 		}
@@ -276,6 +333,51 @@ namespace Config {
 		{
 			assert(this->Properties.size() > 0);
 			this->Properties.at(this->Properties.size() - 1)->HasSeparatorAfter = true;
+		}
+
+		Property* GetEditGroup(Property* p)
+		{
+			for (size_t i = 0; i < this->EditGroups.size(); i++)
+			{
+				Property* eg = this->EditGroups.at(i);
+				if (p->Name._Starts_with(((CEditGroup*)eg->Value)->Prefix)) return eg;
+			}
+			return (Property*)0;
+		}
+
+		bool IsVisible(Property* p)
+		{
+			// there are 3 reasons that a property would not be visible:
+			//     a. its complexity is too high
+			//     b. its part of an edit group, and is not selected
+			//     c. its edit group is not visible
+			int Complexity = GetState("menu-complexity");
+
+			// a
+			if (p->Complexity > Complexity) return false;
+
+			Property* egProp = this->GetEditGroup(p);
+			if (!egProp) return true;
+
+			// b
+			if (egProp->Complexity > Complexity) return false;
+
+			CEditGroup* eg = (CEditGroup*)egProp->Value;
+			std::string currentGroup = eg->GetCurrent();
+
+			// c
+			if (currentGroup.length() == 0 || !p->Name._Starts_with(eg->Prefix + currentGroup)) return false;
+
+			return true;
+		}
+
+		CEditGroup* AddEditGroup(std::string Prefix, bool IsPremium = false, int Complexity = 0)
+		{
+			CEditGroup* eg = new CEditGroup(Prefix);
+			Property* p = new Property(PropertyType::EDITGROUP, IsPremium, Complexity, "grouped-" + Prefix + "current-shown", "", eg, eg);
+			this->Properties.push_back(p);
+			this->EditGroups.push_back(p);
+			return eg;
 		}
 
 		// boolean switches
@@ -377,15 +479,6 @@ namespace Config {
 	extern std::map<std::string, Property*> PropertyLookup;
 
 	extern void Init();
-
-	extern bool GetBool(std::string Name);
-	extern float GetFloat(std::string Name);
-	extern Color GetColor(std::string Name);
-	extern size_t GetState(std::string Name);
-
-	extern void SetBool(std::string Name, bool Value);
-	extern void SetFloat(std::string Name, float Value);
-	extern void SetColor(std::string Name, Color Value);
 
 	/* Keybind Stuff */
 	extern std::map<int, std::vector<Property*>*> KeybindMap; // virtural keycode: list of properties bound to that keycode

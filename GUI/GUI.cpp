@@ -561,8 +561,8 @@ namespace ImGui
 			if (g.ActiveIdSource == ImGuiInputSource_Mouse && g.IO.MouseDown[0])
 			{
 				float MousePosX = g.IO.MousePos.x;
-				double MouseClickedFactor = ((double)MousePosX - (double)SliderLeftCenterX) / (double)SliderEndsCenterWidth;
-				MouseClickedFactor = clamp(MouseClickedFactor, 0.0, 1.0);
+				float MouseClickedFactor = ((float)MousePosX - (float)SliderLeftCenterX) / (float)SliderEndsCenterWidth;
+				MouseClickedFactor = clamp(MouseClickedFactor, 0.f, 1.f);
 				float ClickedValue = MouseClickedFactor * (CValue->maximum - CValue->minimum) + CValue->minimum;
 				CValue->set(ClickedValue);
 			}
@@ -799,6 +799,119 @@ namespace ImGui
 		// cleanup, leave cursor on next line
 		PopFont();
 		PopStyleVar(1);
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
+	}
+
+	// this method is a fucking mess, written at 4 am but it works
+	struct editGroupData
+	{
+		std::chrono::steady_clock::time_point TimeChanged;
+		float LastValue;
+		editGroupData(std::chrono::steady_clock::time_point TimeChanged, float LastValue)
+		{
+			this->TimeChanged = TimeChanged;
+			this->LastValue = LastValue;
+		}
+	};
+	std::map<ImGuiID, editGroupData> editGroupTimings;
+	void DrawEditGroup(Config::Property* p)
+	{
+		Config::CEditGroup* eg = (Config::CEditGroup*)p->Value;
+
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		int AbsWidth = GetContentRegionMaxAbs().x - window->Pos.x;
+		int SliderWidth = AbsWidth - 5;
+		int SliderHeight = 20;
+		int SliderContentWidth = SliderWidth - 4;
+		int SliderContentHeight = SliderHeight - 4;
+		ImVec2 SliderCursorPos(5, (20 - SliderHeight) / 2 + LinePosY);
+		ImVec2 SliderPos = window->Pos - window->Scroll + SliderCursorPos;
+		ImVec2 SliderSize(SliderWidth, SliderHeight);
+		ImRect SliderBB(SliderPos, SliderPos + SliderSize);
+		ImGuiID SliderID = GetID((p->Name + "-slider").c_str());
+
+		// random calculations used later
+		float HighlightWidth = (float)SliderContentWidth / (float)eg->Groups.size();
+		int SliderContentMinX = SliderPos.x + 2;
+		int SliderContentMaxX = SliderContentMinX + SliderContentWidth;
+
+		// register this as a hoverable item in imgui
+		ItemAdd(SliderBB, SliderID);
+		bool hovered = ItemHoverable(SliderBB, SliderID);
+		bool clicked = (hovered && g.IO.MouseClicked[0]);
+		if (clicked)
+		{
+			SetActiveID(SliderID, window);
+			SetFocusID(SliderID, window);
+			FocusWindow(window);
+		}
+		GUI::IgnoreLButton |= hovered;
+
+		// animation
+		std::chrono::steady_clock::time_point now = std::chrono::high_resolution_clock::now();
+		auto timingRecord = editGroupTimings.find(SliderID);
+		if (timingRecord == editGroupTimings.end())
+		{
+			editGroupTimings.insert(std::make_pair(SliderID, editGroupData(now - std::chrono::seconds(10), 0.f)));
+			timingRecord = editGroupTimings.find(SliderID);
+		}
+		double timeSinceChange = std::chrono::duration_cast<std::chrono::microseconds>(now - timingRecord->second.TimeChanged).count() / (double)1e6;
+		double animFactor = easeInOutQuint(std::clamp(timeSinceChange / 0.1 /* animation time */, 0.0, 1.0));
+
+		// more calculations
+		float idealHighlightPosX = SliderContentMinX + HighlightWidth * eg->SelectedGroup;
+		float lastHighlightPosX = timingRecord->second.LastValue;
+		float actualHighlightPosX = lerp((double)lastHighlightPosX, (double)idealHighlightPosX, animFactor);
+		ImVec2 HighlightPos(actualHighlightPosX, SliderPos.y + 2);
+
+		// draw background
+		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, IM_COL32(20, 20, 20, 255), SliderHeight / 2 + 2);
+
+		// draw selection background
+		window->DrawList->AddRectFilled(HighlightPos, HighlightPos + ImVec2(HighlightWidth, 16), IM_COL32(60, 60, 60, 255), 10);
+
+		// draw labels
+		PushFont(Arial14);
+		for (size_t i = 0; i < eg->Groups.size(); i++)
+		{
+			std::string VisibleName = eg->Groups.at(i)->VisibleName;
+			ImVec2 TextSize = CalcTextSize(VisibleName.c_str());
+
+			SetCursorPos(SliderCursorPos + ImVec2(2 + HighlightWidth * i + (HighlightWidth - TextSize.x) / 2, 2 + (16 - TextSize.y) / 2));
+			Text(VisibleName.c_str());
+		}
+		PopFont();
+
+		// slider behavior
+		if (g.ActiveId == SliderID)
+		{
+			if (g.ActiveIdSource == ImGuiInputSource_Mouse && g.IO.MouseDown[0])
+			{
+				float MousePosX = g.IO.MousePos.x;
+				float relX = MousePosX - (SliderPos.x + 2.f);
+				relX = std::clamp(relX, 0.f, SliderPos.x + SliderSize.x - 2.f);
+				size_t clickIndex = relX / HighlightWidth;
+				if (clickIndex >= eg->Groups.size()) clickIndex = eg->Groups.size() - 1;
+
+				if (eg->SelectedGroup != clickIndex)
+				{
+					eg->SelectedGroup = clickIndex;
+					timingRecord->second.LastValue = actualHighlightPosX;
+					timingRecord->second.TimeChanged = now;
+				}
+			}
+			else
+				ClearActiveID(); // only allow mouse1 activation
+		}
+
+		// cleanup for next property
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
@@ -1076,10 +1189,10 @@ bool GUI::HackMenu()
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.f, 1.f, 1.f, 0.5f));
-	ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(1.f, 1.f, 1.f, 0.5f));
-	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(1.f, 1.f, 1.f, 0.5f));
-	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(1.f, 1.f, 1.f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_Border, Config::GetColor("menu-text-color"));
+	ImGui::PushStyleColor(ImGuiCol_Separator, Config::GetColor("menu-text-color"));
+	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, Config::GetColor("menu-text-color"));
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, Config::GetColor("menu-text-color"));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, Config::GetColor("menu-background-color4"));
 	
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
@@ -1110,6 +1223,9 @@ bool GUI::HackMenu()
 		for (size_t j = 0; j < Widget->Properties.size(); j++)
 		{
 			Config::Property* Property = Widget->Properties.at(j);
+			if (!Widget->IsVisible(Property))
+				continue;
+
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 			ImGui::SetCursorPosX(5 + Property->Indentation);
 
@@ -1143,6 +1259,11 @@ bool GUI::HackMenu()
 				case Config::PropertyType::INVERTER:
 				{
 					ImGui::DrawInverterProperty(Property);
+					break;
+				}
+				case Config::PropertyType::EDITGROUP:
+				{
+					ImGui::DrawEditGroup(Property);
 					break;
 				}
 				default:
