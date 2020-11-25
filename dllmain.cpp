@@ -8,7 +8,7 @@ void Init()
     freopen("CONOUT$", "w", stdout);
 
 
-    std::cout << "Successfully Injected\n";
+   // std::cout << "Successfully Injected\n";
 
     std::cout << N::DumpTable() << std::endl;
 
