@@ -270,8 +270,8 @@ namespace ImGui
 		/*
 			DRAW
 		*/
-		ImVec4 accentColor = Config::GetColor("menu-property-accent-color");
-		ImVec4 baseColor = Config::GetColor("menu-property-base-color");
+		ImVec4 accentColor = Config::GetColor("menu-option-color2");
+		ImVec4 baseColor = Config::GetColor("menu-option-color1");
 		baseColor.w = accentColor.w = style.Alpha;
 		ImVec4 backgroundColor = lerp(baseColor, accentColor, enabledFactor);
 		//ImVec4 backgroundBorderColor = backgroundColor; backgroundBorderColor.w = 0.2f;
@@ -541,8 +541,8 @@ namespace ImGui
 		int PixelsMoveGrab = round((double)SliderEndsCenterWidth * Factor);
 
 		// draw background
-		ImVec4 v4AccentColor = Config::GetColor("menu-property-accent-color");
-		ImVec4 v4BaseColor = Config::GetColor("menu-property-base-color");
+		ImVec4 v4AccentColor = Config::GetColor("menu-option-color2");
+		ImVec4 v4BaseColor = Config::GetColor("menu-option-color1");
 		v4BaseColor.w = v4AccentColor.w = style.Alpha;
 		ImU32 AccentColor = vec4toU32(v4AccentColor);
 		ImU32 BaseColor = vec4toU32(v4BaseColor);
@@ -737,8 +737,8 @@ namespace ImGui
 		}
 		else // not bound
 		{
-			ImVec4 Color1 = Config::GetColor("menu-property-accent-color");
-			ImVec4 Color2 = Config::GetColor("menu-property-base-color");
+			ImVec4 Color1 = Config::GetColor("menu-option-color2");
+			ImVec4 Color2 = Config::GetColor("menu-option-color1");
 			
 			PushStyleColor(ImGuiCol_Button, Color1);
 			PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color1, Color2, 0.25f));
@@ -872,10 +872,10 @@ namespace ImGui
 		ImVec2 HighlightPos(actualHighlightPosX, SliderPos.y + 2);
 
 		// draw background
-		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, IM_COL32(20, 20, 20, 255), SliderHeight / 2 + 2);
-
+		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, vec4toU32(Config::GetColor("menu-option-selector-background-color")), SliderHeight / 2 + 2);
+		
 		// draw selection background
-		window->DrawList->AddRectFilled(HighlightPos, HighlightPos + ImVec2(HighlightWidth, 16), IM_COL32(60, 60, 60, 255), 10);
+		window->DrawList->AddRectFilled(HighlightPos, HighlightPos + ImVec2(HighlightWidth, 16), vec4toU32(Config::GetColor("menu-option-selector-active-color")), 10);
 
 		// draw labels
 		PushFont(Arial14);
@@ -885,7 +885,9 @@ namespace ImGui
 			ImVec2 TextSize = CalcTextSize(VisibleName.c_str());
 
 			SetCursorPos(SliderCursorPos + ImVec2(2 + HighlightWidth * i + (HighlightWidth - TextSize.x) / 2, 2 + (16 - TextSize.y) / 2));
+			PushStyleColor(ImGuiCol_Text, Config::GetColor("menu-option-selector-text-color"));
 			Text(VisibleName.c_str());
+			PopStyleColor();
 		}
 		PopFont();
 
@@ -958,8 +960,8 @@ bool GUI::LoginMenu()
 		style.Colors[ImGuiCol_Border] = ImVec4(1, 1, 1, 0.5f);
 	}
 
-	ImGui::SetNextWindowSize(ImVec2(340, 110 + 45 + 45 + 45 + 10), ImGuiCond_Once);
-	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(340, 110 + 45 + 45 + 45 + 10));
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y / 2), 0, ImVec2(0.5f, 0.5f));
 	ImGui::Begin("Login", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse);
 
 	/*
@@ -1078,17 +1080,17 @@ bool GUI::HackMenu()
 	// dimensions
 	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
 	ImGui::SetNextWindowPos(WindowCenter, ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(WindowCenter, ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(0,0), ImGuiCond_Once);
 
 	// Styles
 	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
-	style.WindowMinSize = ImVec2(420, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
+	style.WindowMinSize = ImVec2(500, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
 	style.ChildRounding = 0.f;
 	style.WindowBorderSize = 0.f;
 	style.WindowRounding = 5;
-	style.Alpha = Config::GetFloat("menu-opacity") / 100.f;
+	style.Alpha = 1.f;
 	style.Colors[ImGuiCol_Text] = Config::GetColor("menu-text-color");
 	style.Colors[ImGuiCol_Button] = ImVec4(0.f, 0.f, 0.f, 0.f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.f, 0.f, 0.f, 0.f);

@@ -4,6 +4,8 @@
 #include <vector>
 //#include "../Include.hpp"
 
+constexpr bool CONFIG_DEBUG = true;
+
 /*
 	Web API shit
 */
@@ -295,7 +297,14 @@ namespace Config {
 				return v->Stringify(v->GetSelection());
 			}
 			case Config::PropertyType::EDITGROUP:
-				return ((CEditGroup*)this->Value)->GetCurrent();
+			{
+				std::string group = ((CEditGroup*)this->Value)->GetCurrent();
+
+				while (group[group.size() - 1] == '-')
+					group = group.substr(0, group.size() - 1);
+
+				return group;
+			}
 			default:
 				return "[error]";
 			}
