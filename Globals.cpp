@@ -7,7 +7,7 @@ namespace G
 	bool KillDLL = false;
 
 	//General Variables
-	int ChokeAmount = 5;
+	int ChokeAmount = 10;
 	QAngle StartAngle;
 	QAngle EndAngle;
 

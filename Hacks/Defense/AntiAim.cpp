@@ -24,6 +24,12 @@ bool AntiAim::LBYBreak()
 
 void AntiAim::legit()
 {
+	real = G::cmd->viewangles;
+	fake = G::cmd->viewangles;
+
+	real.NormalizeAngle();
+	fake.NormalizeAngle();
+
 	if (!Config::GetBool("antiaim-legit-enable"))
 		return;
 
@@ -67,8 +73,13 @@ void AntiAim::legit()
 
 	if (*G::pSendPacket)
 		fake = G::cmd->viewangles;
-	else if (!BreakLBY)
+	else
 	{
+		real.x = G::cmd->viewangles.x;
+		real.y = G::cmd->viewangles.y + (Delta * side * -1);
+	}
+	/*else if (!BreakLBY)
+	{	
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + (Delta * side * -1);
 	}
@@ -76,7 +87,7 @@ void AntiAim::legit()
 	{
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + Delta * 2 * side;
-	}
+	}*/
 
 	fake.NormalizeAngle();
 	real.NormalizeAngle();
@@ -93,6 +104,10 @@ void AntiAim::rage()
 	if (!G::LocalPlayerAlive)
 		return;
 
+	static bool Switcher = false;
+	if (*G::pSendPacket)
+		Switcher = !Switcher;
+
 	switch (Config::GetState("antiaim-rage-pitch"))
 	{
 	case 0:
@@ -102,54 +117,49 @@ void AntiAim::rage()
 		G::cmd->viewangles.x = 89; //down
 		break;
 	case 2:
-		G::cmd->viewangles.x = G::cmd->command_number % 2 ? 89:-89; //up down
+		G::cmd->viewangles.x = Switcher % 2 ? 89:-89; //up down
 		break;
 	default:
 		break;
 	}
 
 	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real");
-	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real-jitter") * (G::cmd->tick_count % 2 ? -1 : -1);
-
-	real = G::cmd->viewangles;
-	fake = G::cmd->viewangles;
-
-	real.NormalizeAngle();
-	fake.NormalizeAngle();
+	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real-jitter") * (Switcher ? -1 : 1);
 
 	bool BreakLBY = LBYBreak();
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-rage-fake") / 100.f;
-	Delta *= ((G::cmd->tick_count % 2 ? -1 : -1) * (Config::GetFloat("antiaim-rage-fake-jitter") / 100));
 
+	Delta -= (Delta * (Config::GetFloat("antiaim-rage-fake-jitter") / 100.f) * (Switcher ? 0 : 1));
+
+	G::cmd->viewangles.y -= Delta; //set it to rage style aa
+
+	G::cmd->viewangles.NormalizeAngle();
+	real = G::cmd->viewangles;
+	fake = G::cmd->viewangles;
+	
+
+	//side by default = left
 	if (!BreakLBY)
 	{
-		static float amount = Delta;
-		if (*G::pSendPacket)				
-			G::cmd->viewangles.y += amount;
+		float amount = Delta * 2;
+		G::cmd->viewangles.y += *G::pSendPacket ? 0 : amount;
 	}
-	
+
 	if (BreakLBY)
 	{
-		static float amount = Delta * -2;
+		float amount = Delta * -1;
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
 	}
 
 	if (*G::pSendPacket)
 		fake = G::cmd->viewangles;
-	else if (!BreakLBY)
-	{
-		real.x = G::cmd->viewangles.x;
-		real.y = G::cmd->viewangles.y + (Delta * -2);
-	}
 	else
 	{
 		real.x = G::cmd->viewangles.x;
-		real.y = G::cmd->viewangles.y + Delta;
+		real.y = G::cmd->viewangles.y + (Delta * -1);
 	}
-
-	real.NormalizeAngle();
-	fake.NormalizeAngle();
+	
 }
 
 bool WorldToScreen2(Vec& in, Vec& out)
