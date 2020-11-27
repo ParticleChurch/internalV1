@@ -7,14 +7,14 @@ namespace G
 	bool KillDLL = false;
 
 	//General Variables
-	int ChokeAmount = 2;
+	int ChokeAmount = 5;
 	QAngle StartAngle;
 	QAngle EndAngle;
 
 	//LocalPlayer
 	Entity* LocalPlayer = new Entity();
 	bool LocalPlayerAlive = false;
-	int LocalPlayerIndex = 0;\
+	int LocalPlayerIndex = 0;
 
 	//CreateMove
 	CUserCmd* cmd;

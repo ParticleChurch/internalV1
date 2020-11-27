@@ -159,9 +159,9 @@
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="GUI\HTTP.cpp" />
     <ClCompile Include="Hacks\Aimbot.cpp" />
-    <ClCompile Include="Hacks\AntiAim.cpp" />
     <ClCompile Include="Hacks\Autowall.cpp" />
     <ClCompile Include="Hacks\Backtrack.cpp" />
+    <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
     <ClCompile Include="Hacks\Movement.cpp" />
     <ClCompile Include="Hacks\Visuals\Chams.cpp" />
     <ClCompile Include="Hacks\Visuals\ESP.cpp" />
@@ -184,9 +184,9 @@
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
     <ClInclude Include="Hacks\Aimbot.hpp" />
-    <ClInclude Include="Hacks\AntiAim.hpp" />
     <ClInclude Include="Hacks\Autowall.hpp" />
     <ClInclude Include="Hacks\Backtrack.hpp" />
+    <ClInclude Include="Hacks\Defense\AntiAim.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
     <ClInclude Include="Hacks\Movement.hpp" />
     <ClInclude Include="Hacks\Visuals\Chams.hpp" />

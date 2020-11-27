@@ -36,7 +36,6 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
-	QAngle finalAngle = QAngle(0.f, 0.f, 0.f);
 }
 
 void H::Init()
@@ -323,13 +322,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
-		if (Config::GetBool("show-menu")) {
-			cmd->buttons = 0;
-			cmd->upmove = 0;
-			cmd->weaponselect = 0;
-			return false;
-		}
-
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
@@ -344,14 +336,15 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->BunnyHop();
 		movement->SlowWalk();
 		movement->FastCrouch();
-		//movement->AAMoveFix();
+		movement->AAMoveFix();
 		movement->FakeDuck();
 	
 		G::CM_MoveFixStart();
 
-		aimbot->Run();
+		antiaim->legit();
+		antiaim->rage();
 
-		G::LocalPlayer->GetActiveWeapon();
+		aimbot->Run();
 
 		//antiaim->rage();
 
@@ -409,8 +402,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->Airstuck();
 
 		G::CM_End();	
-		finalAngle = G::cmd->viewangles;
-		
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
@@ -452,8 +443,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-			if (I::input->m_fCameraInThirdPerson)
-				*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = finalAngle;
+		if (I::input->m_fCameraInThirdPerson)
+			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
 
 			
 

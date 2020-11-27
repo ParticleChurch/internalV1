@@ -140,6 +140,8 @@ void ESP::DrawBacktrackingDots()
 
 void ESP::Run()
 {
+	
+	antiaim->Visualize();
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
 
 	static DWORD FONT = I::surface->FontCreate();

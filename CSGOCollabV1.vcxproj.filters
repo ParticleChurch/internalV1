@@ -40,9 +40,6 @@
     <ClCompile Include="Hacks\Autowall.cpp">
       <Filter>Source\Hacks</Filter>
     </ClCompile>
-    <ClCompile Include="Hacks\AntiAim.cpp">
-      <Filter>Source\Hacks</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalVars.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -72,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="Hacks\Visuals\MiscVisuals.cpp">
       <Filter>Source\Hacks\Visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Defense\AntiAim.cpp">
+      <Filter>Source\Hacks\Defense</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -252,9 +252,6 @@
     <ClInclude Include="Valve\SDK\AnimState.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\AntiAim.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\Interfaces\InputSystem.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
@@ -306,6 +303,9 @@
     <ClInclude Include="Hacks\Visuals\MiscVisuals.hpp">
       <Filter>Headers\Hacks\Visuals</Filter>
     </ClInclude>
+    <ClInclude Include="Hacks\Defense\AntiAim.hpp">
+      <Filter>Headers\Hacks\Defense</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -349,6 +349,12 @@
     </Filter>
     <Filter Include="Source\Hacks\Visuals">
       <UniqueIdentifier>{20fb5db9-5c9f-45d2-80e2-8786cc4a7396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Hacks\Defense">
+      <UniqueIdentifier>{479a5853-a36d-4dc2-a871-98cb40e8415e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Hacks\Defense">
+      <UniqueIdentifier>{bdd63a89-57b9-4aa3-8a7c-9f0503b61ed2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
