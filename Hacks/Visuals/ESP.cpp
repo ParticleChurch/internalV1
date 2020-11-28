@@ -236,9 +236,9 @@ void ESP::Run()
 			if (!Config::GetBool("visuals-esp-enemy-enable"))
 				continue;
 
-			if (Config::GetBool("visuals-esp-enemy-box"))
+			if (Config::GetBool("visuals-esp-enemy-bbox"))
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-box-color"));
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-bbox-color"));
 				DrawBoxes(TopLeft, BottomRight);
 			}
 			if (Config::GetBool("visuals-esp-enemy-name"))
@@ -254,7 +254,7 @@ void ESP::Run()
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(), 
 					Config::GetColor("visuals-esp-enemy-health-color"), 
-					Config::GetColor("visuals-esp-enemy-health-bgcolor"));
+					Config::GetColor("visuals-esp-enemy-health-color-background"));
 			}
 			if (Config::GetBool("visuals-esp-enemy-skeleton"))
 			{

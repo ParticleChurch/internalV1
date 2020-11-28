@@ -156,6 +156,7 @@ namespace Config {
 				//Yaw - Fake
 				w->AddProperty(false, 2, "antiaim-rage-fake", "Fake Offset", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 2, "antiaim-rage-fake-jitter", "Fake Jitter Offset", "%", 0, 100, 1, 100, 100);
+				w->AddProperty(false, 1, "antiaim-rage-invert", "Invert AA", new CInverter("", ""));
 				w->AddProperty(false, 2, "antiaim-rage-fake-invert", "Invert on Hit", false, false);
 			}
 			{

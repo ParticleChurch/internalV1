@@ -6,10 +6,12 @@ public:
 	bool LBYBreak();
 	//functions for legit
 	void legit();
-	bool Left = true;
-	int side = 1;
+	bool legit_left = true;
+	int legit_side = 1;
 	//functions for rage
 	void rage();
+	bool rage_left = true;
+	int rage_side = 1;
 
 	//Other variables/functions
 	QAngle real;

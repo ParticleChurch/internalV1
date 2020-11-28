@@ -51,8 +51,8 @@ void AntiAim::legit()
 	real.NormalizeAngle();
 	fake.NormalizeAngle();
 	
-	bool Left = Config::GetState("antiaim-legit-invert");
-	side = Left ? 1 : -1;
+	legit_left = Config::GetState("antiaim-legit-invert");
+	legit_side = legit_left ? 1 : -1;
 
 	bool BreakLBY = LBYBreak();
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-legit-max-angle") / 100.f;
@@ -60,13 +60,13 @@ void AntiAim::legit()
 	//side by default = left
 	if (!BreakLBY)
 	{
-		float amount = Delta * 2 * side;
+		float amount = Delta * 2 * legit_side;
 		G::cmd->viewangles.y += *G::pSendPacket ? 0 : amount;
 	}
 
 	if (BreakLBY)
 	{
-		float amount = Delta * -1 * side;
+		float amount = Delta * -1 * legit_side;
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
 	}
@@ -76,7 +76,7 @@ void AntiAim::legit()
 	else
 	{
 		real.x = G::cmd->viewangles.x;
-		real.y = G::cmd->viewangles.y + (Delta * side * -1);
+		real.y = G::cmd->viewangles.y + (Delta * legit_side * -1);
 	}
 	/*else if (!BreakLBY)
 	{	
@@ -104,6 +104,9 @@ void AntiAim::rage()
 	if (!G::LocalPlayerAlive)
 		return;
 
+	rage_left = Config::GetState("antiaim-rage-invert");
+	rage_side = rage_left ? 1 : -1;
+
 	static bool Switcher = false;
 	if (*G::pSendPacket)
 		Switcher = !Switcher;
@@ -130,6 +133,8 @@ void AntiAim::rage()
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-rage-fake") / 100.f;
 
 	Delta -= (Delta * (Config::GetFloat("antiaim-rage-fake-jitter") / 100.f) * (Switcher ? 0 : 1));
+
+	Delta *= rage_side;
 
 	G::cmd->viewangles.y -= Delta; //set it to rage style aa
 

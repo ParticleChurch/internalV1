@@ -540,8 +540,10 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
 
 		if (userid == localIdx && HitGroup == 1) { //if hitting head
-			antiaim->Left = !antiaim->Left;
-			antiaim->side *= -1;
+			antiaim->legit_left = !antiaim->legit_left;
+			antiaim->legit_side *= -1;
+			antiaim->rage_left = !antiaim->rage_left;
+			antiaim->rage_side *= -1;
 		}
 	}
 	break;
