@@ -345,6 +345,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		antiaim->rage();
 
 		aimbot->Run();
+		
+		
 
 		//antiaim->rage();
 

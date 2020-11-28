@@ -92,7 +92,7 @@ bool Autowall::IsVisible(Vec End, Entity* Ent)
     return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
 }
 
-float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire)
+float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire, bool& visible)
 {
     if (!G::LocalPlayer) return 0;
 
@@ -129,7 +129,10 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
             float ArmorRatio = WeaponData->ArmorRatio / 2.0f;
             if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
                 Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
-
+            if (hitsLeft == 4)
+                visible = true;
+            else
+                visible = false;
             return Damage;
         }
 
@@ -142,6 +145,7 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
         Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, WeaponData->Penetration, Damage);
         hitsLeft--;
     }
+    visible = false;
     return 0;
 }
 

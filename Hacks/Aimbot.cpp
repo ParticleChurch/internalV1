@@ -239,6 +239,100 @@ void Aimbot::Run()
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return;
 
+	
+	int smooth_method = 0;
+	float smooth_amount = 0;
+	float fov = 0;
+	int priority_hitbox = 0;
+	float mindamage_visible = 0;
+	float min_damage_hidden = 0;
+	float hitchance = 0;
+
+	int weaponID = (int)weapon->GetWeaponId();
+	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
+	
+
+	if (WeaponClass == 35)		//pistol
+	{
+		smooth_method		= Config::GetState("aimbot-pistol-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-pistol-smoothing-amount");
+		fov					= Config::GetFloat("aimbot-pistol-fov");
+		priority_hitbox		= Config::GetState("aimbot-pistol-hitbox-priority");
+		mindamage_visible	= Config::GetFloat("aimbot-pistol-mindamage-visible");
+		min_damage_hidden	= Config::GetFloat("aimbot-pistol-mindamage-hidden");
+		hitchance			= Config::GetFloat("aimbot-pistol-hitchance");
+	}
+	else if(WeaponClass == 37)	//smg
+	{
+		smooth_method		= Config::GetState("aimbot-smg-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-smg-smoothing-amount");
+		fov					= Config::GetFloat("aimbot-smg-fov");
+		priority_hitbox		= Config::GetState("aimbot-smg-hitbox-priority");
+		mindamage_visible	= Config::GetFloat("aimbot-smg-mindamage-visible");
+		min_damage_hidden	= Config::GetFloat("aimbot-smg-mindamage-hidden");
+		hitchance			= Config::GetFloat("aimbot-smg-hitchance");
+	}
+	else if(WeaponClass == 36)	//heavy
+	{
+		smooth_method		= Config::GetState("aimbot-heavy-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-heavy-smoothing-amount");
+		fov					= Config::GetFloat("aimbot-heavy-fov");
+		priority_hitbox		= Config::GetState("aimbot-heavy-hitbox-priority");
+		mindamage_visible	= Config::GetFloat("aimbot-heavy-mindamage-visible");
+		min_damage_hidden	= Config::GetFloat("aimbot-heavy-mindamage-hidden");
+		hitchance			= Config::GetFloat("aimbot-heavy-hitchance");
+	}
+	else if (WeaponClass == 38)	//rifles (includes scouts, awps, autos)
+	{
+		if (weaponID == 40) //scout
+		{
+			smooth_method		= Config::GetState("aimbot-scout-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-scout-smoothing-amount");
+			fov					= Config::GetFloat("aimbot-scout-fov");
+			priority_hitbox		= Config::GetState("aimbot-scout-hitbox-priority");
+			mindamage_visible	= Config::GetFloat("aimbot-scout-mindamage-visible");
+			min_damage_hidden	= Config::GetFloat("aimbot-scout-mindamage-hidden");
+			hitchance			= Config::GetFloat("aimbot-scout-hitchance");
+		}
+		else if (weaponID == 9) //awp
+		{
+			smooth_method		= Config::GetState("aimbot-awp-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-awp-smoothing-amount");
+			fov					= Config::GetFloat("aimbot-awp-fov");
+			priority_hitbox		= Config::GetState("aimbot-awp-hitbox-priority");
+			mindamage_visible	= Config::GetFloat("aimbot-awp-mindamage-visible");
+			min_damage_hidden	= Config::GetFloat("aimbot-awp-mindamage-hidden");
+			hitchance			= Config::GetFloat("aimbot-awp-hitchance");
+		}
+		else if (weaponID == 11 || weaponID == 38) //autos
+		{
+			smooth_method		= Config::GetState("aimbot-auto-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-auto-smoothing-amount");
+			fov					= Config::GetFloat("aimbot-auto-fov");
+			priority_hitbox		= Config::GetState("aimbot-auto-hitbox-priority");
+			mindamage_visible	= Config::GetFloat("aimbot-auto-mindamage-visible");
+			min_damage_hidden	= Config::GetFloat("aimbot-auto-mindamage-hidden");
+			hitchance			= Config::GetFloat("aimbot-auto-hitchance");
+		}
+		else //rifles
+		{
+			smooth_method		= Config::GetState("aimbot-rifle-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-rifle-smoothing-amount");
+			fov					= Config::GetFloat("aimbot-rifle-fov");
+			priority_hitbox		= Config::GetState("aimbot-rifle-hitbox-priority");
+			mindamage_visible	= Config::GetFloat("aimbot-rifle-mindamage-visible");
+			min_damage_hidden	= Config::GetFloat("aimbot-rifle-mindamage-hidden");
+			hitchance			= Config::GetFloat("aimbot-rifle-hitchance");
+		}
+	}
+	else //grenades tasers and knifes
+		return;
+
+	//Set up percentages to proper vals
+	hitchance /= 100.f;
+
+	
+
 	// Playing for doing MAX damage
 	int DamageToDo = 0;
 	Vec AimLoc;
@@ -300,51 +394,62 @@ void Aimbot::Run()
 			ent->SetupBones(matrix, 128, 0x100);
 
 			Vec min = StudioBox->bbmin.Transform(matrix[StudioBox->bone]);
-			Vec minL = ent->GetLeft(min, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
-			Vec minR = ent->GetRight(min, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
+			Vec minL = ent->GetLeft(min, StudioBox->m_flRadius * hitchance, G::LocalPlayer);
+			Vec minR = ent->GetRight(min, StudioBox->m_flRadius * hitchance, G::LocalPlayer);
 
 			Vec max = StudioBox->bbmax.Transform(matrix[StudioBox->bone]);
-			Vec maxL = ent->GetLeft(max, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
-			Vec maxR = ent->GetRight(max, StudioBox->m_flRadius * 0.7, G::LocalPlayer);
-
-			int dam = autowall->GetDamage(ent, min, true);
-			if (dam > DamageToDo)
+			Vec maxL = ent->GetLeft(max, StudioBox->m_flRadius * hitchance, G::LocalPlayer);
+			Vec maxR = ent->GetRight(max, StudioBox->m_flRadius * hitchance, G::LocalPlayer);
+			
+			static bool visible;
+			int dam = autowall->GetDamage(ent, min, true, visible);
+			if (dam > DamageToDo && 
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = min;
 			}
-			dam = autowall->GetDamage(ent, minL, true);
-			if (dam > DamageToDo)
+
+			dam = autowall->GetDamage(ent, minL, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = minL;
 			}
-			dam = autowall->GetDamage(ent, minR, true);
-			if (dam > DamageToDo)
+
+			dam = autowall->GetDamage(ent, minR, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = minR;
 			}
 
-			dam = autowall->GetDamage(ent, max, true);
-			if (dam > DamageToDo)
+			dam = autowall->GetDamage(ent, max, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = max;
 			}
-			dam = autowall->GetDamage(ent, maxL, true);
-			if (dam > DamageToDo)
+
+			dam = autowall->GetDamage(ent, maxL, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = maxL;
 			}
-			dam = autowall->GetDamage(ent, maxR, true);
-			if (dam > DamageToDo)
+
+			dam = autowall->GetDamage(ent, maxR, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
@@ -355,8 +460,6 @@ void Aimbot::Run()
 	}
 
 	if (!(DamageToDo > 0)) return;
-
-	if (!Config::GetBool("aimbot-autowall") && target && autowall->IsVisible(AimLoc, target)) return;
 
 	QAngle angle = CalculateAngle(AimLoc);
 	angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
