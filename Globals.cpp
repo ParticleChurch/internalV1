@@ -15,12 +15,77 @@ namespace G
 	Entity* LocalPlayer = new Entity();
 	bool LocalPlayerAlive = false;
 	int LocalPlayerIndex = 0;
+	int LocalPlayerTeam = -1;
+	Entity* LocalPlayerWeapon;
+	WeaponData* LocalPlayerWeaponData;
+
+	// Other Entitys
+	EntItem EntList[64];
+	
 
 	//CreateMove
 	CUserCmd* cmd;
 	bool* pSendPacket;
 	float StartForwardMove;
 	float StartSideMove;
+
+	void UpdateEntities()
+	{
+
+		for (int i = 1; i < 65; i++)
+		{
+			if (i == G::LocalPlayerIndex)
+				continue;
+
+			EntList[i].index = i;
+			Entity* ent =  I::entitylist->GetClientEntity(i);
+			if (!ent)
+			{
+				if (ent && EntList[i].entity)
+				{
+					free(EntList[i].entity);
+					free(EntList[i].model);
+				}
+				continue;
+			}
+			else {
+				if(!EntList[i].entity)
+					EntList[i].entity = new Entity();
+				EntList[i].entity = ent;
+			}
+				
+			static player_info_t info;
+			EntList[i].player = I::engine->GetPlayerInfo(i, &info);
+			if (EntList[i].player)	// If Player
+				EntList[i].userid = info.userid;
+			else
+				continue;
+			EntList[i].health = EntList[i].entity->GetHealth();
+			EntList[i].team = EntList[i].entity->GetTeam();
+			EntList[i].dormant = EntList[i].entity->IsDormant();
+			EntList[i].lastSimTime = EntList[i].entity->GetSimulationTime();
+			if(backtrack->Valid(EntList[i].lastSimTime))
+				EntList[i].entity->SetupBones(EntList[i].Matrix, 128, 0x100);
+			Model* model = EntList[i].entity->GetModel();
+			if (model)
+			{
+				if (!EntList[i].model)
+				{
+					EntList[i].model = new Model();
+					EntList[i].model = model;
+				}
+				else
+				{
+					EntList[i].model = model;
+				}
+			}
+			else
+			{
+				free(EntList[i].model);
+			}
+			EntList[i].EyePos = EntList[i].entity->GetEyePos();
+		}
+	}
 
 	void CM_Clamp()
 	{
@@ -60,7 +125,6 @@ namespace G
 			cmd->upmove = -320.f;
 		}
 	}
-
 	void CM_Start(CUserCmd* cmd, bool* pSendPacket)
 	{
 		G::StartAngle = cmd->viewangles;

@@ -7,8 +7,18 @@ void World::WorldMod(Material* mat)
 	if(!Config::GetBool("visuals-world-enable"))
 		return;
 
-	mat->ColorModulate(Config::GetColor("visuals-world-color"));
-	mat->AlphaModulate(Config::GetFloat("visuals-world-opacity")/100.f);
+	static Color LastColor;
+	if (LastColor != Config::GetColor("visuals-world-color"))
+	{
+		LastColor = Config::GetColor("visuals-world-color");
+		mat->ColorModulate(LastColor);
+	}
+	static float lastAlpha;
+	if (lastAlpha != Config::GetFloat("visuals-world-opacity") / 100.f)
+	{
+		lastAlpha = Config::GetFloat("visuals-world-opacity") / 100.f;
+		mat->AlphaModulate(lastAlpha);
+	}
 }
 
 void World::PropMod(Material* mat)
@@ -16,8 +26,19 @@ void World::PropMod(Material* mat)
 	if (!Config::GetBool("visuals-world-prop-enable"))
 		return;
 
-	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
-	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
+	static Color LastColor;
+	if (LastColor != Config::GetColor("visuals-world-prop-color"))
+	{
+		LastColor = Config::GetColor("visuals-world-prop-color");
+		mat->ColorModulate(LastColor);
+	}
+	static float lastAlpha;
+	if (lastAlpha != Config::GetFloat("visuals-world-prop-opacity") / 100.f)
+	{
+		lastAlpha = Config::GetFloat("visuals-world-prop-opacity") / 100.f;
+		mat->AlphaModulate(lastAlpha);
+	}
+	
 }
 
 void World::SkyboxLoad()
@@ -38,7 +59,12 @@ void World::SkyboxMod(Material* mat)
 	if (!Config::GetBool("visuals-world-skybox-enable"))
 		return;
 
-	mat->ColorModulate(Config::GetColor("visuals-world-skybox-color"));
+	static Color LastColor;
+	if (LastColor != Config::GetColor("visuals-world-skybox-color"))
+	{
+		LastColor = Config::GetColor("visuals-world-skybox-color");
+		mat->ColorModulate(LastColor);
+	}
 }
 
 void World::Run(int CurStage)

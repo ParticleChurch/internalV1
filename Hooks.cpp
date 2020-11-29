@@ -195,6 +195,15 @@ void H::UnHook()
 	std::cout << "soundVMT...";
 	soundVMT.RestoreOriginal();
 	std::cout << "Success!" << std::endl;
+
+	free(aimbot);
+	free(backtrack);
+	free(movement);
+	free(antiaim);
+	free(autowall);
+
+	H::console.clear();
+	H::console.resize(0);
 	
 	std::cout << "Freeing Console...Ejected!";
 	FreeConsole();
@@ -345,14 +354,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		antiaim->rage();
 
 		// bad use (E) and attack (LBUTTON)
-		if ((G::cmd->buttons & IN_USE) || (G::cmd->buttons & IN_ATTACK))
+		if (G::cmd->buttons & IN_USE)
 		{
 			G::cmd->viewangles = G::StartAngle;
 		}
+		else if ((G::cmd->buttons & IN_ATTACK) && G::LocalPlayer->CanShoot())
+			G::cmd->viewangles = G::StartAngle;
 
 		aimbot->Run();
-		
-		//antiaim->rage();
 
 		// decide when to enable desync
 		// we need to implement in movefixend or something lol
@@ -457,6 +466,13 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 		if (!G::LocalPlayerAlive)
 			return oFrameStageNotify(curStage);
+
+		G::LocalPlayerTeam = G::LocalPlayer->GetTeam();
+		G::LocalPlayerWeapon = G::LocalPlayer->GetActiveWeapon();
+		if (G::LocalPlayerWeapon)
+			G::LocalPlayerWeaponData = G::LocalPlayerWeapon->GetWeaponData();
+
+		G::UpdateEntities();
 
 		//this is for accurate angles (aa, etc)
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");

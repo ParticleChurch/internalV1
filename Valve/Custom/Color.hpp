@@ -54,4 +54,17 @@ public:
 	{
 		return ImVec4(r() / 255.f, g() / 255.f, b() / 255.f, a() / 255.f);
 	}
+
+	//operators
+	bool operator != (const Color& b) {
+		if (b.color[0] != (float)color[0])
+			return true;
+		if (b.color[1] != (float)color[1])
+			return true;
+		if (b.color[2] != (float)color[2])
+			return true;
+		if (b.color[3] != (float)color[3])
+			return true;
+		return false;
+	}
 };
