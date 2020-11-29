@@ -338,6 +338,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FastCrouch();
 		movement->AAMoveFix();
 		movement->FakeDuck();
+
+		if (GetAsyncKeyState(VK_LMENU))
+			movement->FastStop();
 	
 		G::CM_MoveFixStart();
 

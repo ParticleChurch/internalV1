@@ -234,11 +234,11 @@ void Aimbot::Run()
 
 	if (!G::LocalPlayer->CanShoot()) return;
 
-	
-
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return;
 
+	WeaponData* data = weapon->GetWeaponData();
+	if (!data) return;
 	
 	int smooth_method = 0;
 	float smooth_amount = 0;
@@ -331,8 +331,6 @@ void Aimbot::Run()
 	//Set up percentages to proper vals
 	hitchance /= 100.f;
 
-	
-
 	// Playing for doing MAX damage
 	int DamageToDo = 0;
 	Vec AimLoc;
@@ -363,24 +361,24 @@ void Aimbot::Run()
 
 		std::vector<Hitboxes> hitboxes = 
 		{ 
-		HITBOX_STOMACH,
-		HITBOX_LOWER_CHEST,
-		HITBOX_CHEST,
-		HITBOX_UPPER_CHEST,
+		/*HITBOX_RIGHT_FOOT,
+		HITBOX_LEFT_FOOT,
 		HITBOX_RIGHT_THIGH,
 		HITBOX_LEFT_THIGH,
 		HITBOX_RIGHT_CALF,
 		HITBOX_LEFT_CALF,
-		HITBOX_RIGHT_FOOT,
-		HITBOX_LEFT_FOOT,
 		HITBOX_RIGHT_HAND,
 		HITBOX_LEFT_HAND,
 		HITBOX_RIGHT_UPPER_ARM,
 		HITBOX_RIGHT_FOREARM,
 		HITBOX_LEFT_UPPER_ARM,
-		HITBOX_LEFT_FOREARM,
-		HITBOX_HEAD,
-		HITBOX_NECK,
+		HITBOX_LEFT_FOREARM,*/
+		/*HITBOX_HEAD,*/
+		HITBOX_STOMACH,
+		HITBOX_LOWER_CHEST,
+		HITBOX_CHEST,
+		HITBOX_UPPER_CHEST,
+		/*HITBOX_NECK,*/
 		HITBOX_PELVIS };
 		int HitGroup = 0;
 		for (auto HBOX : hitboxes)
@@ -402,14 +400,7 @@ void Aimbot::Run()
 			Vec maxR = ent->GetRight(max, StudioBox->m_flRadius * hitchance, G::LocalPlayer);
 			
 			static bool visible;
-			int dam = autowall->GetDamage(ent, min, true, visible);
-			if (dam > DamageToDo && 
-				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
-			{
-				target = ent;
-				DamageToDo = dam;
-				AimLoc = min;
-			}
+			static int dam;
 
 			dam = autowall->GetDamage(ent, minL, true, visible);
 			if (dam > DamageToDo &&
@@ -429,13 +420,13 @@ void Aimbot::Run()
 				AimLoc = minR;
 			}
 
-			dam = autowall->GetDamage(ent, max, true, visible);
+			dam = autowall->GetDamage(ent, min, true, visible);
 			if (dam > DamageToDo &&
 				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
 			{
 				target = ent;
 				DamageToDo = dam;
-				AimLoc = max;
+				AimLoc = min;
 			}
 
 			dam = autowall->GetDamage(ent, maxL, true, visible);
@@ -454,6 +445,15 @@ void Aimbot::Run()
 				target = ent;
 				DamageToDo = dam;
 				AimLoc = maxR;
+			}
+
+			dam = autowall->GetDamage(ent, max, true, visible);
+			if (dam > DamageToDo &&
+				((visible && dam > mindamage_visible) || (!visible && dam > min_damage_hidden)))
+			{
+				target = ent;
+				DamageToDo = dam;
+				AimLoc = max;
 			}
 		}
 

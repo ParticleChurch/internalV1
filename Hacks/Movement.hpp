@@ -10,9 +10,7 @@ public:
 	void Airstuck();
 	void FakeDuck();
 
-	// Maybe walkbot (LOL)
-	std::deque<Vec> locs;
-	void FollowBot();
+	void FastStop();
 };
 
 extern Movement* movement;

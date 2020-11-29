@@ -127,7 +127,8 @@ void Movement::SlowWalk()
 	if (!valid)
 		return;
 
-	float maxSpeed = G::LocalPlayer->MaxAccurateSpeed() * 0.333;
+	float maxSpeed = G::LocalPlayer->MaxAccurateSpeed() / 3.f;
+	maxSpeed -= 5;
 	maxSpeed *= (Config::GetFloat("misc-movement-slowwalk-speed") / 100.f);
 
 	if (G::cmd->forwardmove && G::cmd->sidemove) {
@@ -141,6 +142,8 @@ void Movement::SlowWalk()
 	else if (G::cmd->sidemove) {
 		G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
 	}
+
+	FastStop();
 }
 
 void Movement::Airstuck()
@@ -190,18 +193,41 @@ void Movement::FakeDuck()
 		WasJustFakeducking = false;
 }
 
-void Movement::FollowBot()
+void Movement::FastStop()
 {
-	/*Entity* Leader;
+	if (!G::LocalPlayer) return;
+	if (!G::LocalPlayerAlive) return;
 
-	Vec cur_loc = G::Localplayer->GetVecOrigin();
-	Vec ent_loc = Leader->GetVecOrigin();
+	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
+	if (!weapon) return;
 
-	locs.push_back(ent_loc);
-	while (locs.size() > 20) {
-		locs.pop_front();
-	}*/
+	WeaponData* data = weapon->GetWeaponData();
+	if (!data) return;
 
+	auto get_standing_accuracy = [&]() -> const float
+	{
+		const auto max_speed = G::LocalPlayer->IsScoped() ? data->MaxSpeedAlt : data->MaxSpeed;
+		return max_speed / 3.f;
+	};
 
+	Vec velocity = G::LocalPlayer->GetVecVelocity();
+	QAngle direction = QAngle(0, RAD2DEG(atan2(velocity.y, velocity.x)), 0);
+	float speed = velocity.VecLength2D();
+
+	if (speed < get_standing_accuracy())
+		return;
+
+	//direction.y now holds delta between current viewangle, and velocity angle
+	direction.y = G::cmd->viewangles.y - direction.y;
+
+	//direction now holds forward/sidemove to achieve velocity angle (mentioned above)
+	float SIN = sinf(DEG2RAD(direction.y)) * 450;
+	float COS = cosf(DEG2RAD(direction.y)) * 450;
+	direction.x = COS;
+	direction.y = SIN;
+
+	Vec negated_direction = direction * -speed;
+	G::cmd->forwardmove = negated_direction.x;
+	G::cmd->sidemove = negated_direction.y;
 }
 
