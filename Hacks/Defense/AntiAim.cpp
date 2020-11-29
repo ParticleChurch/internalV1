@@ -113,7 +113,7 @@ void AntiAim::rage()
 		G::cmd->viewangles.x = 89; //down
 		break;
 	case 2:
-		G::cmd->viewangles.x = Switcher % 2 ? 89:-89; //up down
+		G::cmd->viewangles.x = Switcher ? 89:-89; //up down
 		break;
 	default:
 		break;

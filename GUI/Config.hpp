@@ -43,6 +43,7 @@ namespace Config {
 		DROPDOWN,
 		INVERTER,
 		EDITGROUP,
+		MULTISELECT,
 		_count
 	};
 	enum class PropertyComplexity {
@@ -238,10 +239,99 @@ namespace Config {
 		}
 	};
 
+	struct CMultiSelector
+	{
+	private:
+		std::vector<std::string> SelectionNames;
+		std::vector<bool> SelectionValues;
+
+	public:
+		CMultiSelector(std::initializer_list<const char*> SelectionNames)
+		{
+			for (const char* name : SelectionNames)
+			{
+				this->SelectionNames.push_back(name);
+				this->SelectionValues.push_back(false);
+			}
+		}
+
+		CMultiSelector(const CMultiSelector& other)
+		{
+			for (size_t i = 0; i < other.SelectionNames.size(); i++)
+			{
+				this->SelectionNames.push_back(other.SelectionNames[i]);
+				this->SelectionValues.push_back(other.SelectionValues[i]);
+			}
+		}
+
+		uint16_t Get()
+		{
+			uint16_t v = 0;
+			for (uint8_t i = 0; i < 16 && i < this->SelectionValues.size(); i++)
+			{
+				if (this->SelectionValues[i])
+				{
+					v |= (1 << i);
+				}
+			}
+			return v;
+		}
+
+		bool Get(size_t Index)
+		{
+			if (Index >= this->SelectionValues.size()) return false;
+			return this->SelectionValues[Index];
+		}
+
+		void Set(size_t Index, bool value)
+		{
+			if (Index >= this->SelectionNames.size()) return;
+			this->SelectionValues[Index] = value;
+		}
+
+		size_t Count()
+		{
+			return min(this->SelectionNames.size(), this->SelectionValues.size());
+		}
+
+		std::string Stringify()
+		{
+			std::string out = "";
+			bool atLeastOne = false;
+
+			for (size_t i = 0; i < SelectionNames.size(); i++)
+			{
+				if (SelectionValues[i])
+				{
+					atLeastOne = true;
+					out += SelectionNames[i] + ", ";
+				}
+			}
+			if (out.size() >= 2)
+			{
+				out = out.substr(0, out.size() - 2);
+			}
+
+			if (!atLeastOne)
+			{
+				out = "[None]";
+			}
+
+			return out;
+		}
+
+		std::string Stringify(size_t Index)
+		{
+			if (Index >= this->SelectionNames.size()) return "[error]";
+			return this->SelectionNames[Index];
+		}
+	};
+
 	extern bool GetBool(std::string Name);
 	extern float GetFloat(std::string Name);
 	extern Color GetColor(std::string Name);
 	extern size_t GetState(std::string Name);
+	extern uint16_t GetSelections(std::string Name);
 
 	extern void SetBool(std::string Name, bool Value);
 
@@ -287,6 +377,8 @@ namespace Config {
 				return (*(Color*)this->Value).Stringify();
 			case PropertyType::FLOAT:
 				return (*(CFloat*)this->Value).Stringify();
+			case PropertyType::MULTISELECT:
+				return (*(CMultiSelector*)this->Value).Stringify();
 			case PropertyType::BOOLEAN:
 				return *(bool*)this->Value ? "true" : "false";
 			case Config::PropertyType::TEXT:
@@ -448,8 +540,22 @@ namespace Config {
 			CDropdown* Premium = new CDropdown(List);
 			Free->Select(FreeDefault);
 			Premium->Select(PremiumDefault);
-			
+
 			Property* p = new Property(PropertyType::DROPDOWN, IsPremium, Complexity, Name, VisibleName, Free, Premium);
+
+			p->Indentation = this->Indentation;
+
+			this->Properties.push_back(p);
+			return p;
+		}
+
+		// multi selectors
+		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CMultiSelector Items)
+		{
+			CMultiSelector* Free = new CMultiSelector(Items);
+			CMultiSelector* Premium = new CMultiSelector(Items);
+
+			Property* p = new Property(PropertyType::MULTISELECT, IsPremium, Complexity, Name, VisibleName, Free, Premium);
 
 			p->Indentation = this->Indentation;
 

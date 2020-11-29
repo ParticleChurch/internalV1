@@ -26,6 +26,25 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
+				w->AddProperty(false, 0, "test-multi-select", "Select Multiple Here", CMultiSelector{ "Option 1", "Another option", "A third option", "Four", "Last" });
+				/*
+				Here's an example of how you could read this value:
+
+				{
+					uint16_t selections = Config::GetSelections("test-multi-select");
+					std::cout << "You have options 0x" << std::hex << selections << std::dec << " = {";
+					for (int optionIndex = 0; optionIndex < 5; optionIndex++)
+					{
+						if (selections & (1 << optionIndex)) // <===== this is the actual test
+						{
+							std::cout << optionIndex << ", ";
+						}
+					}
+					std::cout << "} selected!" << std::endl;
+				}
+
+				*/
+
 				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
@@ -108,6 +127,7 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-auto-if-lethal", "Baim If Lethal", true, true);
 
 #undef HITBOXES_CONFIG
+
 			}
 			{
 				Widget* w = t->AddWidget("Triggerbot");
@@ -462,6 +482,29 @@ namespace Config {
 					std::cout << "Config::GetState: non stateful value: \"" << Name << "\"" << std::endl;
 				return 0;
 			}
+			}
+		}
+	}
+
+	extern uint16_t GetSelections(std::string Name)
+	{
+		auto search = PropertyLookup.find(Name);
+		if (search == PropertyLookup.end())
+		{
+			if (CONFIG_DEBUG)
+				std::cout << "Config::GetSelections: nonexistant property: \"" << Name << "\"" << std::endl;
+			return 0;
+		}
+		else
+		{
+			Property* prop = search->second;
+			if (prop->Type == PropertyType::MULTISELECT)
+				return ((CMultiSelector*)prop->Value)->Get();
+			else
+			{
+				if (CONFIG_DEBUG)
+					std::cout << "Config::GetSelections: non multiselector value: \"" << Name << "\"" << std::endl;
+				return 0;
 			}
 		}
 	}

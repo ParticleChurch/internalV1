@@ -270,12 +270,12 @@ namespace ImGui
 		/*
 			DRAW
 		*/
-		ImVec4 accentColor = Config::GetColor("menu-option-color2");
-		ImVec4 baseColor = Config::GetColor("menu-option-color1");
-		baseColor.w = accentColor.w = style.Alpha;
-		ImVec4 backgroundColor = lerp(baseColor, accentColor, enabledFactor);
+		ImVec4 accentColor = Config::GetColor("menu-option-color1");
+		ImVec4 baseColor = Config::GetColor("menu-option-color2");
+		accentColor.w = baseColor.w = style.Alpha;
+		ImVec4 backgroundColor = lerp(accentColor, baseColor, enabledFactor);
 		//ImVec4 backgroundBorderColor = backgroundColor; backgroundBorderColor.w = 0.2f;
-		ImVec4 grabColor = lerp(accentColor, baseColor, enabledFactor);
+		ImVec4 grabColor = lerp(baseColor, accentColor, enabledFactor);
 		//ImVec4 grabBorderColor = grabColor; grabBorderColor.w = 0.2f;
 
 		ImVec2 grabCenter(
@@ -541,11 +541,11 @@ namespace ImGui
 		int PixelsMoveGrab = round((double)SliderEndsCenterWidth * Factor);
 
 		// draw background
-		ImVec4 v4AccentColor = Config::GetColor("menu-option-color2");
-		ImVec4 v4BaseColor = Config::GetColor("menu-option-color1");
-		v4BaseColor.w = v4AccentColor.w = style.Alpha;
-		ImU32 AccentColor = vec4toU32(v4AccentColor);
-		ImU32 BaseColor = vec4toU32(v4BaseColor);
+		ImVec4 Color1 = Config::GetColor("menu-option-color1");
+		ImVec4 Color2 = Config::GetColor("menu-option-color2");
+		Color1.w = Color2.w = style.Alpha;
+		ImU32 AccentColor = vec4toU32(Color2);
+		ImU32 BaseColor = vec4toU32(Color1);
 
 		window->DrawList->AddRectFilled(SliderBB.Min, SliderBB.Max, AccentColor, SliderHeight / 2 + 2);
 		window->DrawList->AddRectFilled(SliderBB.Min + ImVec2(2, 2), SliderBB.Max - ImVec2(2, 2), BaseColor, SliderHeight / 2 + 2);
@@ -737,12 +737,12 @@ namespace ImGui
 		}
 		else // not bound
 		{
-			ImVec4 Color1 = Config::GetColor("menu-option-color2");
-			ImVec4 Color2 = Config::GetColor("menu-option-color1");
+			ImVec4 Color1 = Config::GetColor("menu-option-color1");
+			ImVec4 Color2 = Config::GetColor("menu-option-color2");
 			
-			PushStyleColor(ImGuiCol_Button, Color1);
-			PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color1, Color2, 0.25f));
-			PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color1, Color2, 0.5f));
+			PushStyleColor(ImGuiCol_Button, Color2);
+			PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color2, Color1, 0.25f));
+			PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color2, Color1, 0.5f));
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
 			if (Button(("Invert##" + p->Name + "-button").c_str(), ImVec2(40, 20)))
 			{
@@ -917,6 +917,107 @@ namespace ImGui
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
+
+	void DrawMultiSelector(Config::Property* p)
+	{
+		Config::CMultiSelector* ms = (Config::CMultiSelector*)p->Value;
+
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// move over to second column
+		SetCursorPosX(GUI::PropertyLabelsWidth);
+
+		// change button
+		ImVec4 Color1 = Config::GetColor("menu-option-color1");
+		ImVec4 Color2 = Config::GetColor("menu-option-color2");
+
+		PushStyleColor(ImGuiCol_Button, Color2);
+		PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color2, Color1, 0.25f));
+		PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color2, Color1, 0.5f));
+		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+		PushFont(Arial14);
+		if (Button(("Change##" + p->Name + "-button").c_str(), ImVec2(55, 20)))
+		{
+			OpenPopup(("##" + p->Name + "-editor").c_str());
+		}
+		GUI::IgnoreLButton |= IsItemHovered();
+		SameLine();
+		PopStyleColor(3);
+		PopStyleVar(1);
+
+		// picker
+		PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
+		//SetNextItemWidth(1);
+		size_t nItems = ms->Count();
+		SetNextWindowSize(ImVec2(150, nItems * 16 + 6));
+		if (BeginPopup(("##" + p->Name + "-editor").c_str()))
+		{
+			GUI::IgnoreLButton = true;
+
+			int y = 3;
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1.f, -1.f));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+			for (size_t i = 0; i < nItems; i++)
+			{
+				bool x = ms->Get(i);
+
+				if (x) // checked
+				{
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, Color2);
+					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImLerp(Color2, Color1, 0.2f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImLerp(Color2, Color1, 0.4f));
+				}
+				else // unchecked
+				{
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, Color1);
+					ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImLerp(Color1, Color2, 0.2f));
+					ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImLerp(Color1, Color2, 0.4f));
+				}
+
+				SetCursorPos(ImVec2(5, y + 2));
+				if (ImGui::Checkbox(("###check-" + p->Name + "-" + ms->Stringify(i)).c_str(), &x))
+					ms->Set(i, x);
+
+				SetCursorPos(ImVec2(5 + 12 + 5, y + 1));
+				Text(ms->Stringify(i).c_str());
+
+				ImGui::PopStyleColor(3);
+
+				y += 16;
+			}
+			ImGui::PopStyleVar(3);
+
+			EndPopup();
+		}
+		PopStyleVar(1);
+
+		
+		int pixelsForText = GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 55 - 5;
+		SetCursorPosY(LinePosY + (20 - GetFontSize()) / 2);
+		SetCursorPosX(GetCursorPosX() + 5);
+		Text(ms->Stringify().c_str());
+
+		PopFont();
+		// cleanup for next property
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
+	}
 }
 
 bool GUI::LoginMenu()
@@ -1068,6 +1169,7 @@ Config::Tab* CurrentTab = 0;
 bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
+
 	if (!Config::GetBool("show-menu"))
 		return false;
 
@@ -1085,7 +1187,7 @@ bool GUI::HackMenu()
 	// Styles
 	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
-	style.WindowMinSize = ImVec2(500, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
+	style.WindowMinSize = ImVec2(521 /* don't ask */, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
 	style.ChildRounding = 0.f;
 	style.WindowBorderSize = 0.f;
@@ -1098,7 +1200,7 @@ bool GUI::HackMenu()
 	style.Colors[ImGuiCol_ChildBg] = ImVec4(50.f, 50.f, 50.f, 1.f);
 	style.Colors[ImGuiCol_TitleBg] = style.Colors[ImGuiCol_TitleBgActive] = Config::GetColor("menu-background-color2");
 	style.Colors[ImGuiCol_WindowBg] = Config::GetColor("menu-background-color1");
-	style.Colors[ImGuiCol_CheckMark] = ImVec4(1.f, 1.f, 1.f, 1.f);
+	style.Colors[ImGuiCol_CheckMark] = Config::GetColor("menu-option-color1");
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 	
@@ -1266,6 +1368,11 @@ bool GUI::HackMenu()
 				case Config::PropertyType::EDITGROUP:
 				{
 					ImGui::DrawEditGroup(Property);
+					break;
+				}
+				case Config::PropertyType::MULTISELECT:
+				{
+					ImGui::DrawMultiSelector(Property);
 					break;
 				}
 				default:
