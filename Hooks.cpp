@@ -338,19 +338,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FastCrouch();
 		movement->AAMoveFix();
 		movement->FakeDuck();
-
-		if (GetAsyncKeyState(VK_LMENU))
-			movement->FastStop();
 	
 		G::CM_MoveFixStart();
 
 		antiaim->legit();
 		antiaim->rage();
 
+		// bad use (E) and attack (LBUTTON)
+		if ((G::cmd->buttons & IN_USE) || (G::cmd->buttons & IN_ATTACK))
+		{
+			G::cmd->viewangles = G::StartAngle;
+		}
+
 		aimbot->Run();
 		
-		
-
 		//antiaim->rage();
 
 		// decide when to enable desync
@@ -405,6 +406,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		/*movement->RageAutoStrafe();
 		movement->LegitAutoStrafe();*/
 		movement->Airstuck();
+
+		
+
+		// bad animation fix (for third person)
+		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
+			(!Config::GetBool("antiaim-legit-enable") && !Config::GetBool("antiaim-rage-enable")))
+		{
+			antiaim->real = G::cmd->viewangles;
+			antiaim->fake = G::cmd->viewangles;
+
+			antiaim->real.NormalizeAngle();
+			antiaim->fake.NormalizeAngle();
+		}
+		
 
 		G::CM_End();	
 	}
@@ -545,10 +560,10 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
 
 		if (userid == localIdx && HitGroup == 1) { //if hitting head
-			antiaim->legit_left = !antiaim->legit_left;
-			antiaim->legit_side *= -1;
-			antiaim->rage_left = !antiaim->rage_left;
-			antiaim->rage_side *= -1;
+			bool orig = Config::GetState("antiaim-legit-invert");
+			Config::SetBool("antiaim-legit-invert", !orig);
+			orig = Config::GetState("antiaim-rage-invert");
+			Config::SetBool("antiaim-rage-invert", !orig);
 		}
 	}
 	break;
