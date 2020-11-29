@@ -57,14 +57,26 @@ public:
 
 	//operators
 	bool operator != (const Color& b) {
-		if (b.color[0] != (float)color[0])
+		if (b.color[0] != (float)this->color[0])
 			return true;
-		if (b.color[1] != (float)color[1])
+		if (b.color[1] != (float)this->color[1])
 			return true;
-		if (b.color[2] != (float)color[2])
+		if (b.color[2] != (float)this->color[2])
 			return true;
-		if (b.color[3] != (float)color[3])
+		if (b.color[3] != (float)this->color[3])
 			return true;
 		return false;
+	}
+
+	bool operator == (const Color& b) {
+		if (b.color[0] != (float)this->color[0])
+			return false;
+		if (b.color[1] != (float)this->color[1])
+			return false;
+		if (b.color[2] != (float)this->color[2])
+			return false;
+		if (b.color[3] != (float)this->color[3])
+			return false;
+		return true;
 	}
 };
