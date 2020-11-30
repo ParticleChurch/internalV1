@@ -73,6 +73,9 @@
     <ClCompile Include="Hacks\Defense\AntiAim.cpp">
       <Filter>Source\Hacks\Defense</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Defense\FakeLag.cpp">
+      <Filter>Source\Hacks\Defense</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -304,6 +307,9 @@
       <Filter>Headers\Hacks\Visuals</Filter>
     </ClInclude>
     <ClInclude Include="Hacks\Defense\AntiAim.hpp">
+      <Filter>Headers\Hacks\Defense</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Defense\FakeLag.hpp">
       <Filter>Headers\Hacks\Defense</Filter>
     </ClInclude>
   </ItemGroup>

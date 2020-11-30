@@ -4,20 +4,15 @@ World* world = new World();
 
 void World::WorldMod(Material* mat)
 {
-	if(!Config::GetBool("visuals-world-enable"))
-		return;
-
 	mat->ColorModulate(Config::GetColor("visuals-world-color"));
-	mat->AlphaModulate(Config::GetFloat("visuals-world-opacity")/100.f);
+	mat->AlphaModulate(Config::GetFloat("visuals-world-opacity") / 100.f);
 }
 
 void World::PropMod(Material* mat)
 {
-	if (!Config::GetBool("visuals-world-prop-enable"))
-		return;
-
 	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
 	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
+	
 }
 
 void World::SkyboxLoad()
@@ -35,9 +30,6 @@ void World::SkyboxLoad()
 
 void World::SkyboxMod(Material* mat)
 {
-	if (!Config::GetBool("visuals-world-skybox-enable"))
-		return;
-
 	mat->ColorModulate(Config::GetColor("visuals-world-skybox-color"));
 }
 
@@ -45,6 +37,48 @@ void World::Run(int CurStage)
 {
 	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
 		//SkyboxLoad();
+
+		bool UpdateWorld = false;
+		if (Config::GetBool("visuals-world-enable"))
+		{
+			static Color LastColorWorld;
+			static int LastAlphaWorld;
+			if (LastColorWorld != Config::GetColor("visuals-world-color") ||
+				LastAlphaWorld != (int)Config::GetFloat("visuals-world-opacity"))
+			{
+				LastColorWorld = Config::GetColor("visuals-world-color");
+				LastAlphaWorld = (int)Config::GetFloat("visuals-world-opacity");
+				UpdateWorld = true;
+			}
+		}
+		
+
+		bool UpdateProp = false;
+		if (Config::GetBool("visuals-world-prop-enable"))
+		{
+			static Color LastColorProp;
+			static int LastAlphaProp;
+			if (LastColorProp != Config::GetColor("visuals-world-prop-color") ||
+				LastAlphaProp != (int)Config::GetFloat("visuals-world-prop-opacity"))
+			{
+				LastColorProp = Config::GetColor("visuals-world-prop-color");
+				LastAlphaProp = (int)Config::GetFloat("visuals-world-prop-opacity");
+				UpdateProp = true;
+			}
+		}
+
+		bool UpdateSkybox = false;
+		if (Config::GetBool("visuals-world-skybox-enable"))
+		{
+			static Color LastColorSky;
+			if (LastColorSky != Config::GetColor("visuals-world-skybox-color"))
+			{
+				LastColorSky = Config::GetColor("visuals-world-skybox-color");
+				UpdateSkybox = true;
+			}
+		}
+		
+
 		for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
 		{
 			auto mat = I::materialsystem->GetMaterial(i);
@@ -53,11 +87,11 @@ void World::Run(int CurStage)
 
 			auto tex_name = mat->GetTextureGroupName();
 			
-			if(strstr(tex_name, "World"))
+			if(strstr(tex_name, "World") && UpdateWorld)
 				WorldMod(mat);
-			if (strstr(tex_name, "StaticProp"))
+			if (strstr(tex_name, "StaticProp") && UpdateProp)
 				PropMod(mat);
-			if (strstr(tex_name, "SkyBox"))
+			if (strstr(tex_name, "SkyBox") && UpdateSkybox)
 				SkyboxMod(mat);
 		}
 	}
