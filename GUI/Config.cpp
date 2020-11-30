@@ -151,7 +151,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Fake Lag");
 
 				w->AddProperty(false, 0, "antiaim-fakelag-tick", "Amount", "ticks", 0, 16, 0, 0, 0);
-				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 4096, 0, 0, 0); //4096				
+				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 64, 0, 0, 0); //4096				
 			}
 			{
 				Widget* w = t->AddWidget("Legit");
