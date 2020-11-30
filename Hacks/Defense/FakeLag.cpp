@@ -13,7 +13,7 @@ bool FakeLag::DistanceBreaker()
 bool FakeLag::TimeBreaker()
 {
 	// we can't choke more than 62 ticks because of some protection (prev exploits)
-	// which is around 16 packets 
+	// which is around 16 packets (a more accurate way would be to count ticks, meh)
 	if (I::engine->GetNetChannelInfo()->ChokedPackets >= Config::GetFloat("antiaim-fakelag-tick"))
 		return true;
 	return false;
@@ -21,6 +21,11 @@ bool FakeLag::TimeBreaker()
 
 bool FakeLag::Run()
 {
+	// Fake duck exception
+	if (Config::GetBool("misc-movement-fakeduck"))
+	{
+		return I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
+	}
 	Vec velocity = G::LocalPlayer->GetVecVelocity();
 	velocity *= I::globalvars->m_intervalPerTick;
 	//velocity now holds our distance to move
