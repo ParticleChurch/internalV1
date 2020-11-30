@@ -337,7 +337,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool& bSendPacket = *pSendPacket;
 
 
-		bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
+		//bSendPacket = I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
+		bSendPacket = fakelag->Run();
 		
 		G::CM_Start(cmd, pSendPacket);
 

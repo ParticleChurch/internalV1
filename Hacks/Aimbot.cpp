@@ -335,9 +335,7 @@ void Aimbot::Run()
 	// Get closest Entity to crosshair
 	int BestIndex = -1;
 	int BestDamage = -1;
-	Vec BestAimpoint;
-	H::console.clear();
-	H::console.resize(0);
+	Vec BestAimpoint;;
 	for (auto const a : G::EntList)
 	{
 		if (a.index == G::LocalPlayerIndex) // entity is Localplayer
@@ -357,8 +355,6 @@ void Aimbot::Run()
 
 		if (a.dormant)	// Entity is dormant
 			continue;
-
-		H::console.push_back("UserID: " + std::to_string(a.userid));
 
 		if (!backtrack->Valid(a.lastSimTime)) // if not valid simtime
 			continue;
@@ -383,7 +379,6 @@ void Aimbot::Run()
 		static bool visible;
 		static int dam;
 		dam = autowall->GetDamage(a.entity, min, true, visible);
-		H::console.push_back("Damage: " + std::to_string(dam));
 		/*dam = autowall->GetDamage(a.entity, max, true, visible);*/
 		if (dam > BestDamage)
 		{
