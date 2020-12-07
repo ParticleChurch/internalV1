@@ -2,7 +2,7 @@
 class Chams
 {
 private:
-	void OverideMat(bool ignorez, bool wireframe, float transparent, Color rgba, void* thisptr, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
+	void OverideMat(bool ignorez, int material, float transparent, Color rgba, void* thisptr, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
 	Material* flat;
 	Material* normal;
 	Material* animated;
@@ -11,14 +11,14 @@ private:
 	Material* chrome;
 	Material* pearlescent;
 
-	Material* GetCurMaterial()
+	Material* GetCurMaterial(int index)
 	{
-		switch (6) {
+		switch (index) {
 		case 0:
-			return flat;
+			return normal;
 			break;
 		case 1:
-			return normal;
+			return flat;
 			break;
 		case 2:
 			return animated;

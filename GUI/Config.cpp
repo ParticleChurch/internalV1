@@ -205,17 +205,23 @@ namespace Config {
 				Widget* w = t->AddWidget("Chams");
 
 				w->AddText("Enemies"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-cham-enemy-enable", "Show Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-enemy-color", "Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-enemy-material", "Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->AddProperty(false, 0, "visuals-cham-enemy-visible-enable", "Visible Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-enemy-visible-color", "Visible Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-cham-enemy-visible-material", "Visible Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-enable", "Hidden Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-color", "Hidden Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-material", "Hidden Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
 				w->EndIndent();
 
 				w->AddSeparator();
 
 				w->AddText("Teammates"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-cham-friend-enable", "Show Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-friend-color", "Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-friend-material", "Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->AddProperty(false, 0, "visuals-cham-friend-visible-enable", "Visible Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-friend-visible-color", "Visible Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-cham-friend-visible-material", "Visible Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->AddProperty(false, 0, "visuals-cham-friend-hidden-enable", "Hidden Chams", false, false);
+				w->AddProperty(false, 0, "visuals-cham-friend-hidden-color", "Hidden Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-cham-friend-hidden-material", "Hidden Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
 				w->EndIndent();
 			}
 			{

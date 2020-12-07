@@ -335,7 +335,11 @@ void Aimbot::Run()
 	// Get closest Entity to crosshair
 	int BestIndex = -1;
 	int BestDamage = -1;
-	Vec BestAimpoint;;
+	Vec BestAimpoint;
+	esp->points.clear();
+	esp->points.resize(0);
+	H::console.clear();
+	H::console.resize(0);
 	for (auto const a : G::EntList)
 	{
 		if (a.index == G::LocalPlayerIndex) // entity is Localplayer

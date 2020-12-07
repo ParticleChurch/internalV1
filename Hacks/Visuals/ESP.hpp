@@ -9,6 +9,7 @@ private:
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
 public:
+	std::vector<Vec> points;
 	void Run();
 
 	

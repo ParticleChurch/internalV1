@@ -152,6 +152,18 @@ void ESP::Run()
 		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
 
+	
+	for (auto p : points)
+	{
+		Vec screen;
+		if (WorldToScreen(p, screen))
+		{
+			I::surface->DrawSetColor(Color(255, 0, 0, 255));
+			I::surface->DrawLine(screen.x, screen.y, screen.x+1, screen.y+1);
+		}
+	}
+	
+
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
