@@ -44,14 +44,6 @@ struct Tick {
 };
 
 class Backtrack {
-private:
-    ConVar* UpdateRate;
-    ConVar* MaxUpdateRate;
-    ConVar* Interp;
-    ConVar* InterpRatio;
-    ConVar* MinInterpRatio;
-    ConVar* MaxInterpRatio;
-    ConVar* MaxUnlag; 
    
 public:
     std::deque<Tick> Records[65];
@@ -68,16 +60,14 @@ public:
         if (!network)
             return false;
 
-        auto delta = std::clamp(network->GetLatency(0) + network->GetLatency(1) + GetLerp(), 0.f, MaxUnlag->GetFloat()) - (I::globalvars->ServerTime() - SimulationTime);
+        auto delta = std::clamp(network->GetLatency(0) + network->GetLatency(1) + GetLerp(), 0.f, G::MaxUnlag->GetFloat()) - (I::globalvars->ServerTime() - SimulationTime);
         return std::fabsf(delta) <= 0.2f;
     }
     float GetLerp()
     {
-        auto ratio = std::clamp(InterpRatio->GetFloat(), MinInterpRatio->GetFloat(), MaxInterpRatio->GetFloat());
-        return max(Interp->GetFloat(), (ratio / ((MaxUpdateRate) ? MaxUpdateRate->GetFloat() : UpdateRate->GetFloat())));
+        auto ratio = std::clamp(G::InterpRatio->GetFloat(), G::MinInterpRatio->GetFloat(), G::MaxInterpRatio->GetFloat());
+        return max(G::Interp->GetFloat(), (ratio / ((G::MaxUpdateRate) ? G::MaxUpdateRate->GetFloat() : G::UpdateRate->GetFloat())));
     }
-
-    void Init();
 };
 
 extern Backtrack* backtrack; 

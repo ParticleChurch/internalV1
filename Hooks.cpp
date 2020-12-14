@@ -94,7 +94,6 @@ void H::Init()
 	Sleep(SleepTime);
 
 	std::cout << "FrameStageNotify...";
-	backtrack->Init();
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");

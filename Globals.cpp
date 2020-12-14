@@ -21,14 +21,6 @@ namespace G
 
 	// Other Entitys
 	EntItem EntList[64];
-	
-
-	//CreateMove
-	CUserCmd* cmd;
-	bool* pSendPacket;
-	float StartForwardMove;
-	float StartSideMove;
-
 	void UpdateEntities()
 	{
 
@@ -38,7 +30,7 @@ namespace G
 				continue;
 
 			EntList[i].index = i;
-			Entity* ent =  I::entitylist->GetClientEntity(i);
+			Entity* ent = I::entitylist->GetClientEntity(i);
 			if (!ent)
 			{
 				// WE DONT NEED TO FREE NOW, JUST AT THE VERY END after unhooking and maybe not even then...
@@ -50,11 +42,11 @@ namespace G
 				continue;
 			}
 			else {
-				if(!EntList[i].entity)
+				if (!EntList[i].entity)
 					EntList[i].entity = new Entity();
 				EntList[i].entity = ent;
 			}
-				
+
 			static player_info_t info;
 			EntList[i].player = I::engine->GetPlayerInfo(i, &info);
 			if (EntList[i].player)	// If Player
@@ -65,7 +57,7 @@ namespace G
 			EntList[i].team = EntList[i].entity->GetTeam();
 			EntList[i].dormant = EntList[i].entity->IsDormant();
 			EntList[i].lastSimTime = EntList[i].entity->GetSimulationTime();
-			if(backtrack->Valid(EntList[i].lastSimTime))
+			if (backtrack->Valid(EntList[i].lastSimTime))
 				EntList[i].entity->SetupBones(EntList[i].Matrix, 128, 0x100);
 			Model* model = EntList[i].entity->GetModel();
 			if (model)
@@ -87,7 +79,14 @@ namespace G
 			EntList[i].EyePos = EntList[i].entity->GetEyePos();
 		}
 	}
+	
+	//CreateMove
+	CUserCmd* cmd;
+	bool* pSendPacket;
+	float StartForwardMove;
+	float StartSideMove;
 
+	//Global Functions
 	void CM_Clamp()
 	{
 		//Angle stuff
@@ -179,4 +178,25 @@ namespace G
 
 		CM_Clamp();
 	}
+
+	// Pattern Scans / Convars
+	ConVar* UpdateRate;
+	ConVar* MaxUpdateRate;
+	ConVar* Interp;
+	ConVar* InterpRatio;
+	ConVar* MinInterpRatio;
+	ConVar* MaxInterpRatio;
+	ConVar* MaxUnlag;
+
+	void PatternConvarInit()
+	{
+		UpdateRate = I::cvar->FindVar("cl_updaterate");
+		MaxUpdateRate = I::cvar->FindVar("sv_maxupdaterate");
+		Interp = I::cvar->FindVar("cl_interp");
+		InterpRatio = I::cvar->FindVar("cl_interp_ratio");
+		MinInterpRatio = I::cvar->FindVar("sv_client_min_interp_ratio");
+		MaxInterpRatio = I::cvar->FindVar("sv_client_max_interp_ratio");
+		MaxUnlag = I::cvar->FindVar("sv_maxunlag");
+	}
+	
 }

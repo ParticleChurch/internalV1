@@ -50,7 +50,7 @@ namespace G {
 	extern EntItem EntList[64];
 	extern void UpdateEntities();
 
-	//CreateMov
+	//CreateMove
 	extern CUserCmd* cmd;
 	extern bool* pSendPacket;
 	extern float StartForwardMove;
@@ -62,4 +62,14 @@ namespace G {
 	extern void CM_MoveFixStart();
 	extern void CM_MoveFixEnd();
 	extern void CM_End();
+
+	// Pattern Scans / Convars
+	extern ConVar* UpdateRate;
+	extern ConVar* MaxUpdateRate;
+	extern ConVar* Interp;
+	extern ConVar* InterpRatio;
+	extern ConVar* MinInterpRatio;
+	extern ConVar* MaxInterpRatio;
+	extern ConVar* MaxUnlag;
+	extern void PatternConvarInit();
 };

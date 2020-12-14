@@ -2,17 +2,6 @@
 
 Backtrack* backtrack = new Backtrack();
 
-void Backtrack::Init()
-{
-	UpdateRate = I::cvar->FindVar("cl_updaterate");
-	MaxUpdateRate = I::cvar->FindVar("sv_maxupdaterate");
-	Interp = I::cvar->FindVar("cl_interp");
-	InterpRatio = I::cvar->FindVar("cl_interp_ratio");
-	MinInterpRatio = I::cvar->FindVar("sv_client_min_interp_ratio");
-	MaxInterpRatio = I::cvar->FindVar("sv_client_max_interp_ratio");
-	MaxUnlag = I::cvar->FindVar("sv_maxunlag");
-}
-
 void Backtrack::update(int CurStage)
 {
 	if (CurStage != FRAME_RENDER_START)
