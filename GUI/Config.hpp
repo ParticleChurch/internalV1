@@ -40,6 +40,7 @@ namespace Config {
 		FLOAT,
 		BOOLEAN,
 		TEXT,
+		TEXTINPUT,
 		DROPDOWN,
 		INVERTER,
 		EDITGROUP,
@@ -327,11 +328,26 @@ namespace Config {
 		}
 	};
 
+	struct CTextInput
+	{
+	public:
+		char* text = nullptr;
+		size_t size = 0;
+		CTextInput(size_t size, const char* init)
+		{
+			this->text = new char[size];
+			this->size = size;
+			if (init)
+				strcpy(this->text, init);
+		};
+	};
+
 	extern bool GetBool(std::string Name);
 	extern float GetFloat(std::string Name);
 	extern Color GetColor(std::string Name);
 	extern size_t GetState(std::string Name);
 	extern uint16_t GetSelections(std::string Name);
+	extern std::string GetText(std::string Name);
 
 	extern void SetBool(std::string Name, bool Value);
 
@@ -383,6 +399,8 @@ namespace Config {
 				return *(bool*)this->Value ? "true" : "false";
 			case Config::PropertyType::TEXT:
 				return this->VisibleName;
+			case Config::PropertyType::TEXTINPUT:
+				return std::string(((CTextInput*)this->Value)->text);
 			case Config::PropertyType::DROPDOWN:
 			{
 				CDropdown* v = (CDropdown*)this->Value;
@@ -482,7 +500,7 @@ namespace Config {
 		}
 
 		// boolean switches
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions())
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, bool FreeDefault, bool PremiumDefault, KeybindOptions KeybindTypes = KeybindOptions())
 		{
 			Property* p = new Property(PropertyType::BOOLEAN, IsPremium, Complexity, Name, VisibleName, new bool(FreeDefault), new bool(PremiumDefault));
 			
@@ -494,19 +512,33 @@ namespace Config {
 		}
 
 		// float values (use decimals = 0 for ints)
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, std::string Unit, float Min, float Max, int Decimals, float FreeDefault, float PremiumDefault)
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, const char* Unit, float Min, float Max, int Decimals, float FreeDefault, float PremiumDefault)
 		{
 			Property* p = new Property(PropertyType::FLOAT, IsPremium, Complexity, Name, VisibleName, new CFloat(Min, Max, FreeDefault, Decimals), new CFloat(Min, Max, PremiumDefault, Decimals));
 
 			p->UnitLabel = Unit;
 			p->Indentation = this->Indentation;
-			
+
+			this->Properties.push_back(p);
+			return p;
+		}
+
+		// text input values
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, int maxLength, const char* defaultInput)
+		{
+			CTextInput* free = new CTextInput(maxLength, defaultInput);
+			CTextInput* premium = new CTextInput(maxLength, defaultInput);
+
+			Property* p = new Property(PropertyType::TEXTINPUT, IsPremium, Complexity, Name, VisibleName, free, premium);
+
+			p->Indentation = this->Indentation;
+
 			this->Properties.push_back(p);
 			return p;
 		}
 
 		// color values
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, Color* FreeDefault, Color* PremiumDefault = nullptr)
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, Color* FreeDefault, Color* PremiumDefault = nullptr)
 		{
 			if (!PremiumDefault) PremiumDefault = new Color(*FreeDefault);
 
@@ -519,7 +551,7 @@ namespace Config {
 		}
 
 		// inverter values
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CInverter* Inverter = nullptr)
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, CInverter* Inverter = nullptr)
 		{
 			if (!Inverter) Inverter = new CInverter();
 
@@ -532,7 +564,7 @@ namespace Config {
 		}
 
 		// dropdown list values
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CDropdown List, bool IsBindable = false, size_t FreeDefault = 0, size_t PremiumDefault = 0)
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, CDropdown List, bool IsBindable = false, size_t FreeDefault = 0, size_t PremiumDefault = 0)
 		{
 			List.IsBindable = IsBindable;
 
@@ -550,7 +582,7 @@ namespace Config {
 		}
 
 		// multi selectors
-		Property* AddProperty(bool IsPremium, int Complexity, std::string Name, std::string VisibleName, CMultiSelector Items)
+		Property* AddProperty(bool IsPremium, int Complexity, const char* Name, const char* VisibleName, CMultiSelector Items)
 		{
 			CMultiSelector* Free = new CMultiSelector(Items);
 			CMultiSelector* Premium = new CMultiSelector(Items);
@@ -562,7 +594,7 @@ namespace Config {
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddText(const char* Text, std::string Name = "__text-label-YOU-ARENT-SUPPOSED-TO-SEE-THIS-EVER-LOL-SORRY__")
+		Property* AddText(const char* Text, const char* Name = "__text-label-YOU-ARENT-SUPPOSED-TO-SEE-THIS-EVER-LOL-SORRY__")
 		{
 			Property* p = new Property(PropertyType::TEXT, false, 0, Name, Text, (void*)Text, (void*)Text);
 

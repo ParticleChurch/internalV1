@@ -339,6 +339,8 @@ namespace ImGui
 
 			// Dropdown for Keybindability
 			SetCursorPosX(GetCursorPosX() + 5);
+			SetCursorPosY(LinePosY);
+
 			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
 			SetNextItemWidth(115);
 			if (ImGui::BeginCombo(("##" + p->Name + "-keybind-mode-dropdown").c_str(), Config::StringifyKeybindType(p->BindType).c_str(), 0))
@@ -360,15 +362,14 @@ namespace ImGui
 				ImGui::EndCombo();
 			}
 			GUI::IgnoreLButton |= IsItemHovered();
-			PopStyleVar();
-			SameLine();
+			PopStyleVar();  SameLine();
 
-
-			// go back to top of line
-			SetCursorPosY(LinePosY);
 
 			// padding, clear button
 			SetCursorPosX(GetCursorPosX() + 5);
+
+			// go back to top of line
+			SetCursorPosY(LinePosY);
 
 			PushStyleColor(ImGuiCol_Button, styleColor(200, 75, 75, 1.f));
 			PushStyleColor(ImGuiCol_ButtonHovered, styleColor(180, 60, 60, 1.f));
@@ -629,7 +630,7 @@ namespace ImGui
 		// draw the dropdown
 		Config::CDropdown* DD = (Config::CDropdown*)p->Value;
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
-		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 5);
+		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 1);
 		if (ImGui::BeginCombo(("##" + p->Name).c_str(), DD->Stringify(DD->GetSelection()).c_str(), 0))
 		{
 			GUI::IgnoreLButton = true;
@@ -827,11 +828,11 @@ namespace ImGui
 		int LinePosY = GetCursorPosY();
 
 		int AbsWidth = GetContentRegionMaxAbs().x - window->Pos.x;
-		int SliderWidth = AbsWidth - 5;
+		int SliderWidth = AbsWidth - 7;
 		int SliderHeight = 20;
 		int SliderContentWidth = SliderWidth - 4;
 		int SliderContentHeight = SliderHeight - 4;
-		ImVec2 SliderCursorPos(5, (20 - SliderHeight) / 2 + LinePosY);
+		ImVec2 SliderCursorPos(6, (20 - SliderHeight) / 2 + LinePosY);
 		ImVec2 SliderPos = window->Pos - window->Scroll + SliderCursorPos;
 		ImVec2 SliderSize(SliderWidth, SliderHeight);
 		ImRect SliderBB(SliderPos, SliderPos + SliderSize);
@@ -1018,6 +1019,49 @@ namespace ImGui
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
+
+	void DrawTextInput(Config::Property* p)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// move over to second column
+		SetCursorPosX(GUI::PropertyLabelsWidth);
+
+		// draw the text input
+		PushFont(Arial14);
+		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - 1 - GUI::PropertyLabelsWidth);
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((20 - GetFontSize()) / 2, (20 - GetFontSize()) / 2));
+		PushStyleColor(ImGuiCol_Border, styleColor(255, 255, 255, 0.5f));
+		PushStyleColor(ImGuiCol_FrameBg, styleColor(120, 120, 120, 1.f));
+		PushStyleColor(ImGuiCol_FrameBgHovered, styleColor(100, 100, 100, 1.f));
+		PushStyleColor(ImGuiCol_FrameBgActive, styleColor(120, 120, 120, 1.f));
+
+		auto t = (Config::CTextInput*)p->Value;
+		bool changed = InputText(("##" + p->Name).c_str(), t->text, t->size);
+
+		PopStyleColor(4);
+		PopStyleVar(1);
+		PopFont();
+
+		// cleanup for next property
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
+	}
 }
 
 bool GUI::LoginMenu()
@@ -1132,6 +1176,7 @@ bool GUI::LoginMenu()
 
 bool GUI::Main()
 {
+
 	// by default, do not ignore
 	// gui code will set to true if hovering over a button
 	GUI::IgnoreLButton = false;
@@ -1373,6 +1418,11 @@ bool GUI::HackMenu()
 				case Config::PropertyType::MULTISELECT:
 				{
 					ImGui::DrawMultiSelector(Property);
+					break;
+				}
+				case Config::PropertyType::TEXTINPUT:
+				{
+					ImGui::DrawTextInput(Property);
 					break;
 				}
 				default:

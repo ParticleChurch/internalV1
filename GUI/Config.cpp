@@ -26,7 +26,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
-				
+				w->AddProperty(false, 0, "test-text-input", "Text Input", 256, "Default Text");
 
 				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
@@ -495,8 +495,7 @@ namespace Config {
 			}
 		}
 	}
-
-	extern uint16_t GetSelections(std::string Name)
+	uint16_t GetSelections(std::string Name)
 	{
 		auto search = PropertyLookup.find(Name);
 		if (search == PropertyLookup.end())
@@ -514,6 +513,28 @@ namespace Config {
 			{
 				if (CONFIG_DEBUG)
 					std::cout << "Config::GetSelections: non multiselector value: \"" << Name << "\"" << std::endl;
+				return 0;
+			}
+		}
+	}
+	std::string GetText(std::string Name)
+	{
+		auto search = PropertyLookup.find(Name);
+		if (search == PropertyLookup.end())
+		{
+			if (CONFIG_DEBUG)
+				std::cout << "Config::GetText: nonexistant property: \"" << Name << "\"" << std::endl;
+			return 0;
+		}
+		else
+		{
+			Property* prop = search->second;
+			if (prop->Type == PropertyType::TEXTINPUT)
+				return ((CTextInput*)prop->Value)->text;
+			else
+			{
+				if (CONFIG_DEBUG)
+					std::cout << "Config::GetText: non text input value: \"" << Name << "\"" << std::endl;
 				return 0;
 			}
 		}
