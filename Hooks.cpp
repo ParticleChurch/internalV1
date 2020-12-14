@@ -440,7 +440,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
-		if (!G::LocalPlayer || !I::engine->IsInGame() || !(G::LocalPlayer->GetHealth() > 0))
+		if (!G::LocalPlayer || !I::engine->IsInGame())
 			return;
 
 		esp->Run();
