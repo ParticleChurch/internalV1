@@ -562,9 +562,9 @@ namespace Config {
 			this->Properties.push_back(p);
 			return p;
 		}
-		Property* AddText(const char* Text)
+		Property* AddText(const char* Text, std::string Name = "__text-label-YOU-ARENT-SUPPOSED-TO-SEE-THIS-EVER-LOL-SORRY__")
 		{
-			Property* p = new Property(PropertyType::TEXT, false, 0, "__text-label-YOU-ARENT-SUPPOSED-TO-SEE-THIS-EVER-LOL-SORRY__", Text, (void*)Text, (void*)Text);
+			Property* p = new Property(PropertyType::TEXT, false, 0, Name, Text, (void*)Text, (void*)Text);
 
 			p->Indentation = this->Indentation;
 

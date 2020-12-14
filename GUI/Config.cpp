@@ -44,23 +44,7 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				/*
-				Here's an example of how you could read this value:
 
-				{
-					uint16_t selections = Config::GetSelections("test-multi-select");
-					std::cout << "You have options 0x" << std::hex << selections << std::dec << " = {";
-					for (int optionIndex = 0; optionIndex < 5; optionIndex++)
-					{
-						if (selections & (1 << optionIndex)) // <===== this is the actual test
-						{
-							std::cout << optionIndex << ", ";
-						}
-					}
-					std::cout << "} selected!" << std::endl;
-				}
-
-				*/
 				w->AddProperty(false, 0, "aimbot-pistol-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
 				w->AddProperty(false, 1, "aimbot-pistol-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
@@ -211,25 +195,37 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Chams");
 
-				w->AddText("Enemies"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-cham-enemy-visible-enable", "Visible Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-enemy-visible-color", "Visible Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-enemy-visible-material", "Visible Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
-				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-enable", "Hidden Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-color", "Hidden Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-enemy-hidden-material", "Hidden Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent"
+
+				CEditGroup* ESPGroup = w->AddEditGroup("visuals-chams-");
+
+				ESPGroup->AddGroup("enemy-", "Enemies");
+				w->AddText("Visible", "visuals-chams-enemy-visible-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-enemy-visible-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-enemy-visible-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-enemy-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
 
-				w->AddSeparator();
-
-				w->AddText("Teammates"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-cham-friend-visible-enable", "Visible Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-friend-visible-color", "Visible Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-friend-visible-material", "Visible Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
-				w->AddProperty(false, 0, "visuals-cham-friend-hidden-enable", "Hidden Chams", false, false);
-				w->AddProperty(false, 0, "visuals-cham-friend-hidden-color", "Hidden Color", new Color(0, 150, 255));
-				w->AddProperty(false, 0, "visuals-cham-friend-hidden-material", "Hidden Material", CDropdown{ "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent" });
+				w->AddText("Hidden", "visuals-chams-enemy-hidden-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
+
+				ESPGroup->AddGroup("friend-", "Firends");
+				w->AddText("Visible", "visuals-chams-friend-visible-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-friend-visible-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-friend-visible-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-friend-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->EndIndent();
+
+				w->AddText("Hidden", "visuals-chams-friend-hidden-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-friend-hidden-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-friend-hidden-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-friend-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->EndIndent();
+
+#undef CHAM_MATERIALS
 			}
 			{
 				Widget* w = t->AddWidget("ESP");
