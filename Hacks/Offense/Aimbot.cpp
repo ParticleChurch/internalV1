@@ -1,4 +1,4 @@
-#include "../Include.hpp"
+#include "../../Include.hpp"
 
 Aimbot* aimbot = new Aimbot();
 
@@ -336,10 +336,11 @@ void Aimbot::Run()
 	int BestIndex = -1;
 	int BestDamage = -1;
 	Vec BestAimpoint;
-	esp->points.clear();
-	esp->points.resize(0);
-	H::console.clear();
-	H::console.resize(0);
+
+	//return;
+
+	//esp->points.clear();
+	//esp->points.resize(0);
 	for (auto const a : G::EntList)
 	{
 		if (a.index == G::LocalPlayerIndex) // entity is Localplayer
@@ -382,7 +383,11 @@ void Aimbot::Run()
 
 		static bool visible;
 		static int dam;
+
+
+
 		dam = autowall->GetDamage(a.entity, min, true, visible);
+
 		/*dam = autowall->GetDamage(a.entity, max, true, visible);*/
 		if (dam > BestDamage)
 		{

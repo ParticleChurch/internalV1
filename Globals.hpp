@@ -74,7 +74,6 @@ namespace G {
 	extern DWORD AcceptMatchPattern;
 	extern DWORD pD3d9DevicePattern;
 	extern DWORD LoadSkyboxPattern;
-	extern DWORD TraceToExitPattern;
 
 	extern void PatternConvarInit();
 };

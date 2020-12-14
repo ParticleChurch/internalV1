@@ -89,25 +89,25 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else if (isEnemy)
 		{
-			if (Config::GetBool("visuals-cham-enemy-hidden-enable"))
+			if (Config::GetBool("visuals-chams-enemy-hidden-enable"))
 			{
 				OverideMat(
 					true,	//viz thru wall?
-					Config::GetState("visuals-cham-enemy-hidden-material"),	//wireframe?
+					Config::GetState("visuals-chams-enemy-hidden-material"),	//wireframe?
 					1.f,	//transparent?
-					Config::GetColor("visuals-cham-enemy-hidden-color"),
+					Config::GetColor("visuals-chams-enemy-hidden-color"),
 					thisptr, ctx, state, info, customBoneToWorld);
 
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 			}
 
-			if (Config::GetBool("visuals-cham-enemy-visible-enable"))
+			if (Config::GetBool("visuals-chams-enemy-visible-enable"))
 			{
 				OverideMat(
 					false,	//viz thru wall?
-					Config::GetState("visuals-cham-enemy-visible-material"),	//wireframe?
+					Config::GetState("visuals-chams-enemy-visible-material"),	//wireframe?
 					1.f,	//transparent?
-					Config::GetColor("visuals-cham-enemy-visible-color"),
+					Config::GetColor("visuals-chams-enemy-visible-color"),
 					thisptr, ctx, state, info, customBoneToWorld);
 
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
@@ -120,25 +120,25 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else
 		{
-			if (Config::GetBool("visuals-cham-friend-hidden-enable"))
+			if (Config::GetBool("visuals-chams-friend-hidden-enable"))
 			{
 				OverideMat(
 					true,	//viz thru wall?
-					Config::GetState("visuals-cham-friend-hidden-material"),	//wireframe?
+					Config::GetState("visuals-chams-friend-hidden-material"),	//wireframe?
 					1.f,	//transparent?
-					Config::GetColor("visuals-cham-friend-hidden-color"),
+					Config::GetColor("visuals-chams-friend-hidden-color"),
 					thisptr, ctx, state, info, customBoneToWorld);
 
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 			}
 
-			if (Config::GetBool("visuals-cham-friend-visible-enable"))
+			if (Config::GetBool("visuals-chams-friend-visible-enable"))
 			{
 				OverideMat(
 					false,	//viz thru wall?
-					Config::GetState("visuals-cham-friend-visible-material"),	//wireframe?
+					Config::GetState("visuals-chams-friend-visible-material"),	//wireframe?
 					1.f,	//transparent?
-					Config::GetColor("visuals-cham-friend-visible-color"),
+					Config::GetColor("visuals-chams-friend-visible-color"),
 					thisptr, ctx, state, info, customBoneToWorld);
 
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
