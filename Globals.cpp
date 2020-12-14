@@ -203,9 +203,17 @@ namespace G
 		MaxUnlag = I::cvar->FindVar("sv_maxunlag");
 
 		AcceptMatchPattern = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
+		while(AcceptMatchPattern == 0)
+			AcceptMatchPattern = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
 		pD3d9DevicePattern = FindPattern("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C");
+		while (pD3d9DevicePattern == 0)
+			pD3d9DevicePattern = FindPattern("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C");
 		LoadSkyboxPattern = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
+		while (LoadSkyboxPattern == 0)
+			LoadSkyboxPattern = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
 		TraceToExitPattern = FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75");
+		while (TraceToExitPattern == 0)
+			TraceToExitPattern = FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75");
 	}
 	
 }
