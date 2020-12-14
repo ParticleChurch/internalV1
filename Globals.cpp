@@ -41,6 +41,7 @@ namespace G
 			Entity* ent =  I::entitylist->GetClientEntity(i);
 			if (!ent)
 			{
+				// WE DONT NEED TO FREE NOW, JUST AT THE VERY END after unhooking and maybe not even then...
 				if (ent && EntList[i].entity)
 				{
 					free(EntList[i].entity);
