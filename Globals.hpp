@@ -71,5 +71,10 @@ namespace G {
 	extern ConVar* MinInterpRatio;
 	extern ConVar* MaxInterpRatio;
 	extern ConVar* MaxUnlag;
+	extern DWORD AcceptMatchPattern;
+	extern DWORD pD3d9DevicePattern;
+	extern DWORD LoadSkyboxPattern;
+	extern DWORD TraceToExitPattern;
+
 	extern void PatternConvarInit();
 };

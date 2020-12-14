@@ -187,6 +187,10 @@ namespace G
 	ConVar* MinInterpRatio;
 	ConVar* MaxInterpRatio;
 	ConVar* MaxUnlag;
+	DWORD AcceptMatchPattern;
+	DWORD pD3d9DevicePattern;
+	DWORD LoadSkyboxPattern;
+	DWORD TraceToExitPattern;
 
 	void PatternConvarInit()
 	{
@@ -197,6 +201,11 @@ namespace G
 		MinInterpRatio = I::cvar->FindVar("sv_client_min_interp_ratio");
 		MaxInterpRatio = I::cvar->FindVar("sv_client_max_interp_ratio");
 		MaxUnlag = I::cvar->FindVar("sv_maxunlag");
+
+		AcceptMatchPattern = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
+		pD3d9DevicePattern = FindPattern("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C");
+		LoadSkyboxPattern = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
+		TraceToExitPattern = FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75");
 	}
 	
 }

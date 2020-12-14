@@ -40,7 +40,7 @@ namespace H
 
 void H::Init()
 {
-	PDWORD pD3d9Device = *(PDWORD*)(FindPattern("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C") + 1);
+	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
 	IDirect3DDevice9* D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
 	while (CSGOWindow == NULL) {
@@ -672,20 +672,19 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 
 void __stdcall H::EmitSoundHook(SoundData data)
 {
-	//static DWORD loc = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12");
-	//static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(loc);
-	//if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
-	//{
-	//	H::console.clear();
-	//	H::console.resize(0);
-	//	H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
-	//	acceptMatch("accept");
-	//	/*auto window = FindWindowW(L"Valve001", NULL);
-	//	FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
-	//	FlashWindowEx(&flash);
-	//	ShowWindow(window, SW_RESTORE);*/
+	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
+	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
+	{
+		H::console.clear();
+		H::console.resize(0);
+		H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
+		acceptMatch("accept");
+		/*auto window = FindWindowW(L"Valve001", NULL);
+		FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
+		FlashWindowEx(&flash);
+		ShowWindow(window, SW_RESTORE);*/
 
 	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
-	//}
+	}
 	return oEmitSound(I::sound, data);
 }

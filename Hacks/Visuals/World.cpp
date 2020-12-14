@@ -17,7 +17,7 @@ void World::PropMod(Material* mat)
 
 void World::SkyboxLoad()
 {
-	static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
+	static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(G::LoadSkyboxPattern);
 	static auto sv_skyname = I::cvar->FindVar("sv_skyname");
 	sv_skyname->onChangeCallbacks.size = 0;
 
