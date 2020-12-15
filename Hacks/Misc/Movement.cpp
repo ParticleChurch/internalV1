@@ -44,12 +44,12 @@ void Movement::RageAutoStrafe()
 	static bool flip = false;
 	if (G::pSendPacket && !(*G::pSendPacket) && G::LocalPlayerAlive && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
 		&& G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER) {
-		bool Left = G::cmd->sidemove > 300;
-		bool Right = G::cmd->sidemove < -300;
+		bool Left = G::StartSideMove > 300;
+		bool Right = G::StartSideMove < -300;
 		bool Side = (Left || Right) && !(Left && Right);
 
-		bool Forward = G::cmd->forwardmove > 300;
-		bool Backward = G::cmd->forwardmove < -300;
+		bool Forward = G::StartForwardMove > 300;
+		bool Backward = G::StartForwardMove < -300;
 		bool Frwd = (Forward || Backward) && !(Forward && Backward);
 
 		float Goal = 0;
@@ -66,7 +66,7 @@ void Movement::RageAutoStrafe()
 
 
 		float Velocity = RAD2DEG(atan2(Vel.y, Vel.x));
-		float VelDelta = G::StartAngle.y - Velocity;
+		float VelDelta = G::cmd->viewangles.y - Velocity;
 		static float Angle = 180;
 		Angle = VelDelta + 180;
 		while (Angle > 180) {
@@ -102,6 +102,8 @@ void Movement::RageAutoStrafe()
 		G::cmd->sidemove = flip ? COS : -COS;
 		G::cmd->forwardmove = flip ? -SIN : SIN;
 		G::cmd->viewangles.y += flip ? -yaw_change : yaw_change;
+
+		G::CM_Clamp(); 
 	}
 }
 
