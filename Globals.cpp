@@ -211,9 +211,5 @@ namespace G
 		LoadSkyboxPattern = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
 		while (LoadSkyboxPattern == 0)
 			LoadSkyboxPattern = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
-		TraceToExitPattern = FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75");
-		while (TraceToExitPattern == 0)
-			TraceToExitPattern = FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75");
 	}
-	
 }

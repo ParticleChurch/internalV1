@@ -28,26 +28,14 @@
     <ClCompile Include="Netvars.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Hacks\Aimbot.cpp">
-      <Filter>Source\Hacks</Filter>
-    </ClCompile>
     <ClCompile Include="Globals.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Hacks\Backtrack.cpp">
-      <Filter>Source\Hacks</Filter>
-    </ClCompile>
-    <ClCompile Include="Hacks\Autowall.cpp">
-      <Filter>Source\Hacks</Filter>
     </ClCompile>
     <ClCompile Include="GlobalVars.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Hooks.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Hacks\Movement.cpp">
-      <Filter>Source\Hacks</Filter>
     </ClCompile>
     <ClCompile Include="GUI\GUI.cpp">
       <Filter>Source\GUI</Filter>
@@ -75,6 +63,21 @@
     </ClCompile>
     <ClCompile Include="Hacks\Defense\FakeLag.cpp">
       <Filter>Source\Hacks\Defense</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Misc\Movement.cpp">
+      <Filter>Source\Hacks\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Offense\Aimbot.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Offense\Autowall.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Offense\Backtrack.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacks\Misc\Clantag.cpp">
+      <Filter>Source\Hacks\Misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,12 +216,6 @@
     <ClInclude Include="Hacks\Hacks.hpp">
       <Filter>Headers\Hacks</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\Aimbot.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
-    <ClInclude Include="Hacks\Backtrack.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\Interfaces\IVModelInfo.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
@@ -242,9 +239,6 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\SurfaceData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
-    </ClInclude>
-    <ClInclude Include="Hacks\Autowall.hpp">
-      <Filter>Headers\Hacks</Filter>
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\GameEventManager.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
@@ -288,9 +282,6 @@
     <ClInclude Include="Valve\Custom\Math.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>
-    <ClInclude Include="Hacks\Movement.hpp">
-      <Filter>Headers\Hacks</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\SDK\SoundData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
@@ -311,6 +302,21 @@
     </ClInclude>
     <ClInclude Include="Hacks\Defense\FakeLag.hpp">
       <Filter>Headers\Hacks\Defense</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\Aimbot.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\Autowall.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\Backtrack.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Misc\Movement.hpp">
+      <Filter>Headers\Hacks\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Misc\Clantag.hpp">
+      <Filter>Headers\Hacks\Misc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -361,6 +367,18 @@
     </Filter>
     <Filter Include="Source\Hacks\Defense">
       <UniqueIdentifier>{bdd63a89-57b9-4aa3-8a7c-9f0503b61ed2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Hacks\Offense">
+      <UniqueIdentifier>{bce837e9-e47d-4673-9399-659c783761f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Hacks\Misc">
+      <UniqueIdentifier>{2f1da319-4192-40d0-bd24-b4d1122eb7b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Hacks\Offense">
+      <UniqueIdentifier>{ac661ff2-1e36-4929-acc9-d2e99832a006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Hacks\Misc">
+      <UniqueIdentifier>{9520bb21-7616-4d6c-b894-58a9004acb40}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

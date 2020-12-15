@@ -26,8 +26,6 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
-				w->AddProperty(false, 0, "test-text-input", "Text Input", 256, "Default Text");
-
 				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
@@ -316,9 +314,10 @@ namespace Config {
 				w->AddProperty(false, 2, "misc-other-killsay", "Kill Say", false, false);
 				//TODO - add input area for custom killsay insult
 				w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
-				w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
-				//TODO - add area to input what they are unboxing
-				w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);
+				// w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
+				// TODO - add area to input what they are unboxing
+				/*w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);*/
+				w->AddProperty(false, 0, "misc-other-clantag-input", "Clantag", 256, "");
 				//TODO - add area to input what clantag they are displaying
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
