@@ -496,37 +496,6 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	}
 	backtrack->update(curStage);
 	world->Run(curStage);
-
-	/*
-	if (curStage == FRAME_RENDER_START && G::Localplayer && G::Localplayer->GetHealth() > 0 && I::engine->IsInGame()) {
-		static auto load_named_sky = reinterpret_cast<void(__fastcall*)(const char*)>(FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45"));
-	
-		static auto sv_skyname = I::cvar->FindVar("sv_skyname");
-		sv_skyname->onChangeCallbacks.size = 0;
-
-		static auto r_3dsky = I::cvar->FindVar("r_3dsky");
-		r_3dsky->onChangeCallbacks.size = 0;
-		r_3dsky->SetValue(0);
-
-		load_named_sky("sky_csgo_night02");
-
-		for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
-		{
-			auto mat = I::materialsystem->GetMaterial(i);
-			if (!mat)
-				continue;
-
-			auto tex_name = mat->GetTextureGroupName();
-			
-			if (strstr(tex_name, "World") || strstr(tex_name, "StaticProp") || strstr(tex_name, "SkyBox"))
-			{
-				// TODO: bruh this literally just makes my screen black
-				mat->ColorModulate(20 / 255.f, 20 / 255.f, 30 / 255.f);
-				// I::modelrender->ForcedMaterialOverride(mat);
-			}
-		}
-	}
-	*/
 	
 	return oFrameStageNotify(curStage);
 }
