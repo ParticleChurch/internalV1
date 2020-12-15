@@ -351,6 +351,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		antiaim->legit();
 		antiaim->rage();
 
+		clantag->run();
+
 		// bad use (E) and attack (LBUTTON)
 		if (G::cmd->buttons & IN_USE)
 		{

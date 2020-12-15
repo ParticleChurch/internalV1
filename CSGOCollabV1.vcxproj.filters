@@ -76,6 +76,9 @@
     <ClCompile Include="Hacks\Offense\Backtrack.cpp">
       <Filter>Source\Hacks\Offense</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Misc\Clantag.cpp">
+      <Filter>Source\Hacks\Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -310,6 +313,9 @@
       <Filter>Headers\Hacks\Offense</Filter>
     </ClInclude>
     <ClInclude Include="Hacks\Misc\Movement.hpp">
+      <Filter>Headers\Hacks\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Misc\Clantag.hpp">
       <Filter>Headers\Hacks\Misc</Filter>
     </ClInclude>
   </ItemGroup>

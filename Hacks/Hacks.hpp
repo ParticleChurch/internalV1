@@ -5,6 +5,7 @@
 #include "Defense/FakeLag.hpp"
 #include "Defense/AntiAim.hpp"
 #include "Misc/Movement.hpp"
+#include "Misc/Clantag.hpp"
 #include "Visuals/ESP.hpp"
 #include "Visuals/Chams.hpp"
 #include "Visuals/World.hpp"
