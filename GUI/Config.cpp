@@ -312,6 +312,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Other");
 				w->AddProperty(false, 0, "misc-other-autoaccept", "AutoAccept", false, false);
 				w->AddProperty(false, 2, "misc-other-killsay", "Kill Say", false, false);
+				w->AddProperty(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by particle.church!");
 				//TODO - add input area for custom killsay insult
 				w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
 				// w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);

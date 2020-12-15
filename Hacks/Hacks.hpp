@@ -6,6 +6,7 @@
 #include "Defense/AntiAim.hpp"
 #include "Misc/Movement.hpp"
 #include "Misc/Clantag.hpp"
+#include "Misc/KillSay.hpp"
 #include "Visuals/ESP.hpp"
 #include "Visuals/Chams.hpp"
 #include "Visuals/World.hpp"

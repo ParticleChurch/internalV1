@@ -79,6 +79,9 @@
     <ClCompile Include="Hacks\Misc\Clantag.cpp">
       <Filter>Source\Hacks\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Misc\KillSay.cpp">
+      <Filter>Source\Hacks\Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -316,6 +319,9 @@
       <Filter>Headers\Hacks\Misc</Filter>
     </ClInclude>
     <ClInclude Include="Hacks\Misc\Clantag.hpp">
+      <Filter>Headers\Hacks\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Misc\KillSay.hpp">
       <Filter>Headers\Hacks\Misc</Filter>
     </ClInclude>
   </ItemGroup>

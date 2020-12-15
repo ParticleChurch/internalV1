@@ -161,6 +161,7 @@
     <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
     <ClCompile Include="Hacks\Defense\FakeLag.cpp" />
     <ClCompile Include="Hacks\Misc\Clantag.cpp" />
+    <ClCompile Include="Hacks\Misc\KillSay.cpp" />
     <ClCompile Include="Hacks\Misc\Movement.cpp" />
     <ClCompile Include="Hacks\Offense\Aimbot.cpp" />
     <ClCompile Include="Hacks\Offense\Autowall.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="Hacks\Defense\FakeLag.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
     <ClInclude Include="Hacks\Misc\Clantag.hpp" />
+    <ClInclude Include="Hacks\Misc\KillSay.hpp" />
     <ClInclude Include="Hacks\Misc\Movement.hpp" />
     <ClInclude Include="Hacks\Offense\Aimbot.hpp" />
     <ClInclude Include="Hacks\Offense\Autowall.hpp" />

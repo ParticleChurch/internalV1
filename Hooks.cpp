@@ -546,7 +546,7 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 	if (!event)
 		return oFireEventClientSide(I::gameeventmanager, event);
 
-	
+	killsay->run(event);
 
 	switch (StrHash::HashRuntime(event->GetName())) {
 	case StrHash::Hash("player_hurt"):
@@ -614,7 +614,6 @@ bool __stdcall H::FireEventClientSideHook(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
 			break;
 		I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
-		//I::engine->ClientCmd_Unrestricted("say ok"); //kill say
 	}
 	break;	
 	}
