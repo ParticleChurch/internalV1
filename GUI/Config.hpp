@@ -2,6 +2,7 @@
 #include "../Valve/Custom/Color.hpp"
 #include <map>
 #include <vector>
+#include "ConfigManager.hpp"
 //#include "../Include.hpp"
 
 constexpr bool CONFIG_DEBUG = true;

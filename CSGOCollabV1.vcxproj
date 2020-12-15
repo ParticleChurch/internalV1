@@ -156,6 +156,7 @@
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GlobalVars.cpp" />
     <ClCompile Include="GUI\Config.cpp" />
+    <ClCompile Include="GUI\ConfigManager.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="GUI\HTTP.cpp" />
     <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Globals.hpp" />
     <ClInclude Include="GUI\Config.hpp" />
+    <ClInclude Include="GUI\ConfigManager.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
     <ClInclude Include="Hacks\Defense\AntiAim.hpp" />

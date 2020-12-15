@@ -1476,6 +1476,11 @@ bool GUI::HackMenu()
 			continue;
 		}
 
+		if (Widget->Name == "Config" && CurrentTab->Name == "Config")
+		{
+
+		}
+
 		// title
 		ImGui::PushFont(Arial18);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
