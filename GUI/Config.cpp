@@ -26,7 +26,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Aimbot");
 
-				w->AddProperty(false, 0, "enable-aimbot", "Enable", true, true, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "enable-aimbot", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
 				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
 				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
@@ -139,20 +139,20 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Fake Lag");
 
-				w->AddProperty(false, 0, "antiaim-fakelag-tick", "Amount", "ticks", 0, 16, 0, 0, 0);
-				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 64, 0, 0, 0); //4096				
+				w->AddProperty(false, 0, "antiaim-fakelag-tick", "Amount", "ticks", 0, 16, 0, 3, 3);
+				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 64, 0, 64, 64); //4096				
 			}
 			{
 				Widget* w = t->AddWidget("Legit");
 
-				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", true, true);
+				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", false, false);
 				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 1, "antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
 			}
 			{
 				Widget* w = t->AddWidget("Rage");
 				//General
-				w->AddProperty(false, 0, "antiaim-rage-enable", "Enable", true, true);
+				w->AddProperty(false, 0, "antiaim-rage-enable", "Enable", false, false);
 
 				//Pitch
 				w->AddProperty(false, 0, "antiaim-rage-pitch", "Pitch", CDropdown{ "Up", "Down", "Trolling" });
@@ -369,7 +369,7 @@ namespace Config {
 		{
 			Tab* t = new Tab("Config");
 			{
-				Widget* w = t->AddWidget("bruh");
+				Widget* w = t->AddWidget("Config");
 				w->AddText("[insert config options here]");
 			}
 			Tabs.push_back(t);

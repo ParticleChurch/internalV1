@@ -414,7 +414,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		backtrack->run();
 		G::CM_MoveFixEnd();
 
-		movement->RageAutoStrafe();
+		
 
 		movement->Airstuck();
 
@@ -431,6 +431,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 
 		G::CM_End();	
+
+		movement->RageAutoStrafe();
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
