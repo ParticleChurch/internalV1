@@ -39,8 +39,10 @@ void Movement::FastCrouch()
 
 void Movement::RageAutoStrafe()
 {
+	if (Config::GetState("misc-movement-autostrafe") != 1)
+		return;
 	static bool flip = false;
-	if (G::pSendPacket && !(*G::pSendPacket) && (G::LocalPlayer->GetHealth() > 0) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
+	if (G::pSendPacket && !(*G::pSendPacket) && G::LocalPlayerAlive && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
 		&& G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER) {
 		bool Left = G::cmd->sidemove > 300;
 		bool Right = G::cmd->sidemove < -300;
@@ -105,7 +107,9 @@ void Movement::RageAutoStrafe()
 
 void Movement::LegitAutoStrafe()
 {
-	bool valid = (G::LocalPlayer->GetHealth() > 0) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
+	if (Config::GetState("misc-movement-autostrafe") != 2)
+		return;
+	bool valid = (G::LocalPlayerAlive) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
 	if (!valid)
 		return;
 

@@ -337,6 +337,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		bSendPacket = fakelag->Run();
 		
+
 		G::CM_Start(cmd, pSendPacket);
 
 		//Movement
@@ -345,6 +346,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FastCrouch();
 		movement->AAMoveFix();
 		movement->FakeDuck();
+		movement->LegitAutoStrafe();
 	
 		G::CM_MoveFixStart();
 
@@ -412,11 +414,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		backtrack->run();
 		G::CM_MoveFixEnd();
 
-		/*movement->RageAutoStrafe();
-		movement->LegitAutoStrafe();*/
-		movement->Airstuck();
+		movement->RageAutoStrafe();
 
-		
+		movement->Airstuck();
 
 		// bad animation fix (for third person)
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 

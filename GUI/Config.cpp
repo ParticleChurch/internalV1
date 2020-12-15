@@ -307,6 +307,7 @@ namespace Config {
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add autostrafe dropdown (with option for none to be on, with one on at max) (or just add a bool idk yet lol)
+				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None", "Rage", "Legit" });
 			}
 			{
 				Widget* w = t->AddWidget("Other");
