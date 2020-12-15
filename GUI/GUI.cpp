@@ -176,7 +176,7 @@ namespace ImGui
 		return changed;
 	}
 
-	void ColorPicker(Color* oColor, std::string id, std::string name, ImVec2 PreviewSize, int PickerWidth = 200)
+	void ColorPicker(Color* oColor, std::string id, std::string name, ImVec2 PreviewSize)
 	{
 		float colArray[] = { oColor->color[0] / 255.f , oColor->color[1] / 255.f , oColor->color[2] / 255.f };
 		ImVec4 imColor = ImVec4(colArray[0], colArray[1], colArray[2], 1.f);
@@ -187,11 +187,17 @@ namespace ImGui
 		GUI::IgnoreLButton |= ImGui::IsItemHovered();
 
 		// picker
+		SetNextWindowSize(ImVec2(202, 176 + 2 + 18 + 24));
 		if (ImGui::BeginPopup(("###" + id + "-picker").c_str()))
 		{
-			ImGui::SetNextItemWidth(PickerWidth);
+			PushFont(Arial14);
+			SetCursorPos(ImVec2(4, 2));
+			Text(name.c_str());
+			PopFont();
+			SetCursorPos(ImVec2(1, 1 + 18));
 
-			ImGui::ColorPicker3("Preview", colArray, ImGuiColorEditFlags_NoSmallPreview);
+			SetNextItemWidth(200);
+			ColorPicker3(("##" + id + "-picker-editor").c_str(), colArray, ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayHex);
 
 			// if we are hovering, ignore because we're changing the color
 			// if we are not hovering, ignore because we're closing the color picker
@@ -483,13 +489,11 @@ namespace ImGui
 		PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.f, 4.f));
-		PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.5f)); // white
 
 		SetCursorPosX(GetCursorPosX() + 2); // move over to line up with binded properties
 		ColorPicker(c, p->Name, p->VisibleName, ImVec2(30, 20));
 
 		PopStyleVar(3);
-		PopStyleColor(1);
 	}
 
 	void DrawFloatProperty(Config::Property* p, int GrabClearance = 2)
@@ -607,6 +611,7 @@ namespace ImGui
 
 	void DrawDropdownProperty(Config::Property* p)
 	{
+		/*
 		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = GetCurrentWindow();
 		const ImGuiStyle& style = g.Style;
@@ -628,7 +633,6 @@ namespace ImGui
 		SetCursorPosX(GUI::PropertyLabelsWidth);
 
 		// draw the dropdown
-		Config::CDropdown* DD = (Config::CDropdown*)p->Value;
 		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
 		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 1);
 		if (ImGui::BeginCombo(("##" + p->Name).c_str(), DD->Stringify(DD->GetSelection()).c_str(), 0))
@@ -650,6 +654,118 @@ namespace ImGui
 		PopStyleVar();
 
 		// put cursor on the next line
+		SetCursorPosY(LinePosY + 20);
+		SetCursorPosX(0);
+		*/
+
+		Config::CDropdown* dd = (Config::CDropdown*)p->Value;
+
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		// draw this property at the current height
+		int LinePosY = GetCursorPosY();
+
+		// line height = 20px, move down to draw text in center
+		int TextOffset = (20 - GetFontSize()) / 2;
+		SetCursorPosY(LinePosY + TextOffset);
+
+		// draw property name
+		Text(p->VisibleName.c_str()); SameLine();
+
+		// move back up to top of line
+		SetCursorPosY(LinePosY);
+
+		// move over to second column
+		SetCursorPosX(GUI::PropertyLabelsWidth);
+
+		// change button
+		ImVec4 Color1 = Config::GetColor("menu-option-color1");
+		ImVec4 Color2 = Config::GetColor("menu-option-color2");
+
+		PushStyleColor(ImGuiCol_Button, Color2);
+		PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color2, Color1, 0.25f));
+		PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color2, Color1, 0.5f));
+		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
+		PushFont(Arial14);
+		if (Button(("Change##" + p->Name + "-button").c_str(), ImVec2(55, 20)))
+		{
+			OpenPopup(("##" + p->Name + "-editor").c_str());
+		}
+		GUI::IgnoreLButton |= IsItemHovered();
+		SameLine();
+		PopStyleColor(3);
+		PopStyleVar(1);
+
+		// picker
+		PushFont(Arial14);
+		PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
+		size_t nItems = dd->Options.size();
+		SetNextWindowSize(ImVec2(150, nItems * 16 + 6));
+		if (BeginPopup(("##" + p->Name + "-editor").c_str()))
+		{
+			GUI::IgnoreLButton = true;
+			ImGuiWindow* popup = GetCurrentWindow();
+			ImVec2 base = popup->DC.CursorPos;
+
+			for (size_t i = 0; i < nItems; i++)
+			{
+
+				// register this as a hoverable item in imgui
+				ImVec2 labelSize = CalcTextSize(dd->Stringify(i).c_str());
+				ImRect BB(base + ImVec2(5, 5 + i * 16), base + ImVec2(5, 5 + i * 16) + ImVec2(12 + 5 + labelSize.x, 12));
+				ImGuiID ID = GetID((p->Name + "-btn-" + std::to_string(i)).c_str());
+				ItemAdd(BB, ID);
+				bool hovered = false, active = false;
+				bool pressed = ButtonBehavior(BB, ID, &hovered, &active);
+				if (active)
+				{
+					SetActiveID(ID, popup);
+					SetFocusID(ID, popup);
+					FocusWindow(popup);
+				}
+				if (pressed)
+				{
+					dd->Select(i);
+				}
+
+				ImVec4 c = Color1;
+				if (i != dd->GetSelection())
+				{
+					if (active)
+						c = ImLerp(Color1, Color2, 0.4f);
+					else if (hovered)
+						c = ImLerp(Color1, Color2, 0.2f);
+				}
+
+				ImVec2 circlePos = base + ImVec2(5 + 6, 5 + 6 + i * 16);
+				popup->DrawList->AddCircleFilled(circlePos, 6.f, vec4toU32(c));
+
+				if (i == dd->GetSelection())
+				{
+					popup->DrawList->AddCircleFilled(circlePos, 4.f, vec4toU32(Color2));
+				}
+
+				ImVec2 textPos = ImVec2(5 + 12 + 5, 3 + i * 16);
+				SetCursorPos(textPos);
+				Text(dd->Stringify(i).c_str());
+
+			}
+
+			EndPopup();
+		}
+		PopStyleVar(1);
+		PopFont();
+
+
+		int pixelsForText = GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 55 - 5;
+		SetCursorPosY(LinePosY + (20 - GetFontSize()) / 2);
+		SetCursorPosX(GetCursorPosX() + 5);
+		Text(dd->Stringify(dd->GetSelection()).c_str());
+
+		PopFont();
+		// cleanup for next property
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
@@ -1336,6 +1452,7 @@ bool GUI::HackMenu()
 	ImGui::PopStyleColor();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, Config::GetColor("menu-text-color"));
@@ -1343,6 +1460,7 @@ bool GUI::HackMenu()
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, Config::GetColor("menu-text-color"));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, Config::GetColor("menu-text-color"));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, Config::GetColor("menu-background-color4"));
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, Config::GetColor("menu-background-color4"));
 	
 	for (size_t i = 0; i < CurrentTab->Widgets.size(); i++)
 	{
@@ -1445,8 +1563,8 @@ bool GUI::HackMenu()
 		ImGui::EndChild();
 	}
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // add some padding to the bottom
-	ImGui::PopStyleVar(3);
-	ImGui::PopStyleColor(5);
+	ImGui::PopStyleVar(4);
+	ImGui::PopStyleColor(6);
 	HackMenuPageHasScrollbar = ImGui::GetContentRegionAvail().y < 0; // its gonna be a frame late, rip
 	ImGui::EndChildFrame();
 
