@@ -369,7 +369,7 @@ namespace Config {
 		{
 			Tab* t = new Tab("Config");
 			{
-				Widget* w = t->AddWidget("bruh");
+				Widget* w = t->AddWidget("Config");
 				w->AddText("[insert config options here]");
 			}
 			Tabs.push_back(t);

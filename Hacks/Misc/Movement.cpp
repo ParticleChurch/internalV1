@@ -39,6 +39,7 @@ void Movement::FastCrouch()
 
 void Movement::RageAutoStrafe()
 {
+	return;
 	if (Config::GetState("misc-movement-autostrafe") != 1)
 		return;
 	static bool flip = false;
