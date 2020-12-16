@@ -1,5 +1,25 @@
 #include "../Include.hpp"
 
+// trim from left
+inline std::string& ltrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	s.erase(0, s.find_first_not_of(t));
+	return s;
+}
+
+// trim from right
+inline std::string& rtrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	s.erase(s.find_last_not_of(t) + 1);
+	return s;
+}
+
+// trim from left & right
+inline std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	return ltrim(rtrim(s, t), t);
+}
+
 namespace Config {
 	std::string StringifyKeybindType(KeybindType type)
 	{
@@ -10,8 +30,8 @@ namespace Config {
 	}
 	std::string StringifyVK(int VirturalKey)
 	{
-		// TODO: make our own func, not valves retarded "CAPSLOCK" and "q"
-		return I::inputsystem->VirtualKeyToString(VirturalKey);
+		//return I::inputsystem->VirtualKeyToString(VirturalKey);
+		return VK::GetName(VirturalKey);
 	}
 
 	UserInfoT UserInfo = UserInfoT{};
@@ -680,5 +700,212 @@ namespace Config {
 				}
 			}
 		}
-	};
+	}
+
+	void ClearAllKeybinds()
+	{
+		for (size_t t = 0; t < Tabs.size(); t++)
+		{
+			Tab* tab = Tabs.at(t);
+			for (size_t w = 0; w < tab->Widgets.size(); w++)
+			{
+				Widget* widget = tab->Widgets.at(w);
+				for (size_t p = 0; p < widget->Properties.size(); p++)
+				{
+					Property* prop = widget->Properties.at(p);
+					Unbind(prop);
+					prop->BindType = KeybindType::Toggle;
+				}
+			}
+		}
+	}
+
+	std::string ExportToString()
+	{
+		std::string s = "";
+		s += "# PARTICLE.CHURCH config generated on mm/dd/yyyy @ hh:mm:ss\n";
+		s += "# For help making a config, please visit https://particle.church/help/config\n";
+		s += "# \n";
+		s += "# The format for this file is as follows,\n";
+		s += "# and is explained in greater detail at above link:\n";
+		s += "# property-name : value; keybind_type @ key_name\n";
+
+		for (size_t t = 0; t < Tabs.size(); t++)
+		{
+			Tab* tab = Tabs.at(t);
+			if (tab->Name == "Config") continue;
+
+			// ##############
+			// ## TAB NAME ##
+			// ##############
+			s += "\n";
+			s += "\n";
+			s += "\n";
+			s += "###";
+			for (size_t i = 0; i < tab->Name.size(); i++) s += "#";
+			s += "###\n";
+			s += "## " + tab->Name + " ##\n";
+			s += "###";
+			for (size_t i = 0; i < tab->Name.size(); i++) s += "#";
+			s += "###\n";
+
+			for (size_t w = 0; w < tab->Widgets.size(); w++)
+			{
+				Widget* widget = tab->Widgets.at(w);
+
+				// ## WIDGET NAME
+				s += "\n";
+				s += "## " + widget->Name + "\n";
+
+				// determine longest property name
+				size_t propertyNameLength = 0;
+				for (size_t p = 0; p < widget->Properties.size(); p++)
+				{
+					Property* prop = widget->Properties.at(p);
+					if (prop->Type == PropertyType::TEXT) continue;
+					if (prop->Type == PropertyType::EDITGROUP) continue;
+					if (prop->Name.size() > propertyNameLength)
+						propertyNameLength = prop->Name.size();
+				}
+
+				for (size_t p = 0; p < widget->Properties.size(); p++)
+				{
+					Property* prop = widget->Properties.at(p);
+					if (prop->Type == PropertyType::TEXT) continue;
+					if (prop->Type == PropertyType::EDITGROUP) continue;
+
+					s += prop->Name;
+					for (size_t i = prop->Name.size(); i < propertyNameLength; i++)
+						s += " ";
+					s += " :";
+					if (prop->KeyBind > 0)
+					{
+						switch (prop->BindType)
+						{
+						default:
+						case KeybindType::Toggle:
+							s += " toggle @ ";
+							break;
+						case KeybindType::HoldToEnable:
+							s += " hold_enable @ ";
+							break;
+						case KeybindType::HoldToDisable:
+							s += " hold_disable @ ";
+							break;
+						}
+						s += VK::GetName(prop->KeyBind) + " ";
+					}
+
+					std::string value = prop->Stringify();
+					if (prop->Type == PropertyType::TEXTINPUT)
+					{
+						value = "\"" + value + "\"";
+					}
+					s += ": " + value + "\n";
+				}
+			}
+		}
+
+		return s;
+	}
+	size_t LoadFromString(std::string in)
+	{
+		size_t numPropsAffected = 0;
+
+		// splice out everything between a "#" and a "\n" (aka comments)
+		{
+			size_t tag_index = 0;
+			size_t newline_index = 0;
+			while (true)
+			{
+				tag_index = in.find('#');
+				if (tag_index == std::string::npos) break; // all comments are removed!
+
+				newline_index = in.find("\n", tag_index); // first newline that comes after the tag
+				if (newline_index == std::string::npos) newline_index = in.size(); // if no newline, this comment goes to EOF
+
+				in = in.erase(tag_index, newline_index - tag_index);
+			}
+		}
+
+		// replace \r\n with \n
+		{
+			size_t crlf = 0;
+			while ((crlf = in.find("\r\n", crlf)) != std::string::npos)
+				in.replace(crlf, 2, "\n");
+		}
+
+		// remove repeating spaces
+		{
+			std::string::iterator new_end = std::unique(in.begin(), in.end(), [](char lhs, char rhs) { return (lhs == ' ') && (rhs == ' '); });
+			in.erase(new_end, in.end());
+		}
+
+		// remove repeating newlines
+		{
+			std::string::iterator new_end = std::unique(in.begin(), in.end(), [](char lhs, char rhs) { return (lhs == '\n') && (rhs == '\n'); });
+			in.erase(new_end, in.end());
+		}
+
+		// loop through lines
+		{
+			size_t a = 0, b = 0, splitterA = 0, splitterB = 0, splitterC = 0;
+			std::string line;
+			while (b != std::string::npos)
+			{
+				b = in.find('\n', a);
+				line = in.substr(a, b - a);
+				a = b + 1;
+
+				// require two colons
+				if ((splitterA = line.find(":")) == std::string::npos) continue;
+				if ((splitterB = line.find(":", splitterA + 1)) == std::string::npos) continue;
+
+				std::string propName = line.substr(0, splitterA);
+				std::string keybind = line.substr(splitterA + 1, splitterB - splitterA - 1);
+				std::string value = line.substr(splitterB + 1);
+				trim(propName);
+				trim(keybind);
+				trim(value);
+
+				auto p_iter = PropertyLookup.find(propName);
+				if (p_iter == PropertyLookup.end()) continue;
+				
+				Property* p = p_iter->second;
+
+				bool keybindParsed = false;
+				if ((splitterC = keybind.find("@")) != std::string::npos)
+				{
+					std::string btype = keybind.substr(0, splitterC);
+					std::string key = keybind.substr(splitterC + 1);
+					trim(btype);
+					trim(key);
+					std::transform(btype.begin(), btype.end(), btype.begin(), [](unsigned char c) { return std::tolower(c); });
+
+					KeybindType t = KeybindType::INVALID;
+					if (btype == "toggle") t = KeybindType::Toggle;
+					else if (btype == "hold_enable") t = KeybindType::HoldToEnable;
+					else if (btype == "hold_disable") t = KeybindType::HoldToDisable;
+
+					if (t != KeybindType::INVALID)
+					{
+						int vk = VK::GetCode(key.c_str());
+						if (vk > 0)
+						{
+							Bind(p, vk);
+							p->BindType = t;
+							keybindParsed = true;
+						}
+					}
+				}
+
+				bool valueParsed = p->Parse(value);
+
+				if (keybindParsed || valueParsed)
+					numPropsAffected++;
+			}
+		}
+
+		return numPropsAffected;
+	}
 }

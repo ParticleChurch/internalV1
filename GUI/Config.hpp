@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include "ConfigManager.hpp"
+#include "VKeys.hpp"
 //#include "../Include.hpp"
 
 constexpr bool CONFIG_DEBUG = true;
@@ -58,6 +59,7 @@ namespace Config {
 		Toggle = 0,
 		HoldToEnable,
 		HoldToDisable,
+		INVALID,
 	};
 	extern std::string StringifyKeybindType(KeybindType type);
 	extern std::string StringifyVK(int VirturalKey);
@@ -179,6 +181,20 @@ namespace Config {
 			if (dcount > this->decimals) return s.substr(0, i + this->decimals + 1);
 			return "ALL PATHS RETURN A VALUE DUMBASS LINTER";
 		}
+
+		bool Parse(std::string v)
+		{
+			try
+			{
+				float d = std::stof(v);
+				this->set(d);
+				return true;
+			}
+			catch (...)
+			{
+				return false;
+			}
+		}
 	};
 
 	struct CInverter
@@ -238,6 +254,12 @@ namespace Config {
 		{
 			if (Index >= this->Options.size()) return "[null]";
 			return this->Options.at(Index);
+		}
+
+		bool Parse(std::string v)
+		{
+			std::cout << "TODO: make dropdown parse properly" << std::endl;
+			return true;
 		}
 	};
 
@@ -327,6 +349,12 @@ namespace Config {
 			if (Index >= this->SelectionNames.size()) return "[error]";
 			return this->SelectionNames[Index];
 		}
+
+		bool Parse(std::string v)
+		{
+			std::cout << "TODO: make multi selector parse properly" << std::endl;
+			return true;
+		}
 	};
 
 	struct CTextInput
@@ -341,6 +369,12 @@ namespace Config {
 			if (init)
 				strcpy(this->text, init);
 		};
+
+		bool Parse(std::string v)
+		{
+			std::cout << "TODO: make text input parse properly" << std::endl;
+			return true;
+		}
 	};
 
 	extern bool GetBool(std::string Name);
@@ -418,6 +452,83 @@ namespace Config {
 			}
 			default:
 				return "[error]";
+			}
+		}
+
+
+		std::string Description()
+		{
+			switch (this->Type)
+			{
+			case PropertyType::COLOR:
+				return "(r, g, b)";
+			case PropertyType::FLOAT:
+			{
+				CFloat* f = (CFloat*)this->Value;
+				return "number on interval [" + std::to_string(f->minimum) + ", " + std::to_string(f->maximum) + "]";
+			}
+			case PropertyType::MULTISELECT:
+			{
+				CMultiSelector* m = (CMultiSelector*)this->Value;
+				std::string out = "select multiple: {";
+				size_t n = m->Count();
+				for (size_t i = 0; i < n; i++)
+				{
+					out += " " + std::to_string(i) + " = " + m->Stringify(i);
+					if (i != n) out += ",";
+				}
+				return out + " }";
+			}
+			case PropertyType::BOOLEAN:
+				return "true or false";
+			case Config::PropertyType::TEXTINPUT:
+				return "any text";
+			case Config::PropertyType::DROPDOWN:
+			{
+				CDropdown* v = (CDropdown*)this->Value;
+				std::string out = "select single: {";
+				size_t n = v->Options.size();
+				for (size_t i = 0; i < n; i++)
+				{
+					out += " " + std::to_string(i) + " = " + v->Stringify(i);
+					if (i != n) out += ",";
+				}
+				return out + " }";
+			}
+			default:
+				return "[error]";
+			}
+		}
+
+		bool Parse(std::string v)
+		{
+			switch (this->Type)
+			{
+			case PropertyType::COLOR:
+				return ((Color*)this->Value)->Parse(v);
+			case PropertyType::FLOAT:
+				return ((CFloat*)this->Value)->Parse(v);
+			case PropertyType::MULTISELECT:
+				return ((CMultiSelector*)this->Value)->Parse(v);
+			case PropertyType::BOOLEAN:
+				if (v == "true")
+				{
+					*(bool*)this->Value = true;
+					return true;
+				}
+				else if (v == "false")
+				{
+					*(bool*)this->Value = false;
+					return true;
+				}
+				else
+					return false;
+			case Config::PropertyType::TEXTINPUT:
+				return ((CTextInput*)this->Value)->Parse(v);
+			case Config::PropertyType::DROPDOWN:
+				return ((CDropdown*)this->Value)->Parse(v);
+			default:
+				return false;
 			}
 		}
 	};
@@ -634,4 +745,8 @@ namespace Config {
 	extern void Unbind(Property* Prop, bool __FORCE = false /* ONLY Config::Bind SHOULD SET ME TO TRUE*/);
 	extern void KeyPressed(WPARAM KeyCode);
 	extern void KeyReleased(WPARAM KeyCode);
+	extern void ClearAllKeybinds();
+
+	extern std::string ExportToString();
+	extern size_t LoadFromString(std::string in);
 }

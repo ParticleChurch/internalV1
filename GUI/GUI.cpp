@@ -611,53 +611,6 @@ namespace ImGui
 
 	void DrawDropdownProperty(Config::Property* p)
 	{
-		/*
-		ImGuiContext& g = *GImGui;
-		ImGuiWindow* window = GetCurrentWindow();
-		const ImGuiStyle& style = g.Style;
-
-		// draw this property at the current height
-		int LinePosY = GetCursorPosY();
-
-		// line height = 20px, move down to draw text in center
-		int TextOffset = (20 - GetFontSize()) / 2;
-		SetCursorPosY(LinePosY + TextOffset);
-
-		// draw property name
-		Text(p->VisibleName.c_str()); SameLine();
-
-		// move back up to top of line
-		SetCursorPosY(LinePosY);
-
-		// move over to second column
-		SetCursorPosX(GUI::PropertyLabelsWidth);
-
-		// draw the dropdown
-		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (20 - GetFontSize()) / 2));
-		SetNextItemWidth(GetContentRegionMaxAbs().x - window->Pos.x - GUI::PropertyLabelsWidth - 1);
-		if (ImGui::BeginCombo(("##" + p->Name).c_str(), DD->Stringify(DD->GetSelection()).c_str(), 0))
-		{
-			GUI::IgnoreLButton = true;
-			size_t CurrentSelection = DD->GetSelection();
-			for (size_t i = 0; i < DD->Options.size(); i++)
-			{
-				const bool IsSelection = i == CurrentSelection;
-				std::string txt = DD->Stringify(i);
-				if (Selectable(txt.c_str(), IsSelection))
-					DD->Select(i);
-				if (IsSelection)
-					SetItemDefaultFocus();
-			}
-			ImGui::EndCombo();
-		}
-		GUI::IgnoreLButton |= IsItemHovered();
-		PopStyleVar();
-
-		// put cursor on the next line
-		SetCursorPosY(LinePosY + 20);
-		SetCursorPosX(0);
-		*/
-
 		Config::CDropdown* dd = (Config::CDropdown*)p->Value;
 
 		ImGuiContext& g = *GImGui;
@@ -1178,6 +1131,70 @@ namespace ImGui
 		SetCursorPosY(LinePosY + 20);
 		SetCursorPosX(0);
 	}
+
+	void DrawConfigPage()
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = GetCurrentWindow();
+		const ImGuiStyle& style = g.Style;
+
+		int FloatRight = GetContentRegionMaxAbs().x - window->Pos.x - 1;
+
+		ImVec4 Color1 = Config::GetColor("menu-option-color1");
+		ImVec4 Color2 = Config::GetColor("menu-option-color2");
+		ImVec4 Color3 = Config::GetColor("menu-eject-color");
+
+		int y = 6;
+		for (size_t i = 0; i < ConfigManager::Configs.size(); i++)
+		{
+			ConfigManager::ConfigData& cdata = ConfigManager::Configs.at(i);
+			SetCursorPos(ImVec2(5, y + (20 - ImGui::GetFontSize()) / 2));
+			Text(cdata.Name.c_str());
+
+
+			PushStyleColor(ImGuiCol_Button, Color2);
+			PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color2, Color1, 0.2f));
+			PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color2, Color1, 0.4f));
+
+			SetCursorPos(ImVec2(FloatRight - 55 - (cdata.Removable ? 25 : 0), y));
+			if (Button(("Load##config-" + std::to_string(i)).c_str(), ImVec2(55, 20)))
+			{
+				ConfigManager::Load(cdata);
+			}
+
+			if (cdata.Removable)
+			{
+				PushStyleColor(ImGuiCol_Button, Color3);
+				PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color3, Color1, 0.2f));
+				PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color3, Color1, 0.4f));
+				SetCursorPos(ImVec2(FloatRight - 20, y));
+				if (Button(("X##config-" + std::to_string(i)).c_str(), ImVec2(20, 20)))
+				{
+					if (ConfigManager::Remove(i))
+						i--;
+				}
+				PopStyleColor(3);
+			}
+			PopStyleColor(3);
+			y += 25;
+		}
+		PushStyleColor(ImGuiCol_Button, Color2);
+		PushStyleColor(ImGuiCol_ButtonHovered, ImLerp(Color2, Color1, 0.2f));
+		PushStyleColor(ImGuiCol_ButtonActive, ImLerp(Color2, Color1, 0.4f));
+
+		SetCursorPos(ImVec2(6, y));
+		if (Button("Export Config##save-config", ImVec2(100, 20)))
+		{
+			ConfigManager::Export();
+		}
+
+		SetCursorPos(ImVec2(6 + 100 + 5, y));
+		if (Button("Import Config##load-config", ImVec2(100, 20)))
+		{
+			ConfigManager::Import();
+		}
+		PopStyleColor(3);
+	}
 }
 
 bool GUI::LoginMenu()
@@ -1478,7 +1495,11 @@ bool GUI::HackMenu()
 
 		if (Widget->Name == "Config" && CurrentTab->Name == "Config")
 		{
-
+			ImGui::PushFont(Arial16);
+			ImGui::DrawConfigPage();
+			Widget->Height = ImGui::GetCursorPosY();
+			ImGui::PopFont();
+			continue;
 		}
 
 		// title
@@ -1564,7 +1585,7 @@ bool GUI::HackMenu()
 			}
 		}
 		ImGui::PopFont();
-		Widget->Height = ImGui::GetCurrentWindow()->ContentSize.y;
+		Widget->Height = ImGui::GetCursorPosY();
 		ImGui::EndChild();
 	}
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5); // add some padding to the bottom

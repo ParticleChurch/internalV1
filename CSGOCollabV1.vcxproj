@@ -159,6 +159,7 @@
     <ClCompile Include="GUI\ConfigManager.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="GUI\HTTP.cpp" />
+    <ClCompile Include="GUI\VKeys.cpp" />
     <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
     <ClCompile Include="Hacks\Defense\FakeLag.cpp" />
     <ClCompile Include="Hacks\Misc\Clantag.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="GUI\ConfigManager.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
+    <ClInclude Include="GUI\VKeys.hpp" />
     <ClInclude Include="Hacks\Defense\AntiAim.hpp" />
     <ClInclude Include="Hacks\Defense\FakeLag.hpp" />
     <ClInclude Include="Hacks\Hacks.hpp" />
