@@ -1,25 +1,5 @@
 #include "../Include.hpp"
 
-// trim from left
-inline std::string& ltrim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-	s.erase(0, s.find_first_not_of(t));
-	return s;
-}
-
-// trim from right
-inline std::string& rtrim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-	s.erase(s.find_last_not_of(t) + 1);
-	return s;
-}
-
-// trim from left & right
-inline std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
-{
-	return ltrim(rtrim(s, t), t);
-}
-
 namespace Config {
 	std::string StringifyKeybindType(KeybindType type)
 	{
@@ -410,6 +390,9 @@ namespace Config {
 			}
 		}
 
+		// default values
+		LoadFromString(ConfigManager::ConfigAllDisabled);
+
 		// default keybinds
 		Bind(PropertyLookup.at("show-menu"), VK_INSERT);
 		PropertyLookup.at("show-menu")->BindType = KeybindType::Toggle;
@@ -545,7 +528,7 @@ namespace Config {
 		{
 			if (CONFIG_DEBUG)
 				std::cout << "Config::GetText: nonexistant property: \"" << Name << "\"" << std::endl;
-			return 0;
+			return "";
 		}
 		else
 		{
@@ -556,7 +539,7 @@ namespace Config {
 			{
 				if (CONFIG_DEBUG)
 					std::cout << "Config::GetText: non text input value: \"" << Name << "\"" << std::endl;
-				return 0;
+				return "";
 			}
 		}
 	}
@@ -795,13 +778,7 @@ namespace Config {
 						}
 						s += VK::GetName(prop->KeyBind) + " ";
 					}
-
-					std::string value = prop->Stringify();
-					if (prop->Type == PropertyType::TEXTINPUT)
-					{
-						value = "\"" + value + "\"";
-					}
-					s += ": " + value + "\n";
+					s += ": " + prop->Stringify() + "\n";
 				}
 			}
 		}
@@ -873,7 +850,7 @@ namespace Config {
 				
 				Property* p = p_iter->second;
 
-				bool keybindParsed = false;
+				bool keybindParsed = (keybind.size() == 0);
 				if ((splitterC = keybind.find("@")) != std::string::npos)
 				{
 					std::string btype = keybind.substr(0, splitterC);
@@ -900,6 +877,10 @@ namespace Config {
 				}
 
 				bool valueParsed = p->Parse(value);
+				if (!valueParsed)
+					std::cout << "Failed to parse " << propName << ", w/ val = " << value << std::endl;
+				if (!keybindParsed)
+					std::cout << "Failed to keybind " << propName << ", w/ key = " << keybind << std::endl;
 
 				if (keybindParsed || valueParsed)
 					numPropsAffected++;

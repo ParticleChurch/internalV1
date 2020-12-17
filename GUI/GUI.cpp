@@ -842,7 +842,7 @@ namespace ImGui
 			PopStyleVar(2);
 		}
 
-		std::string StateText = ((Config::CInverter*)p->Value)->Stringify();
+		std::string StateText = p->Stringify();
 		if (StateText.size() > 0 && !IsMidBind)
 		{
 			PushFont(Arial16);

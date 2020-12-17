@@ -186,6 +186,7 @@
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Globals.hpp" />
     <ClInclude Include="GUI\Config.hpp" />
+    <ClInclude Include="GUI\ConfigConstants.hpp" />
     <ClInclude Include="GUI\ConfigManager.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />

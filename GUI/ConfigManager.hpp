@@ -8,6 +8,7 @@
 #include <shlwapi.h>
 #pragma comment(lib, "Shlwapi.lib")
 #include "Config.hpp"
+#include "ConfigConstants.hpp"
 
 namespace ConfigManager
 {

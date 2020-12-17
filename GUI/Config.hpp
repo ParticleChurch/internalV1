@@ -27,6 +27,27 @@ struct APIResponseFormat_LoginAttempt
 	unsigned int UserID;
 };
 
+
+// trim from left
+inline std::string& ltrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	s.erase(0, s.find_first_not_of(t));
+	return s;
+}
+
+// trim from right
+inline std::string& rtrim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	s.erase(s.find_last_not_of(t) + 1);
+	return s;
+}
+
+// trim from left & right
+inline std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	return ltrim(rtrim(s, t), t);
+}
+
 namespace Config {
 	struct UserInfoT {
 		char AuthStatus = AUTH_STATUS_NONE;
@@ -211,6 +232,28 @@ namespace Config {
 		{
 			return State ? State1 : State0;
 		}
+		bool Parse(std::string v)
+		{
+			std::transform(v.begin(), v.end(), v.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			std::string a = State0.c_str();
+			std::string b = State1.c_str();
+
+			std::transform(a.begin(), a.end(), a.begin(), [](unsigned char c) { return std::tolower(c); });
+			std::transform(b.begin(), b.end(), b.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			if (v == a)
+				this->State = false;
+			else if (v == b)
+				this->State = true;
+			else if (v == "false" || v == "0")
+				this->State = true;
+			else if (v == "true" || v == "1")
+				this->State = true;
+			else
+				return this->State = false;
+			return true;
+		}
 	};
 
 
@@ -258,8 +301,20 @@ namespace Config {
 
 		bool Parse(std::string v)
 		{
-			std::cout << "TODO: make dropdown parse properly" << std::endl;
-			return true;
+			// lowercase
+			std::transform(v.begin(), v.end(), v.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			for (size_t i = 0; i < this->Options.size(); i++)
+			{
+				std::string x = this->Options.at(i);
+				std::transform(x.begin(), x.end(), x.begin(), [](unsigned char c) { return std::tolower(c); });
+				if (v == x)
+				{
+					this->Select(i);
+					return true;
+				}
+			}
+			return false;
 		}
 	};
 
@@ -320,28 +375,16 @@ namespace Config {
 
 		std::string Stringify()
 		{
-			std::string out = "";
-			bool atLeastOne = false;
-
+			std::string out = "{";
 			for (size_t i = 0; i < SelectionNames.size(); i++)
-			{
 				if (SelectionValues[i])
-				{
-					atLeastOne = true;
 					out += SelectionNames[i] + ", ";
-				}
-			}
-			if (out.size() >= 2)
-			{
+
+			// remove ending comma
+			if (out.size() >= 3)
 				out = out.substr(0, out.size() - 2);
-			}
 
-			if (!atLeastOne)
-			{
-				out = "[None]";
-			}
-
-			return out;
+			return out + "}";
 		}
 
 		std::string Stringify(size_t Index)
@@ -352,8 +395,49 @@ namespace Config {
 
 		bool Parse(std::string v)
 		{
-			std::cout << "TODO: make multi selector parse properly" << std::endl;
-			return true;
+			size_t a = 0, b = 0;
+
+			// remove braces
+			a = v.find("{"); if (a == std::string::npos) return false;
+			b = v.find("}", a + 1); if (b == std::string::npos) return false;
+			v = v.substr(a + 1, b - a - 1);
+
+			// lowercase
+			std::transform(v.begin(), v.end(), v.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			// init everything to false
+			for (size_t i = 0; i < this->SelectionValues.size(); i++)
+				this->SelectionValues[i] = false;
+
+			a = b = 0;
+			std::string opt;
+			size_t nFailed = 0;
+			while (b != std::string::npos)
+			{
+				b = v.find(',', a);
+				opt = v.substr(a, b - a);
+				a = b + 1;
+
+				trim(opt);
+				if (opt.size() < 1) continue;
+
+				bool found = false;
+				for (size_t i = 0; i < this->Count(); i++)
+				{
+					std::string x = this->SelectionNames.at(i).c_str(); // copy
+					std::transform(x.begin(), x.end(), x.begin(), [](unsigned char c) { return std::tolower(c); });
+
+					if (x == opt)
+					{
+						// reverse failure
+						this->SelectionValues[i] = true;
+						found = true;
+						break;
+					}
+				}
+			}
+
+			return nFailed == (size_t)0;
 		}
 	};
 
@@ -364,15 +448,17 @@ namespace Config {
 		size_t size = 0;
 		CTextInput(size_t size, const char* init)
 		{
-			this->text = new char[size];
+			this->text = new char[size+1];
+			this->text[size] = 0; // null terminator always
 			this->size = size;
 			if (init)
-				strcpy(this->text, init);
+				strncpy(this->text, init, size);
 		};
 
 		bool Parse(std::string v)
 		{
-			std::cout << "TODO: make text input parse properly" << std::endl;
+			v = v.substr(0, this->size);
+			strcpy(this->text, v.c_str());
 			return true;
 		}
 	};
@@ -430,6 +516,8 @@ namespace Config {
 				return (*(CFloat*)this->Value).Stringify();
 			case PropertyType::MULTISELECT:
 				return (*(CMultiSelector*)this->Value).Stringify();
+			case Config::PropertyType::INVERTER:
+				return (*(CInverter*)this->Value).Stringify();
 			case PropertyType::BOOLEAN:
 				return *(bool*)this->Value ? "true" : "false";
 			case Config::PropertyType::TEXT:
@@ -510,19 +598,24 @@ namespace Config {
 				return ((CFloat*)this->Value)->Parse(v);
 			case PropertyType::MULTISELECT:
 				return ((CMultiSelector*)this->Value)->Parse(v);
+			case PropertyType::INVERTER:
+				return ((CInverter*)this->Value)->Parse(v);
 			case PropertyType::BOOLEAN:
-				if (v == "true")
+			{
+				std::transform(v.begin(), v.end(), v.begin(), [](unsigned char c) { return std::tolower(c); });
+				if (v == "true" || v == "1" || v == "no")
 				{
 					*(bool*)this->Value = true;
 					return true;
 				}
-				else if (v == "false")
+				else if (v == "false" || v == "0" || v == "yes")
 				{
 					*(bool*)this->Value = false;
 					return true;
 				}
 				else
 					return false;
+			}
 			case Config::PropertyType::TEXTINPUT:
 				return ((CTextInput*)this->Value)->Parse(v);
 			case Config::PropertyType::DROPDOWN:
