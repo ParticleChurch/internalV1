@@ -711,7 +711,7 @@ namespace Config {
 		s += "# \n";
 		s += "# The format for this file is as follows,\n";
 		s += "# and is explained in greater detail at above link:\n";
-		s += "# property-name : value; keybind_type @ key_name\n";
+		s += "# property-name : keybind_type @ key_name: value\n";
 
 		for (size_t t = 0; t < Tabs.size(); t++)
 		{

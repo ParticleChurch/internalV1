@@ -8,7 +8,7 @@ namespace ConfigManager
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:
-# property-name : value; keybind_type @ key_name
+# property-name : keybind_type @ key_name: value
 
 
 
@@ -258,7 +258,7 @@ constexpr auto ConfigDefaultLegit = R"(
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:
-# property-name : value; keybind_type @ key_name
+# property-name : keybind_type @ key_name: value
 
 
 
@@ -509,7 +509,7 @@ constexpr auto ConfigDefualtRage = R"(
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:
-# property-name : value; keybind_type @ key_name
+# property-name : keybind_type @ key_name: value
 
 
 
