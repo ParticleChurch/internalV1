@@ -316,7 +316,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 
-	I::inputsystem->EnableInput(IsKeyboardInput || !Config::GetBool("show-menu"));
+	I::inputsystem->EnableInput(!Config::GetBool("show-menu") || IsKeyboardInput && (!ImGui::GetIO().WantCaptureKeyboard));
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
