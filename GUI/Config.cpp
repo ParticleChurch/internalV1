@@ -33,7 +33,7 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-aimstep", "Aimstep", "degrees", 0, 180, 0, 0, 0);
 				w->AddSeparator();
 
-#define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
+#define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
 
 				CEditGroup* AimGunGroup = w->AddEditGroup("aimbot-");
 

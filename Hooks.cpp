@@ -337,10 +337,9 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		bSendPacket = fakelag->Run();
 		
-
 		G::CM_Start(cmd, pSendPacket);
 
-		//Movement
+		// Movement
 		movement->BunnyHop();
 		movement->SlowWalk();
 		movement->FastCrouch();
@@ -350,9 +349,11 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
+		// AA
 		antiaim->legit();
 		antiaim->rage();
 
+		// Clantag
 		clantag->run();
 
 		// bad use (E) and attack (LBUTTON)
@@ -414,7 +415,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		backtrack->run();
 		G::CM_MoveFixEnd();
 
-		
+		movement->RageAutoStrafe();
 
 		movement->Airstuck();
 
@@ -432,7 +433,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		G::CM_End();	
 
-		movement->RageAutoStrafe();
+		//movement->RageAutoStrafe();
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
