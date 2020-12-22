@@ -9,6 +9,7 @@ public:
 	void SlowWalk();
 	void Airstuck();
 	void FakeDuck();
+	void LegSlide();
 
 	void FastStop();
 };

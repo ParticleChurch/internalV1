@@ -346,6 +346,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->AAMoveFix();
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
+		movement->LegSlide();
 	
 		G::CM_MoveFixStart();
 

@@ -268,6 +268,24 @@ void Movement::FakeDuck()
 		WasJustFakeducking = false;
 }
 
+void Movement::LegSlide()
+{
+	if (!G::LocalPlayer) return;
+	if (!G::LocalPlayerAlive) return;
+
+	if (!Config::GetBool("misc-movement-leg")) return;
+	static bool switcher = false;
+	static float time = I::globalvars->m_curTime;
+	if (I::globalvars->m_curTime - time > Config::GetFloat("misc-movement-leg-time") / 1000.f)
+	{
+		time = I::globalvars->m_curTime;
+		switcher = !switcher;
+	}
+
+	if(switcher)
+		G::cmd->buttons ^= IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
+}
+
 void Movement::FastStop()
 {
 	if (!G::LocalPlayer) return;

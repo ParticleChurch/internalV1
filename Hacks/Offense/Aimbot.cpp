@@ -51,11 +51,15 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 
 void Aimbot::Smooth(Vec& Angle)
 {
-	bool FastToSlow = false;
-	bool Constant = true;
-	bool SlowToFast = false;
-	float SmoothYaw = 50.f / 100.f;
-	float SmoothPitch = 50.f / 100.f;
+	int State = smooth_method;
+	if (State == 0)
+		return;
+
+	bool FastToSlow = (State == 2);
+	bool Constant = (State == 3);
+	bool SlowToFast = (State == 1);
+	float SmoothYaw = smooth_amount;
+	float SmoothPitch = smooth_amount;
 
 	G::StartAngle.NormalizeAngle();
 	Angle.NormalizeAngle();
@@ -623,11 +627,29 @@ void Aimbot::Run()
 		Angle = CalculateAngle(BestVisAimpoint);
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
-	// snap to angle
+
+
+	
+	// Smooth angle if needed
+	QAngle ang = Angle;
+	Smooth(Angle);
+
+	// NOT Silent aim
+	if (!Config::GetBool("enable-silentaim"))
+		I::engine->SetViewAngles(Angle);
 	G::cmd->viewangles = Angle;
+
+	// Check if close enough to shoot
+	if (ang.VecLength2D() - Angle.VecLength2D() > 1.f)
+		return;
 
 	// shoot
 	if(Config::GetBool("aimbot-autoshoot"))
 		G::cmd->buttons |= IN_ATTACK;
 }
 
+/*
+* smoothing method
+* smoothing amount
+* FOV
+*/
