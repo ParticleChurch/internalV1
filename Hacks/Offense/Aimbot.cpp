@@ -645,8 +645,8 @@ void Aimbot::Run()
 
 	if (WeaponClass == 35)		//pistol
 	{
-		smooth_method		= Config::GetState("aimbot-pistol-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-pistol-smoothing-amount");
+		/*smooth_method		= Config::GetState("aimbot-pistol-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-pistol-smoothing-amount");*/
 		fov					= Config::GetFloat("aimbot-pistol-fov");
 		priority_hitbox		= Config::GetState("aimbot-pistol-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-pistol-mindamage-visible");
@@ -657,8 +657,8 @@ void Aimbot::Run()
 	}
 	else if(WeaponClass == 37)	//smg
 	{
-		smooth_method		= Config::GetState("aimbot-smg-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-smg-smoothing-amount");
+		/*smooth_method		= Config::GetState("aimbot-smg-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-smg-smoothing-amount");*/
 		fov					= Config::GetFloat("aimbot-smg-fov");
 		priority_hitbox		= Config::GetState("aimbot-smg-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-smg-mindamage-visible");
@@ -669,8 +669,8 @@ void Aimbot::Run()
 	}
 	else if(WeaponClass == 36)	//heavy
 	{
-		smooth_method		= Config::GetState("aimbot-heavy-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-heavy-smoothing-amount");
+		/*smooth_method		= Config::GetState("aimbot-heavy-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-heavy-smoothing-amount");*/
 		fov					= Config::GetFloat("aimbot-heavy-fov");
 		priority_hitbox		= Config::GetState("aimbot-heavy-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-heavy-mindamage-visible");
@@ -683,8 +683,8 @@ void Aimbot::Run()
 	{
 		if (weaponID == 40) //scout
 		{
-			smooth_method		= Config::GetState("aimbot-scout-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-scout-smoothing-amount");
+			/*smooth_method		= Config::GetState("aimbot-scout-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-scout-smoothing-amount");*/
 			fov					= Config::GetFloat("aimbot-scout-fov");
 			priority_hitbox		= Config::GetState("aimbot-scout-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-scout-mindamage-visible");
@@ -695,8 +695,8 @@ void Aimbot::Run()
 		}
 		else if (weaponID == 9) //awp
 		{
-			smooth_method		= Config::GetState("aimbot-awp-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-awp-smoothing-amount");
+			/*smooth_method		= Config::GetState("aimbot-awp-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-awp-smoothing-amount");*/
 			fov					= Config::GetFloat("aimbot-awp-fov");
 			priority_hitbox		= Config::GetState("aimbot-awp-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-awp-mindamage-visible");
@@ -707,8 +707,8 @@ void Aimbot::Run()
 		}
 		else if (weaponID == 11 || weaponID == 38) //autos
 		{
-			smooth_method		= Config::GetState("aimbot-auto-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-auto-smoothing-amount");
+			/*smooth_method		= Config::GetState("aimbot-auto-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-auto-smoothing-amount");*/
 			fov					= Config::GetFloat("aimbot-auto-fov");
 			priority_hitbox		= Config::GetState("aimbot-auto-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-auto-mindamage-visible");
@@ -719,8 +719,8 @@ void Aimbot::Run()
 		}
 		else //rifles
 		{
-			smooth_method		= Config::GetState("aimbot-rifle-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-rifle-smoothing-amount");
+			/*smooth_method		= Config::GetState("aimbot-rifle-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-rifle-smoothing-amount");*/
 			fov					= Config::GetFloat("aimbot-rifle-fov");
 			priority_hitbox		= Config::GetState("aimbot-rifle-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-rifle-mindamage-visible");
@@ -749,7 +749,8 @@ void Aimbot::Run()
 	int BestHiddenDamage = -1;
 	Vec BestHiddenAimpoint;
 
-	AutowallScan(BestHiddenIndex, BestHiddenDamage, BestHiddenAimpoint);
+	if(Config::GetBool("enable-autowall"))
+		AutowallScan(BestHiddenIndex, BestHiddenDamage, BestHiddenAimpoint);
 
 	if ((BestVisDamage <= 0) && (BestHiddenDamage <= 0)) return;
 
@@ -759,9 +760,18 @@ void Aimbot::Run()
 		Angle = CalculateAngle(BestVisAimpoint);
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 	
-	// Smooth angle if needed
-	QAngle ang = Angle;
-	Smooth(Angle);
+	// Smooth angle if needed // NO FUCKING SMOOTHING BITCH
+	/*QAngle ang = Angle;
+	Smooth(Angle);*/
+
+	// Check if within FOV
+	QAngle delta = G::StartAngle - Angle;
+	if (delta.VecLength2D() > fov)
+		return;
+
+	// Adjust for aimstep
+	/*float step = Config::GetFloat("aimbot_aimstep");
+	delta /= delta.VecLength();*/
 
 	// NOT Silent aim
 	if (!Config::GetBool("enable-silentaim"))
@@ -769,11 +779,13 @@ void Aimbot::Run()
 	G::cmd->viewangles = Angle;
 
 	// Check if close enough to shoot
-	if (ang.VecLength2D() - Angle.VecLength2D() > 1.f)
-		return;
+	/*if (ang.VecLength2D() - Angle.VecLength2D() > 1.f)
+		return;*/
+
+	
 
 	// shoot
-	if(Config::GetBool("aimbot-autoshoot"))
+	if(Config::GetBool("enable-autoshoot"))
 		G::cmd->buttons |= IN_ATTACK;
 }
 

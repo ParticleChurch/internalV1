@@ -6,7 +6,7 @@ void Clantag::run()
 {
 	// 0.6 second update timer on clantag update
 	static float LastUpdatedTime = I::globalvars->m_curTime;
-	if (I::globalvars->m_curTime - LastUpdatedTime < 0.6f)
+	if (fabsf(I::globalvars->m_curTime - LastUpdatedTime) < 0.6f)
 		return;
 
 	LastUpdatedTime = I::globalvars->m_curTime;

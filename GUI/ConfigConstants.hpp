@@ -3,8 +3,8 @@
 namespace ConfigManager
 {
 	constexpr auto ConfigAllDisabled = R"(
-# PARTICLE.CHURCH config generated on mm/dd/yyyy @ hh:mm:ss
-# For help making a config, please visit https://particle.church/help/config
+# a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
+# For help making a config, please visit https://a4g4.com/help/config
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:
@@ -253,8 +253,8 @@ menu-option-color2                    :: (0, 150, 255)
 )";
 
 constexpr auto ConfigDefaultLegit = R"(
-# PARTICLE.CHURCH config generated on mm/dd/yyyy @ hh:mm:ss
-# For help making a config, please visit https://particle.church/help/config
+# a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
+# For help making a config, please visit https://a4g4.com/help/config
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:
@@ -504,8 +504,8 @@ menu-option-color2                    :: (0, 150, 255)
 )";
 
 constexpr auto ConfigDefualtRage = R"(
-# PARTICLE.CHURCH config generated on mm/dd/yyyy @ hh:mm:ss
-# For help making a config, please visit https://particle.church/help/config
+# a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
+# For help making a config, please visit https://a4g4.com/help/config
 # 
 # The format for this file is as follows,
 # and is explained in greater detail at above link:

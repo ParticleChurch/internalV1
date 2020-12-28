@@ -216,9 +216,9 @@ void ESP::Run()
 			if (!Config::GetBool("visuals-esp-friend-enable"))
 				continue;
 
-			if (Config::GetBool("visuals-esp-friend-box"))
+			if (Config::GetBool("visuals-esp-friend-bbox"))
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-box-color"));
+				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-bbox-color"));
 				DrawBoxes(TopLeft, BottomRight);
 			}
 			if (Config::GetBool("visuals-esp-friend-name"))
@@ -234,7 +234,7 @@ void ESP::Run()
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(),
 					Config::GetColor("visuals-esp-friend-health-color"),
-					Config::GetColor("visuals-esp-friend-health-bgcolor"));
+					Config::GetColor("visuals-esp-friend-health-color-background"));
 			}
 			if (Config::GetBool("visuals-esp-friend-skeleton"))
 			{

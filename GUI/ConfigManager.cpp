@@ -43,7 +43,7 @@ std::string ConfigManager::GetSaveFile()
 {
 	char filename[MAX_PATH];
 	ZeroMemory(&filename, MAX_PATH);
-	strcpy(filename, "particle.church");
+	strcpy(filename, "a4g4.com");
 
 	OPENFILENAME ofn{};
 	ZeroMemory(&ofn, sizeof(ofn));

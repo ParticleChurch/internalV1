@@ -60,7 +60,7 @@ void World::Run(int CurStage)
 		
 
 		bool UpdateProp = false;
-		if (Config::GetBool("visuals-world-prop-enable"))
+		/*if (Config::GetBool("visuals-world-prop-enable"))
 		{
 			static Color LastColorProp;
 			static int LastAlphaProp;
@@ -71,7 +71,7 @@ void World::Run(int CurStage)
 				LastAlphaProp = (int)Config::GetFloat("visuals-world-prop-opacity");
 				UpdateProp = true;
 			}
-		}
+		}*/
 
 		bool UpdateSkybox = false;
 		if (Config::GetBool("visuals-world-skybox-enable"))

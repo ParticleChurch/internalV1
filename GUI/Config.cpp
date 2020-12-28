@@ -28,9 +28,9 @@ namespace Config {
 
 				w->AddProperty(false, 0, "enable-aimbot", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
-				w->AddProperty(false, 0, "aimbot-autoshoot", "Autoshoot", true, true);
-				w->AddProperty(false, 1, "aimbot-autowall", "Autowall", true, true);
-				w->AddProperty(false, 1, "aimbot-aimstep", "Aimstep", "degrees", 0, 180, 0, 0, 0);
+				w->AddProperty(false, 0, "enable-autoshoot", "Autoshoot", true, true);
+				w->AddProperty(false, 1, "enable-autowall", "Autowall", true, true);
+				/*w->AddProperty(false, 1, "aimbot_aimstep", "Aimstep", "degrees", 0, 180, 0, 0, 0);*/
 				w->AddSeparator();
 
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
@@ -38,8 +38,8 @@ namespace Config {
 				CEditGroup* AimGunGroup = w->AddEditGroup("aimbot-");
 
 				AimGunGroup->AddGroup("pistol-", "Pistol");
-				w->AddProperty(false, 0, "aimbot-pistol-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-pistol-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-pistol-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 
@@ -50,8 +50,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-pistol-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("smg-", "SMG");
-				w->AddProperty(false, 0, "aimbot-smg-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-smg-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-smg-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-smg-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-smg-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -61,8 +61,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-smg-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("heavy-", "Heavy");
-				w->AddProperty(false, 0, "aimbot-heavy-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-heavy-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-heavy-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-heavy-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-heavy-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -72,8 +72,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-heavy-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("rifle-", "Rifle");
-				w->AddProperty(false, 0, "aimbot-rifle-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-rifle-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-rifle-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-rifle-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-rifle-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -83,8 +83,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-rifle-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("scout-", "Scout");
-				w->AddProperty(false, 0, "aimbot-scout-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-scout-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-scout-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-scout-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-scout-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-scout-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-scout-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -94,8 +94,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-scout-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("awp-", "AWP");
-				w->AddProperty(false, 0, "aimbot-awp-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-awp-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-awp-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-awp-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-awp-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-awp-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-awp-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -105,8 +105,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-awp-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("auto-", "Auto");
-				w->AddProperty(false, 0, "aimbot-auto-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-auto-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+				/*w->AddProperty(false, 0, "aimbot-auto-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-auto-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
 				w->AddProperty(false, 1, "aimbot-auto-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-auto-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-auto-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -119,12 +119,12 @@ namespace Config {
 
 			}
 			{
-				Widget* w = t->AddWidget("Triggerbot");
+				/*Widget* w = t->AddWidget("Triggerbot");
 
 				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 1, "triggerbot-through-wall", "Through Wall", true, true);
 				w->AddProperty(false, 0, "triggerbot-delay", "Delay", "MS", 0, 1000, 0, 0, 0);
-				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);
+				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);*/
 			}
 			{
 				Widget* w = t->AddWidget("Other");
@@ -169,7 +169,7 @@ namespace Config {
 				w->AddProperty(false, 2, "antiaim-rage-fake-invert", "Invert on Hit", false, false);
 			}
 			{
-				Widget* w = t->AddWidget("Visuals");
+				/*Widget* w = t->AddWidget("Visuals");
 
 				w->AddText("Fake"); w->BeginIndent();
 				w->AddProperty(false, 0, "antiaim-visual-fake", "Visualize", false, false);
@@ -182,7 +182,7 @@ namespace Config {
 				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize", false, false);
 				w->AddProperty(false, 1, "antiaim-visual-real-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
-				w->EndIndent();
+				w->EndIndent();*/
 			}
 			Tabs.push_back(t);
 		}
@@ -228,9 +228,9 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("ESP");
 
-				w->AddProperty(false, 1, "visuals-esp-other-grenadebox", "Grenade Box", false, false);
-				w->AddProperty(false, 2, "visuals-esp-other-weapon-box", "Weapon Box", false, false);
-				w->AddProperty(false, 2, "visuals-esp-other-weapon-name", "Weapon Names", false, false);
+				/*w->AddProperty(false, 1, "visuals-esp_other-grenadebox", "Grenade Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp_other-weapon-box", "Weapon Box", false, false);
+				w->AddProperty(false, 2, "visuals-esp_other-weapon-name", "Weapon Names", false, false);*/
 				
 				CEditGroup* ESPGroup = w->AddEditGroup("visuals-esp-");
 
@@ -247,9 +247,9 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-enemy-health", "Health", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-health-color", "Foreground", new Color(0, 255, 0)); w->EndIndent();
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-health-color-background", "Background", new Color(255, 0, 0)); w->EndIndent();
-				w->AddProperty(false, 0, "visuals-esp-enemy-ammo ", "Ammo", false, false);
+				/*w->AddProperty(false, 0, "visuals-esp-enemy-ammo ", "Ammo", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color", "Foreground", new Color(0, 0, 255)); w->EndIndent();
-				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();
+				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();*/
 
 				ESPGroup->AddGroup("friend-", "Friends");
 				w->AddProperty(false, 0, "visuals-esp-friend-enable", "Enable", false, false);
@@ -264,9 +264,9 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-friend-health", "Health", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-friend-health-color", "Foreground", new Color(0, 255, 0)); w->EndIndent();
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-friend-health-color-background", "Background", new Color(255, 0, 0)); w->EndIndent();
-				w->AddProperty(false, 0, "visuals-esp-friend-ammo ", "Ammo", false, false);
+				/*w->AddProperty(false, 0, "visuals-esp-friend-ammo ", "Ammo", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-friend-ammo-color", "Foreground", new Color(0, 0, 255)); w->EndIndent();
-				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-friend-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();
+				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-friend-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();*/
 			}
 			{
 				Widget* w = t->AddWidget("World");
@@ -275,9 +275,9 @@ namespace Config {
 				w->AddProperty(false, 2, "visuals-world-color", "World", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-world-opacity", "World Opacity", "%", 0, 100, 0, 0, 0);
 				//Prop
-				w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
+				/*w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
 				w->AddProperty(false, 2, "visuals-world-prop-color", "Prop", new Color(0, 150, 255));
-				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);*/
 				//Skybox
 				w->AddProperty(false, 1, "visuals-world-skybox-enable", "Skybox Changes", false, false);
 				//Skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List
@@ -288,9 +288,9 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Misc");
 				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions(true, true, true));
-				w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
+				/*w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
 				w->AddProperty(false, 1, "visuals-misc-spec-list", "Spectator List", false, false);
-				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);
+				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);*/
 			}
 			Tabs.push_back(t);
 		}
@@ -306,8 +306,8 @@ namespace Config {
 				w->AddProperty(false, 2, "misc-movement-airstuck", "Airstuck", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
-				//TODO - add autostrafe dropdown (with option for none to be on, with one on at max) (or just add a bool idk yet lol)
-				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None", "Rage", "Legit" });
+				//TODO - add rage autostrafe
+				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None",/* "Rage",*/ "Legit" });
 				// Weird Legs (messes with prediction)
 
 				w->AddProperty(false, 2, "misc-movement-leg", "Leg Slide", false, false);
@@ -317,13 +317,13 @@ namespace Config {
 				Widget* w = t->AddWidget("Other");
 				w->AddProperty(false, 0, "misc-other-autoaccept", "AutoAccept", false, false);
 				w->AddProperty(false, 2, "misc-other-killsay", "Kill Say", false, false);
-				w->AddProperty(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by particle.church!");
+				w->AddProperty(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by a4g4.com!");
 				//TODO - add input area for custom killsay insult
-				w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
+				//w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
 				// w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
 				// TODO - add area to input what they are unboxing
 				/*w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);*/
-				w->AddProperty(false, 0, "misc-other-clantag-input", "Clantag", 256, "");
+				w->AddProperty(false, 0, "misc-other-clantag-input", "Clantag", 256, "a4g4.com");
 				//TODO - add area to input what clantag they are displaying
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
@@ -710,8 +710,8 @@ namespace Config {
 	std::string ExportToString()
 	{
 		std::string s = "";
-		s += "# PARTICLE.CHURCH config generated on mm/dd/yyyy @ hh:mm:ss\n";
-		s += "# For help making a config, please visit https://particle.church/help/config\n";
+		s += "# a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss\n";
+		s += "# For help making a config, please visit https://a4g4.com/help/config\n";
 		s += "# \n";
 		s += "# The format for this file is as follows,\n";
 		s += "# and is explained in greater detail at above link:\n";

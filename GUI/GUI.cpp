@@ -93,7 +93,7 @@ void GUI::LoadFonts(ImGuiIO& io)
 
 	return;
 problemo:
-	MessageBox(NULL, "Particle.church requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
+	MessageBox(NULL, "a4g4.com requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again.", "Missing Fonts", 0);
 	// segfault lol
 	int x = *(int*)0;
 	// prevent dumbass compiler from ignoring our segfault >:(
@@ -1386,7 +1386,7 @@ bool GUI::HackMenu()
 	ImFont* font_before = ImGui::GetFont();
 	ImGui::PushFont(Arial14Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
-	ImGui::Begin("PARTICLE.CHURCH - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("a4g4.com - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	GUI::IgnoreLButton |= ImGui::IsItemHovered();
 	ImGui::PushFont(font_before);
 	ImGui::PopStyleVar();
