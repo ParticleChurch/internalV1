@@ -1,7 +1,73 @@
 #include "../../Include.hpp"
-#include <bitset>
+//#include <bitset>
 
 Aimbot* aimbot = new Aimbot();
+
+//TEMP___________________________________________________
+float Distance(Vec a, Vec b)
+{
+	return sqrtf(powf(a.x - b.x, 2) + powf(a.y - b.y, 2) + powf(a.z - b.z, 2));
+}
+
+// Returns whether or not two spheres (with identical radius) are intersecting
+bool IntersectingSpheres(float radius, Vec a, Vec b)
+{
+	float distance = Distance(a, b);
+	if (distance > 2 * radius)
+		return false;
+	else
+		return true;
+}
+
+// Returns the midpoint of the intersecting spheres
+Vec Middle(Vec a, Vec b, float radius)
+{
+	Vec Delta = a - b;
+	Delta /= 2.f;
+	a += Delta;
+	return a;
+}
+
+// Rotates point about center
+void Rotate(Vec center, Vec& point, float degrees)
+{
+	// Convert degrees to radians
+	float angle = DEG2RAD(degrees);
+	float x = cosf(angle) * (point.x - center.x) - sinf(angle) * (point.y - center.y) + center.x;
+	float y = sinf(angle) * (point.x - center.x) + cosf(angle) * (point.y - center.y) + center.y;
+	point.x = x;
+	point.y = y;
+}
+
+bool Safepoint(Vec& loc, float radius, int index)
+{
+	// Get Max Entity Desync Angle
+	float MaxDesync = G::EntList[index].entity->GetMaxDesyncAngle();
+
+	// Flip variable to randomize desyncing left or right
+	static bool flip = false;
+	flip = !flip;
+
+	// Center to rotate point about
+	Vec center = G::EntList[index].entity->GetVecOrigin();
+
+	// Save original safepoint...
+	Vec orig = loc;
+
+	// Rotate location about center by MaxDesync (randomized on either left or right)
+	Rotate(center, loc, flip ? MaxDesync: -MaxDesync);
+
+	// If no intersecting point, set original point and return false
+	if (!IntersectingSpheres(radius, orig, loc))
+	{
+		loc = orig;
+		return false;
+	}
+
+	// Otherwise there's an intersecting point, set point and return true
+	loc = Middle(loc, orig, radius);
+	return true;
+}
 
 //general help functions
 Vec Aimbot::CalculateAngle(Vec Target)
@@ -391,6 +457,39 @@ void Aimbot::VisibleScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint)
 				BestAimPoint = right;
 			}
 		}
+		// Safepoint Hitboxes
+		for (auto HITBOX : this->hboxes)
+		{
+			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+			if (!StudioBox) continue;	//if cant get the hitbox...
+			int HitGroup = GetHitGroup(HITBOX);
+
+			Vec max = StudioBox->bbmin.Transform(a.Matrix[StudioBox->bone]);
+
+			float radius = StudioBox->m_flRadius * hitchance;
+			// no need to raytrace if no safepoint (sets mid to safepoint if there is one)
+			if (!Safepoint(max, radius, a.index))
+				continue;
+
+			// no need to "visible autowall" if not visible
+			if (!autowall->IsVisible(max, a.entity))
+				continue;
+
+			// no need to "visible autowall" if not visible
+			bool visible = true;
+			float dam = autowall->GetDamage(a.entity, max, true, visible);
+
+			// if autowall found it hidden, continue
+			if (!visible)
+				continue;
+
+			if (dam > mindamage_visible && dam > BestDamage)
+			{
+				BestDamage = dam;
+				BestIndex = a.index;
+				BestAimPoint = max;
+			}
+		}
 	}
 }
 
@@ -487,6 +586,39 @@ void Aimbot::AutowallScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint)
 				BestDamage = dam;
 				BestIndex = a.index;
 				BestAimPoint = right;
+			}
+		}
+		// Safepoint Hitboxes
+		for (auto HITBOX : this->hboxes)
+		{
+			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+			if (!StudioBox) continue;	//if cant get the hitbox...
+			int HitGroup = GetHitGroup(HITBOX);
+
+			Vec max = StudioBox->bbmin.Transform(a.Matrix[StudioBox->bone]);
+
+			float radius = StudioBox->m_flRadius * hitchance;
+			// no need to raytrace if no safepoint (sets mid to safepoint if there is one)
+			if (!Safepoint(max, radius, a.index))
+				continue;
+
+			// no need to  "autowall" if visible
+			if (autowall->IsVisible(max, a.entity))
+				continue;
+
+			// no need to "visible autowall" if not visible
+			bool visible = false;
+			float dam = autowall->GetDamage(a.entity, max, true, visible);
+
+			// if autowall visible, continue
+			if (visible)
+				continue;
+
+			if (dam > mindamage_hidden && dam > BestDamage)
+			{
+				BestDamage = dam;
+				BestIndex = a.index;
+				BestAimPoint = max;
 			}
 		}
 	}
@@ -626,9 +758,6 @@ void Aimbot::Run()
 	if(BestVisDamage > BestHiddenDamage)
 		Angle = CalculateAngle(BestVisAimpoint);
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
-
-
-
 	
 	// Smooth angle if needed
 	QAngle ang = Angle;

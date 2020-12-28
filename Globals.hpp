@@ -20,7 +20,7 @@ struct EntItem
 	// Last sim time (to detect desync)
 	float lastSimTime = -1;
 	// Bone Matrix
-	Matrix3x4 Matrix[256];
+	Matrix3x4 Matrix[128];
 	// Model
 	Model* model;// = new Model();
 	// Shooting Position
