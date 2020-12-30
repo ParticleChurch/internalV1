@@ -38,8 +38,8 @@ namespace Config {
 				CEditGroup* AimGunGroup = w->AddEditGroup("aimbot-");
 
 				AimGunGroup->AddGroup("pistol-", "Pistol");
-				/*w->AddProperty(false, 0, "aimbot-pistol-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-pistol-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 
@@ -50,8 +50,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-pistol-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("smg-", "SMG");
-				/*w->AddProperty(false, 0, "aimbot-smg-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-smg-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-smg-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-smg-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-smg-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -61,8 +61,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-smg-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("heavy-", "Heavy");
-				/*w->AddProperty(false, 0, "aimbot-heavy-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-heavy-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-heavy-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-heavy-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-heavy-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -72,8 +72,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-heavy-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("rifle-", "Rifle");
-				/*w->AddProperty(false, 0, "aimbot-rifle-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-rifle-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-rifle-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-rifle-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-rifle-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -83,8 +83,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-rifle-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("scout-", "Scout");
-				/*w->AddProperty(false, 0, "aimbot-scout-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-scout-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-scout-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-scout-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-scout-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-scout-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-scout-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -94,8 +94,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-scout-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("awp-", "AWP");
-				/*w->AddProperty(false, 0, "aimbot-awp-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-awp-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-awp-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-awp-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-awp-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-awp-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-awp-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
@@ -105,8 +105,8 @@ namespace Config {
 				w->AddProperty(false, 1, "aimbot-awp-if-lethal", "Baim If Lethal", true, true);
 
 				AimGunGroup->AddGroup("auto-", "Auto");
-				/*w->AddProperty(false, 0, "aimbot-auto-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-auto-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);*/
+				w->AddProperty(false, 0, "aimbot-auto-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "aimbot-auto-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-auto-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
 				w->AddProperty(false, 1, "aimbot-auto-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
 				w->AddProperty(false, 0, "aimbot-auto-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });

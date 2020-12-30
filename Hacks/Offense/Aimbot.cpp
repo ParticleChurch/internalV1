@@ -124,13 +124,12 @@ void Aimbot::Smooth(Vec& Angle)
 	bool FastToSlow = (State == 2);
 	bool Constant = (State == 3);
 	bool SlowToFast = (State == 1);
-	float SmoothYaw = smooth_amount;
-	float SmoothPitch = smooth_amount;
+	float SmoothYaw = (100 - smooth_amount) / 100.f;
+	float SmoothPitch = (100 - smooth_amount) / 100.f;
 
 	G::StartAngle.NormalizeAngle();
 	Angle.NormalizeAngle();
 	Vec Delta = G::StartAngle - Angle;
-
 	Delta.NormalizeAngle();
 
 	if (FastToSlow)
@@ -645,8 +644,8 @@ void Aimbot::Run()
 
 	if (WeaponClass == 35)		//pistol
 	{
-		/*smooth_method		= Config::GetState("aimbot-pistol-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-pistol-smoothing-amount");*/
+		smooth_method		= Config::GetState("aimbot-pistol-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-pistol-smoothing-amount");
 		fov					= Config::GetFloat("aimbot-pistol-fov");
 		priority_hitbox		= Config::GetState("aimbot-pistol-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-pistol-mindamage-visible");
@@ -657,8 +656,8 @@ void Aimbot::Run()
 	}
 	else if(WeaponClass == 37)	//smg
 	{
-		/*smooth_method		= Config::GetState("aimbot-smg-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-smg-smoothing-amount");*/
+		smooth_method		= Config::GetState("aimbot-smg-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-smg-smoothing-amount");
 		fov					= Config::GetFloat("aimbot-smg-fov");
 		priority_hitbox		= Config::GetState("aimbot-smg-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-smg-mindamage-visible");
@@ -669,8 +668,8 @@ void Aimbot::Run()
 	}
 	else if(WeaponClass == 36)	//heavy
 	{
-		/*smooth_method		= Config::GetState("aimbot-heavy-smoothing-method");
-		smooth_amount		= Config::GetFloat("aimbot-heavy-smoothing-amount");*/
+		smooth_method		= Config::GetState("aimbot-heavy-smoothing-method");
+		smooth_amount		= Config::GetFloat("aimbot-heavy-smoothing-amount");
 		fov					= Config::GetFloat("aimbot-heavy-fov");
 		priority_hitbox		= Config::GetState("aimbot-heavy-hitbox-priority");
 		mindamage_visible	= Config::GetFloat("aimbot-heavy-mindamage-visible");
@@ -683,8 +682,8 @@ void Aimbot::Run()
 	{
 		if (weaponID == 40) //scout
 		{
-			/*smooth_method		= Config::GetState("aimbot-scout-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-scout-smoothing-amount");*/
+			smooth_method		= Config::GetState("aimbot-scout-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-scout-smoothing-amount");
 			fov					= Config::GetFloat("aimbot-scout-fov");
 			priority_hitbox		= Config::GetState("aimbot-scout-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-scout-mindamage-visible");
@@ -695,8 +694,8 @@ void Aimbot::Run()
 		}
 		else if (weaponID == 9) //awp
 		{
-			/*smooth_method		= Config::GetState("aimbot-awp-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-awp-smoothing-amount");*/
+			smooth_method		= Config::GetState("aimbot-awp-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-awp-smoothing-amount");
 			fov					= Config::GetFloat("aimbot-awp-fov");
 			priority_hitbox		= Config::GetState("aimbot-awp-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-awp-mindamage-visible");
@@ -707,8 +706,8 @@ void Aimbot::Run()
 		}
 		else if (weaponID == 11 || weaponID == 38) //autos
 		{
-			/*smooth_method		= Config::GetState("aimbot-auto-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-auto-smoothing-amount");*/
+			smooth_method		= Config::GetState("aimbot-auto-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-auto-smoothing-amount");
 			fov					= Config::GetFloat("aimbot-auto-fov");
 			priority_hitbox		= Config::GetState("aimbot-auto-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-auto-mindamage-visible");
@@ -719,8 +718,8 @@ void Aimbot::Run()
 		}
 		else //rifles
 		{
-			/*smooth_method		= Config::GetState("aimbot-rifle-smoothing-method");
-			smooth_amount		= Config::GetFloat("aimbot-rifle-smoothing-amount");*/
+			smooth_method		= Config::GetState("aimbot-rifle-smoothing-method");
+			smooth_amount		= Config::GetFloat("aimbot-rifle-smoothing-amount");
 			fov					= Config::GetFloat("aimbot-rifle-fov");
 			priority_hitbox		= Config::GetState("aimbot-rifle-hitbox-priority");
 			mindamage_visible	= Config::GetFloat("aimbot-rifle-mindamage-visible");
@@ -760,10 +759,6 @@ void Aimbot::Run()
 		Angle = CalculateAngle(BestVisAimpoint);
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 	
-	// Smooth angle if needed // NO FUCKING SMOOTHING BITCH
-	/*QAngle ang = Angle;
-	Smooth(Angle);*/
-
 	// Check if within FOV
 	Angle.NormalizeAngle();
 	G::StartAngle.NormalizeAngle();
@@ -771,6 +766,9 @@ void Aimbot::Run()
 	delta.NormalizeAngle();
 	if (delta.VecLength2D() > fov)
 		return;
+
+	Smooth(Angle);
+	Angle.NormalizeAngle();
 
 	// Adjust for aimstep
 	/*float step = Config::GetFloat("aimbot_aimstep");
