@@ -765,7 +765,10 @@ void Aimbot::Run()
 	Smooth(Angle);*/
 
 	// Check if within FOV
+	Angle.NormalizeAngle();
+	G::StartAngle.NormalizeAngle();
 	QAngle delta = G::StartAngle - Angle;
+	delta.NormalizeAngle();
 	if (delta.VecLength2D() > fov)
 		return;
 
