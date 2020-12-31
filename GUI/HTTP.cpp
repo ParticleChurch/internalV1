@@ -1,82 +1,172 @@
 #include "HTTP.hpp"
 
-std::string HTTP::URLEncode(const std::string& value) {
-    std::ostringstream escaped;
-    escaped.fill('0');
-    escaped << std::hex;
+namespace HTTP
+{
+    bool debug = true;
+    std::string userAgent = "WinHTTP/1.0";
+    INTERNET_PORT port = INTERNET_DEFAULT_HTTPS_PORT; // 443
+    DWORD requestFlags = INTERNET_FLAG_SECURE | defaultNoCacheFlags | defaultBaseFlags;
+    std::string contentType = "application/x-www-form-urlencoded";
 
-    for (std::string::const_iterator i = value.begin(), n = value.end(); i != n; ++i) {
-        std::string::value_type c = (*i);
-
-        // Keep alphanumeric and other accepted characters intact
-        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
-            escaped << c;
-            continue;
+    byte* Post(std::string URL, std::string input, DWORD* bytesRead)
+    {
+        if (debug)
+        {
+            std::cout << "HTTP::Post to url " << URL << std::endl;
         }
 
-        // Any other characters are percent-encoded
-        escaped << std::uppercase;
-        escaped << '%' << std::setw(2) << int((unsigned char)c);
-        escaped << std::nouppercase;
+
+        // split string into host and directory
+        // [ garbage ][     host part    ][     directory part     ]
+        //   https://    www.example.com     /subdirectory/api.php
+
+        // remove protocol from url
+        if (URL.rfind("http://") == 0)
+        {
+            URL = URL.substr(7);
+        }
+        else if (URL.rfind("https://") == 0)
+        {
+            URL = URL.substr(8);
+        }
+
+        // split host and directory
+        int directoryIndex = URL.find("/");
+        std::string host = URL;
+        std::string directory = "";
+        if (directoryIndex >= 0)
+        {
+            host = URL.substr(0, directoryIndex);
+            directory = URL.substr(directoryIndex + 1);
+        }
+
+        if (debug)
+        {
+            std::cout << "Determined that host = \"" << host << "\", and directory = \"" << directory << "\"" << std::endl;
+        }
+
+        HINTERNET hInternet = InternetOpen(
+            userAgent.c_str(),
+            INTERNET_OPEN_TYPE_PRECONFIG,
+            NULL, NULL,
+            0
+        );
+        if (!hInternet)
+        {
+            if (debug)
+                std::cout << "Failed to open hInternet w/ error: " << GetLastError() << std::endl;
+            return nullptr;
+        }
+
+        HINTERNET hConnection = InternetConnect(
+            hInternet,
+            host.c_str(),
+            INTERNET_DEFAULT_HTTPS_PORT,
+            NULL, NULL,
+            INTERNET_SERVICE_HTTP,
+            0, 0
+        );
+        if (!hConnection)
+        {
+            if (debug)
+                std::cout << "Failed to open hConnection w/ error: " << GetLastError() << std::endl;
+            return nullptr;
+        }
+
+        // "Long pointer to a null-terminated array of string pointers indicating content types accepted by the client"
+        LPCSTR acceptContentTypes[]{ "*/*", 0 };
+
+        HINTERNET hRequest = HttpOpenRequest(hConnection,
+            "POST",
+            directory.c_str(),
+            "HTTP/1.1",
+            0,
+            acceptContentTypes,
+            requestFlags,
+            0
+        );
+        if (!hRequest)
+        {
+            if (debug)
+                std::cout << "Failed to open hRequest w/ error: " << GetLastError() << std::endl;
+            return nullptr;
+        }
+
+        bool headersAdded = HttpAddRequestHeaders(
+            hRequest,
+            ("Content-Type: " + contentType + "\r\n").c_str(),
+            48,
+            HTTP_ADDREQ_FLAG_REPLACE
+        );
+
+        bool requestSuccess = HttpSendRequest(hRequest,
+            // headers and length, not supported yet
+            NULL, 0,
+            // post data and post length
+            (void*)input.c_str(), input.size()
+        );
+
+        if (debug)
+        {
+            if (requestSuccess)
+                std::cout << "Request completed successfully" << std::endl;
+            else
+                std::cout << "Request failed, error: " << GetLastError() << std::endl;
+        }
+
+        if (!requestSuccess)
+            return nullptr;
+
+        // dynamic buffer to hold file
+        byte* fileBuffer = NULL;
+        DWORD fileSize = 0;
+
+        // buffer for each kb of the file
+        byte* chunkBuffer = (byte*)malloc(1024);
+        DWORD chunkSize = 1024;
+        DWORD chunkBytesRead = 0;
+        if (!chunkBuffer)
+        {
+            if (debug)
+                std::cout << "failed to malloc for chunk buffer" << std::endl;
+            free(fileBuffer);
+            return nullptr;
+        }
+
+        do
+        {
+            chunkBytesRead = 0;
+            InternetReadFile(hRequest, chunkBuffer, chunkSize, &chunkBytesRead);
+
+            byte* re = (byte*)realloc(fileBuffer, fileSize + chunkBytesRead);
+            if (!re)
+            {
+                if (debug)
+                    std::cout << "failed to realloc dynamic buffer" << std::endl;
+                free(fileBuffer);
+                free(chunkBuffer);
+                return nullptr;
+            }
+            else
+            {
+                fileBuffer = re;
+            }
+            memcpy(fileBuffer + fileSize, chunkBuffer, chunkBytesRead);
+            fileSize += chunkBytesRead;
+
+        } while (chunkBytesRead > 0);
+        free(chunkBuffer);
+
+        if (fileSize == 0)
+        {
+            if (debug)
+                std::cout << "Got no bytes in response w/ error: " << GetLastError() << std::endl;
+            free(fileBuffer);
+            return nullptr;
+        }
+        if (bytesRead)
+            *bytesRead = fileSize;
+
+        return fileBuffer;
     }
-
-    return escaped.str();
-}
-
-// read binary data from a website into T output
-// returns bool succes
-template <class T>
-bool HTTP::StructuredGET(std::string Host, std::string Directory, std::string URLArguments, T* Output)
-{
-    // host/directory?arg=value
-    Directory += "?" + URLArguments;
-
-    // configure and open connection
-    HINTERNET hInternet = InternetOpenA("InetURL/1.0", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-    HINTERNET hConnection = InternetConnectA(hInternet, Host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0, 0, INTERNET_SERVICE_HTTP, 0, 0);
-    HINTERNET hData = HttpOpenRequestA(hConnection, "GET", Directory.c_str(), 0, 0, 0, INTERNET_FLAG_SECURE | INTERNET_FLAG_RELOAD, 0);
-    if (!HttpSendRequestA(hData, NULL, 0, NULL, 0))
-    {
-        std::cout << "StructuredGET.HttpSendRequest failed w/ winerror: " << GetLastError() << std::endl;
-        return false;
-    }
-
-
-    DWORD BytesToRead = sizeof(T);
-    DWORD BytesRead;
-    if (!InternetReadFile(hData, Output, BytesToRead + 1 /* add one to know if there is more than requested */, &BytesRead))
-    {
-        std::cout << "InternetReadFile.HttpSendRequest failed w/ winerror: " << GetLastError() << std::endl;
-        return false;
-    }
-
-    if (BytesRead != BytesToRead)
-    {
-        std::cout << "StructuredGET - server gave bad response byte size (got " << BytesRead << " but expected " << BytesToRead << ")\n";
-        return false;
-    }
-    else
-        return true;
-}
-
-// wrap StructuredGET
-template <class T>
-bool HTTP::APIGET(std::string Cmd, Arguments Data, T* Output)
-{
-    Data.Add("cmd", Cmd);
-    return HTTP::StructuredGET<T>("www.a4g4.com", "/API/api.php", Data.String, Output);
-}
-
-APIResponseFormat_LoginAttempt HTTP::APILogin(std::string Email, std::string Password)
-{
-    APIResponseFormat_LoginAttempt Response{};
-
-    Arguments Data;
-    Data.Add("email", Email);
-    Data.Add("passwd", Password);
-
-    if (!APIGET<APIResponseFormat_LoginAttempt>("login", Data, &Response))
-         Response.Flags = 0;
-
-    return Response;
 }

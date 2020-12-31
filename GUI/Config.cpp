@@ -1,6 +1,29 @@
 #include "../Include.hpp"
 
 namespace Config {
+
+	namespace UserInfo
+	{
+		bool Authenticated = false; // is this user logged in at all?
+		bool Banned = false; // has this user been banned
+		bool Premium = false;
+		int64_t TimeLeft = -1; // seconds left of their premium subscription
+		int64_t UserId = 0x7FFFFFFFFFFFFFFF;
+		std::string Email = "unauthenticated@a4g4.com";
+		int64_t AccountAge = 1; // seconds since the account has been created
+		void Clear()
+		{
+			std::cout << "set auth = false" << std::endl;
+			Authenticated = false;
+			Banned = false;
+			Premium = false;
+			TimeLeft = -1;
+			UserId = 0x7FFFFFFFFFFFFFFF;
+			Email = "unauthenticated@a4g4.com";
+			AccountAge = 1;
+		}
+	}
+
 	std::string StringifyKeybindType(KeybindType type)
 	{
 		return
@@ -14,7 +37,6 @@ namespace Config {
 		return VK::GetName(VirturalKey);
 	}
 
-	UserInfoT UserInfo = UserInfoT{};
 	std::vector<Tab*> Tabs = {};
 	std::map<std::string, Property*> PropertyLookup;
 

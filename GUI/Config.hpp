@@ -8,26 +8,6 @@
 
 constexpr bool CONFIG_DEBUG = true;
 
-/*
-	Web API shit
-*/
-constexpr int LOGIN_FLAG_LOGIN_VALID            = 1 << 0;  // was the sent login valid
-constexpr int LOGIN_FLAG_ACCOUNT_PAID           = 1 << 1;  // is the account paid or free
-constexpr int LOGIN_FLAG_ACCOUNT_ALREADY_IN_USE = 1 << 2;  // is the cheat being used elsewhere (this is someone trying to share an account with a friend)
-constexpr int LOGIN_FLAG_ACCOUNT_IS_DEVELOPER   = 1 << 3;  // is this login the dev@a4g4.com account
-constexpr int LOGIN_FLAG_BANNED                 = 1 << 4;  // is this account banned (do something like: print "fuck you" then crash csgo, lol);
-
-constexpr int AUTH_STATUS_NONE       = 0; // not logged in
-constexpr int AUTH_STATUS_PROCESSING = 1; // login is processing
-constexpr int AUTH_STATUS_COMPLETE   = 2; // logged in
-
-struct APIResponseFormat_LoginAttempt
-{
-	int Flags;
-	unsigned int UserID;
-};
-
-
 // trim from left
 inline std::string& ltrim(std::string& s, const char* t = " \t\n\r\f\v")
 {
@@ -49,14 +29,17 @@ inline std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
 }
 
 namespace Config {
-	struct UserInfoT {
-		char AuthStatus = AUTH_STATUS_NONE;
-		bool Paid = false;
-		bool Developer = false;
-		int UserID = INT_MAX;
-		std::string Email = "";
-	};
-	extern UserInfoT UserInfo;
+	namespace UserInfo
+	{
+		extern bool Authenticated; // is this user logged in at all?
+		extern bool Banned; // has this user been banned
+		extern bool Premium;
+		extern int64_t TimeLeft; // seconds left of their premium subscription
+		extern int64_t UserId;
+		extern std::string Email;
+		extern int64_t AccountAge; // seconds since the account has been created
+		extern void Clear();
+	}
 
 	enum class PropertyType {
 		COLOR = 0,

@@ -5,51 +5,61 @@
 // will be set to the screen center
 ImVec2 LoginWindowPosition(100, 100);
 
-// Variables to help communicate between main thread and login thread (helping with race conditions)
-std::mutex LoginMutex;
-unsigned int LoginAttemptIndex = 0;      // equal to the number of times that the user pressed the login button
-bool loginCanceled = false;
+std::mutex LoginMutex{};
+uint32_t LoginAttemptIndex = 0;
+bool IsAttemptingLogin = false;
 
 struct LoginInformation
 {
-	unsigned int AttemptID;
-	char Email[257];
-	char Password[65];
+	uint32_t AttemptID;
+	char Email[513];
+	char Password[513];
 };
 
-void AttemptLogin(LoginInformation* Info)
+DWORD WINAPI AttemptLogin(LPVOID pInfo)
 {
-	APIResponseFormat_LoginAttempt Response = HTTP::APILogin(Info->Email, Info->Password);
-	if (Response.Flags & LOGIN_FLAG_LOGIN_VALID)
+	IsAttemptingLogin = true;
+
+	// parse input
+	LoginInformation* Info = (LoginInformation*)pInfo;
+	std::string Email = std::string(Info->Email);
+	std::string Password = std::string(Info->Password);
+	std::replace(Email.begin(), Email.end(), '\n', ' ');
+	std::replace(Password.begin(), Password.end(), '\n', ' ');
+
+	// send API request
+	std::string input = "email=" + Email + "\npassword=" + Password;
+	DWORD bytesRead = 0;
+	byte* result = HTTP::Post("https://www.a4g4.com/API/dll/login.php", input, &bytesRead);
+	std::string output = std::string((char*)result, bytesRead);
+
+	// parse output
+	std::cout << "API response: " << output << std::endl;
+
+	// handle
+	LoginMutex.lock();
+	if (Info->AttemptID != LoginAttemptIndex) // they have since cancelled or tried to login again
 	{
-		// this user has entered a valid login
-		if (Response.Flags & LOGIN_FLAG_BANNED)
-		{
-			// this user has been banned (todo: print "fuck you" then crash csgo)
-			Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-		}
-		else if (Response.Flags & LOGIN_FLAG_ACCOUNT_ALREADY_IN_USE)
-		{
-			// this user is logged in elsewhere (todo: tell them they should enter free mode)
-			Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
-		}
-		else
-		{
-			Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
-			Config::UserInfo.Developer = Response.Flags & LOGIN_FLAG_ACCOUNT_IS_DEVELOPER;
-			Config::UserInfo.Paid = Response.Flags & LOGIN_FLAG_ACCOUNT_PAID;
-			Config::UserInfo.Email = Info->Email;
-			Config::UserInfo.UserID = Response.UserID;
-		}
+		free(Info);
+		LoginMutex.unlock();
+		return 1;
 	}
 	else
 	{
-		// invalid login
-		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+		Config::UserInfo::Authenticated = true;
+		Config::UserInfo::Banned = false;
+		Config::UserInfo::Premium = true;
+		Config::UserInfo::TimeLeft = 420;
+		Config::UserInfo::UserId = 69;
+		Config::UserInfo::Email = "bruh@moment.com";
+		Config::UserInfo::AccountAge = 69420;
 	}
+	
 
-	// deallocate resources
 	free(Info);
+	IsAttemptingLogin = false;
+	LoginMutex.unlock();
+	return 0;
 }
 
 void GUI::ProcessingLoginMenu()
@@ -63,7 +73,13 @@ void GUI::ProcessingLoginMenu()
 	// Cancel button
 	ImGui::SetCursorPos(ImVec2(360, 83));
 	if (ImGui::Button("Cancel", ImVec2(70, 20)))
-		Config::UserInfo.AuthStatus = AUTH_STATUS_NONE;
+	{
+		LoginMutex.lock();
+		LoginAttemptIndex++;
+		Config::UserInfo::Clear();
+		IsAttemptingLogin = false;
+		LoginMutex.unlock();
+	}
 
 	LoginWindowPosition = ImGui::GetWindowPos();
 	ImGui::End();
@@ -1249,14 +1265,14 @@ bool GUI::LoginMenu()
 	ImGui::GetStyle().FrameBorderSize = 0.f;
 
 	// Email
-	static char Email[257] = "";
+	static char Email[513] = "";
 	ImGui::SetCursorPos(ImVec2(20, 32));
-	ImGui::TextInputWithPlaceholder("Email Address", 300, "###Email", Email, 257);
+	ImGui::TextInputWithPlaceholder("Email Address", 300, "###Email", Email, 513);
 
 	// Password
-	static char Password[65] = "";
+	static char Password[513] = "";
 	ImGui::SetCursorPos(ImVec2(20, 70));
-	ImGui::TextInputWithPlaceholder("Password", 300, "###Password", Password, 257);
+	ImGui::TextInputWithPlaceholder("Password", 300, "###Password", Password, 513);
 
 	ImGui::PopFont();
 
@@ -1270,31 +1286,36 @@ bool GUI::LoginMenu()
 	ImGui::SetCursorPos(ImVec2(20, 110));
 	if (ImGui::Button("Login", ImVec2(300, 35)))
 	{
+		LoginMutex.lock();
+
 		// reset old data
 		LoginAttemptIndex++;
-		Config::UserInfo.AuthStatus = AUTH_STATUS_PROCESSING;
+		Config::UserInfo::Clear();
+
+		LoginMutex.unlock();
 
 		// fill LoginInformation with recent data (malloc thread will still have access once scope deconstructs)
 		// p.s. thread has to free this malloc, to prevent a *tiny*, but still existent, memory leak
 		LoginInformation* Info = (LoginInformation*)malloc(sizeof(LoginInformation));
-		Info->AttemptID = LoginAttemptIndex;
-		strcpy(Info->Email, Email);
-		strcpy(Info->Password, Password);
+		if (Info)
+		{
+			Info->AttemptID = LoginAttemptIndex;
+			strcpy(Info->Email, Email);
+			strcpy(Info->Password, Password);
 
-		// start login thread
-		CreateThread(0, 0, LPTHREAD_START_ROUTINE(AttemptLogin), Info, 0, 0);
-		Sleep(0); // let thread begin
+			// start login thread
+			IsAttemptingLogin = true;
+			CreateThread(NULL, 0, AttemptLogin, Info, 0, 0);
+			Sleep(0); // let it start
+		}
 	}
 
 	// Play Free
 	ImGui::SetCursorPos(ImVec2(20, 110 + 45));
 	if (ImGui::Button("Play Free", ImVec2(300, 35)))
 	{
-		Config::UserInfo.AuthStatus = AUTH_STATUS_COMPLETE;
-		Config::UserInfo.Email = "free@a4g4.com";
-		Config::UserInfo.UserID = INT_MAX;
-		Config::UserInfo.Paid = false;
-		Config::UserInfo.Developer = false;
+		Config::UserInfo::Clear();
+		Config::UserInfo::Authenticated = true;
 	}
 
 	// Eject
@@ -1319,25 +1340,19 @@ bool GUI::Main()
 	I::engine->GetScreenSize(WindowSizeX, WindowSizeY);
 	ImVec2 WindowCenter(WindowSizeX / 2.f, WindowSizeY / 2.f);
 
-	if (Config::UserInfo.AuthStatus == AUTH_STATUS_COMPLETE)
-	{
-		isEjecting = HackMenu();
-		/*
-		if (Config::UserInfo.Paid || Config::UserInfo.Developer)
-			isEjecting = PaidHackMenu();
-		else
-			isEjecting = FreeHackMenu();
-		*/
-	}
-	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_PROCESSING)
+	if (IsAttemptingLogin)
 	{
 		Config::SetBool("show-menu", true);
 		ProcessingLoginMenu();
 	}
-	else if (Config::UserInfo.AuthStatus == AUTH_STATUS_NONE)
+	else if (!Config::UserInfo::Authenticated)
 	{
 		Config::SetBool("show-menu", true);
 		isEjecting = LoginMenu();
+	}
+	else
+	{
+		isEjecting = HackMenu();
 	}
 
 	return isEjecting;
