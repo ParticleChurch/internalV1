@@ -48,11 +48,12 @@ DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	{
 		Config::UserInfo::Authenticated = true;
 		Config::UserInfo::Banned = false;
-		Config::UserInfo::Premium = true;
 		Config::UserInfo::TimeLeft = 420;
 		Config::UserInfo::UserId = 69;
 		Config::UserInfo::Email = "bruh@moment.com";
 		Config::UserInfo::AccountAge = 69420;
+
+		Config::UserInfo::Premium = true;
 	}
 	
 
