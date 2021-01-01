@@ -235,12 +235,14 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	if (GUI::Main())
 		G::KillDLL = true;
 
-	ImGui::Begin("console");
-	for (auto a : console)
-		ImGui::Text(a.c_str());
-
-	ImGui::End();
-
+	if (Config::GetBool("show-console"))
+	{
+		ImGui::Begin("console");
+		for (auto a : console)
+			ImGui::Text(a.c_str());
+		ImGui::End();
+	}
+	
 	ImGui::EndFrame();
 	ImGui::Render();
 
@@ -417,8 +419,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		G::CM_MoveFixEnd();
 
 		movement->RageAutoStrafe();
-
-		movement->Airstuck();
 
 		// bad animation fix (for third person)
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 

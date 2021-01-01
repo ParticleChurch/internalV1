@@ -4,7 +4,17 @@ Movement* movement = new Movement();
 
 void Movement::AAMoveFix()
 {
-	if ((G::LocalPlayer->GetHealth() > 0) && fabsf(G::cmd->sidemove) < 5.0f) {
+	// If the localplayer is not alive...
+	if (!G::LocalPlayer || !G::LocalPlayerAlive)
+		return;
+
+	// If not on ground
+	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND)) return;
+
+	// If neither options are ticked... return
+	if (!Config::GetBool("antiaim-legit-enable") && !Config::GetBool("antiaim-rage-enable")) return;
+
+	if (fabsf(G::cmd->sidemove) < 5.0f) {
 		G::cmd->sidemove = G::cmd->tick_count & 1 ? 3.25f : -3.25f;
 	}
 }
@@ -178,11 +188,16 @@ void Movement::RageAutoStrafe()
 
 void Movement::LegitAutoStrafe()
 {
-	if (Config::GetState("misc-movement-autostrafe") != 2)
+	if (Config::GetState("misc-movement-autostrafe") != 1)
 		return;
-	bool valid = (G::LocalPlayerAlive) && !(G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
-	if (!valid)
-		return;
+
+	if (!G::LocalPlayer) return;
+
+	if (!G::LocalPlayerAlive) return;
+
+	if (G::LocalPlayer->GetFlags() & FL_ONGROUND) return;
+
+	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
 
 	if (G::cmd->mousedx < -5)
 		G::cmd->sidemove = -450;
@@ -221,21 +236,6 @@ void Movement::SlowWalk()
 	FastStop();
 }
 
-void Movement::Airstuck()
-{
-	// If Airstuck is NOT enabled in config...
-	if (!Config::GetBool("misc-movement-airstuck"))
-		return;
-
-	// If the localplayer is not alive...
-	if (!G::LocalPlayer || !G::LocalPlayerAlive)
-		return;
-
-	// Airstuck
-	G::cmd->command_number = INT_MAX;
-	G::cmd->tick_count = INT_MAX;
-}
-
 void Movement::FakeDuck()
 {
 	// If the localplayer is not alive...
@@ -271,9 +271,13 @@ void Movement::FakeDuck()
 void Movement::LegSlide()
 {
 	if (!G::LocalPlayer) return;
+
 	if (!G::LocalPlayerAlive) return;
 
+	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
+
 	if (!Config::GetBool("misc-movement-leg")) return;
+
 	static bool switcher = false;
 	static float time = I::globalvars->m_curTime;
 	if (I::globalvars->m_curTime - time > Config::GetFloat("misc-movement-leg-time") / 1000.f)

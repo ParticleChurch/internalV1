@@ -153,7 +153,7 @@ void Aimbot::Smooth(Vec& Angle)
 		}
 	}
 
-	float Factor = 5;
+	float Factor = 3;
 	if (SlowToFast)
 	{
 		float CurSpeed = powf(Factor,2) / powf(Delta.VecLength(), 2);

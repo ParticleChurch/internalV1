@@ -33,12 +33,26 @@ void KillSay::run(GameEvent* event)
 		bool	thrusmoke	hitscan weapon went through smoke grenade
 		bool	attackerblind	attacker was blind from flashbang
 		*/
+		int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
+		int victim = I::engine->GetPlayerForUserID(event->GetInt("userid"));
 
 		// if the attacker isn't the local player, or if the person dying is localplayer, return
-		if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != G::LocalPlayerIndex ||
-			I::engine->GetPlayerForUserID(event->GetInt("userid")) == G::LocalPlayerIndex)
+		if (attacker != G::LocalPlayerIndex ||
+			victim == G::LocalPlayerIndex)
 			return;
 
-		I::engine->ClientCmd_Unrestricted(("say " + Config::GetText("misc-other-killsay-input")).c_str()); //kill say
+		
+		player_info_t info;
+		if (!I::engine->GetPlayerInfo(victim, &info))
+			return;
+
+		// string parse p
+		std::string line = ("say " + Config::GetText("misc-other-killsay-input"));
+		size_t start_pos = line.find("%p");
+		if (start_pos == std::string::npos)
+			return;
+		line.replace(start_pos, 2, info.name);
+
+		I::engine->ClientCmd_Unrestricted(line.c_str()); //kill say
 	}
 }

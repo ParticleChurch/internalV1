@@ -85,6 +85,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			//	thisptr, ctx, state, info, G::FakeMatrix);
 
 			//H::oDrawModelExecute(thisptr, ctx, state, info, G::FakeMatrix);
+			I::modelrender->ForcedMaterialOverride(nullptr);
 			H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 		}
 		else if (isEnemy)
@@ -114,6 +115,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			}
 			else
 			{
+				I::modelrender->ForcedMaterialOverride(nullptr);
 				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 			}
 
@@ -145,13 +147,14 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			}
 			else
 			{
+				I::modelrender->ForcedMaterialOverride(nullptr);
 				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 			}
 		}
 	}
 	else
 	{
-		//I::modelrender->ForcedMaterialOverride(nullptr);
+		I::modelrender->ForcedMaterialOverride(nullptr);
 		return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 	}
 }

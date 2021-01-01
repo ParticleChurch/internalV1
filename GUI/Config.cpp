@@ -221,26 +221,26 @@ namespace Config {
 
 				ESPGroup->AddGroup("enemy-", "Enemies");
 				w->AddText("Visible", "visuals-chams-enemy-visible-label"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-chams-enemy-visible-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-enemy-visible-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-enemy-visible-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
 
 				w->AddText("Hidden", "visuals-chams-enemy-hidden-label"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
 
 				ESPGroup->AddGroup("friend-", "Firends");
 				w->AddText("Visible", "visuals-chams-friend-visible-label"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-chams-friend-visible-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-friend-visible-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-friend-visible-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-friend-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
 
 				w->AddText("Hidden", "visuals-chams-friend-hidden-label"); w->BeginIndent();
-				w->AddProperty(false, 0, "visuals-chams-friend-hidden-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-chams-friend-hidden-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-friend-hidden-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-friend-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->EndIndent();
@@ -257,7 +257,7 @@ namespace Config {
 				CEditGroup* ESPGroup = w->AddEditGroup("visuals-esp-");
 
 				ESPGroup->AddGroup("enemy-", "Enemies");
-				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-esp-enemy-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-esp-enemy-bbox", "Bounding Box", false, false);
 				w->BeginIndent(); w->AddProperty(false, 1, "visuals-esp-enemy-bbox-color", "Color", new Color(255, 255, 255)); w->EndIndent();
 				w->AddProperty(false, 0, "visuals-esp-enemy-name", "Name", false, false);
@@ -274,7 +274,7 @@ namespace Config {
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();*/
 
 				ESPGroup->AddGroup("friend-", "Friends");
-				w->AddProperty(false, 0, "visuals-esp-friend-enable", "Enable", false, false);
+				w->AddProperty(false, 0, "visuals-esp-friend-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-esp-friend-bbox", "Bounding Box", false, false);
 				w->BeginIndent(); w->AddProperty(false, 1, "visuals-esp-friend-bbox-color", "Color", new Color(255, 255, 255)); w->EndIndent();
 				w->AddProperty(false, 0, "visuals-esp-friend-name", "Name", false, false);
@@ -325,7 +325,6 @@ namespace Config {
 				w->AddProperty(false, 0, "misc-movement-bhop", "Bunnyhop", false, false);
 				w->AddProperty(false, 1, "misc-movement-slowwalk", "Slow Walk", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 2, "misc-movement-slowwalk-speed", "Slow-Walk Speed", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 2, "misc-movement-airstuck", "Airstuck", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add rage autostrafe
@@ -359,6 +358,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Menu");
 
 				w->AddProperty(false, 0, "show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
+				w->AddProperty(false, 0, "show-console", "Show Console", true, true, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", CDropdown{ "Beginner", "Intermediate", "Professional" }, false, 2, 2);
 				w->AddProperty(false, 0, "show-help-link", "Show Help Link", true, true);
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);

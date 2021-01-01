@@ -7,7 +7,6 @@ public:
 	void RageAutoStrafe();
 	void LegitAutoStrafe();
 	void SlowWalk();
-	void Airstuck();
 	void FakeDuck();
 	void LegSlide();
 
