@@ -3,9 +3,9 @@
 void Init()
 {
     //Allocate Console
-    AllocConsole();
+    /*AllocConsole();
     freopen("CONIN$", "r", stdin);
-    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stdout);*/
 
     std::cout << "Successfully Injected\n";
 

@@ -57,10 +57,12 @@ void Movement::RageAutoStrafe()
 
 	if (!G::LocalPlayerAlive) return;
 
-	 if (G::LocalPlayer->GetFlags() & FL_ONGROUND) return;
+	if (G::LocalPlayer->GetFlags() & FL_ONGROUND) return;
 
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
 
+	H::console.clear();
+	H::console.resize(0);
 
 	bool Left = G::StartSideMove > 300;
 	bool Right = G::StartSideMove < -300;
@@ -72,6 +74,12 @@ void Movement::RageAutoStrafe()
 
 	float Goal = 0;
 	Goal += Side ? (Frwd ? (Left ? 90 + (Forward ? -45 : 45) : 270 + (Forward ? 45 : -45)) : (Left ? 90 : 270)) : (Frwd ? (Forward ? 0 : 180) : 0);
+	while (Goal > 180)
+		Goal -= 360;
+	Goal *= -1;
+
+	H::console.push_back("Goal: " + std::to_string(Goal));
+	H::console.push_back("");
 
 	Vec Vel = G::LocalPlayer->GetVecVelocity();
 
@@ -82,23 +90,25 @@ void Movement::RageAutoStrafe()
 		yaw_change = desync * fabsf(desync / Vel.VecLength2D());
 	}
 
-	float VelDir	= RAD2DEG(atan2(Vel.y, Vel.x));		// Velocity direction
+	float VelDir	= -RAD2DEG(atan2(Vel.y, Vel.x));		// Velocity direction
 	float GoalDir	= G::StartAngle.y - Goal;			// Goal Direction
 	while (GoalDir > 180) 
 		GoalDir -= 360;
 	while (GoalDir < -180) 
 		GoalDir += 360;
 
-	H::console.clear();
-	H::console.resize(0);
-
+	H::console.push_back("Start Ang: " + std::to_string(G::StartAngle.y));
 	H::console.push_back("VelDir: " + std::to_string(VelDir));
 	H::console.push_back("GoalDir: " + std::to_string(GoalDir));
-	float VelDelta	= GoalDir - VelDir;			// velocity direction difference between where we are going, and wanting to go
+	H::console.push_back("");
+
+	float VelDelta	= VelDir - GoalDir;			// velocity direction difference between where we are going, and wanting to go
 	while (VelDelta > 180)
 		VelDelta -= 360;
 	while (VelDelta < -180)
 		VelDelta += 360;
+	VelDelta = fabsf(VelDelta);
+
 	H::console.push_back("VelDelta: " + std::to_string(VelDelta));
 
 	float SIN = sinf(DEG2RAD(VelDelta)) * 450;
@@ -113,12 +123,13 @@ void Movement::RageAutoStrafe()
 	H::console.push_back("COS: " + std::to_string(COS));
 	
 	//SIN COS - 
-	//G::cmd->forwardmove = SIN;
-	//G::cmd->sidemove = COS;
+	//ROTATE CW
+	/*G::cmd->forwardmove = SIN;
+	G::cmd->sidemove = COS;*/
+
+	/*G::cmd->forwardmove = SIN;
+	G::cmd->sidemove = COS;*/
 	
-
-	/*H::console.push_back("VelDelta: " + std::to_string(VelDelta));*/
-
 
 	/*static bool flip = false;
 	if (G::pSendPacket && !(*G::pSendPacket) && G::LocalPlayerAlive && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
