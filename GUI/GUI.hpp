@@ -1,4 +1,5 @@
 #pragma once
+#include "JSON/JSON.h"
 
 namespace GUI {
 	constexpr int PropertyLabelsWidth = 150;

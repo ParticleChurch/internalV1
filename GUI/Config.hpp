@@ -38,6 +38,7 @@ namespace Config {
 		extern int64_t UserId;
 		extern std::string Email;
 		extern int64_t AccountAge; // seconds since the account has been created
+		extern std::string SessionId;
 		extern void Clear();
 	}
 

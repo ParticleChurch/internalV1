@@ -88,6 +88,12 @@
     <ClCompile Include="GUI\VKeys.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\JSON\JSON.cpp">
+      <Filter>Source\GUI\JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\JSON\JSONValue.cpp">
+      <Filter>Source\GUI\JSON</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -339,6 +345,12 @@
     <ClInclude Include="GUI\ConfigConstants.hpp">
       <Filter>Headers\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="GUI\JSON\JSON.h">
+      <Filter>Headers\GUI\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\JSON\JSONValue.h">
+      <Filter>Headers\GUI\JSON</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -400,6 +412,12 @@
     </Filter>
     <Filter Include="Source\Hacks\Misc">
       <UniqueIdentifier>{9520bb21-7616-4d6c-b894-58a9004acb40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\GUI\JSON">
+      <UniqueIdentifier>{d4eebd66-4124-4167-be2f-edb561b8cda6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GUI\JSON">
+      <UniqueIdentifier>{a527d7fe-5116-4398-ad92-bedb71913816}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

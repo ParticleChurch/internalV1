@@ -27,52 +27,176 @@ DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	std::replace(Email.begin(), Email.end(), '\n', ' ');
 	std::replace(Password.begin(), Password.end(), '\n', ' ');
 
+	// create outgoing JSON string
+	JSONValue* EmailJSON = new JSONValue(std::wstring(Email.begin(), Email.end()));
+	JSONValue* PasswordJSON = new JSONValue(std::wstring(Password.begin(), Password.end()));
+	JSONObject InputRoot;
+	InputRoot[L"email"] = EmailJSON;
+	InputRoot[L"password"] = PasswordJSON;
+	JSONValue* InputJSONV = new JSONValue(InputRoot);
+	std::wstring InputW = InputJSONV->Stringify();
+	std::string Input(InputW.begin(), InputW.end());
+	delete InputJSONV;
+
 	// send API request
-	std::string input = "email=" + Email + "\npassword=" + Password;
 	DWORD bytesRead = 0;
-	byte* result = HTTP::Post("https://www.a4g4.com/API/dll/login.php", input, &bytesRead);
+	HTTP::contentType = "application/json";
+	byte* result = HTTP::Post("https://www.a4g4.com/API/dll/login.php", Input, &bytesRead);
 	std::string output = std::string((char*)result, bytesRead);
 
 	// parse output
-	std::cout << "API response: " << output << std::endl;
-
-	// handle
-	LoginMutex.lock();
-	if (Info->AttemptID != LoginAttemptIndex) // they have since cancelled or tried to login again
+	// example response: { "Valid": true, "UserId": 69, "SubscriptionRemaining": 69420, "AccountAge": 420, "SessionId": "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "Banned": false }
+	JSONValue* value = JSON::Parse(std::wstring(output.begin(), output.end()).c_str());
+	if (!value)
 	{
+		std::cout << "Failed to parse JSON response" << std::endl;
 		free(Info);
-		LoginMutex.unlock();
+		IsAttemptingLogin = false;
 		return 1;
 	}
-	else
+	JSONObject root;
+	if (!value->IsObject())
 	{
-		Config::UserInfo::Authenticated = true;
-		Config::UserInfo::Banned = false;
-		Config::UserInfo::TimeLeft = 420;
-		Config::UserInfo::UserId = 69;
-		Config::UserInfo::Email = "bruh@moment.com";
-		Config::UserInfo::AccountAge = 69420;
-
-		Config::UserInfo::Premium = true;
+		std::cout << "Failed to parse JSON response" << std::endl;
+		free(Info);
+		IsAttemptingLogin = false;
+		delete value;
+		return 1;
 	}
-	
+	root = value->AsObject();
 
+	// handle values
+
+	LoginMutex.lock();
+	// Valid
+	{
+		auto iterator = root.find(L"Valid");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsBool())
+			goto JSONPARSE_FAILED;
+
+		if (!value->AsBool())
+		{
+			free(Info);
+			IsAttemptingLogin = false;
+			Config::UserInfo::Clear();
+			LoginMutex.unlock();
+			delete value;
+			return 1;
+		}
+	}
+
+	// UserId
+	{
+		auto iterator = root.find(L"UserId");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsNumber())
+			goto JSONPARSE_FAILED;
+
+		Config::UserInfo::UserId = (int64_t)(value->AsNumber());
+		if (Config::UserInfo::UserId <= 0)
+			goto JSONPARSE_FAILED;
+	}
+
+	// SubscriptionRemaining
+	{
+		auto iterator = root.find(L"SubscriptionRemaining");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsNumber())
+			goto JSONPARSE_FAILED;
+
+		Config::UserInfo::TimeLeft = (int64_t)(value->AsNumber());
+		Config::UserInfo::Premium = true;// Config::UserInfo::TimeLeft > 0;
+	}
+
+	// AccountAge
+	{
+		auto iterator = root.find(L"AccountAge");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsNumber())
+			goto JSONPARSE_FAILED;
+
+		Config::UserInfo::AccountAge = (int64_t)(value->AsNumber());
+		if (Config::UserInfo::AccountAge <= 0)
+			goto JSONPARSE_FAILED;
+	}
+
+	// SessionId
+	{
+		auto iterator = root.find(L"SessionId");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsString())
+			goto JSONPARSE_FAILED;
+
+		Config::UserInfo::SessionId = std::string(value->AsString().begin(), value->AsString().end());
+		if (Config::UserInfo::SessionId.size() < 16)
+			goto JSONPARSE_FAILED;
+	}
+
+	// Banned
+	{
+		auto iterator = root.find(L"Banned");
+		if (iterator == root.end())
+			goto JSONPARSE_FAILED;
+
+		auto value = iterator->second;
+		if (!value->IsBool())
+			goto JSONPARSE_FAILED;
+
+		Config::UserInfo::Banned = value->AsBool();
+	}
+
+	goto JSONPARSE_SUCCESS;
+JSONPARSE_FAILED:
+	std::cout << "Failed to parse login reponse" << std::endl;
 	free(Info);
 	IsAttemptingLogin = false;
+	Config::UserInfo::Clear();
 	LoginMutex.unlock();
+	delete value;
+	return 1;
+
+JSONPARSE_SUCCESS:
+	Config::UserInfo::Email = Info->Email;
+	Config::UserInfo::Premium = true;
+	Config::UserInfo::Authenticated = true;
+	IsAttemptingLogin = false;
+	LoginMutex.unlock();
+	delete value;
 	return 0;
 }
 
 void GUI::ProcessingLoginMenu()
 {
 	ImGuiIO& io = ImGui::GetIO();
-
-	ImGui::SetNextWindowSize(ImVec2(440, 114));
+	static ImVec2 WindowSize(160, 75);
+	ImGui::SetNextWindowSize(ImVec2(WindowSize));
 	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x/2, io.DisplaySize.y/2), 0, ImVec2(0.5f, 0.5f));
 	ImGui::Begin("Processing", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse);
 
+	std::string txt = "Processing...";
+	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
+	ImGui::SetCursorPosX(WindowSize.x / 2 - txtSize.x / 2);
+	ImGui::SetCursorPosY(15);
+	ImGui::Text("Processing...");
+
 	// Cancel button
-	ImGui::SetCursorPos(ImVec2(360, 83));
+	ImGui::SetCursorPos(ImVec2(WindowSize.x / 2 - 70 / 2, WindowSize.y-35));
 	if (ImGui::Button("Cancel", ImVec2(70, 20)))
 	{
 		LoginMutex.lock();
@@ -1344,7 +1468,9 @@ bool GUI::Main()
 	if (IsAttemptingLogin)
 	{
 		Config::SetBool("show-menu", true);
+		ImGui::PushFont(Arial14);
 		ProcessingLoginMenu();
+		ImGui::PopFont();
 	}
 	else if (!Config::UserInfo::Authenticated)
 	{

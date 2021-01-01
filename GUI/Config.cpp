@@ -11,9 +11,9 @@ namespace Config {
 		int64_t UserId = 0x7FFFFFFFFFFFFFFF;
 		std::string Email = "unauthenticated@a4g4.com";
 		int64_t AccountAge = 1; // seconds since the account has been created
+		std::string SessionId = "ABC";
 		void Clear()
 		{
-			std::cout << "set auth = false" << std::endl;
 			Authenticated = false;
 			Banned = false;
 			Premium = false;
@@ -21,6 +21,7 @@ namespace Config {
 			UserId = 0x7FFFFFFFFFFFFFFF;
 			Email = "unauthenticated@a4g4.com";
 			AccountAge = 1;
+			SessionId = "ABC";
 		}
 	}
 
