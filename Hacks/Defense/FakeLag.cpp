@@ -19,24 +19,31 @@ bool FakeLag::TimeBreaker()
 	return false;
 }
 
-bool FakeLag::Run()
+void FakeLag::Start()
 {
 	// Fake duck exception
 	if (Config::GetBool("misc-movement-fakeduck"))
 	{
-		return I::engine->GetNetChannelInfo()->ChokedPackets >= G::ChokeAmount;
+		PredictedVal =  I::engine->GetNetChannelInfo()->ChokedPackets >= 14;
+		return;
 	}
 	Vec velocity = G::LocalPlayer->GetVecVelocity();
-	velocity *= I::globalvars->m_intervalPerTick;
-	//velocity now holds our distance to move
+	velocity *= (I::globalvars->m_intervalPerTick * 2); 
+	//velocity now holds our distance to move (doubled for safety)
 
 	// Updating our next position
 	NextPos = G::LocalPlayer->GetVecOrigin() + velocity;
 	if (DistanceBreaker() || TimeBreaker())
 	{
 		PrevPos = G::LocalPlayer->GetVecOrigin();
-		return true;
+		PredictedVal =  true;
+		return;
 	}
 
-	return false;
+	PredictedVal = false;
+}
+
+bool FakeLag::End()
+{
+	return PredictedVal;
 }

@@ -253,30 +253,15 @@ void Movement::FakeDuck()
 	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
 
-	// Set choke amount back to normal
-	static int PrevChokeAmount = 0;
-	static bool WasJustFakeducking = false;
-	if (!Config::GetBool("misc-movement-fakeduck"))
-	{
-		if (WasJustFakeducking)
-			G::ChokeAmount = PrevChokeAmount;
-		else
-			PrevChokeAmount = G::ChokeAmount;
-	}
-		
-	// If FakeDuck is enabled in config...
-	if (Config::GetBool("misc-movement-fakeduck"))
-	{
-		WasJustFakeducking = true;
-		// Start the fakeduck, need to implement restoration of chokeamount
-		G::ChokeAmount = 14;
-		G::cmd->buttons |= IN_BULLRUSH;
-		if (I::engine->GetNetChannelInfo()->ChokedPackets > (G::ChokeAmount / 2))
-			G::cmd->buttons |= IN_DUCK;
-		else
-			G::cmd->buttons &= ~IN_DUCK;
-	} else
-		WasJustFakeducking = false;
+	// If FakeDuck is NOT enabled in config...
+	if (!Config::GetBool("misc-movement-fakeduck")) return;
+	
+	// FAKEDUCK
+	G::cmd->buttons |= IN_BULLRUSH;
+	if (I::engine->GetNetChannelInfo()->ChokedPackets > (14 / 2))
+		G::cmd->buttons |= IN_DUCK;
+	else
+		G::cmd->buttons &= ~IN_DUCK;
 }
 
 void Movement::LegSlide()

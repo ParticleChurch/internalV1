@@ -337,27 +337,37 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 		bool& bSendPacket = *pSendPacket;
 
-		bSendPacket = fakelag->Run();
+		// Fake lag Calculations
+		fakelag->Start();
 		
 		G::CM_Start(cmd, pSendPacket);
 
 		// Movement
-		movement->BunnyHop();
+		movement->BunnyHop();	
 		movement->SlowWalk();
 		movement->FastCrouch();
 		movement->AAMoveFix();
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
 		movement->LegSlide();
+
+		// nade visuals
+		miscvisuals->GrenadePrediction();
 	
 		G::CM_MoveFixStart();
+
+		// Fake Lag
+		bSendPacket = fakelag->End();
 
 		// AA
 		antiaim->legit();
 		antiaim->rage();
 
+		
+
 		// Clantag
 		clantag->run();
+		miscvisuals->RankRevealer();
 
 		// bad use (E) and attack (LBUTTON)
 		if (G::cmd->buttons & IN_USE)

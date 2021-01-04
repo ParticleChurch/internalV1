@@ -9,6 +9,8 @@ public:
 	// Thirdperson Function/Vars
 	void ThirdPerson_hkCamToFirstPeron();
 	void ThirdPerson_DoPostScreenEffects();
+	void RankRevealer();
+	void GrenadePrediction();
 
 };
 

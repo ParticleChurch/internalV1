@@ -8,7 +8,9 @@ private:
 	bool DistanceBreaker();
 	bool TimeBreaker();
 public:
-	bool Run();
+	bool PredictedVal = true;
+	void Start();
+	bool End();
 };
 
 extern FakeLag* fakelag;

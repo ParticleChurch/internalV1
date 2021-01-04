@@ -33,7 +33,6 @@ namespace G {
 	extern bool KillDLL;
 
 	//General Variables
-	extern int ChokeAmount;
 	extern QAngle StartAngle;
 	extern QAngle EndAngle;
 

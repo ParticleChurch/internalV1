@@ -166,26 +166,19 @@ namespace Config {
 				w->AddProperty(false, 0, "antiaim-fakelag-distance", "Distance", "units", 0, 64, 0, 64, 64); //4096				
 			}
 			{
-				Widget* w = t->AddWidget("Legit");
+				Widget* w = t->AddWidget("Antiaim");
+				CEditGroup* AntiAim = w->AddEditGroup("antiaim-");
 
+				AntiAim->AddGroup("legit-", "Legit");
 				w->AddProperty(false, 1, "antiaim-legit-enable", "Enable", false, false);
 				w->AddProperty(false, 1, "antiaim-legit-max-angle", "Max Desync Angle", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 1, "antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
-			}
-			{
-				Widget* w = t->AddWidget("Rage");
-				//General
+
+				AntiAim->AddGroup("rage-", "Rage");
 				w->AddProperty(false, 0, "antiaim-rage-enable", "Enable", false, false);
-
-				//Pitch
 				w->AddProperty(false, 0, "antiaim-rage-pitch", "Pitch", CDropdown{ "Up", "Down", "Trolling" });
-
-				//Yaw - Real
 				w->AddProperty(false, 2, "antiaim-rage-real", "Real Offset", "DEG", -180, 180, 0, 0, 0);
 				w->AddProperty(false, 2, "antiaim-rage-real-jitter", "Real Jitter Offset", "DEG", 0, 180, 0, 0, 0);
-				//TODO - add 3 keybinds for manual antiaim (left, right, and back) //we need just keybinds lol
-
-				//Yaw - Fake
 				w->AddProperty(false, 2, "antiaim-rage-fake", "Fake Offset", "%", 0, 100, 0, 0, 0);
 				w->AddProperty(false, 2, "antiaim-rage-fake-jitter", "Fake Jitter Offset", "%", 0, 100, 1, 100, 100);
 				w->AddProperty(false, 1, "antiaim-rage-invert", "Invert AA", new CInverter("", ""));
@@ -225,12 +218,14 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-chams-enemy-visible-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-enemy-visible-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-enemy-visible-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
 				w->AddText("Hidden", "visuals-chams-enemy-hidden-label"); w->BeginIndent();
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-enemy-hidden-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
 				ESPGroup->AddGroup("friend-", "Firends");
@@ -238,12 +233,29 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-chams-friend-visible-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-friend-visible-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-friend-visible-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-friend-visible-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
 				w->AddText("Hidden", "visuals-chams-friend-hidden-label"); w->BeginIndent();
 				w->AddProperty(false, 0, "visuals-chams-friend-hidden-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-friend-hidden-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-friend-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-friend-hidden-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->EndIndent();
+
+				ESPGroup->AddGroup("localplayer-", "Localplayer");
+				w->AddText("Real", "visuals-chams-localplayer-real-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-localplayer-real-enable", "Enable", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "visuals-chams-localplayer-real-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-localplayer-real-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-localplayer-real-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->EndIndent();
+
+				w->AddText("Fake", "visuals-chams-localplayer-fake-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-localplayer-fake-enable", "Enable", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "visuals-chams-localplayer-fake-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-localplayer-fake-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-localplayer-fake-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
 #undef CHAM_MATERIALS
@@ -311,6 +323,8 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Misc");
 				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "visuals-misc-revealranks", "Reveal Ranks", false, false, KeybindOptions(false, false, false));
+				w->AddProperty(false, 0, "visuals-misc-grenadeprediction", "Grenade Prediction", false, false, KeybindOptions(false, false, false));
 				/*w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
 				w->AddProperty(false, 1, "visuals-misc-spec-list", "Spectator List", false, false);
 				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);*/
@@ -330,8 +344,6 @@ namespace Config {
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add rage autostrafe
 				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None",/* "Rage",*/ "Legit" });
-				// Weird Legs (messes with prediction)
-
 				w->AddProperty(false, 2, "misc-movement-leg", "Leg Slide", false, false);
 				w->AddProperty(false, 1, "misc-movement-leg-time", "Leg Slide Time", "MS", 0, 2000, 0, 0, 0);
 			}

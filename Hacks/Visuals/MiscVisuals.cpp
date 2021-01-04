@@ -45,7 +45,7 @@ void MiscVisuals::ThirdPerson_hkCamToFirstPeron()
 
 void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 {
-	if (I::engine->IsInGame() && G::LocalPlayerAlive) {
+	if (I::engine->IsInGame() && G::LocalPlayer && G::LocalPlayerAlive) {
 		if (Config::GetBool("visuals-misc-thirdperson"))
 		{
 			I::input->m_fCameraInThirdPerson = true;
@@ -57,4 +57,20 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);
 		}
 	}
+}
+
+void MiscVisuals::RankRevealer()
+{
+	if (!Config::GetBool("visuals-misc-revealranks")) return;
+	if (!(G::cmd->buttons & IN_SCORE)) return;
+
+	I::client->dispatchUserMessage(50, 0, 0, nullptr);
+}
+
+void MiscVisuals::GrenadePrediction()
+{
+	static ConVar* nadeVar = I::cvar->FindVar("cl_grenadepreview");
+
+	nadeVar->onChangeCallbacks.size = 0;
+	nadeVar->SetValue(Config::GetBool("visuals-misc-grenadeprediction"));
 }

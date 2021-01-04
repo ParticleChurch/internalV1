@@ -32,6 +32,9 @@ void AntiAim::legit()
 
 	if (!G::LocalPlayerAlive)
 		return;
+
+	fake = G::cmd->viewangles;
+	real = G::cmd->viewangles;
 		
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
