@@ -52,7 +52,6 @@ void Chams::Init()
 
 void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
-
 	bool is_arm = strstr(info.model->name, "arms") != nullptr;
 	bool is_player = strstr(info.model->name, "models/player") != nullptr;
 	bool is_sleeve = strstr(info.model->name, "sleeve") != nullptr;

@@ -649,9 +649,9 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
-	/*return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);*/
-	chams->Init();
-	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
+	return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+	/*chams->Init();
+	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);*/
 	// 
 }
 
