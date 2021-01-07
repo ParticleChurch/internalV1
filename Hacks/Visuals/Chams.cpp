@@ -73,9 +73,9 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
 				&& Config::GetBool("visuals-misc-thirdperson"))
 			{
-				I::modelrender->ForcedMaterialOverride(nullptr);
 				static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
 				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
+				I::modelrender->ForcedMaterialOverride(nullptr);
 				OverideMat(
 					false,	//viz thru wall?
 					Config::GetState("visuals-chams-localplayer-fake-material"),		// material
@@ -161,6 +161,18 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			}
 			else
 			{
+				if (ent)
+				{
+					int owner = ent->GetOwner();
+					if (I::entitylist->GetClientEntityFromHandle((HANDLE)owner))
+					{
+						if (I::entitylist->GetClientEntityFromHandle((HANDLE)owner) == G::LocalPlayer)
+						{
+							return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+						}
+					}
+				}
+
 				I::modelrender->ForcedMaterialOverride(nullptr);
 				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 			}
@@ -168,6 +180,18 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	}
 	else
 	{
+		if (ent)
+		{
+			int owner = ent->GetOwner();
+			if (I::entitylist->GetClientEntityFromHandle((HANDLE)owner))
+			{
+				if (I::entitylist->GetClientEntityFromHandle((HANDLE)owner) == G::LocalPlayer)
+				{
+					return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+				}
+			}
+		}
+		
 		I::modelrender->ForcedMaterialOverride(nullptr);
 		return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 	}

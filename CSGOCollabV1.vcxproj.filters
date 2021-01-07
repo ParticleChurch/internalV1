@@ -94,6 +94,9 @@
     <ClCompile Include="GUI\JSON\JSONValue.cpp">
       <Filter>Source\GUI\JSON</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Visuals\SkinChanger.cpp">
+      <Filter>Source\Hacks\Visuals</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="GUI\JSON\JSONValue.h">
       <Filter>Headers\GUI\JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Visuals\SkinChanger.hpp">
+      <Filter>Headers\Hacks\Visuals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

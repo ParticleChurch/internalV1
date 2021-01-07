@@ -11,4 +11,5 @@
 #include "Visuals/Chams.hpp"
 #include "Visuals/World.hpp"
 #include "Visuals/MiscVisuals.hpp"
+#include "Visuals/SkinChanger.hpp"
 

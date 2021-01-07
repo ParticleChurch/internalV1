@@ -35,6 +35,14 @@ public:
 		return *(WeaponId*)((DWORD)this + offset);
 	}
 
+	int GetOwner()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
+		return *(int*)((DWORD)this + offset);
+	}
+
 	void* self() {
 		return this;
 	}
@@ -197,7 +205,29 @@ public:
 		return I::entitylist->GetClientEntityFromHandle(weaponHandle);
 	}
 
-	
+	int* GetIDHigh()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
+		return (int*)((DWORD)this + offset);
+	}
+
+	int* GetPaintKit()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_nFallbackPaintKit");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_nFallbackPaintKit");
+		return (int*)((DWORD)this + offset);
+	}
+
+	float* GetFallBackWear()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flFallbackWear");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flFallbackWear");
+		return (float*)((DWORD)this + offset);
+	}
 
 	bool CanShoot() {
 		if (!this || !this->GetActiveWeapon())

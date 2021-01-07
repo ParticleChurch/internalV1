@@ -363,8 +363,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		antiaim->legit();
 		antiaim->rage();
 
-		
-
 		// Clantag
 		clantag->run();
 		miscvisuals->RankRevealer();
@@ -510,6 +508,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	}
 	backtrack->update(curStage);
 	world->Run(curStage);
+
+	skinchanger->run(curStage);
 	
 	return oFrameStageNotify(curStage);
 }
@@ -649,9 +649,10 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
+	/*return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);*/
 	chams->Init();
 	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
-	// return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+	// 
 }
 
 void __stdcall H::EmitSoundHook(SoundData data)

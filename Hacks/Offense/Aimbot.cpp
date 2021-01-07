@@ -633,6 +633,8 @@ void Aimbot::Run()
 
 	if (!G::LocalPlayer->CanShoot()) return;
 
+	if (fakelag->LaggingOnPeak && !*G::pSendPacket) return;
+
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return;
 

@@ -149,6 +149,53 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
     return 0;
 }
 
+float Autowall::GetDamage(Entity* From, Entity* To, const Vec& Destination)
+{
+    if (!G::LocalPlayer)
+        return 0;
+
+    Entity* Weapon = From->GetActiveWeapon();
+    if (!Weapon) return 0;
+
+    WeaponData* WeaponData = Weapon->GetWeaponData();
+    if (!WeaponData) return 0;
+
+    float Damage = WeaponData->Damage;
+
+    Vec Start{ G::LocalPlayer->GetEyePos() };
+    Vec Dest{ Vec(Destination) };
+    Vec Direction{ Start - Dest };
+    Direction /= Direction.VecLength();
+
+    int hitsLeft = 4;
+
+    while (Damage >= 1.0f && hitsLeft > 0) {
+        trace_t Trace;
+        CTraceFilter Filter(G::LocalPlayer);
+        Ray_t Ray(Start, Destination);
+        I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
+
+        if (Trace.Fraction == 1.0f || (Trace.Entity == To && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG)) {
+            Damage = GetDamageMultiplier(HITGROUP_HEAD) * Damage * powf(WeaponData->RangeModifier, Trace.Fraction * WeaponData->Range / 500.0f);
+
+            float ArmorRatio = WeaponData->ArmorRatio / 2.0f;
+            if (IsArmored(HITGROUP_HEAD, To->HasHelmet()))
+                Damage -= (To->ArmorVal() < Damage * ArmorRatio / 2.0f ? To->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+            return Damage;
+        }
+
+        const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
+
+        if (SurfaceData->PenetrationModifier < 0.1f)
+            break;
+
+        Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, WeaponData->Penetration, Damage);
+        hitsLeft--;
+    }
+    return 0;
+}
+
 bool Autowall::CanScan(Entity* Ent, const Vec& Destination, const WeaponData* WeaponData, int MinDamage, bool AllowFriendlyFire)
 {
     if (!G::LocalPlayer)
