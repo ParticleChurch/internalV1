@@ -201,10 +201,6 @@ void H::UnHook()
 	free(antiaim);
 	free(autowall);
 
-	H::console.clear();
-	H::console.resize(0);
-	
-	std::cout << "Freeing Console...Ejected!";
 	FreeConsole();
 }
 
@@ -649,9 +645,9 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
-	return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-	/*chams->Init();
-	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);*/
+	/*return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);*/
+	chams->Init();
+	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
 	// 
 }
 
@@ -660,9 +656,6 @@ void __stdcall H::EmitSoundHook(SoundData data)
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
 	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
 	{
-		H::console.clear();
-		H::console.resize(0);
-		H::console.push_back("FOUND MATCH ATTEMPTING ACCEPT!");
 		acceptMatch("accept");
 		/*auto window = FindWindowW(L"Valve001", NULL);
 		FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };

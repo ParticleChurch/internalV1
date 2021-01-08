@@ -25,6 +25,8 @@ void SkinChanger::run(int stage)
 {
 	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
 	{
+       
+       
         for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++) // iterate through everything
         {
             Entity* weapon = (Entity*)I::entitylist->GetClientEntity(i); // define your weapon
@@ -34,8 +36,7 @@ void SkinChanger::run(int stage)
             if (!I::entitylist->GetClientEntityFromHandle((HANDLE)owner)) continue;
 
             if (I::entitylist->GetClientEntityFromHandle((HANDLE)owner) != G::LocalPlayer) continue;
-
-
+           
             ForceSkin(weapon, 180);
 
             //if (!cl::entlist->GetClientEntityFromHandle(*(int*)((DWORD)weapon, offsets.m_hOwnerEntity))) // null check handle, dont check against NULL/0 since a null handle will be 0xFFFFFFFF

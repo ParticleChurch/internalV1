@@ -21,6 +21,7 @@ namespace I
 	extern CVar* cvar;
 	extern CInput* input;
 	extern ModelRender* modelrender;
+	extern StudioRender* studiorender;
 	extern MaterialSystem* materialsystem;
 	extern Sound* sound;
 }

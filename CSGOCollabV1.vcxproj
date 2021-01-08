@@ -248,6 +248,7 @@
     <ClInclude Include="Valve\Interfaces\ModelRender.h" />
     <ClInclude Include="Valve\Interfaces\Panel.hpp" />
     <ClInclude Include="Valve\Interfaces\PhysicsSurfaceProps.hpp" />
+    <ClInclude Include="Valve\Interfaces\StudioRender.hpp" />
     <ClInclude Include="Valve\Interfaces\Surface.hpp" />
     <ClInclude Include="Valve\SDK\AnimState.hpp" />
     <ClInclude Include="Valve\SDK\BSPFlags.hpp" />

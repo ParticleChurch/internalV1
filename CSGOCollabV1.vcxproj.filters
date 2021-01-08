@@ -357,6 +357,9 @@
     <ClInclude Include="Hacks\Visuals\SkinChanger.hpp">
       <Filter>Headers\Hacks\Visuals</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\StudioRender.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

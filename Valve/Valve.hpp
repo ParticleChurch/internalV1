@@ -45,6 +45,7 @@
 #include "Interfaces/Convar.hpp"
 #include "Interfaces/CInput.hpp"
 #include "Interfaces/ModelRender.h"
+#include "Interfaces/StudioRender.hpp"
 #include "Interfaces/MaterialSystem.h"
 
 //MORE CUSTOM

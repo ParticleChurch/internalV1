@@ -61,9 +61,6 @@ void Movement::RageAutoStrafe()
 
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
 
-	H::console.clear();
-	H::console.resize(0);
-
 	bool Left = G::StartSideMove > 300;
 	bool Right = G::StartSideMove < -300;
 	bool Side = (Left || Right) && !(Left && Right);
@@ -77,9 +74,6 @@ void Movement::RageAutoStrafe()
 	while (Goal > 180)
 		Goal -= 360;
 	Goal *= -1;
-
-	H::console.push_back("Goal: " + std::to_string(Goal));
-	H::console.push_back("");
 
 	Vec Vel = G::LocalPlayer->GetVecVelocity();
 
@@ -97,11 +91,6 @@ void Movement::RageAutoStrafe()
 	while (GoalDir < -180) 
 		GoalDir += 360;
 
-	H::console.push_back("Start Ang: " + std::to_string(G::StartAngle.y));
-	H::console.push_back("VelDir: " + std::to_string(VelDir));
-	H::console.push_back("GoalDir: " + std::to_string(GoalDir));
-	H::console.push_back("");
-
 	float VelDelta	= VelDir - GoalDir;			// velocity direction difference between where we are going, and wanting to go
 	while (VelDelta > 180)
 		VelDelta -= 360;
@@ -109,18 +98,8 @@ void Movement::RageAutoStrafe()
 		VelDelta += 360;
 	VelDelta = fabsf(VelDelta);
 
-	H::console.push_back("VelDelta: " + std::to_string(VelDelta));
-
 	float SIN = sinf(DEG2RAD(VelDelta)) * 450;
 	float COS = cosf(DEG2RAD(VelDelta)) * 450;
-
-	H::console.push_back("");
-	H::console.push_back("SIDE: " + std::to_string(G::StartSideMove));
-	H::console.push_back("FOR: " + std::to_string(G::StartForwardMove));
-
-	H::console.push_back("");
-	H::console.push_back("SIN: " + std::to_string(SIN));
-	H::console.push_back("COS: " + std::to_string(COS));
 	
 	//SIN COS - 
 	//ROTATE CW
