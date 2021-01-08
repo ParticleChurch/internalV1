@@ -2,28 +2,6 @@
 
 Chams* chams = new Chams();
 
-/*
-void Chams::OverideMat(bool ignorez, int material, float transparent, Color rgba, void* thisptr, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
-{
-	static Material* current;
-	current = GetCurMaterial(material);
-	current->ColorModulate(
-		rgba.r() / 255.0f,
-		rgba.g() / 255.0f,
-		rgba.b() / 255.0f);
-
-	current->AlphaModulate(transparent);
-	current->SetMaterialVarFlag(MaterialVarFlag::IGNOREZ, ignorez);
-
-	I::modelrender->ForcedMaterialOverride(current);
-	H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-	if (ignorez)
-	{
-		I::modelrender->ForcedMaterialOverride(nullptr);
-	}
-}
-*/
-
 void Chams::OverideMat(bool ignorez, int material, float transparent, Color rgba, void* thisptr, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
 	static Material* current;
@@ -43,8 +21,6 @@ void Chams::OverideMat(bool ignorez, int material, float transparent, Color rgba
 		I::modelrender->ForcedMaterialOverride(nullptr);
 	}*/
 }
-
-
 
 void Chams::Init()
 {
@@ -98,15 +74,22 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
 				&& Config::GetBool("visuals-misc-thirdperson"))
 			{
-				static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
-				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
+				/*static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
+				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);*/
+				//OverideMat(
+				//	false,	//viz thru wall?
+				//	Config::GetState("visuals-chams-localplayer-fake-material"),		// material
+				//	Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
+				//	Config::GetColor("visuals-chams-localplayer-fake-color"),
+				//	thisptr, ctx, state, info, BoneMatrix);
+				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				OverideMat(
-					false,	//viz thru wall?
-					Config::GetState("visuals-chams-localplayer-fake-material"),		// material
-					Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-localplayer-fake-color"),
-					thisptr, ctx, state, info, BoneMatrix);
-				H::oDrawModelExecute(thisptr, ctx, state, info, BoneMatrix);
+						false,	//viz thru wall?
+						Config::GetState("visuals-chams-localplayer-fake-material"),		// material
+						Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
+						Config::GetColor("visuals-chams-localplayer-fake-color"),
+						thisptr, ctx, state, info, antiaim->FakeMatrix);
+				H::oDrawModelExecute(thisptr, ctx, state, info, antiaim->FakeMatrix);
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 
@@ -175,140 +158,3 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	I::modelrender->ForcedMaterialOverride(nullptr);
 	
 }
-
-
-//void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
-//{
-//	bool is_arm = strstr(info.model->name, "arms") != nullptr;
-//	bool is_player = strstr(info.model->name, "models/player") != nullptr;
-//	bool is_sleeve = strstr(info.model->name, "sleeve") != nullptr;
-//	bool is_flash = strstr(info.model->name, "flash") != nullptr;
-//
-//	static Color color_blocked = Color(200, 100, 100);
-//	static Color color_visible(100, 200, 100);
-//	Entity* ent = I::entitylist->GetClientEntity(info.entityIndex);
-//	Entity* local = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-//	static player_info_t bInfo;
-//
-//	/*if (ent)
-//	{
-//		int owner = ent->GetOwner();
-//		Entity* EntOwner = I::entitylist->GetClientEntityFromHandle((HANDLE)owner);
-//		if (EntOwner && EntOwner->Index() == G::LocalPlayerIndex)
-//		{
-//			H::console.clear();
-//			H::console.resize(0);
-//			H::console.push_back("owner: " + std::to_string(owner));
-//			H::console.push_back("lclplyr: " + std::to_string(G::LocalPlayerIndex));
-//			return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//		}
-//	}*/
-//
-//	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && I::engine->GetPlayerInfo(info.entityIndex, &bInfo))
-//	{
-//		bool isEnemy = ent->GetTeam() != local->GetTeam();
-//		if (info.entityIndex == I::engine->GetLocalPlayer())
-//		{	
-//			if ((Config::GetBool("antiaim-legit-enable") || Config::GetBool("antiaim-rage-enable"))
-//				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
-//				&& Config::GetBool("visuals-misc-thirdperson"))
-//			{
-//				static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
-//				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);
-//				/*I::modelrender->ForcedMaterialOverride(nullptr);*/I::studiorender->ForcedMaterialOverride(nullptr);
-//				OverideMat(
-//					false,	//viz thru wall?
-//					Config::GetState("visuals-chams-localplayer-fake-material"),		// material
-//					Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-localplayer-fake-color"),
-//					thisptr, ctx, state, info, BoneMatrix);
-//				H::oDrawModelExecute(thisptr, ctx, state, info, BoneMatrix);
-//			}
-//
-//			if (Config::GetBool("visuals-chams-localplayer-real-enable"))
-//			{
-//				OverideMat(
-//					false,	//viz thru wall?
-//					Config::GetState("visuals-chams-localplayer-real-material"),	//wireframe?
-//					Config::GetFloat("visuals-chams-localplayer-real-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-localplayer-real-color"),
-//					thisptr, ctx, state, info, customBoneToWorld);
-//
-//				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//			else
-//			{
-//				/*I::modelrender->ForcedMaterialOverride(nullptr);*/I::studiorender->ForcedMaterialOverride(nullptr);
-//				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//		}
-//		else if (isEnemy)
-//		{
-//			if (Config::GetBool("visuals-chams-enemy-hidden-enable"))
-//			{
-//				OverideMat(
-//					true,	//viz thru wall?
-//					Config::GetState("visuals-chams-enemy-hidden-material"),	//wireframe?
-//					Config::GetFloat("visuals-chams-enemy-hidden-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-enemy-hidden-color"),
-//					thisptr, ctx, state, info, customBoneToWorld);
-//
-//				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//
-//			if (Config::GetBool("visuals-chams-enemy-visible-enable"))
-//			{
-//				OverideMat(
-//					false,	//viz thru wall?
-//					Config::GetState("visuals-chams-enemy-visible-material"),	//wireframe?
-//					Config::GetFloat("visuals-chams-enemy-visible-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-enemy-visible-color"),
-//					thisptr, ctx, state, info, customBoneToWorld);
-//
-//				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//			else
-//			{
-//				/*I::modelrender->ForcedMaterialOverride(nullptr);*/I::studiorender->ForcedMaterialOverride(nullptr);
-//				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//
-//		}
-//		else
-//		{
-//			if (Config::GetBool("visuals-chams-friend-hidden-enable"))
-//			{
-//				OverideMat(
-//					true,	//viz thru wall?
-//					Config::GetState("visuals-chams-friend-hidden-material"),	//wireframe?
-//					Config::GetFloat("visuals-chams-friend-hidden-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-friend-hidden-color"),
-//					thisptr, ctx, state, info, customBoneToWorld);
-//
-//				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//
-//			if (Config::GetBool("visuals-chams-friend-visible-enable"))
-//			{
-//				OverideMat(
-//					false,	//viz thru wall?
-//					Config::GetState("visuals-chams-friend-visible-material"),	//wireframe?
-//					Config::GetFloat("visuals-chams-friend-visible-opacity") / 100.f,	//transparent?
-//					Config::GetColor("visuals-chams-friend-visible-color"),
-//					thisptr, ctx, state, info, customBoneToWorld);
-//				
-//				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//			else
-//			{
-//				/*I::modelrender->ForcedMaterialOverride(nullptr);*/I::studiorender->ForcedMaterialOverride(nullptr);
-//				return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-//			}
-//		}
-//	}
-//	else
-//	{
-//		/*I::modelrender->ForcedMaterialOverride(nullptr);*/
-//		return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);	
-//	}
-//}

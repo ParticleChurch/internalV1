@@ -2,7 +2,7 @@
 class SkinChanger
 {
 private:
-	void ForceSkin(Entity* weap, int skinid);
+	void ForceSkin(Entity* weap, int paintkit);
 public:
 	void run(int stage);
 };

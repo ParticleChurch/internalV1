@@ -331,7 +331,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
-		bool& bSendPacket = *pSendPacket;
 
 		// Fake lag Calculations
 		fakelag->Start();
@@ -353,7 +352,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		G::CM_MoveFixStart();
 
 		// Fake Lag
-		bSendPacket = fakelag->End();
+		*G::pSendPacket = fakelag->End();
 
 		// AA
 		antiaim->legit();

@@ -50,7 +50,7 @@ void FakeLag::LagOnPeak()
 		if (!backtrack->Valid(a.lastSimTime)) // if not valid simtime
 			continue;
 
-		if (autowall->GetDamage(a.entity, G::LocalPlayer, NextPos) > 0)
+		if (autowall->GetDamage(a.entity, G::LocalPlayer, NextPos) > 1)
 		{
 			// For now
 			TrigDistance = Config::GetFloat("antiaim-fakelag-trigger-distance");
@@ -66,7 +66,9 @@ void FakeLag::Start()
 	// Fake duck exception
 	if (Config::GetBool("misc-movement-fakeduck"))
 	{
-		PredictedVal =  I::engine->GetNetChannelInfo()->ChokedPackets >= 14;
+		TrigDistance = 64.f;
+		TrigTicks = 14;
+		PredictedVal = I::engine->GetNetChannelInfo()->ChokedPackets >= TrigTicks;
 		return;
 	}
 
@@ -80,7 +82,7 @@ void FakeLag::Start()
 	//velocity now holds our distance to move (doubled for safety)
 
 	// Updating our next position
-	NextPos = G::LocalPlayer->GetVecOrigin() + velocity;
+	NextPos = G::LocalPlayer->GetEyePos() + velocity;
 
 	// Updating limits if trigger 
 	LagOnPeak();
@@ -88,7 +90,7 @@ void FakeLag::Start()
 	// If breaking distance or time..
 	if (DistanceBreaker() || TimeBreaker())
 	{
-		PrevPos = G::LocalPlayer->GetVecOrigin();
+		PrevPos = G::LocalPlayer->GetEyePos();
 		PredictedVal =  true;
 		return;
 	}

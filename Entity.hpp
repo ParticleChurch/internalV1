@@ -23,6 +23,8 @@ public:
 		return GetVFunc<oGetInaccuracy>(this, 482)(this);
 	}
 
+	
+
 	WeaponData* GetWeaponData() {
 		typedef WeaponData* (__thiscall* ogetWeaponData)(void*);
 		return GetVFunc<ogetWeaponData>(this, 460)(this);
@@ -210,6 +212,15 @@ public:
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
+		return (int*)((DWORD)this + offset);
+	}
+
+
+	int* GetViewModelID()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iViewModelIndex");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iViewModelIndex");
 		return (int*)((DWORD)this + offset);
 	}
 

@@ -162,7 +162,7 @@ float Autowall::GetDamage(Entity* From, Entity* To, const Vec& Destination)
 
     float Damage = WeaponData->Damage;
 
-    Vec Start{ G::LocalPlayer->GetEyePos() };
+    Vec Start{ From->GetEyePos() };
     Vec Dest{ Vec(Destination) };
     Vec Direction{ Start - Dest };
     Direction /= Direction.VecLength();
@@ -171,7 +171,7 @@ float Autowall::GetDamage(Entity* From, Entity* To, const Vec& Destination)
 
     while (Damage >= 1.0f && hitsLeft > 0) {
         trace_t Trace;
-        CTraceFilter Filter(G::LocalPlayer);
+        CTraceFilter Filter(From);
         Ray_t Ray(Start, Destination);
         I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
 

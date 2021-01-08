@@ -35,6 +35,9 @@ void AntiAim::legit()
 
 	fake = G::cmd->viewangles;
 	real = G::cmd->viewangles;
+
+	G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
+		
 		
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
@@ -63,6 +66,7 @@ void AntiAim::legit()
 	}
 
 	if (*G::pSendPacket) {
+		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
 		fake = G::cmd->viewangles;
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + (Delta * legit_side);
@@ -147,6 +151,7 @@ void AntiAim::rage()
 	}
 
 	if (*G::pSendPacket) {
+		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
 		fake = G::cmd->viewangles;
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + (Delta * rage_side);
