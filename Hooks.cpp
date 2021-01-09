@@ -65,7 +65,7 @@ void H::Init()
 	soundVMT.Initialise((DWORD*)I::sound);
 	GUI2::LoadProgress = 0.25f;
 
-	static int SleepTime = 100;
+	static int SleepTime = 1;
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);

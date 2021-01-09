@@ -1770,7 +1770,7 @@ void GUI2::LoadingScreen()
 		float Factor = powf(0.99f, Milliseconds / 10.f);
 		VisibleProgress = VisibleProgress * Factor + LoadProgress * (1.f - Factor);
 		*/
-		VisibleLoadProgress = min(VisibleLoadProgress + 0.01f * Milliseconds / 25.f, LoadProgress);
+		VisibleLoadProgress = min(VisibleLoadProgress + 0.01f * Milliseconds / 10.f, LoadProgress);
 	}
 
 	if (!IntroAnimation && VisibleLoadProgress >= 1.f)
