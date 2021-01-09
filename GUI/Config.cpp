@@ -934,3 +934,12 @@ namespace Config {
 		return numPropsAffected;
 	}
 }
+
+
+namespace Config2
+{
+	namespace Profile
+	{
+
+	};
+};

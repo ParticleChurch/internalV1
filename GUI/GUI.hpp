@@ -12,3 +12,11 @@ namespace GUI {
 	extern bool LoginMenu();
 	extern void ProcessingLoginMenu();
 }
+
+namespace GUI2
+{
+	extern bool Ejected;
+
+	extern void Animations();
+	extern void Main();
+};
