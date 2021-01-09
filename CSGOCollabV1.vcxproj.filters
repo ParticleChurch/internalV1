@@ -97,6 +97,9 @@
     <ClCompile Include="Hacks\Visuals\SkinChanger.cpp">
       <Filter>Source\Hacks\Visuals</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\animation.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -359,6 +362,9 @@
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\StudioRender.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\animation.hpp">
+      <Filter>Headers\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

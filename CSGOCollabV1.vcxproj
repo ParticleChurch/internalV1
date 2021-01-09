@@ -155,6 +155,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GlobalVars.cpp" />
+    <ClCompile Include="GUI\animation.cpp" />
     <ClCompile Include="GUI\Config.cpp" />
     <ClCompile Include="GUI\ConfigManager.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
@@ -188,6 +189,7 @@
   <ItemGroup>
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Globals.hpp" />
+    <ClInclude Include="GUI\animation.hpp" />
     <ClInclude Include="GUI\Config.hpp" />
     <ClInclude Include="GUI\ConfigConstants.hpp" />
     <ClInclude Include="GUI\ConfigManager.hpp" />

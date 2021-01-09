@@ -228,6 +228,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	//*
 	if (GUI::Main())
 		G::KillDLL = true;
 
@@ -238,6 +239,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			ImGui::Text(a.c_str());
 		ImGui::End();
 	}
+	//*/
+	//GUI2::Main();
+	//G::KillDLL = GUI2::Ejected;
 	
 	ImGui::EndFrame();
 	ImGui::Render();

@@ -1748,5 +1748,38 @@ END:
 namespace GUI2
 {
 	bool Ejected = false;
-
+	float LoadProgress = 0.f;
+	Animation::Anim* IntroAnimation = nullptr;
 };
+
+void GUI2::LoadingScreen()
+{
+
+}
+
+void GUI2::AuthenticationScreen()
+{
+
+}
+
+void GUI2::MainScreen()
+{
+
+}
+
+void GUI2::Main()
+{
+	if (LoadProgress < 1.f)
+	{
+		LoadingScreen();
+		return;
+	}
+	else if (!Config::UserInfo::Authenticated)
+	{
+		AuthenticationScreen();
+	}
+	else
+	{
+		MainScreen();
+	}
+}

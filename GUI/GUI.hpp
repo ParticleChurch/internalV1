@@ -1,5 +1,6 @@
 #pragma once
 #include "JSON/JSON.h"
+#include "animation.hpp"
 
 namespace GUI {
 	constexpr int PropertyLabelsWidth = 150;
@@ -16,7 +17,11 @@ namespace GUI {
 namespace GUI2
 {
 	extern bool Ejected;
+	extern float LoadProgress;
+	extern Animation::Anim* IntroAnimation;
 
-	extern void Animations();
+	extern void LoadingScreen();
+	extern void AuthenticationScreen();
+	extern void MainScreen();
 	extern void Main();
 };
