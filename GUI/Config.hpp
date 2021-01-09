@@ -827,3 +827,31 @@ namespace Config {
 	extern std::string ExportToString();
 	extern size_t LoadFromString(std::string in);
 }
+
+namespace Config2
+{
+	enum class PropertyType
+	{
+		BOOLEAN,
+		FLOAT,
+
+		GROUP,
+		EDITGROUP,
+	};
+	struct CBoolean;
+	struct CFloat;
+	struct CGroup;
+	struct CEditGroup;
+
+	struct Property;
+	struct Tab;
+
+	namespace Profile
+	{
+		// TODO: do we even need this namespace?
+	};
+
+	extern Property* GetProperty(std::string Name);
+	extern bool GetBoolean(std::string Name);
+	extern float GetFloat(std::string Float);
+};

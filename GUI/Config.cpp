@@ -938,8 +938,92 @@ namespace Config {
 
 namespace Config2
 {
-	namespace Profile
+	struct CBoolean
 	{
-
+		bool Value;
+		std::string Stringify()
+		{
+			return Value ? "true" : "false";
+		}
 	};
+	struct CFloat
+	{
+	private:
+		float Value;
+		float Minimum, Maximum;
+		int Decimals;
+		int Percision;
+
+	public:
+		CFloat(float Min = 0, float Max = 1, float Value = 0.50f, int Decimals = 2)
+		{
+			this->Minimum = Min;
+			this->Maximum = Max;
+			this->Decimals = max(min(Decimals, 6), 0);
+			this->Percision = pow(10, this->Decimals);
+			this->Value = min(max(this->Minimum, Value), this->Maximum);
+		}
+
+		float Get()
+		{
+			return this->Value;
+		}
+
+		void Set(float v)
+		{
+			v = floorf(v * this->Percision + 0.5f) / (float)this->Percision;
+			this->Value = min(max(this->Minimum, v), this->Maximum);
+		}
+
+
+		std::string Stringify()
+		{
+			if (this->Decimals < 1) return std::to_string((int)(this->Value + 0.5f));
+
+			std::string s = std::to_string(this->Value);
+			size_t i = s.find(".");
+			if (i == std::string::npos)
+				return s + "." + std::string(this->Decimals, '0');
+
+			size_t dcount = s.size() - (i + 1);
+			if (dcount == this->Decimals) return s;
+			else if (dcount < this->Decimals) return s + std::string(this->Decimals - dcount, '0');
+			else return s.substr(0, i + this->Decimals + 1);
+		}
+
+		bool Parse(std::string v)
+		{
+			try
+			{
+				float d = std::stof(v);
+				this->Set(d);
+				return true;
+			}
+			catch (...)
+			{
+				return false;
+			}
+		}
+	};
+	struct CGroup
+	{
+	private:
+		std::string Title;
+		std::vector<Property*> Properties;
+
+	public:
+		CGroup(std::string Title)
+		{
+			this->Title = Title;
+		}
+
+		void AddProperty(Property* Prop)
+		{
+			this->Properties.push_back(Prop);
+		}
+	};
+	struct CEditGroup;
+
+	struct Property;
+	struct Tab;
 };
