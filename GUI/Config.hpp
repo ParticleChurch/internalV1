@@ -830,27 +830,24 @@ namespace Config {
 
 namespace Config2
 {
+	struct Property;
+	struct Group;
+	struct Tab;
+
+	extern std::map<std::string, Property*> PropertyTable;
+	extern std::vector<Tab*> Tabs;
+
 	enum class PropertyType
 	{
 		BOOLEAN,
 		FLOAT,
-
-		GROUP,
 		EDITGROUP,
 	};
 	struct CBoolean;
 	struct CFloat;
-	struct CGroup;
 	struct CEditGroup;
 
-	struct Property;
-	struct Tab;
-
-	namespace Profile
-	{
-		// TODO: do we even need this namespace?
-	};
-
+	extern void Init();
 	extern Property* GetProperty(std::string Name);
 	extern bool GetBoolean(std::string Name);
 	extern float GetFloat(std::string Float);
