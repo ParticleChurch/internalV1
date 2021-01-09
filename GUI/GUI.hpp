@@ -18,10 +18,11 @@ namespace GUI2
 {
 	extern bool Ejected;
 	extern float LoadProgress;
+	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;
 
 	extern void LoadingScreen();
-	extern void AuthenticationScreen();
+	extern void AuthenticationScreen(float Opacity = 1.f);
 	extern void MainScreen();
 	extern void Main();
 };

@@ -8,7 +8,7 @@ TIME_POINT Animation::now()
     return x;
 };
 
-double Animation::delta(TIME_POINT after, TIME_POINT before) // after > before
+double Animation::delta(TIME_POINT after, TIME_POINT before) // after > before, in seconds
 {
     return std::chrono::duration_cast<std::chrono::microseconds>(after - before).count() / (double)1e6;
 };

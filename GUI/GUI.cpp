@@ -219,6 +219,7 @@ ImFont* Arial18;
 ImFont* Arial12Italics;
 ImFont* Arial14Italics;
 ImFont* Arial16Italics;
+ImFont* Arial18Italics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
@@ -231,6 +232,7 @@ void GUI::LoadFonts(ImGuiIO& io)
 	AYO_LOAD_FONT_BRUH(Arial12Italics, "C:\\Windows\\Fonts\\ariali.ttf", 12.f);
 	AYO_LOAD_FONT_BRUH(Arial14Italics, "C:\\Windows\\Fonts\\ariali.ttf", 14.f);
 	AYO_LOAD_FONT_BRUH(Arial16Italics, "C:\\Windows\\Fonts\\ariali.ttf", 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18Italics, "C:\\Windows\\Fonts\\ariali.ttf", 18.f);
 
 	return;
 problemo:
@@ -1749,17 +1751,160 @@ namespace GUI2
 {
 	bool Ejected = false;
 	float LoadProgress = 0.f;
+	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
 };
 
 void GUI2::LoadingScreen()
 {
+	// animation
+	static auto LastTime = Animation::now();
+	auto Now = Animation::now();
+	double TimeDelta = Animation::delta(Now, LastTime);
+	LastTime = Now;
+
+	// VisibleProgress gets 1% closer to LoadProgress every 10 ms
+	{
+		float Milliseconds = TimeDelta * 1000.f;
+		/*
+		float Factor = powf(0.99f, Milliseconds / 10.f);
+		VisibleProgress = VisibleProgress * Factor + LoadProgress * (1.f - Factor);
+		*/
+		VisibleLoadProgress = min(VisibleLoadProgress + 0.01f * Milliseconds / 25.f, LoadProgress);
+	}
+
+	if (!IntroAnimation && VisibleLoadProgress >= 1.f)
+	{
+		IntroAnimation = Animation::newAnimation("intro-animation", 0);
+		IntroAnimation->changed = Now;
+	}
+
+	float MovementFactor = 0.f;
+	float OpacityFactor = 0.f;
+	if (IntroAnimation)
+	{
+		double t = Animation::delta(Now, IntroAnimation->changed);
+		if (IntroAnimation->state == 0)
+		{
+			MovementFactor = Animation::animate(t, 0.5f); // TODO: play with interpolation?
+			OpacityFactor = 0.f;
+		}
+		else
+		{
+			MovementFactor = 1.f;
+			OpacityFactor = Animation::animate(t, 0.25f);
+		}
+	}
+	unsigned char ThisContentOpacity = 255 - (MovementFactor * 255);
+	unsigned char ThisOpacity = IntroAnimation ? (IntroAnimation->state == 0 ? 255 : 0) : 255;
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
+	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 350 + 10, MovementFactor));
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(40, 40, 40, 0));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(40, 40, 40, 0));
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,ThisContentOpacity));
+	ImGui::PushFont(Arial18Italics);
+
+	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
+	ImGui::Begin("##LMAOBRUUHHHHHHHH", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+
+	auto DrawList = ImGui::GetWindowDrawList();
+
+	// draw real background because imgui borders do not have enough segments
+	if (MovementFactor == 0.f)
+		DrawList->AddCircleFilled(WindowCenter, 100.f, IM_COL32(40, 40, 40, ThisOpacity), 64); // C = 2*100*pi = 628
+	else
+	{
+		float radius = ImGui::lerp(100, 10, MovementFactor);
+		ImVec2 a = WindowCenter - (FrameSize - ImVec2(10, 10)) / 2 + ImVec2(radius, radius);
+		ImVec2 b = WindowCenter + (FrameSize - ImVec2(10, 10)) / 2 - ImVec2(radius, radius);
+		// tl, tr, br, bl
+		DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
+		DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI /2 , IM_PI, 16);
+		DrawList->PathFillConvex(IM_COL32(40, 40, 40, ThisOpacity));
+	}
+
+	// draw progress
+	if (MovementFactor == 0.f)
+	{
+		DrawList->PathArcTo(WindowCenter, 95.f, -IM_PI / 2, -IM_PI / 2 - VisibleLoadProgress * 2 * IM_PI, 64);
+		DrawList->PathStroke(IM_COL32(255, 255, 255, ThisOpacity), false, 2.f);
+	}
+	else
+	{
+		float offset = ImGui::lerp(20, 11, MovementFactor);
+		float radius = ImGui::lerp(95.f, 10.f, MovementFactor);
+		ImVec2 a = WindowCenter - (FrameSize - ImVec2(offset, offset)) / 2 + ImVec2(radius, radius);
+		ImVec2 b = WindowCenter + (FrameSize - ImVec2(offset, offset)) / 2 - ImVec2(radius, radius);
+		// tl, tr, br, bl
+		DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
+		DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI / 2, IM_PI, 16);
+		DrawList->PathStroke(IM_COL32(255, 255, 255, ThisOpacity), true, 2.f);
+	}
+
+	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + "%";
+	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
+	ImGui::SetCursorPos(ImVec2(FrameSize.x/2 - txtSize.x/2, FrameSize.y * 0.8f));
+	ImGui::TextEx(txt.c_str());
+
+	ImGui::End();
+	ImGui::PopStyleVar(2);
+	ImGui::PopStyleColor(3);
+	ImGui::PopFont();
+
+	if (IntroAnimation && IntroAnimation->state == 1)
+		AuthenticationScreen(OpacityFactor);
+
+	if (OpacityFactor >= 1.f && MovementFactor >= 1.f)
+	{
+		VisibleLoadProgress = 1.01f;
+	}
+	else if (MovementFactor >= 1.f && IntroAnimation->state == 0)
+	{
+		IntroAnimation->state = 1;
+		IntroAnimation->changed = Now;
+	}
 
 }
 
-void GUI2::AuthenticationScreen()
+void GUI2::AuthenticationScreen(float ContentOpacity)
 {
+	unsigned char ThisContentOpacity = ContentOpacity * 255;
 
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
+	ImVec2 FrameSize(300, 350);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(40, 40, 40, 255));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, ThisContentOpacity));
+	ImGui::PushFont(Arial18Italics);
+
+	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
+	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+
+	std::string txt = "Hello World!";
+	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
+	ImGui::SetCursorPos(ImVec2(FrameSize.x / 2 - txtSize.x / 2, FrameSize.y * 0.25f));
+	ImGui::TextEx(txt.c_str());
+
+	ImGui::End();
+	ImGui::PopStyleVar(3);
+	ImGui::PopStyleColor(3);
+	ImGui::PopFont();
 }
 
 void GUI2::MainScreen()
@@ -1769,17 +1914,20 @@ void GUI2::MainScreen()
 
 void GUI2::Main()
 {
-	if (LoadProgress < 1.f)
+	if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
 		LoadingScreen();
-		return;
 	}
 	else if (!Config::UserInfo::Authenticated)
 	{
-		AuthenticationScreen();
+		//AuthenticationScreen();
+		if (GUI::Main())
+			Ejected = true;
 	}
 	else
 	{
-		MainScreen();
+		//MainScreen();
+		if (GUI::Main())
+			Ejected = true;
 	}
 }

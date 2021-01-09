@@ -2,25 +2,34 @@
 
 void Init()
 {
+    GUI2::LoadProgress = 0.f;
     //Allocate Console
-  /*  AllocConsole();
+    //*
+    AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
 
     std::cout << "Successfully Injected\n";
 
-    std::cout << N::DumpTable() << std::endl;*/
+    std::cout << N::DumpTable() << std::endl;
+    //*/
 
+    GUI2::LoadProgress = 0.05f;
     G::PatternConvarInit();
+    GUI2::LoadProgress = 0.1f;
     Config::Init();
+    GUI2::LoadProgress = 0.15f;
     H::Init();
+    GUI2::LoadProgress = 1.f;
 
     I::engine->ClientCmd_Unrestricted("echo Cheat Injected");
 
+    std::cout << "Initialization successful" << std::endl;
     while (!G::KillDLL) Sleep(100);
     std::cout << "\nEjecting...\n";
 
-    H::Eject();
+    FreeConsole();
+    FreeLibraryAndExitThread(G::DLLModule, 0);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,

@@ -43,10 +43,11 @@ void H::Init()
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
 	IDirect3DDevice9* D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
-	while (CSGOWindow == NULL) {
-		CSGOWindow = FindWindowA(NULL, "Counter-Strike: Global Offensive");
+	// TODO: this is definetly not the best way to do this, lmao
+	while (!(CSGOWindow = FindWindowA(NULL, "Counter-Strike: Global Offensive"))) {
 		Sleep(10);
 	}
+	GUI2::LoadProgress = 0.2f;
 
 	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
@@ -62,8 +63,9 @@ void H::Init()
 	inputVMT.Initialise((DWORD*)I::input);
 	modelrenderVMT.Initialise((DWORD*)I::modelrender);
 	soundVMT.Initialise((DWORD*)I::sound);
+	GUI2::LoadProgress = 0.25f;
 
-	static int SleepTime = 200;
+	static int SleepTime = 100;
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -71,6 +73,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.3f;
 
 	std::cout << "Reset...";
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
@@ -78,6 +81,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.35f;
 
 	std::cout << "CreateMove...";
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
@@ -85,6 +89,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.4f;
 
 	std::cout << "PaintTraverse...";
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
@@ -92,6 +97,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.45f;
 
 	std::cout << "FrameStageNotify...";
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
@@ -99,6 +105,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.5f;
 
 	std::cout << "LockCursor...";
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
@@ -106,6 +113,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.55f;
 
 	std::cout << "FireEventClientSide...";
 	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
@@ -113,6 +121,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.6f;
 
 	std::cout << "FireEvent...";
 	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
@@ -120,6 +129,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.65f;
 
 	std::cout << "hkCamToFirstPeronVMT...";
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
@@ -127,6 +137,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.7f;
 
 	std::cout << "DoPostScreenEffects...";
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
@@ -134,6 +145,7 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.75f;
 
 	std::cout << "DrawModelExecute...";
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
@@ -141,74 +153,73 @@ void H::Init()
 	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
 
 	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.8f;
 
 	std::cout << "EmitSound...";
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
 	std::cout << "Success!" << std::endl;
 	I::engine->ClientCmd_Unrestricted("echo EmitSound...Success!");
+
+	GUI2::LoadProgress = 0.85f;
 }
 
 void H::UnHook()
 {
 	I::inputsystem->EnableInput(true);
 
-	std::cout << "WndProc...";
+	//std::cout << "WndProc...";
 	D3dInit = false; //for wndproc... haven't found better solution
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "modelrenderVMT...";
+	//std::cout << "modelrenderVMT...";
 	modelrenderVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "inputVMT...";
+	//std::cout << "inputVMT...";
 	inputVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "gameeventmanagerVMT...";
+	//std::cout << "gameeventmanagerVMT...";
 	gameeventmanagerVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "surfaceVMT...";
+	//std::cout << "surfaceVMT...";
 	surfaceVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "panelVMT...";
+	//std::cout << "panelVMT...";
 	panelVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "d3d9VMT...";
+	//std::cout << "d3d9VMT...";
 	d3d9VMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "clientmodeVMT...";
+	//std::cout << "clientmodeVMT...";
 	if(G::pSendPacket) //make sure it isnt already a nullptr
 		*G::pSendPacket = true;
 	clientmodeVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "clientVMT...";
+	//std::cout << "clientVMT...";
 	clientVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	std::cout << "soundVMT...";
+	//std::cout << "soundVMT...";
 	soundVMT.RestoreOriginal();
-	std::cout << "Success!" << std::endl;
+	//std::cout << "Success!" << std::endl;
 
-	free(aimbot);
-	free(backtrack);
-	free(movement);
-	free(antiaim);
-	free(autowall);
-
-	FreeConsole();
+	delete aimbot;
+	delete backtrack;
+	delete movement;
+	delete antiaim;
+	delete autowall;
 }
 
 void H::Eject()
 {
 	H::UnHook();
-	FreeConsole();
-	FreeLibraryAndExitThread(G::DLLModule, 0);
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
@@ -228,7 +239,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//*
+	/*
 	if (GUI::Main())
 		G::KillDLL = true;
 
@@ -240,13 +251,19 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::End();
 	}
 	//*/
-	//GUI2::Main();
-	//G::KillDLL = GUI2::Ejected;
-	
+	//*
+	GUI2::Main();
+	//*/
 	ImGui::EndFrame();
 	ImGui::Render();
 
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
+	if (GUI2::Ejected)
+	{
+		G::KillDLL = true;
+		H::Eject();
+	}
 
 	return oEndScene(device);
 }
