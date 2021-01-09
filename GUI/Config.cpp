@@ -1061,6 +1061,13 @@ namespace Config2
 		{
 			return this->SelectedIndex;
 		}
+		~CEditGroup()
+		{
+			for (size_t i = 0; i < this->Properties.size(); i++)
+			{
+				delete this->Properties[i];
+			}
+		}
 	};
 
 	struct Property
@@ -1097,6 +1104,23 @@ namespace Config2
 				return ((CBoolean*)this->Value)->Stringify();
 			}
 			return "[error: unexpected type]";
+		}
+
+		~Property()
+		{
+			if (!this->Value) return;
+			switch (this->Type)
+			{
+			case PropertyType::BOOLEAN:
+				delete (CBoolean*)this->Value;
+				break;
+			case PropertyType::FLOAT:
+				delete (CFloat*)this->Value;
+				break;
+			case PropertyType::EDITGROUP:
+				delete (CEditGroup*)this->Value;
+				break;
+			}
 		}
 	};
 	struct Group
@@ -1186,6 +1210,18 @@ namespace Config2
 		// CONFIG
 		{
 
+		}
+	}
+
+	void Free()
+	{
+		for (auto x = PropertyTable.begin(); x != PropertyTable.end(); x++)
+		{
+			delete x->second;
+		}
+		for (size_t i = 0; i < Tabs.size(); i++)
+		{
+			delete Tabs[i];
 		}
 	}
 };

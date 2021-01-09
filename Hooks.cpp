@@ -65,7 +65,7 @@ void H::Init()
 	soundVMT.Initialise((DWORD*)I::sound);
 	GUI2::LoadProgress = 0.25f;
 
-	static int SleepTime = 1;
+	static int SleepTime = 100;
 
 	std::cout << "Endscene...";
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
@@ -263,6 +263,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	{
 		G::KillDLL = true;
 		H::Eject();
+		Config2::Free();
 	}
 
 	return oEndScene(device);

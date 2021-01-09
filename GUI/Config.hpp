@@ -851,4 +851,6 @@ namespace Config2
 	extern Property* GetProperty(std::string Name);
 	extern bool GetBoolean(std::string Name);
 	extern float GetFloat(std::string Float);
+
+	extern void Free();
 };
