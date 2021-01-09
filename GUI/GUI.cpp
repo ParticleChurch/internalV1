@@ -1742,3 +1742,11 @@ END:
 	ImGui::PopFont();
 	return eject;
 }
+
+
+// V2
+namespace GUI2
+{
+	bool Ejected = false;
+
+};
