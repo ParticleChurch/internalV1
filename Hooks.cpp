@@ -446,11 +446,15 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
+	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && Config::GetBool("visuals-misc-noscope"))
+		return;
+
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
 		if (!G::LocalPlayer || !I::engine->IsInGame())
 			return;
 
+		miscvisuals->NoScope();
 		esp->Run();
 	}
 }
@@ -501,11 +505,12 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 		}
 	}
+
 	backtrack->update(curStage);
 	world->Run(curStage);
 
 	skinchanger->run(curStage);
-	
+
 	return oFrameStageNotify(curStage);
 }
 
@@ -653,7 +658,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 void __stdcall H::EmitSoundHook(SoundData data)
 {
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
-	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep"))
+	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep") && Config::GetBool("misc-other-autoaccept"))
 	{
 		acceptMatch("accept");
 		/*auto window = FindWindowW(L"Valve001", NULL);

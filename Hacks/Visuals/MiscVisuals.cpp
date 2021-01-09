@@ -74,3 +74,22 @@ void MiscVisuals::GrenadePrediction()
 	nadeVar->onChangeCallbacks.size = 0;
 	nadeVar->SetValue(Config::GetBool("visuals-misc-grenadeprediction"));
 }
+
+void MiscVisuals::NoScope()
+{
+	if (!G::LocalPlayerAlive)
+		return;
+
+	if (!Config::GetBool("visuals-misc-noscope"))
+		return;
+
+	if (!G::LocalPlayer->IsScoped())
+		return;
+
+	int xSize;
+	int ySize;
+	I::engine->GetScreenSize(xSize, ySize);
+	I::surface->DrawSetColor(Color(0,0,0,255));
+	I::surface->DrawLine(xSize / 2, 0, xSize / 2, ySize); //Top - Bottom
+	I::surface->DrawLine(0, ySize / 2, xSize, ySize / 2); //Left - Right
+}

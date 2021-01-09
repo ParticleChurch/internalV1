@@ -11,6 +11,7 @@ public:
 	void ThirdPerson_DoPostScreenEffects();
 	void RankRevealer();
 	void GrenadePrediction();
+	void NoScope();
 
 };
 
