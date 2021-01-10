@@ -243,6 +243,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	if (GUI::Main())
 		G::KillDLL = true;
 
+	
+	//*/
+	//*
 	if (Config::GetBool("show-console"))
 	{
 		ImGui::Begin("console");
@@ -250,8 +253,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			ImGui::Text(a.c_str());
 		ImGui::End();
 	}
-	//*/
-	//*
+	skinchanger->Menu();
 	GUI2::Main();
 	//*/
 	ImGui::EndFrame();
