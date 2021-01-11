@@ -1491,7 +1491,6 @@ Config::Tab* CurrentTab = 0;
 bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
-
 	if (!Config::GetBool("show-menu"))
 		return false;
 
@@ -1509,6 +1508,7 @@ bool GUI::HackMenu()
 	// Styles
 	int TitleBarHeight = 16;
 	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowPadding = ImVec2(0, 0);
 	style.WindowMinSize = ImVec2(521 /* don't ask */, 5 + 30 * (Config::Tabs.size() + 1) + TitleBarHeight);
 	style.FrameBorderSize = 0.f;
 	style.ChildRounding = 0.f;
@@ -1747,6 +1747,132 @@ END:
 
 
 // V2
+namespace ImGui
+{
+	void DrawTeardrop(ImVec2 ScreenPosition, ImVec2 Dimensions, unsigned char Opacity = 255)
+	{
+		constexpr float AspectRatio = 30.f / 45.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		float StrokeSize = Size.x / 10.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		ImVec2 Position = ScreenPosition + (Dimensions - Size) / 2;
+
+		// C = PI*Size.x
+		int Segments = max(9, IM_PI * Size.x * 0.2f);
+
+		// bottom curve
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y - Size.x / 2), Size.x / 2, -IM_PI/6.f, IM_PI*7.f/6.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y / 12.f), Size.y / 12.f, IM_PI*7.f/6.f, IM_PI*11.f/6.f, Segments / 3);
+		
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(0,0,0, Opacity), true, StrokeSize);
+		DrawList->PathClear();
+	}
+
+	void DrawAccountIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 25.f / 30.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float CornerRadius = Size.x / 8.f;
+		int Segments = max(4, IM_PI * CornerRadius * 2.f / 4.f);
+
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI, IM_PI / 2.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, 0.f, Segments);
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y * 0.7f), CornerRadius, 0.f, -IM_PI / 3.f, max(4, Segments / 2));
+		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.667f, Size.y / 2.f));
+		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.333f, Size.y / 2.f));
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y * 0.7f), CornerRadius, -IM_PI * 2.f / 3.f, -IM_PI, max(4, Segments / 2));
+
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, CornerRadius * 2), CornerRadius * 2, 0, IM_PI * 2.f, Segments * 4);
+
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
+		DrawList->PathClear();
+	}
+
+	void DrawPasswordIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 25.f / 30.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float CornerRadius = Size.x / 8.f;
+		int Segments = max(4, IM_PI * CornerRadius * 2.f / 4.f);
+
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI, IM_PI / 2.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, 0.f, Segments);
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y / 2.f + CornerRadius), CornerRadius, 0, -IM_PI / 2.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y / 2.f+ CornerRadius), CornerRadius, -IM_PI / 2.f, -IM_PI, Segments);
+
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
+		DrawList->PathClear();
+
+		float StrokeSize = Size.x / 10.f;
+		float ShackleRadius = Size.x / 4.f;
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f - ShackleRadius, Size.y / 2.f + StrokeSize / 2.f));
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f - ShackleRadius, ShackleRadius + StrokeSize / 2.f));
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, ShackleRadius + StrokeSize / 2.f), ShackleRadius, -IM_PI, 0.f, Segments * 4.f);
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f + ShackleRadius, Size.y / 2.f + StrokeSize / 2.f));
+
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255,255,255, Opacity), true, StrokeSize);
+		DrawList->PathClear();
+	}
+
+	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength)
+	{
+		bool Active = GetID(("##" + Identifier).c_str()) == GetActiveID();
+		bool HasContent = BufferLength && Buffer[0];
+		if (!HasContent && !Active)
+		{
+			// draw placeholder
+			auto CursorBefore = ImGui::GetCursorPos();
+			ImVec4 TextColorBefore = GImGui->Style.Colors[ImGuiCol_Text];
+			bool NextItemHasWidth = GImGui->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth;
+			float NextItemWidth = GImGui->NextItemData.Width;
+
+			PushStyleColor(ImGuiCol_Text, lerp(TextColorBefore, ImVec4(0,0,0, TextColorBefore.w), 0.5f));
+
+			TextEx(Placeholder.c_str());
+
+			PopStyleColor();
+			ImGui::SetCursorPos(CursorBefore);
+			if (NextItemHasWidth)
+			{
+				GImGui->NextItemData.Flags |= ImGuiNextItemDataFlags_HasWidth;
+				GImGui->NextItemData.Width = NextItemWidth;
+			}
+		}
+		InputText(("##" + Identifier).c_str(), Buffer, BufferLength);
+
+	}
+}
+
 namespace GUI2
 {
 	bool Ejected = false;
@@ -1763,13 +1889,8 @@ void GUI2::LoadingScreen()
 	double TimeDelta = Animation::delta(Now, LastTime);
 	LastTime = Now;
 
-	// VisibleProgress gets 1% closer to LoadProgress every 10 ms
 	{
 		float Milliseconds = TimeDelta * 1000.f;
-		/*
-		float Factor = powf(0.99f, Milliseconds / 10.f);
-		VisibleProgress = VisibleProgress * Factor + LoadProgress * (1.f - Factor);
-		*/
 		VisibleLoadProgress = min(VisibleLoadProgress + 0.01f * Milliseconds / 10.f, LoadProgress);
 	}
 
@@ -1851,6 +1972,14 @@ void GUI2::LoadingScreen()
 		DrawList->PathStroke(IM_COL32(255, 255, 255, ThisOpacity), true, 2.f);
 	}
 
+	// draw logo
+	{
+		ImVec2 Size = FrameSize / 2.f;
+		ImVec2 Position = WindowCenter - Size / 2.f;
+		Position -= FrameSize * ImVec2(0, 0.05f);
+		ImGui::DrawTeardrop(Position, Size, ThisContentOpacity);
+	}
+
 	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + "%";
 	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
 	ImGui::SetCursorPos(ImVec2(FrameSize.x/2 - txtSize.x/2, FrameSize.y * 0.8f));
@@ -1887,7 +2016,9 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(40, 40, 40, 255));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(40, 40, 40, ThisContentOpacity));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, ThisContentOpacity));
 	ImGui::PushFont(Arial18Italics);
@@ -1895,15 +2026,64 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
 	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+	auto Window = ImGui::GetCurrentWindow();
+	auto DrawList = Window->DrawList;
 
-	std::string txt = "Hello World!";
-	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
-	ImGui::SetCursorPos(ImVec2(FrameSize.x / 2 - txtSize.x / 2, FrameSize.y * 0.25f));
-	ImGui::TextEx(txt.c_str());
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(40, 40, 40, 0));
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, IM_COL32(40, 40, 40, 0));
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, IM_COL32(40, 40, 40, 0));
+	ImGui::PushFont(Arial18);
+
+	int InputPadding = FrameSize.x * 0.1f;
+
+	// email
+	static char Email[512];
+	{
+		ImVec2 Position(InputPadding, InputPadding);
+		
+		ImGui::SetCursorPos(Position);
+		ImGui::DrawAccountIcon(ThisContentOpacity);
+
+		ImGui::SetCursorPos(Position + ImVec2(30, (26 - 18) / 2));
+		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
+		ImGui::InputTextWithPlaceholder("AccountEmail", "Email", Email, 512);
+
+		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175,175,175,ThisContentOpacity));
+	}
+
+	// password
+	static char Password[512];
+	{
+		ImVec2 Position(InputPadding, InputPadding + 38);
+
+		ImGui::SetCursorPos(Position);
+		ImGui::DrawPasswordIcon(ThisContentOpacity);
+
+		ImGui::SetCursorPos(Position + ImVec2(30, (26 - 18) / 2));
+		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
+		ImGui::InputTextWithPlaceholder("AccountPassword", "Password", Password, 512);
+
+		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
+	}
+
+	ImGui::PopFont();
+	ImGui::PopStyleColor(3);
+
+	ImGui::SetCursorPos(FrameSize * ImVec2(0.25f, 0.75f));
+	if (ImGui::Button("Play Now"))
+	{
+		Config::UserInfo::Authenticated = true;
+		Config::UserInfo::Premium = true;
+	}
+
+	ImGui::SetCursorPos(FrameSize * ImVec2(0.25f, 0.90f));
+	if (ImGui::Button("Eject lol"))
+		Ejected = true;
 
 	ImGui::End();
-	ImGui::PopStyleVar(3);
-	ImGui::PopStyleColor(3);
+	ImGui::PopStyleVar(4);
+	ImGui::PopStyleColor(4);
 	ImGui::PopFont();
 }
 
@@ -1920,9 +2100,7 @@ void GUI2::Main()
 	}
 	else if (!Config::UserInfo::Authenticated)
 	{
-		//AuthenticationScreen();
-		if (GUI::Main())
-			Ejected = true;
+		AuthenticationScreen();
 	}
 	else
 	{
