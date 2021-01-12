@@ -525,7 +525,7 @@ void P100Resolver(int Stage)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 
-	P100Resolver(curStage);
+	/*P100Resolver(curStage);*/
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
