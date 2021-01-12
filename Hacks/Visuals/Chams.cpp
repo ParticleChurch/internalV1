@@ -74,14 +74,6 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
 				&& Config::GetBool("visuals-misc-thirdperson"))
 			{
-				/*static Matrix3x4 BoneMatrix[MAXSTUDIOBONES];
-				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, BoneMatrix);*/
-				//OverideMat(
-				//	false,	//viz thru wall?
-				//	Config::GetState("visuals-chams-localplayer-fake-material"),		// material
-				//	Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
-				//	Config::GetColor("visuals-chams-localplayer-fake-color"),
-				//	thisptr, ctx, state, info, BoneMatrix);
 				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				OverideMat(
 						false,	//viz thru wall?

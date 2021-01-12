@@ -21,12 +21,12 @@ bool FakeLag::TimeBreaker()
 
 void FakeLag::LagOnPeak()
 {
-	LaggingOnPeak = false;
 	if (!G::LocalPlayer)
 		return;
 	if (!G::LocalPlayerAlive)
 		return;
 
+	bool DamageIncoming = false;
 	for (auto a : G::EntList)
 	{
 		if (a.index == G::LocalPlayerIndex) // entity is Localplayer
@@ -52,12 +52,29 @@ void FakeLag::LagOnPeak()
 
 		if (autowall->GetDamage(a.entity, G::LocalPlayer, NextPos) > 1)
 		{
-			// For now
-			TrigDistance = Config::GetFloat("antiaim-fakelag-trigger-distance");
-			TrigTicks = Config::GetFloat("antiaim-fakelag-trigger-tick");
-			LaggingOnPeak = true;
-			return;
+			DamageIncoming = true;
+			break;
 		}
+	}
+	
+	static bool ChokeOnce = false;
+
+	// If there is damage incoming, we are about to send packets, and we have not choked before
+	if (DamageIncoming && PredictedVal && !ChokeOnce)
+	{
+		ChokeOnce = true;				// We have choked once
+		LaggingOnPeak = true;
+	}
+	else if(!DamageIncoming && ChokeOnce) // no damage incoming, reset the choke once
+	{
+		ChokeOnce = false;
+	}
+
+	// If there we should lag on peak... 
+	if (LaggingOnPeak)
+	{
+		TrigDistance = Config::GetFloat("antiaim-fakelag-trigger-distance");
+		TrigTicks = Config::GetFloat("antiaim-fakelag-trigger-tick");
 	}
 }
 
@@ -84,18 +101,20 @@ void FakeLag::Start()
 	// Updating our next position
 	NextPos = G::LocalPlayer->GetEyePos() + velocity;
 
-	// Updating limits if trigger 
+	// If breaking distance or time --> Send packets
+	PredictedVal = DistanceBreaker() || TimeBreaker();
+
+	// Updating Limits if trigger 
 	LagOnPeak();
 
-	// If breaking distance or time..
-	if (DistanceBreaker() || TimeBreaker())
-	{
+	// If breaking distance or time --> Send packets
+	PredictedVal = DistanceBreaker() || TimeBreaker();
+	
+	if (PredictedVal)
 		PrevPos = G::LocalPlayer->GetEyePos();
-		PredictedVal =  true;
-		return;
-	}
 
-	PredictedVal = false;
+	if (LaggingOnPeak && PredictedVal)
+		LaggingOnPeak = false;
 }
 
 bool FakeLag::End()

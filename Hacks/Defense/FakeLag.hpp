@@ -2,7 +2,7 @@
 class FakeLag
 {
 private:
-	Vec PrevPos;
+	
 	float DistPrevPos; // 64 units
 	Vec NextPos;
 
@@ -14,6 +14,7 @@ private:
 	bool TimeBreaker();
 	void LagOnPeak();
 public:
+	Vec PrevPos;
 	bool PredictedVal = true;
 	bool LaggingOnPeak = false;
 	void Start();

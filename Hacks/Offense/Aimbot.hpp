@@ -24,6 +24,9 @@ public:
 	float mindamage_hidden = 0;
 	float hitchance = 0;
 
+	// secret stuff
+	float accuracy_amount = 0.0f;
+
 	// Scan Stuff
 	void VisibleScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);
 	void AutowallScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);

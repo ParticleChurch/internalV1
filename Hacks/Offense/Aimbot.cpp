@@ -633,7 +633,7 @@ void Aimbot::Run()
 
 	if (!G::LocalPlayer->CanShoot()) return;
 
-	if (fakelag->LaggingOnPeak && !*G::pSendPacket) return;
+	if (fakelag->LaggingOnPeak) return;
 
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return;
@@ -737,6 +737,24 @@ void Aimbot::Run()
 	//Set up percentages to proper vals
 	hitchance /= 100.f;
 	hitchance = 1 - hitchance;
+
+	float accuracy = G::LocalPlayerWeapon->GetInaccuracy(); //0.01 is accurate
+	accuracy *= 550;
+	//clamp Inaccuracy so if its above 10 the its just 10
+	accuracy = 100 - (5 * (std::clamp(accuracy, 0.f, 20.f)));
+	if (accuracy < accuracy_amount)
+		return;
+
+	//if (G::LocalPlayer && G::LocalPlayerAlive && G::LocalPlayerWeapon)
+	//{
+	//	H::console.clear();
+	//	H::console.resize(0);
+	//	float Inaccuracy = G::LocalPlayerWeapon->GetInaccuracy(); //0.01 is accurate
+	//	Inaccuracy *= 550;
+	//	//clamp Inaccuracy so if its above 10 the its just 10
+	//	Inaccuracy = 100 - (10*(std::clamp(Inaccuracy, 0.f, 10.f)));
+	//	H::console.push_back("Inaccuracy: " + std::to_string(Inaccuracy));
+	//}
 
 	// Get Visible Entity with best damage
 	int BestVisIndex = -1;

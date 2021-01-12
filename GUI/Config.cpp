@@ -376,7 +376,7 @@ namespace Config {
 				Widget* w = t->AddWidget("Menu");
 
 				w->AddProperty(false, 0, "show-menu", "Show Menu", true, true, KeybindOptions(true, false, false));
-				w->AddProperty(false, 0, "show-console", "Show Console", true, true, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "show-console", "Show Console", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "menu-complexity", "Menu Complexity", CDropdown{ "Beginner", "Intermediate", "Professional" }, false, 2, 2);
 				w->AddProperty(false, 0, "show-help-link", "Show Help Link", true, true);
 				w->AddProperty(false, 0, "show-watermark", "Watermark", true, true);

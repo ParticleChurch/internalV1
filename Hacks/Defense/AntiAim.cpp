@@ -35,9 +35,6 @@ void AntiAim::legit()
 
 	fake = G::cmd->viewangles;
 	real = G::cmd->viewangles;
-
-	G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
-		
 		
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
@@ -66,7 +63,6 @@ void AntiAim::legit()
 	}
 
 	if (*G::pSendPacket) {
-		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
 		fake = G::cmd->viewangles;
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + (Delta * legit_side);
@@ -151,7 +147,6 @@ void AntiAim::rage()
 	}
 
 	if (*G::pSendPacket) {
-		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
 		fake = G::cmd->viewangles;
 		real.x = G::cmd->viewangles.x;
 		real.y = G::cmd->viewangles.y + (Delta * rage_side);
@@ -225,6 +220,16 @@ void AntiAim::Visualize()
 		I::surface->DrawSetColor(Color(255.f, 0, 0, 255.f));
 		I::surface->DrawLine(sPoint1.x, sPoint1.y, sPoint2.x, sPoint2.y);
 	}
+
+	// Draw LagOnPeak stuff
+	Vec EyePos = G::LocalPlayer->GetEyePos();
+	if (fakelag->LaggingOnPeak && WorldToScreen2(fakelag->PrevPos, sPoint1) && WorldToScreen2(EyePos, sPoint2))
+	{
+		I::surface->DrawSetColor(Color(253.f, 106.f, 2.f, 255.f));
+		I::surface->DrawLine(sPoint1.x, sPoint1.y, sPoint2.x, sPoint2.y);
+	}
+
+	
 
 	
 }

@@ -23,8 +23,6 @@ public:
 		return GetVFunc<oGetInaccuracy>(this, 482)(this);
 	}
 
-	
-
 	WeaponData* GetWeaponData() {
 		typedef WeaponData* (__thiscall* ogetWeaponData)(void*);
 		return GetVFunc<ogetWeaponData>(this, 460)(this);
@@ -311,6 +309,17 @@ public:
 		Vec a = *(Vec*)((DWORD)this + offset);
 		if (a.x > 89)
 			a.x = 360 - a.x;
+		return a;
+	}
+
+	Vec* PGetEyeAngles() //GetEyeAngles
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		if (offset == 0)
+			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
+		Vec* a = (Vec*)((DWORD)this + offset);
+		if (a->x > 89)
+			a->x = 360 - a->x;
 		return a;
 	}
 

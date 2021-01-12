@@ -16,6 +16,7 @@ public:
 	//Other variables/functions
 	QAngle real;
 	QAngle fake;
+	Vec FakeAbsOrigin;
 	Matrix3x4 FakeMatrix[128];
 
 	void Visualize();

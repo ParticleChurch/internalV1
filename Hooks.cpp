@@ -251,6 +251,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::Begin("console");
 		for (auto a : console)
 			ImGui::Text(a.c_str());
+		ImGui::Text("Ooooh Secret setting. Experiment XD");
+		ImGui::SliderFloat("###accuracy", &aimbot->accuracy_amount, 0, 100);
 		ImGui::End();
 	}
 	skinchanger->Menu();
@@ -483,8 +485,47 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 	}
 }
 
+
+
+void P100Resolver(int Stage)
+{
+	if (!I::engine->IsInGame())
+		return;
+
+	Entity* localplayer = (Entity*)I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
+	if (!localplayer)
+		return;
+
+	int team = localplayer->GetTeam();
+
+	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START || Stage == FRAME_RENDER_END)
+	{
+		for (int i = 1; i < I::engine->GetMaxClients(); ++i)
+		{
+			Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
+
+			if (!player
+				|| player == localplayer
+				|| player->IsDormant()
+				|| !(player->GetHealth() > 0)
+				|| team == player->GetTeam())
+				continue;
+
+			//player->GetEyeAngles()->y = *player->GetLowerBodyYawTarget();
+			if (!player->PGetEyeAngles())
+				continue;
+			player->PGetEyeAngles()->y = player->GetLBY();
+			player->PGetEyeAngles()->y = (rand() % 2) ?
+				player->GetEyeAngles().y + (player->GetMaxDesyncAngle() * 0.66f) :
+				player->GetEyeAngles().y - (player->GetMaxDesyncAngle() * 0.66f);
+		}
+	}
+}
+
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
+
+	P100Resolver(curStage);
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
