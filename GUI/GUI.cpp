@@ -220,6 +220,7 @@ ImFont* Arial12Italics;
 ImFont* Arial14Italics;
 ImFont* Arial16Italics;
 ImFont* Arial18Italics;
+ImFont* Arial14BoldItalics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
@@ -233,6 +234,7 @@ void GUI::LoadFonts(ImGuiIO& io)
 	AYO_LOAD_FONT_BRUH(Arial14Italics, "C:\\Windows\\Fonts\\ariali.ttf", 14.f);
 	AYO_LOAD_FONT_BRUH(Arial16Italics, "C:\\Windows\\Fonts\\ariali.ttf", 16.f);
 	AYO_LOAD_FONT_BRUH(Arial18Italics, "C:\\Windows\\Fonts\\ariali.ttf", 18.f);
+	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, "C:\\Windows\\Fonts\\arialbi.ttf", 14.f);
 
 	return;
 problemo:
@@ -1791,13 +1793,12 @@ namespace ImGui
 		float CornerRadius = Size.x / 8.f;
 		int Segments = max(4, IM_PI * CornerRadius * 2.f / 4.f);
 
-		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI, IM_PI / 2.f, Segments);
-		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, 0.f, Segments);
-
-		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y * 0.7f), CornerRadius, 0.f, -IM_PI / 3.f, max(4, Segments / 2));
-		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.667f, Size.y / 2.f));
-		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.333f, Size.y / 2.f));
-		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y * 0.7f), CornerRadius, -IM_PI * 2.f / 3.f, -IM_PI, max(4, Segments / 2));
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, IM_PI, Segments); // bl
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y * 0.7f), CornerRadius, IM_PI, IM_PI * 4.f / 3.f, max(4, Segments / 2)); // tl
+		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.333f, Size.y / 2.f)); // tml
+		DrawList->PathLineTo(Position + ImVec2(Size.x * 0.667f, Size.y / 2.f)); // tmr
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y * 0.7f), CornerRadius, IM_PI * 5.f / 3.f, 2.f * IM_PI, max(4, Segments / 2));// tr
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, 2.f * IM_PI, IM_PI * 5.f / 2.f, Segments); // br
 
 		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
 		DrawList->PathClear();
@@ -1824,11 +1825,10 @@ namespace ImGui
 		float CornerRadius = Size.x / 8.f;
 		int Segments = max(4, IM_PI * CornerRadius * 2.f / 4.f);
 
-		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI, IM_PI / 2.f, Segments);
-		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, 0.f, Segments);
-
-		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y / 2.f + CornerRadius), CornerRadius, 0, -IM_PI / 2.f, Segments);
-		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y / 2.f+ CornerRadius), CornerRadius, -IM_PI / 2.f, -IM_PI, Segments);
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, 0.f, IM_PI / 2.f, Segments); // br
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, IM_PI, Segments); // bl
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y / 2.f + CornerRadius), CornerRadius, IM_PI, 3.f * IM_PI / 2.f, Segments); // tl
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y / 2.f + CornerRadius), CornerRadius, 3.f * IM_PI / 2.f, 2.f * IM_PI, Segments); // tr
 
 		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
 		DrawList->PathClear();
@@ -1840,7 +1840,35 @@ namespace ImGui
 		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, ShackleRadius + StrokeSize / 2.f), ShackleRadius, -IM_PI, 0.f, Segments * 4.f);
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f + ShackleRadius, Size.y / 2.f + StrokeSize / 2.f));
 
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255,255,255, Opacity), true, StrokeSize);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255,255,255, Opacity), false, StrokeSize);
+		DrawList->PathClear();
+	}
+
+	void DrawSearchIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 1.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float StrokeSize = Size.x / 10.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		//ImVec2 StokeVector = ImVec2(StrokeSize, StrokeSize);
+		float MainRadius = Size.x * 0.75f / 2.f;
+		int Segments = max(4, IM_PI * MainRadius * 2.f);
+
+		DrawList->PathArcTo(Position + ImVec2(MainRadius, MainRadius), MainRadius, IM_PI / 4.f, 9.f*IM_PI/4.f, Segments);
+		DrawList->PathLineTo(Position + ImVec2(Size.x, Size.y));
+
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity), false, StrokeSize);
 		DrawList->PathClear();
 	}
 
@@ -1879,7 +1907,10 @@ namespace GUI2
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
-};
+
+	ImVec2 DefaultMenuSize = ImVec2(600,400);
+	ImVec2 MinMenuSize = ImVec2(300, 200);
+};	
 
 void GUI2::LoadingScreen()
 {
@@ -2075,6 +2106,10 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	{
 		Config::UserInfo::Authenticated = true;
 		Config::UserInfo::Premium = true;
+
+		UserData::Initialized = true;
+		UserData::Authenticated = true;
+		UserData::Premium = true;
 	}
 
 	ImGui::SetCursorPos(FrameSize * ImVec2(0.25f, 0.90f));
@@ -2089,23 +2124,86 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 void GUI2::MainScreen()
 {
+	// Initially center the window w/ default size
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(DefaultMenuSize, ImGuiCond_Once);
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.5f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, MinMenuSize);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.f, 0.5f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, IM_COL32(0, 0, 0, 0));
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, IM_COL32(0, 0, 0, 0));
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, IM_COL32(0, 0, 0, 0));
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(0, 0, 0, 0));
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(0, 0, 0, 255));
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(50, 50, 50, 255));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(30, 30, 30, 255));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(30, 30, 30, 0));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
+
+	ImGui::PushFont(Arial14BoldItalics);
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(120, 120, 120, 255));
+	int TitleBarHeight = 0;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
+	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+	ImGui::PopStyleColor(1);
+	ImGui::PopStyleVar(1);
+
+	// init
+	auto Window = ImGui::GetCurrentWindow();
+	auto DrawList = Window->DrawList;
+
+	// search bar
+	{
+		static char* SearchQuery;
+		while (!SearchQuery)
+			if (SearchQuery = new char[256])
+				ZeroMemory(SearchQuery, 256);
+
+		ImGui::SetCursorPos(ImVec2(10, TitleBarHeight + 10));
+		ImGui::DrawSearchIcon(255, ImVec2(16, 16));
+
+		ImGui::SetCursorPos(ImVec2(10 + 16 + 5, TitleBarHeight + 10));
+		ImGui::SetNextItemWidth(Window->Size.x - ImGui::GetCursorPosX() - 10);
+		ImGui::PushFont(Arial16);
+		ImGui::InputTextWithPlaceholder("main-searchbar", "Search", SearchQuery, 256);
+		ImGui::PopFont();
+		DrawList->AddLine(Window->Pos + ImVec2(10, TitleBarHeight + 10 + 16 + 4), Window->Pos + ImVec2(Window->Size.x - 10, TitleBarHeight + 10 + 16 + 4), IM_COL32(255, 255, 255, 255));
+	}
+
+	ImGui::SetCursorPos(ImVec2(100, 150));
+	if (ImGui::Button("Eject"))
+		Ejected = true;
+
+
+	ImGui::End();
+	ImGui::PopFont();
+
+	ImGui::PopStyleVar(6);
+	ImGui::PopStyleColor(9);
+
+	//*
+	if (GUI::Main())
+		Ejected = true;
+	//*/
 }
 
 void GUI2::Main()
 {
-	if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
+	if (UserData::Initialized)
+	{
+		MainScreen();
+	}
+	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
 		LoadingScreen();
 	}
-	else if (!Config::UserInfo::Authenticated)
-	{
-		AuthenticationScreen();
-	}
 	else
 	{
-		//MainScreen();
-		if (GUI::Main())
-			Ejected = true;
+		AuthenticationScreen();
 	}
 }

@@ -23,6 +23,9 @@ namespace GUI2
 	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;
 
+	extern ImVec2 DefaultMenuSize;
+	extern ImVec2 MinMenuSize;
+
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
 	extern void MainScreen();

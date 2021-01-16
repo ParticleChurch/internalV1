@@ -854,3 +854,25 @@ namespace Config2
 
 	extern void Free();
 };
+
+namespace UserData
+{
+	// ping approx. every 60 seconds
+	extern double ClientTimestamp; // time according to client of last web ping
+	extern double ServerTimestamp; // time according to server of last web ping
+	
+	extern bool Initialized; // this will be true if the main cheat gui should show up
+	extern bool Authenticated; // this will be true only if the user entered a valid email/password combo
+	extern std::string Email;
+	extern uint64_t UserID;
+	extern bool Banned;
+	extern bool Premium;
+	extern bool PremiumAutoRenews;
+	extern double AccountRegistrationTimestamp;
+
+	// these two should be the same if !PremiumAutoRenews
+	// if PremiumAutoRenews, then PremiumExpiresTimestamp should be 24 hours after NextBillDueTimestamp
+	// this is to give the server 24 hours to process the bill, to ensure no service interruptions
+	extern double NextBillDueTimestamp;
+	extern double PremiumExpiresTimestamp;
+}

@@ -1225,3 +1225,21 @@ namespace Config2
 		}
 	}
 };
+
+namespace UserData
+{
+	double ClientTimestamp = -1.0;
+	double ServerTimestamp = -1.0;
+
+	bool Initialized = false;
+	bool Authenticated = false;
+	std::string Email = "unauthenticated@a4g4.com";
+	uint64_t UserID = (uint64_t)-1;
+	bool Banned = false;
+	bool Premium = false;
+	bool PremiumAutoRenews = false;
+	double AccountRegistrationTimestamp = -1.0;
+
+	double NextBillDueTimestamp = -1.0;
+	double PremiumExpiresTimestamp = -1.0;
+}
