@@ -19,6 +19,9 @@ public:
 	Vec FakeAbsOrigin;
 	Matrix3x4 FakeMatrix[128];
 
+	float HEADEDGE = 70.f;
+	bool GetBestHeadAngle(QAngle& angle);
+
 	void Visualize();
 };
 

@@ -100,6 +100,8 @@ void AntiAim::rage()
 	G::cmd->viewangles.y += 180;
 	G::cmd->viewangles.NormalizeAngle();
 
+	
+
 	rage_left = Config::GetState("antiaim-rage-invert");
 	rage_side = rage_left ? 1 : -1;
 
@@ -131,6 +133,10 @@ void AntiAim::rage()
 	Delta -= (Delta * (Config::GetFloat("antiaim-rage-fake-jitter") / 100.f) * (Switcher ? 1 : 0));
 
 	G::cmd->viewangles.y += rage_left ? -Delta: Delta; //set it to rage style aa
+
+	QAngle angle = G::cmd->viewangles;
+	if (antiaim->GetBestHeadAngle(angle))
+		G::cmd->viewangles.y = angle.y;
 
 	//side by default = left
 	if (!BreakLBY)
@@ -185,6 +191,42 @@ bool WorldToScreen2(Vec& in, Vec& out)
 		return true;
 	}
 	return false;
+}
+
+bool AntiAim::GetBestHeadAngle(QAngle& angle)
+{
+	Vec position = G::LocalPlayer->GetEyePos();
+
+	float closest_distance = 100.0f;
+
+	float radius = HEADEDGE + 0.1f;
+	float step = M_PI * 2.0 / 8;
+
+	esp->points.clear();
+	esp->points.resize(0);
+	for (float a = 0; a < (M_PI * 2.0); a += step)
+	{
+		Vec location(radius * cos(a) + position.x, radius * sin(a) + position.y, position.z);
+		esp->points.push_back(location);
+
+		trace_t tr;
+		Ray_t ray(position, location);
+		CTraceFilter traceFilter(G::LocalPlayer);
+		//I::enginetrace->TraceRay(ray, 0x4600400B, &traceFilter, &tr);
+		I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
+
+		Vec delta = position - tr.Endpos;
+
+		float distance = delta.VecLength();
+
+		if (distance < closest_distance)
+		{
+			closest_distance = distance;
+			angle.y = RAD2DEG(a);
+		}
+	}
+
+	return closest_distance < HEADEDGE;
 }
 
 void AntiAim::Visualize()

@@ -253,6 +253,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			ImGui::Text(a.c_str());
 		ImGui::Text("Ooooh Secret setting. Experiment XD");
 		ImGui::SliderFloat("###accuracy", &aimbot->accuracy_amount, 0, 100);
+
+		ImGui::Text("Edge Amount");
+		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);
 		ImGui::End();
 	}
 	skinchanger->Menu();
