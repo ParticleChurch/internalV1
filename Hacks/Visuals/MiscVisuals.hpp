@@ -12,6 +12,9 @@ public:
 	void RankRevealer();
 	void GrenadePrediction();
 	void NoScope();
+	void NoFlash(int stage);
+	void NoSmoke_DoPostScreenEffects();
+	void NoSmoke_FrameStageNotify();
 
 };
 

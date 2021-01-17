@@ -574,6 +574,9 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		}
 	}
 
+	miscvisuals->NoFlash(curStage);
+	miscvisuals->NoSmoke_FrameStageNotify();
+
 	backtrack->update(curStage);
 	world->Run(curStage);
 
@@ -711,6 +714,7 @@ void __fastcall H::hkCamToFirstPeronHook()
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
+	miscvisuals->NoSmoke_DoPostScreenEffects();
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }

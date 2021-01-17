@@ -93,3 +93,58 @@ void MiscVisuals::NoScope()
 	I::surface->DrawLine(xSize / 2, 0, xSize / 2, ySize); //Top - Bottom
 	I::surface->DrawLine(0, ySize / 2, xSize, ySize / 2); //Left - Right
 }
+
+void MiscVisuals::NoFlash(int stage)
+{
+	if (!Config::GetBool("visuals-misc-noflash"))
+		return;
+
+	if (stage != ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+		return;
+
+	if (!G::LocalPlayer || G::LocalPlayer->GetFlashMaxAlpha() < 0.1)
+		return;
+
+	*G::LocalPlayer->pGetFlashMaxAlpha() = 0;
+}
+
+void MiscVisuals::NoSmoke_DoPostScreenEffects()
+{
+	if (!G::LocalPlayer)
+		return;
+	if (!G::LocalPlayerAlive)
+		return;
+	if (!I::engine->IsInGame())
+		return;
+
+	static std::vector<const char*> smoke_materials = {
+			"particle/vistasmokev1/vistasmokev1_fire",
+			"particle/vistasmokev1/vistasmokev1_smokegrenade",
+			"particle/vistasmokev1/vistasmokev1_emods",
+			"particle/vistasmokev1/vistasmokev1_emods_impactdust",
+	};
+
+	for (const auto mat : smoke_materials) {
+		auto material = I::materialsystem->FindMaterial(mat);
+		material->SetMaterialVarFlag(MaterialVarFlag::NO_DRAW, false);
+		if (Config::GetBool("visuals-misc-nosmoke"))
+			material->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, true);
+		else
+			material->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, false);
+	}
+}
+
+void MiscVisuals::NoSmoke_FrameStageNotify()
+{
+	if (!Config::GetBool("visuals-misc-nosmoke"))
+		return;
+	if (!G::LocalPlayer)
+		return;
+	if (!G::LocalPlayerAlive)
+		return;
+	if (!I::engine->IsInGame())
+		return;
+
+	static int* smokecount = *(int**)(FindPattern("client.dll", "A3 ? ? ? ? 57 8B CB") + 0x1);
+	if (smokecount) *smokecount = 0;
+}

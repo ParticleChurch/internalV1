@@ -13,6 +13,9 @@ public:
 	bool rage_left = true;
 	int rage_side = 1;
 
+	void rage2();
+	void rage3();
+
 	//Other variables/functions
 	QAngle real;
 	QAngle fake;
