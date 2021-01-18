@@ -22,12 +22,20 @@ namespace GUI2
 	extern float LoadProgress;
 	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;
+	extern Animation::Anim* SearchAnimation;
 
 	extern ImVec2 DefaultMenuSize;
 	extern ImVec2 MinMenuSize;
 
+	extern bool IsSearching;
+	extern char* SearchQuery;
+	extern Config2::Tab* ActiveTab;
+
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
-	extern void MainScreen();
+	extern void DrawNormalTab(Config2::Tab* t);
+	extern void DrawActiveTab();
+	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);
+	extern void Init();
 	extern void Main();
 };

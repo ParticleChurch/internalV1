@@ -48,11 +48,15 @@ void Animation::deleteAnimation(const char* name)
 
 bool Animation::changed(const char* name, int newState)
 {
-    Anim* a = get(name);
-    if (!a) return false;
-    if (a->state == newState) return false;
-    a->state = newState;
-    a->changed = now();
+    return changed(get(name), newState);
+}
+
+bool Animation::changed(Animation::Anim* anim, int newState)
+{
+    if (!anim) return false;
+    if (anim->state == newState) return false;
+    anim->state = newState;
+    anim->changed = now();
     return true;
 }
 
@@ -71,4 +75,9 @@ float Animation::animate(double timePassed, double animationTime, Animation::Int
         // https://easings.net/#easeInOutQuint
         return f < 0.5f ? 16.f * f * f * f * f * f : 1.f - powf(-2.f * f + 2.f, 5.f) / 2.f;
     }
+}
+
+float Animation::lerp(float a, float b, float f)
+{
+    return (b-a)*f+a;
 }

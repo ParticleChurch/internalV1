@@ -944,232 +944,8 @@ namespace Config2
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
 
-	struct CBoolean
-	{
-		static const PropertyType Type = PropertyType::BOOLEAN;
-
-		bool Value;
-		std::string Stringify()
-		{
-			return Value ? "true" : "false";
-		}
-	};
-	struct CFloat
-	{
-		static const PropertyType Type = PropertyType::FLOAT;
-
-	private:
-		float Value;
-		float Minimum, Maximum;
-		int Decimals;
-		int Percision;
-
-	public:
-		CFloat(float Min = 0, float Max = 1, float Value = 0.50f, int Decimals = 2)
-		{
-			this->Minimum = Min;
-			this->Maximum = Max;
-			this->Decimals = max(min(Decimals, 6), 0);
-			this->Percision = pow(10, this->Decimals);
-			this->Value = min(max(this->Minimum, Value), this->Maximum);
-		}
-
-		float Get()
-		{
-			return this->Value;
-		}
-
-		void Set(float v)
-		{
-			v = floorf(v * this->Percision + 0.5f) / (float)this->Percision;
-			this->Value = min(max(this->Minimum, v), this->Maximum);
-		}
-
-
-		std::string Stringify()
-		{
-			if (this->Decimals < 1) return std::to_string((int)(this->Value + 0.5f));
-
-			std::string s = std::to_string(this->Value);
-			size_t i = s.find(".");
-			if (i == std::string::npos)
-				return s + "." + std::string(this->Decimals, '0');
-
-			size_t dcount = s.size() - (i + 1);
-			if (dcount == this->Decimals) return s;
-			else if ((int)dcount < this->Decimals) return s + std::string(this->Decimals - dcount, '0');
-			else return s.substr(0, i + this->Decimals + 1);
-		}
-
-		bool Parse(std::string v)
-		{
-			try
-			{
-				float d = std::stof(v);
-				this->Set(d);
-				return true;
-			}
-			catch (...)
-			{
-				return false;
-			}
-		}
-	};
-	struct CEditGroup
-	{
-		static const PropertyType Type = PropertyType::EDITGROUP;
-
-	private:
-		std::vector<std::string> Titles;
-		std::vector<std::vector<Property*>*> Properties;
-		size_t SelectedIndex = 0;
-
-	public:
-		CEditGroup() {}
-		void Add(std::string Title, Property* Prop)
-		{
-			std::vector<Property*>* List = nullptr;
-			for (size_t i = 0; i < this->Titles.size(); i++)
-			{
-				if (this->Titles.at(i) == Title)
-				{
-					List = this->Properties.at(i);
-					break;
-				}
-			}
-
-			if (!List)
-			{
-				List = new std::vector<Property*>{};
-
-				this->Titles.push_back(Title);
-				this->Properties.push_back(List);
-			}
-
-			List->push_back(Prop);
-		}
-		std::vector<Property*>* GetVisibleProperties()
-		{
-			if (this->SelectedIndex >= this->Properties.size()) return nullptr;
-			return this->Properties.at(this->SelectedIndex);
-		}
-		void SelectIndex(size_t i)
-		{
-			if (this->Properties.size() == 0)
-				this->SelectedIndex = 0;
-			else
-				this->SelectedIndex = max(min(i, this->Properties.size() - 1), 0);
-		}
-		size_t GetSelectedIndex()
-		{
-			return this->SelectedIndex;
-		}
-		~CEditGroup()
-		{
-			for (size_t i = 0; i < this->Properties.size(); i++)
-			{
-				delete this->Properties[i];
-			}
-		}
-	};
-
-	struct Property
-	{
-	public:
-		// meta info
-		bool IsComplex = false;
-		bool IsPremium = false;
-
-		void* Value;
-		PropertyType Type;
-
-		std::string Name;
-		std::string VisibleName;
-
-		template <typename T>
-		Property(std::string Name, std::string VisibleName, T* Value)
-		{
-			this->Name = Name;
-			this->VisibleName = VisibleName;
-			this->Type = Value->Type;
-			this->Value = (void*)Value;
-
-			PropertyTable.insert(std::make_pair(this->Name, this));
-		}
-
-		std::string Stringify()
-		{
-			switch (this->Type)
-			{
-			case PropertyType::BOOLEAN:
-				return ((CBoolean*)this->Value)->Stringify();
-			case PropertyType::FLOAT:
-				return ((CBoolean*)this->Value)->Stringify();
-			}
-			return "[error: unexpected type]";
-		}
-
-		~Property()
-		{
-			if (!this->Value) return;
-			switch (this->Type)
-			{
-			case PropertyType::BOOLEAN:
-				delete (CBoolean*)this->Value;
-				break;
-			case PropertyType::FLOAT:
-				delete (CFloat*)this->Value;
-				break;
-			case PropertyType::EDITGROUP:
-				delete (CEditGroup*)this->Value;
-				break;
-			}
-		}
-	};
-	struct Group
-	{
-	private:
-		std::string Title;
-
-	public:
-		std::vector<Property*> Properties;
-
-		Group(std::string Title)
-		{
-			this->Title = Title;
-		}
-	};
-	struct Tab
-	{
-	private:
-		bool IsProfile = false;
-		bool IsConfig = false;
-		bool IsOffence = false;
-
-	public:
-		std::string Name;
-		std::vector<Group*> Groups;
-
-		Tab(std::string Name)
-		{
-			this->Name = Name;
-			this->IsProfile = Name == "Profile";
-			this->IsConfig = Name == "Config";
-			this->IsOffence = Name == "Offence";
-			Tabs.push_back(this);
-		}
-	};
-
 	void Init()
 	{
-		Tab* offence = new Tab("Offence");
-		Tab* defence = new Tab("Defence");
-		Tab* visuals = new Tab("Visuals");
-		Tab* movement = new Tab("Movement");
-		Tab* misc = new Tab("Misc");
-		Tab* profile = new Tab("Profile");
-		Tab* config = new Tab("Config");
-
 		// OFFENCE
 		{
 			Tab* t = new Tab("Offence");
@@ -1187,32 +963,42 @@ namespace Config2
 
 		// DEFENCE
 		{
-
+			Tab* t = new Tab("Defence");
 		}
 
 		// VISUALS
 		{
+			Tab* t = new Tab("Visuals");
+		}
 
+		// SKINCHANGER
+		{
+			Tab* t = new Tab("Skinchanger");
 		}
 
 		// MOVEMENT
 		{
-
+			Tab* t = new Tab("Movement");
 		}
 
 		// MISC
 		{
-
+			Tab* t = new Tab("Misc");
 		}
 
 		// PROFILE
 		{
-
+			Tab* t = new Tab("Theme");
 		}
 
 		// CONFIG
 		{
+			Tab* t = new Tab("Config");
+		}
 
+		// EJECT
+		{
+			Tab* t = new Tab("Eject");
 		}
 	}
 

@@ -20,6 +20,7 @@ void Init()
     G::PatternConvarInit();
     GUI2::LoadProgress = 0.1f;
     Config::Init();
+    Config2::Init();
     GUI2::LoadProgress = 0.15f;
     H::Init();
     GUI2::LoadProgress = 1.f;

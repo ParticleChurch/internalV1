@@ -216,11 +216,13 @@ ImFont* Arial12;
 ImFont* Arial14;
 ImFont* Arial16;
 ImFont* Arial18;
+ImFont* Arial18Bold;
 ImFont* Arial12Italics;
 ImFont* Arial14Italics;
 ImFont* Arial16Italics;
 ImFont* Arial18Italics;
 ImFont* Arial14BoldItalics;
+ImFont* Arial18BoldItalics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
 void GUI::LoadFonts(ImGuiIO& io)
 {
@@ -235,6 +237,8 @@ void GUI::LoadFonts(ImGuiIO& io)
 	AYO_LOAD_FONT_BRUH(Arial16Italics, "C:\\Windows\\Fonts\\ariali.ttf", 16.f);
 	AYO_LOAD_FONT_BRUH(Arial18Italics, "C:\\Windows\\Fonts\\ariali.ttf", 18.f);
 	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, "C:\\Windows\\Fonts\\arialbi.ttf", 14.f);
+	AYO_LOAD_FONT_BRUH(Arial18BoldItalics, "C:\\Windows\\Fonts\\arialbi.ttf", 18.f);
+	AYO_LOAD_FONT_BRUH(Arial18Bold, "C:\\Windows\\Fonts\\arialbd.ttf", 18.f);
 
 	return;
 problemo:
@@ -1526,7 +1530,7 @@ bool GUI::HackMenu()
 	style.Colors[ImGuiCol_WindowBg] = Config::GetColor("menu-background-color1");
 	style.Colors[ImGuiCol_CheckMark] = Config::GetColor("menu-option-color1");
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
-	io.ConfigWindowsMoveFromTitleBarOnly = true;
+	//io.ConfigWindowsMoveFromTitleBarOnly = true;
 	
 	// set title bar size to 16px with font = Arial16
 	ImFont* font_before = ImGui::GetFont();
@@ -1872,6 +1876,47 @@ namespace ImGui
 		DrawList->PathClear();
 	}
 
+	void DrawXIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 1.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		float StrokeSize = Size.x / 10.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->AddLine(Position, Position + Size, IM_COL32(255, 255, 255, Opacity), StrokeSize);
+		DrawList->AddLine(ImVec2(Position.x, Position.y + Size.y), ImVec2(Position.x + Size.x, Position.y), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+	}
+
+	void DrawSelectionCursor(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(10.f, 10.f))
+	{
+		constexpr float AspectRatio = 1.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		DrawList->PathLineTo(Position);
+		DrawList->PathLineTo(Position + ImVec2(0, Size.y));
+		DrawList->PathLineTo(Position + ImVec2(Size.x, Size.y / 2));
+		//DrawList->PathLineTo(Position);
+
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
+		DrawList->PathClear();
+	}
+
 	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength)
 	{
 		bool Active = GetID(("##" + Identifier).c_str()) == GetActiveID();
@@ -1907,9 +1952,14 @@ namespace GUI2
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
+	Animation::Anim* SearchAnimation = nullptr;
 
 	ImVec2 DefaultMenuSize = ImVec2(600,400);
-	ImVec2 MinMenuSize = ImVec2(300, 200);
+	ImVec2 MinMenuSize = ImVec2(500, 240);
+
+	bool IsSearching = false;
+	char* SearchQuery = nullptr;
+	Config2::Tab* ActiveTab = nullptr;
 };	
 
 void GUI2::LoadingScreen()
@@ -2122,34 +2172,117 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::PopFont();
 }
 
-void GUI2::MainScreen()
+void GUI2::DrawNormalTab(Config2::Tab* t)
 {
+	auto Window = ImGui::GetCurrentWindow();
+	auto DrawList = Window->DrawList;
+
+	return;
+}
+
+void GUI2::DrawActiveTab()
+{
+	if (!ActiveTab) return;
+
+	auto Window = ImGui::GetCurrentWindow();
+	auto DrawList = Window->DrawList;
+
+	if (ActiveTab->Name == "Eject")
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.f);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58 ,255));
+		ImGui::SetCursorPos(ImVec2(10.f, 10.f));
+		ImGui::BeginChild("##eject-confirm", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 153));
+
+		// title text
+		{
+			ImGui::PushFont(Arial18Bold);
+			
+			const char* Text = "Are you sure you would like to eject?";
+			float TextSize = ImGui::CalcTextSize(Text).x;
+
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCurrentWindow()->Size.x / 2.f - TextSize / 2.f, 10));
+			ImGui::TextEx(Text);
+
+			ImGui::PopFont();
+		}
+
+		// description
+		{
+			ImGui::PushFont(Arial16);
+
+			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f));
+			ImGui::TextEx("- your config will not be saved");
+			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f));
+			ImGui::TextEx("- your theme will not be saved");
+			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f));
+			ImGui::TextEx("- this will free the cheat from CS:GO's memory");
+			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f + 18.f));
+			ImGui::TextEx("- this will disable all effects");
+
+			ImGui::PopFont();
+		}
+
+		// confirm button
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(200, 50, 50, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(200, 75, 75, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(200, 100, 100, 255));
+
+			ImGui::PushFont(Arial18BoldItalics);
+
+			ImGui::SetCursorPos(ImVec2(10.f, 113));
+			Ejected |= ImGui::Button("EJECT NOW##confirm", ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
+
+			ImGui::PopFont();
+
+			ImGui::PopStyleVar(1);
+			ImGui::PopStyleColor(3);
+		}
+
+		ImGui::EndChild();
+		ImGui::PopStyleVar(1);
+		ImGui::PopStyleColor(1);
+	}
+	else
+	{
+		DrawNormalTab(ActiveTab);
+	}
+}
+
+void GUI2::MainScreen(float ContentOpacity, bool Interactable)
+{
+	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
+
 	// Initially center the window w/ default size
 	ImGuiIO& io = ImGui::GetIO();
-	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), ImGuiCond_Once, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(DefaultMenuSize, ImGuiCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), Interactable ? ImGuiCond_Once : ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(DefaultMenuSize, Interactable ? ImGuiCond_Once : ImGuiCond_Always);
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.5f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, MinMenuSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(0, 0, 0, 0));
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(0, 0, 0, 255));
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(50, 50, 50, 255));
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(34, 34, 34, 255));
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(0, 0, 0, 255));
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(30, 30, 30, 255));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(30, 30, 30, 0));
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
 
 	ImGui::PushFont(Arial14BoldItalics);
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(120, 120, 120, 255));
-	int TitleBarHeight = 0;
+	int TitleBarHeight = 24;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
-	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
 	ImGui::PopStyleColor(1);
 	ImGui::PopStyleVar(1);
 
@@ -2157,43 +2290,232 @@ void GUI2::MainScreen()
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
-	// search bar
+	// draw border because imgui borders are inset which makes me wanna kms
 	{
-		static char* SearchQuery;
-		while (!SearchQuery)
-			if (SearchQuery = new char[256])
-				ZeroMemory(SearchQuery, 256);
-
-		ImGui::SetCursorPos(ImVec2(10, TitleBarHeight + 10));
-		ImGui::DrawSearchIcon(255, ImVec2(16, 16));
-
-		ImGui::SetCursorPos(ImVec2(10 + 16 + 5, TitleBarHeight + 10));
-		ImGui::SetNextItemWidth(Window->Size.x - ImGui::GetCursorPosX() - 10);
-		ImGui::PushFont(Arial16);
-		ImGui::InputTextWithPlaceholder("main-searchbar", "Search", SearchQuery, 256);
-		ImGui::PopFont();
-		DrawList->AddLine(Window->Pos + ImVec2(10, TitleBarHeight + 10 + 16 + 4), Window->Pos + ImVec2(Window->Size.x - 10, TitleBarHeight + 10 + 16 + 4), IM_COL32(255, 255, 255, 255));
+		auto BackgroundDrawList = ImGui::GetBackgroundDrawList();
+		float BorderThickness = 2.f;
+		float BorderRadius = ImGui::GetStyle().WindowRounding;
+		ImVec4 BorderColor = ImGui::GetStyle().Colors[ImGuiCol_Border];
+		BackgroundDrawList->AddRect(
+			Window->Pos - ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
+			Window->Pos + Window->Size + ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
+			ImGui::ColorConvertFloat4ToU32(BorderColor),
+			BorderRadius,
+			ImDrawCornerFlags_All,
+			BorderThickness
+		);
 	}
 
-	ImGui::SetCursorPos(ImVec2(100, 150));
-	if (ImGui::Button("Eject"))
-		Ejected = true;
+	if (!ActiveTab && Config2::Tabs.size() > 0)
+		ActiveTab = Config2::Tabs.at(0);
 
+	// background gif/color idk yet
+	{
+
+	}
+
+	// right side
+	{
+		ImGui::SetCursorPos(ImVec2(150, TitleBarHeight));
+		ImGui::BeginChild("##main-right-side");
+
+		GUI2::DrawActiveTab();
+
+		ImGui::EndChild();
+	}
+
+	// left side
+	{
+		float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15);
+		if (!IsSearching)
+			SearchAnimationFactor = 1.f - SearchAnimationFactor;
+
+		ImVec2 OverlaySize(Animation::lerp(150, Window->Size.x, SearchAnimationFactor), Window->Size.y - TitleBarHeight);
+		ImVec2 OverlayPosition(0, TitleBarHeight);
+
+		// draw background because imgui is fuckign retarded and can't clip the bottom corners correctly
+		DrawList->AddRectFilled(
+			Window->Pos + OverlayPosition, Window->Pos + OverlayPosition + OverlaySize,
+			IM_COL32(53, 54, 58, 255),  // TODO: semi transparent blur?
+			5.f, (SearchAnimationFactor > 0.5f) ? ImDrawCornerFlags_Bot : ImDrawCornerFlags_BotLeft
+		);
+
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0,0,0,0));
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
+		ImGui::SetCursorPos(OverlayPosition);
+		ImGui::BeginChild("##left-side", OverlaySize, false, ImGuiWindowFlags_NoSavedSettings);
+
+		// search bar
+		{
+			ImGui::SetCursorPos(ImVec2(5,5));
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(32,33,36, 255));
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+			ImGui::BeginChild("##left-side-searchbar", ImVec2(OverlaySize.x - 10, 24), false, ImGuiWindowFlags_NoSavedSettings);
+
+			const char* InputLabel = "##SearchTextInput";
+			auto InputID = ImGui::GetID(InputLabel);
+
+			IsSearching = ImGui::GetActiveID() == InputID || (SearchQuery && SearchQuery[0]);
+			Animation::changed(SearchAnimation, IsSearching);
+
+			ImGui::SetCursorPos(ImVec2(5,5));
+			ImGui::DrawSearchIcon(200, ImVec2(14, 14));
+
+			ImGui::PushFont(Arial16);
+			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
+			ImGui::SetCursorPos(ImVec2(24, 4));
+			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
+			ImGui::InputText(InputLabel, SearchQuery, 256);
+			ImGui::PopStyleColor(1);
+
+			if (!IsSearching)
+			{
+				ImGui::SetCursorPos(ImVec2(24, 4));
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(145, 145, 145, 255));
+				ImGui::Text("Search");
+				ImGui::PopStyleColor(1);
+			}
+			else
+			{
+				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+				ImGui::DrawXIcon(Animation::lerp(0, 200, SearchAnimationFactor), ImVec2(9, 9));
+				// dummy button
+				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
+				ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 150));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
+				if (ImGui::Button("##cancel-search-dummy", ImVec2(18, 18)))
+				{
+					ZeroMemory(SearchQuery, 256);
+					if (ImGui::GetActiveID() == InputID)
+						ImGui::ClearActiveID();
+				}
+				ImGui::PopStyleColor(3);
+			}
+			ImGui::PopFont();
+
+			ImGui::EndChild();
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(1);
+		}
+		
+		// tabs list
+		if (!IsSearching)
+		{
+			ImGui::PushFont(Arial18);
+			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(200, 200, 200, 255));
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
+
+			int x = 29, y = 5 + 24 + 5;
+			
+			int SelectedTabHeight = y;
+			int HoveredTabHeight = -1;
+
+			for (size_t i = 0; i < Config2::Tabs.size(); i++)
+			{
+				Config2::Tab* t = Config2::Tabs.at(i);
+
+				if (t == ActiveTab)
+				{
+					ImGui::PushFont(Arial18Bold);
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
+				}
+				if (t->Name == "Eject")
+				{
+					ImGui::PushFont(Arial18Bold);
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 100, 100, 255));
+				}
+
+				ImGui::SetCursorPos(ImVec2(x, y));
+				ImGui::TextEx(t->Name.c_str());
+
+				if (t == ActiveTab)
+				{
+					ImGui::PopFont();
+					ImGui::PopStyleColor(1);
+					SelectedTabHeight = y;
+				}
+				if (t->Name == "Eject")
+				{
+					ImGui::PopFont();
+					ImGui::PopStyleColor(1);
+				}
+
+				// dummy button to detect clicks + hover
+				ImGui::SetCursorPos(ImVec2(5, y - 1));
+				if (ImGui::Button(("##dummy-tab-select-" + t->Name).c_str(), ImVec2(OverlaySize.x - 10, 20)))
+				{
+					ActiveTab = t;
+				}
+
+				if (ImGui::IsItemHovered())
+				{
+					HoveredTabHeight = y;
+				}
+
+				y += ImGui::GetFontSize() + 2;
+			}
+
+			ImGui::PopStyleColor(4);
+			ImGui::PopFont();
+
+
+			// selected triangle
+			ImGui::SetCursorPos(ImVec2(12, SelectedTabHeight + (18 - 8) / 2));
+			ImGui::DrawSelectionCursor(255, ImVec2(10, 8));
+
+			// hover triangle
+			if (HoveredTabHeight > 0 && SelectedTabHeight != HoveredTabHeight)
+			{
+				ImGui::SetCursorPos(ImVec2(12, HoveredTabHeight + (18 - 8) / 2));
+				ImGui::DrawSelectionCursor(100, ImVec2(10, 8));
+			}
+		}
+		// search results
+		else
+		{
+			ImGui::SetCursorPos(ImVec2(5, 5 + 24 + 5));
+			ImGui::Text("lmao good luck finding that ig");
+			ImGui::SetCursorPosX(5);
+			ImGui::Text(("you are searching for: " + std::string(SearchQuery)).c_str());
+		}
+
+		ImGui::EndChild();
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(1);
+	}
 
 	ImGui::End();
 	ImGui::PopFont();
 
-	ImGui::PopStyleVar(6);
-	ImGui::PopStyleColor(9);
+	ImGui::PopStyleVar(7);
+	ImGui::PopStyleColor(10);
 
 	//*
-	if (GUI::Main())
-		Ejected = true;
+	Ejected |= GUI::Main();
 	//*/
+}
+
+void GUI2::Init()
+{
+	while (!SearchQuery)
+		if (SearchQuery = new char[256])
+			ZeroMemory(SearchQuery, 256);
+
+	SearchAnimation = Animation::newAnimation("search-open/close", 0);
 }
 
 void GUI2::Main()
 {
+	static bool Init = false;
+	if (!Init)
+	{
+		GUI2::Init();
+		Init = true;
+	}
+
 	if (UserData::Initialized)
 	{
 		MainScreen();
