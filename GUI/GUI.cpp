@@ -1955,7 +1955,7 @@ namespace GUI2
 	Animation::Anim* SearchAnimation = nullptr;
 
 	ImVec2 DefaultMenuSize = ImVec2(600,400);
-	ImVec2 MinMenuSize = ImVec2(500, 240);
+	ImVec2 MinMenuSize = ImVec2(500, 242);
 
 	bool IsSearching = false;
 	char* SearchQuery = nullptr;
@@ -2177,6 +2177,8 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
+	ImGui::TextEx(("This is the tab for: " + t->Name).c_str());
+
 	return;
 }
 
@@ -2245,6 +2247,232 @@ void GUI2::DrawActiveTab()
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 	}
+	else if (ActiveTab->Name == "Skinchanger")
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58, 255));
+		ImGui::PushStyleColor(ImGuiCol_Separator, IM_COL32(255, 255, 255, 255));
+		int y = 0;
+
+		// knife changer
+		{
+			static int WindowHeight = 0;
+			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
+			ImGui::BeginChild("##knife-skins", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight));
+			auto Widget = ImGui::GetCurrentWindow();
+
+			static std::vector<std::string> Knifes = {
+				"Talon", "talon",
+				"Karambit", "karambit",
+				"M9-Bayonet", "m9-bayonet",
+				"Huntsman", "huntsman",
+				"T Default", "terrorist-knife",
+				"CT Default", "counter-terrorist-knife"
+			};
+
+			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
+			ImGui::PushFont(Arial18BoldItalics);
+			ImGui::Text("Knives");
+			ImGui::PopFont();
+			ImGui::Separator();
+
+			WindowHeight = Widget->ContentSize.y;
+			ImGui::EndChild();
+			y = ImGui::GetCursorPosY();
+		}
+
+		// weapon changer
+		{
+			static int WindowHeight = 0;
+			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
+			ImGui::BeginChild("##weapon-skins", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
+			auto Widget = ImGui::GetCurrentWindow();
+
+			static size_t SelectedWeaponGroup = 0;
+			static size_t SelectedWeaponIndex = 0;
+			static std::vector<std::vector<std::string>> WeaponGroups = {
+				{"Pistol", "USP-S", "x", "P2000", "x", "Glock-18", "x", "Dual Berettas", "x", "P250", "x", "Five-Seven", "x", "Tec-9", "x", "CZ-75", "cz75a", "Desert Eagle", "x", "R8 Revolver", "x"},
+				{"Heavy", "Nova", "x", "XM1014", "x", "Sawed-Off", "x", "MAG-7", "x", "M249", "x", "Negev", "x"},
+				{"SMG", "MP9", "x", "MAC-10", "x", "MP7", "x", "MP5", "x", "UMP-45", "x", "P90", "x", "PP-Bizon", "x"},
+				{"Rifle", "FAMAS", "x", "Galil", "x", "M4A4", "x", "AK-47", "x", "M4A1-S", "x", "SSG 08", "x", "AUG", "x", "SG 553", "x", "AWP", "x", "SCAR-20", "x", "G3SG1", "x"},
+				{"Other", "Zeus x27", "x", "C4", "x", "Incendiary", "x", "Molotov", "x", "Decoy", "x", "Flashbang", "x", "HE Grenade", "x", "Smoke", "x"},
+			};
+
+			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
+			ImGui::PushFont(Arial18BoldItalics);
+			ImGui::Text("Guns");
+			ImGui::PopFont();
+
+			ImGui::SetCursorPos(ImVec2(10.f, 37.f));
+
+			Widget->DrawList->AddRect(
+				Widget->DC.CursorPos - ImVec2(1, 1),
+				Widget->DC.CursorPos + ImVec2(63, WeaponGroups.size() * 30 + 1),
+				IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
+				5.f,
+				ImDrawCornerFlags_All
+			);
+			Widget->DrawList->AddRectFilled(
+				Widget->DC.CursorPos,
+				Widget->DC.CursorPos + ImVec2(62, WeaponGroups.size() * 30),
+				IM_COL32(85, 90, 95, 255),
+				5.f,
+				ImDrawCornerFlags_All
+			);
+			y = 37;
+
+			// draw group labels
+			ImGui::PushFont(Arial16);
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
+			for (size_t i = 0; i < WeaponGroups.size(); i++)
+			{
+				ImGui::SetCursorPos(ImVec2(10.f, y));
+				if (ImGui::Button(("##dummy-weapongroup-btn-" + WeaponGroups[i][0]).c_str(), ImVec2(62, 30)))
+				{
+					SelectedWeaponGroup = i;
+					SelectedWeaponIndex = 0;
+				}
+
+				ImGui::SetCursorPos(ImVec2(10.f, y));
+				Widget->DrawList->AddRectFilled(
+					Widget->DC.CursorPos,
+					Widget->DC.CursorPos + ImVec2(62, 30),
+					SelectedWeaponGroup == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75,80,85, 255) : 0,
+					5.f,
+					i == 0 ? ImDrawCornerFlags_Top : i == WeaponGroups.size() - 1 ? ImDrawCornerFlags_Bot : 0
+				);
+
+				ImGui::SetCursorPos(ImVec2(20.f, y + (30-16)/2));
+				ImGui::TextEx(WeaponGroups[i][0].c_str());
+
+				y += 30;
+			}
+
+			// draw weapon names
+			if (SelectedWeaponIndex * 2 + 1 >= WeaponGroups[SelectedWeaponGroup].size())
+				SelectedWeaponIndex = 0;
+			ImGui::SetCursorPos(ImVec2(82, 37.f));
+			Widget->DrawList->AddRect(
+				Widget->DC.CursorPos - ImVec2(1, 1),
+				Widget->DC.CursorPos + ImVec2(111, ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30 + 1),
+				IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
+				5.f,
+				ImDrawCornerFlags_All
+			);
+			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 20));
+			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 17));
+			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(74, 37 + SelectedWeaponGroup * 30 + 15));
+			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 13));
+			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 10));
+			Widget->DrawList->PathFillConvex(IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+
+			Widget->DrawList->AddRectFilled(
+				Widget->DC.CursorPos,
+				Widget->DC.CursorPos + ImVec2(110, ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30),
+				IM_COL32(85, 90, 95, 255),
+				5.f,
+				ImDrawCornerFlags_All
+			);
+			y = 37;
+
+			for (size_t i = 0; i < ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2); i++)
+			{
+				std::string WeaponName = WeaponGroups[SelectedWeaponGroup][i*2+1];
+
+				ImGui::SetCursorPos(ImVec2(82, y));
+				if (ImGui::Button(("##dummy-weapongroup-btn-" + WeaponName).c_str(), ImVec2(110, 30)))
+					SelectedWeaponIndex = i;
+
+				ImGui::SetCursorPos(ImVec2(82, y));
+				Widget->DrawList->AddRectFilled(
+					Widget->DC.CursorPos,
+					Widget->DC.CursorPos + ImVec2(110, 30),
+					SelectedWeaponIndex == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75, 80, 85, 255) : 0,
+					5.f,
+					i == 0 ? ImDrawCornerFlags_Top : i == ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2 - 1) ? ImDrawCornerFlags_Bot : 0
+				);
+
+				ImGui::SetCursorPos(ImVec2(92, y + (30 - 16) / 2));
+				ImGui::TextEx(WeaponName.c_str());
+
+				y += 30;
+			}
+
+			ImGui::PopFont();
+			ImGui::PopStyleColor(3);
+
+			// draw skin names
+			{ // search bar
+				ImGui::SetCursorPos(ImVec2(202, 37));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(32, 33, 36, 255));
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				ImGui::BeginChild("##skin-weapon-searchbar", ImVec2(Widget->Size.x - 202 - 10, 24), false);
+
+				const char* InputLabel = "##WeaponSkinSearchTextInput";
+				auto InputID = ImGui::GetID(InputLabel);
+				static Animation::Anim* MySearchAnimation = Animation::newAnimation("weapon-skin-search");
+				static char* WeaponSearchQuery = nullptr;
+				while (!WeaponSearchQuery) if (WeaponSearchQuery = new char[256]) ZeroMemory(WeaponSearchQuery, 256);
+				bool IsSearchingWeapon = ImGui::GetActiveID() == InputID || WeaponSearchQuery[0];
+
+				float SearchAnimationFactor = Animation::animate(Animation::age(MySearchAnimation), 0.15);
+				if (!IsSearchingWeapon)
+					SearchAnimationFactor = 1.f - SearchAnimationFactor;
+
+				Animation::changed(MySearchAnimation, IsSearchingWeapon);
+
+				ImGui::SetCursorPos(ImVec2(5, 5));
+				ImGui::DrawSearchIcon(200, ImVec2(14, 14));
+
+				ImGui::PushFont(Arial16);
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
+				ImGui::SetCursorPos(ImVec2(24, 4));
+				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearchingWeapon ? 48 : 28));
+				ImGui::InputText(InputLabel, WeaponSearchQuery, 256);
+				ImGui::PopStyleColor(1);
+
+				if (!IsSearchingWeapon)
+				{
+					ImGui::SetCursorPos(ImVec2(24, 4));
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(145, 145, 145, 255));
+					ImGui::Text("Search Skins");
+					ImGui::PopStyleColor(1);
+				}
+				else
+				{
+					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+					ImGui::DrawXIcon(Animation::lerp(0, 200, Animation::animate(Animation::age(SearchAnimation), 0.15)), ImVec2(9, 9));
+					// dummy button
+					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
+					ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 150));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
+					if (ImGui::Button("##cancel-search-dummy-weapon-skin", ImVec2(18, 18)))
+					{
+						ZeroMemory(WeaponSearchQuery, 256);
+						if (ImGui::GetActiveID() == InputID)
+							ImGui::ClearActiveID();
+					}
+					ImGui::PopStyleColor(3);
+				}
+				ImGui::PopFont();
+
+				ImGui::EndChild();
+				ImGui::PopStyleColor(1);
+				ImGui::PopStyleVar(1);
+			}
+
+
+			WindowHeight = Widget->ContentSize.y;
+			ImGui::EndChild();
+			y = ImGui::GetCursorPosY();
+		}
+
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar(1);
+	}
 	else
 	{
 		DrawNormalTab(ActiveTab);
@@ -2309,6 +2537,13 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	if (!ActiveTab && Config2::Tabs.size() > 0)
 		ActiveTab = Config2::Tabs.at(0);
 
+	float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15);
+	if (!IsSearching)
+		SearchAnimationFactor = 1.f - SearchAnimationFactor;
+
+	ImVec2 OverlaySize(Animation::lerp(150, Window->Size.x, SearchAnimationFactor), Window->Size.y - TitleBarHeight);
+	ImVec2 OverlayPosition(0, TitleBarHeight);
+
 	// background gif/color idk yet
 	{
 
@@ -2319,19 +2554,18 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		ImGui::SetCursorPos(ImVec2(150, TitleBarHeight));
 		ImGui::BeginChild("##main-right-side");
 
+		auto w = ImGui::GetCurrentWindow();
+		ImGui::PushClipRect(Window->Pos + OverlayPosition + ImVec2(OverlaySize.x, 0), Window->Pos + Window->Size, false);
+
 		GUI2::DrawActiveTab();
+
+		ImGui::PopClipRect();
 
 		ImGui::EndChild();
 	}
 
 	// left side
 	{
-		float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15);
-		if (!IsSearching)
-			SearchAnimationFactor = 1.f - SearchAnimationFactor;
-
-		ImVec2 OverlaySize(Animation::lerp(150, Window->Size.x, SearchAnimationFactor), Window->Size.y - TitleBarHeight);
-		ImVec2 OverlayPosition(0, TitleBarHeight);
 
 		// draw background because imgui is fuckign retarded and can't clip the bottom corners correctly
 		DrawList->AddRectFilled(
