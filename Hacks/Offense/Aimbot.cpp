@@ -115,6 +115,7 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 	return sqrtf(powf(min(a, b), 2) + powf(c, 2));
 }
 
+
 void Aimbot::Smooth(Vec& Angle)
 {
 	int State = smooth_method;
@@ -172,6 +173,7 @@ void Aimbot::Smooth(Vec& Angle)
 	Angle = G::StartAngle + Delta;
 	Angle.NormalizeAngle();
 }
+
 
 int Aimbot::GetHitGroup(int Hitbox)
 {
@@ -773,10 +775,15 @@ void Aimbot::Run()
 
 	if ((BestVisDamage <= 0) && (BestHiddenDamage <= 0)) return;
 
-	// Calculate angle to point
+	// Calculate angle/index to best point
+	int BestIndex = BestHiddenIndex;
 	QAngle Angle = CalculateAngle(BestHiddenAimpoint);
-	if(BestVisDamage > BestHiddenDamage)
+	if (BestVisDamage > BestHiddenDamage)
+	{
+		BestIndex = BestVisIndex;
 		Angle = CalculateAngle(BestVisAimpoint);
+	}
+		
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 	
 	// Check if within FOV
@@ -803,6 +810,8 @@ void Aimbot::Run()
 	/*if (ang.VecLength2D() - Angle.VecLength2D() > 1.f)
 		return;*/
 
+	// Set up Resolver For Shot Log
+	resolver->TargetIndex = BestIndex;
 	
 
 	// shoot
@@ -810,8 +819,154 @@ void Aimbot::Run()
 		G::cmd->buttons |= IN_ATTACK;
 }
 
-/*
-* smoothing method
-* smoothing amount
-* FOV
-*/
+
+
+void Aimbot::Legit()
+{
+	if (LegitHitboxes.empty())
+		LegitHitboxes.push_back(HITBOX_HEAD);
+
+	if (!G::LocalPlayer) return;
+
+	if (!G::LocalPlayerAlive) return;
+
+	// Get Closest Entity
+	int Index = GetClosestToCrosshair();
+	if (Index == -1) return;
+
+	// Get Closest Entity Bone to Crosshair
+	float Distance = FLT_MAX; 
+	bool Valid = false;
+	QAngle Ang = GetClosestBoneToCrosshairAngle(Index, Distance, Valid);
+	if (!Valid) return;
+
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back(Ang.str());
+	H::console.push_back(std::to_string(G::LocalPlayer->GetShotsFired()));
+	bool key = GetAsyncKeyState(VK_LMENU);
+	if(key)
+		H::console.push_back("KEY PRESEED");
+	if(Valid)
+		H::console.push_back("VALID");
+
+	if (Valid && key)
+	{	
+		I::engine->SetViewAngles(Ang);
+		G::cmd->viewangles = Ang;
+	}
+	
+
+}
+
+int Aimbot::GetClosestToCrosshair()
+{
+	float BestDistance = FLT_MAX;
+	int Index = -1;
+
+	G::StartAngle.NormalizeAngle();
+	for (int i = 0; i < 64; i++)
+	{
+		auto a = G::EntList[i];
+
+		if (a.index == G::LocalPlayerIndex) // entity is Localplayer
+			continue;
+
+		if (!(a.entity)) // entity DOES NOT exist
+			continue;
+
+		if (!a.player) // entity is NOT player
+			continue;
+
+		if (!(a.health > 0)) // entity is NOT alive
+			continue;
+
+		if (a.team == G::LocalPlayerTeam) // Entity is on same team
+			continue;
+
+		if (a.dormant)	// Entity is dormant
+			continue;
+
+		if (!backtrack->Valid(a.lastSimTime)) // if not valid simtime
+			continue;
+
+		Vec TempAng = CalculateAngle(a.EyePos);
+		TempAng.NormalizeAngle();
+		QAngle TempDelta = G::StartAngle - TempAng;
+		TempDelta.NormalizeAngle();
+		float Distance = TempDelta.VecLength2D();
+		if (Distance < BestDistance)
+		{
+			Index = i;
+			BestDistance = Distance;
+		}
+	}
+
+	return Index;
+}
+
+Vec Aimbot::GetClosestBoneToCrosshairAngle(int Index, float& Distance, bool& Valid)
+{
+	auto ent = G::EntList[Index];
+	if (!(ent.health > 0)) return Vec();
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(ent.model);
+	if (!StudioModel) return Vec();	//if cant get the model
+
+	QAngle IdealAng = QAngle();
+	for (auto Hitbox : this->LegitHitboxes)
+	{
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
+		if (!StudioBox) continue;	//if cant get the hitbox...
+
+		// Get midpoint of hitboxes
+		Vec min = StudioBox->bbmin.Transform(ent.Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(ent.Matrix[StudioBox->bone]);
+		Vec mid = (max + min) / 2;
+
+		// If not shorter distance
+		QAngle ang = CalculateAngle(mid);
+		DoRecoilComponensation(ang);
+		ang.NormalizeAngle();
+		QAngle delta = G::StartAngle - ang;
+		delta.NormalizeAngle();
+		float Dist = delta.VecLength2D();
+		if (Dist >= Distance)
+			continue;
+
+		// If not visible
+		bool visible = true;
+		float dam = autowall->GetDamage(ent.entity, mid, false, visible);
+		if (!visible)
+			continue;
+
+		// Visible, and a shorter distance
+		Valid = true;
+		Distance = Dist;
+		IdealAng = ang;
+	}
+	IdealAng.NormalizeAngle();
+	return IdealAng;
+}
+
+void Aimbot::DoRecoilComponensation(QAngle& ang)
+{
+	if(G::LocalPlayer->GetShotsFired() > 1)
+		ang -= (G::LocalPlayer->GetAimPunchAngle() * 2);
+}
+
+void Aimbot::SmoothLinear(QAngle& Ang, float x, float y)
+{
+}
+
+void Aimbot::SmoothSlowToFast(QAngle& Ang, float x, float y)
+{
+}
+
+void Aimbot::SmoothFastToSlow(QAngle& Ang, float x, float y)
+{
+}
+
+void Aimbot::rage()
+{
+}

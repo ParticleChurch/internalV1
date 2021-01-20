@@ -85,6 +85,70 @@ void AntiAim::legit()
 	real.NormalizeAngle();
 }
 
+void AntiAim::legit2()
+{
+	if (!Config::GetBool("antiaim-legit-enable"))
+		return;
+
+	if (!G::LocalPlayer)
+		return;
+
+	if (!G::LocalPlayerAlive)
+		return;
+
+	fake = G::cmd->viewangles;
+	real = G::cmd->viewangles;
+
+	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
+		return;
+
+	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND))
+		return;
+
+	legit_left = Config::GetState("antiaim-legit-invert");
+	legit_side = legit_left ? 1 : -1;
+
+	bool BreakLBY = LBYBreak();
+	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-legit-max-angle") / 100.f;
+
+	//side by default = left
+	if (!BreakLBY)
+	{
+		float amount = Delta * 2 * legit_side;
+		G::cmd->viewangles.y += fakelag->PredictedVal ? 0 : amount;
+	}
+
+	if (BreakLBY)
+	{
+		float amount = Delta * -1 * legit_side;
+		G::cmd->viewangles.y += amount;
+		fakelag->PredictedVal = false;
+		*G::pSendPacket = false;
+	}
+
+	if (fakelag->PredictedVal) {
+		fake = G::cmd->viewangles;
+		real.x = G::cmd->viewangles.x;
+		real.y = G::cmd->viewangles.y + (Delta * legit_side);
+	}
+	else
+	{
+		if (!BreakLBY)
+		{
+			real.x = G::cmd->viewangles.x;
+			real.y = G::cmd->viewangles.y + (Delta * legit_side * -1);
+		}
+		else
+		{
+			real.x = G::cmd->viewangles.x;
+			real.y = G::cmd->viewangles.y + (Delta * legit_side);
+		}
+	}
+
+	fake.NormalizeAngle();
+	real.NormalizeAngle();
+}
+
 void AntiAim::rage()
 {
 	if (!Config::GetBool("antiaim-rage-enable"))
@@ -237,6 +301,7 @@ void AntiAim::rage2()
 		float amount = Delta * -1 * rage_side;
 		G::cmd->viewangles.y += amount;
 		*G::pSendPacket = false;
+		fakelag->PredictedVal = false;
 	}
 
 	if (*G::pSendPacket) {
@@ -261,7 +326,6 @@ void AntiAim::rage2()
 	fake.NormalizeAngle();
 	real.NormalizeAngle();
 }
-
 
 /*
 Random fake, freestanding real

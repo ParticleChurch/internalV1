@@ -14,7 +14,22 @@ bool FakeLag::TimeBreaker()
 {
 	// we can't choke more than 62 ticks because of some protection (prev exploits)
 	// which is around 16 packets (a more accurate way would be to count ticks, meh)
-	if (I::engine->GetNetChannelInfo()->ChokedPackets >= TrigTicks)
+	/*float latency = 0;
+	NetChannel* info = I::engine->GetNetChannelInfo();
+	if (info)
+		latency += info->GetLatency(0) + info->GetLatency(1);
+
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back(std::to_string(backtrack->TimeToTicks(latency)));*/
+
+	auto network = I::engine->GetNetChannelInfo();
+	float delta = 0.f;
+	if (network)
+		delta = network->GetLatency(0) + network->GetLatency(1);
+	
+
+	if (I::engine->GetNetChannelInfo()->ChokedPackets + backtrack->TimeToTicks(0.5f + delta / I::globalvars->m_intervalPerTick) >= TrigTicks)
 		return true;
 	return false;
 }

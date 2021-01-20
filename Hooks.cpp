@@ -3,6 +3,97 @@
 //for windprc hook
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+
+class EventListener : public GameEventListener
+{
+public:
+	EventListener()
+	{
+		I::gameeventmanager->AddListener(this, "bullet_impact");	// Resolver
+		I::gameeventmanager->AddListener(this, "player_hurt");		// Resolver/Hitmarker
+		I::gameeventmanager->AddListener(this, "weapon_fire");		// Resolver
+		I::gameeventmanager->AddListener(this, "player_death");		// Hitmarker
+	}
+	~EventListener()
+	{
+		I::gameeventmanager->RemoveListener(this);
+	}
+
+	virtual void FireGameEvent(GameEvent* event)
+	{
+		switch (StrHash::HashRuntime(event->GetName())) {
+		case StrHash::Hash("player_hurt"):
+		{
+			/*
+			player_hurt
+			Name:	player_hurt
+			Structure:
+			short	userid	user ID of who was hurt
+			short	attacker	user ID of who attacked
+			byte	health	remaining health points
+			byte	armor	remaining armor points
+			string	weapon	weapon name attacker used, if not the world
+			short	dmg_health	damage done to health
+			byte	dmg_armor	damage done to armor
+			byte	hitgroup	hitgroup that was damaged
+			*/
+
+			//also add hitmarkers here...
+			const auto localIdx = I::engine->GetLocalPlayer();
+			int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
+			int userid = I::engine->GetPlayerForUserID(event->GetInt("userid"));
+			int HitGroup = event->GetInt("hitgroup");
+
+
+			if (attacker == localIdx && userid != localIdx)
+				I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
+
+			if (userid == localIdx && HitGroup == 1) { //if hitting head
+				bool orig = Config::GetState("antiaim-legit-invert");
+				Config::SetBool("antiaim-legit-invert", !orig);
+				orig = Config::GetState("antiaim-rage-invert");
+				Config::SetBool("antiaim-rage-invert", !orig);
+			}
+		}
+		break;
+		case StrHash::Hash("player_death"):
+		{
+			/*
+			player_death
+			Note: When a client dies
+
+			Name:	player_death
+			Structure:
+			short	userid	user ID who died
+			short	attacker	user ID who killed
+			short	assister	user ID who assisted in the kill
+			bool	assistedflash	assister helped with a flash
+			string	weapon	weapon name killer used
+			string	weapon_itemid	inventory item id of weapon killer used
+			string	weapon_fauxitemid	faux item id of weapon killer used
+			string	weapon_originalowner_xuid
+			bool	headshot	singals a headshot
+			short	dominated	did killer dominate victim with this kill
+			short	revenge	did killer get revenge on victim with this kill
+			short	wipe	To do: check if indicates on a squad wipeout in Danger Zone
+			short	penetrated	number of objects shot penetrated before killing target
+			bool	noreplay	if replay data is unavailable, this will be present and set to false
+			bool	noscope	kill happened without a scope, used for death notice icon
+			bool	thrusmoke	hitscan weapon went through smoke grenade
+			bool	attackerblind	attacker was blind from flashbang
+			*/
+
+			const auto localIdx = I::engine->GetLocalPlayer();
+			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
+				break;
+			I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
+		}
+		break;
+		}
+		/*resolver->LogShots(event);*/
+	}
+};
+
 namespace H
 {
 	VMTManager d3d9VMT;
@@ -21,8 +112,6 @@ namespace H
 	PaintTraverse oPaintTraverse;
 	FrameStageNotify oFrameStageNotify;
 	LockCursor oLockCursor;
-	FireEventClientSide oFireEventClientSide;
-	FireEvent oFireEvent;
 	hkCamToFirstPeron ohkCamToFirstPeron;
 	DoPostScreenEffects oDoPostScreenEffects;
 	DrawModelExecute oDrawModelExecute;
@@ -36,7 +125,10 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
+
+	EventListener* g_EventListener;
 }
+
 
 void H::Init()
 {
@@ -64,6 +156,9 @@ void H::Init()
 	modelrenderVMT.Initialise((DWORD*)I::modelrender);
 	soundVMT.Initialise((DWORD*)I::sound);
 	GUI2::LoadProgress = 0.25f;
+
+	
+	H::g_EventListener = new EventListener();
 
 	static int SleepTime = 100;
 
@@ -115,18 +210,8 @@ void H::Init()
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
 
-	std::cout << "FireEventClientSide...";
-	oFireEventClientSide = (FireEventClientSide)gameeventmanagerVMT.HookMethod((DWORD)&FireEventClientSideHook, 9);
-	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo FireEventClientSide...Success!");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.6f;
-
-	std::cout << "FireEvent...";
-	oFireEvent = (FireEvent)gameeventmanagerVMT.HookMethod((DWORD)&FireEventHook, 8);
-	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo FireEvent...Success!");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.65f;
@@ -166,6 +251,7 @@ void H::Init()
 void H::UnHook()
 {
 	I::inputsystem->EnableInput(true);
+
 
 	//std::cout << "WndProc...";
 	D3dInit = false; //for wndproc... haven't found better solution
@@ -210,6 +296,7 @@ void H::UnHook()
 	soundVMT.RestoreOriginal();
 	//std::cout << "Success!" << std::endl;
 
+	delete g_EventListener;
 	delete aimbot;
 	delete backtrack;
 	delete movement;
@@ -235,6 +322,24 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
 	}
+
+	//DONT ALLOW GAME CAPTURE, i think lol
+	static uintptr_t gameoverlay_return_address = 0;
+
+	if (!gameoverlay_return_address) {
+		MEMORY_BASIC_INFORMATION info;
+		VirtualQuery(_ReturnAddress(), &info, sizeof(MEMORY_BASIC_INFORMATION));
+
+		char mod[MAX_PATH];
+		GetModuleFileNameA((HMODULE)info.AllocationBase, mod, MAX_PATH);
+
+		if (strstr(mod, "gameoverlay"))
+			gameoverlay_return_address = (uintptr_t)(_ReturnAddress());
+	}
+
+	if (gameoverlay_return_address != (uintptr_t)(_ReturnAddress()))
+		return oEndScene(device);
+
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -347,6 +452,13 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
+float RandomVal(float min, float max)
+{
+	int Delta = max - min;
+	float val = rand() % Delta;
+	return min + val;
+}
+
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
 	if (!cmd->command_number)
@@ -380,12 +492,12 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
+		// AA
+		antiaim->legit2();
+		antiaim->rage();
+
 		// Fake Lag
 		*G::pSendPacket = fakelag->End();
-
-		// AA
-		antiaim->legit();
-		antiaim->rage();
 
 		// Clantag
 		clantag->run();
@@ -400,6 +512,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			G::cmd->viewangles = G::StartAngle;
 
 		aimbot->Run();
+		/*aimbot->Legit();*/
 
 		// decide when to enable desync
 		// we need to implement in movefixend or something lol
@@ -488,47 +601,9 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 	}
 }
 
-
-
-void P100Resolver(int Stage)
-{
-	if (!I::engine->IsInGame())
-		return;
-
-	Entity* localplayer = (Entity*)I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if (!localplayer)
-		return;
-
-	int team = localplayer->GetTeam();
-
-	if (Stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START || Stage == FRAME_RENDER_END)
-	{
-		for (int i = 1; i < I::engine->GetMaxClients(); ++i)
-		{
-			Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
-
-			if (!player
-				|| player == localplayer
-				|| player->IsDormant()
-				|| !(player->GetHealth() > 0)
-				|| team == player->GetTeam())
-				continue;
-
-			//player->GetEyeAngles()->y = *player->GetLowerBodyYawTarget();
-			if (!player->PGetEyeAngles())
-				continue;
-			player->PGetEyeAngles()->y = player->GetLBY();
-			player->PGetEyeAngles()->y = (rand() % 2) ?
-				player->GetEyeAngles().y + (player->GetMaxDesyncAngle() * 0.66f) :
-				player->GetEyeAngles().y - (player->GetMaxDesyncAngle() * 0.66f);
-		}
-	}
-}
-
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-
-	/*P100Resolver(curStage);*/
+	/*resolver->Resolve(curStage);*/
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
@@ -591,119 +666,6 @@ void __stdcall H::LockCursorHook()
 		return I::surface->UnlockCursor();
 	}
 	return oLockCursor(I::surface);
-}
-
-bool __stdcall H::FireEventClientSideHook(GameEvent* event)
-{
-	if (!(I::engine->IsInGame()))
-		return oFireEventClientSide(I::gameeventmanager, event);
-	if (!event)
-		return oFireEventClientSide(I::gameeventmanager, event);
-
-	killsay->run(event);
-
-	switch (StrHash::HashRuntime(event->GetName())) {
-	case StrHash::Hash("player_hurt"):
-	{
-		/*
-		player_hurt
-		Name:	player_hurt
-		Structure:
-		short	userid	user ID of who was hurt
-		short	attacker	user ID of who attacked
-		byte	health	remaining health points
-		byte	armor	remaining armor points
-		string	weapon	weapon name attacker used, if not the world
-		short	dmg_health	damage done to health
-		byte	dmg_armor	damage done to armor
-		byte	hitgroup	hitgroup that was damaged
-		*/
-		
-		//also add hitmarkers here...
-		const auto localIdx = I::engine->GetLocalPlayer();
-		int attacker = I::engine->GetPlayerForUserID(event->GetInt("attacker"));
-		int userid = I::engine->GetPlayerForUserID(event->GetInt("userid"));
-		int HitGroup = event->GetInt("hitgroup");
-
-
-		if (attacker == localIdx && userid != localIdx)
-			I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
-
-		if (userid == localIdx && HitGroup == 1) { //if hitting head
-			bool orig = Config::GetState("antiaim-legit-invert");
-			Config::SetBool("antiaim-legit-invert", !orig);
-			orig = Config::GetState("antiaim-rage-invert");
-			Config::SetBool("antiaim-rage-invert", !orig);
-		}
-	}
-	break;
-	case StrHash::Hash("player_death"):
-	{
-		/*
-		player_death
-		Note: When a client dies
-
-		Name:	player_death
-		Structure:	
-		short	userid	user ID who died
-		short	attacker	user ID who killed
-		short	assister	user ID who assisted in the kill
-		bool	assistedflash	assister helped with a flash
-		string	weapon	weapon name killer used
-		string	weapon_itemid	inventory item id of weapon killer used
-		string	weapon_fauxitemid	faux item id of weapon killer used
-		string	weapon_originalowner_xuid	
-		bool	headshot	singals a headshot
-		short	dominated	did killer dominate victim with this kill
-		short	revenge	did killer get revenge on victim with this kill
-		short	wipe	To do: check if indicates on a squad wipeout in Danger Zone
-		short	penetrated	number of objects shot penetrated before killing target
-		bool	noreplay	if replay data is unavailable, this will be present and set to false
-		bool	noscope	kill happened without a scope, used for death notice icon
-		bool	thrusmoke	hitscan weapon went through smoke grenade
-		bool	attackerblind	attacker was blind from flashbang
-		*/
-		
-		const auto localIdx = I::engine->GetLocalPlayer();
-		if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
-			break;
-		I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
-	}
-	break;	
-	}
-	return oFireEventClientSide(I::gameeventmanager, event);
-}
-
-bool __stdcall H::FireEventHook(GameEvent* event, bool bDontBroadcast) //THIS WORKS HAHAHAHA
-{
-	if (!(I::engine->IsInGame()))
-		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
-	if (!event)
-		return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
-
-	switch (StrHash::HashRuntime(event->GetName())) {
-		/*
-		bullet_impact
-		Note: Every time a bullet hits something
-
-		Name:	bullet_impact
-		Structure:	
-		short	userid	
-		float	x	
-		float	y	
-		float	z	
-		*/
-		case StrHash::Hash("bullet_impact"):
-		{
-			Vec			HitLocation		= Vec(event->GetInt("x"), event->GetInt("y"), event->GetInt("z"));
-			const int	LocalIndex		= I::engine->GetLocalPlayer();
-			const int	UserIndex		= I::engine->GetPlayerForUserID(event->GetInt("userid"));
-			Entity*		Entity			= I::entitylist->GetClientEntity(UserIndex);
-				
-		}
-		break;
-	}
-	return oFireEvent(I::gameeventmanager, event, bDontBroadcast);
 }
 
 void __fastcall H::hkCamToFirstPeronHook()

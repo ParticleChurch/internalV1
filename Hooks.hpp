@@ -13,8 +13,6 @@ namespace H
 	typedef void(__thiscall* PaintTraverse)(void*, int, bool, bool);
 	typedef void(__stdcall* FrameStageNotify)(int);
 	typedef void(__thiscall* LockCursor)(void*);
-	typedef bool(__thiscall* FireEventClientSide)(void*, GameEvent*);
-	typedef bool(__thiscall* FireEvent)(void*, GameEvent*, bool);
     typedef void(__thiscall* hkCamToFirstPeron)(void*);
     typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 	typedef void(__thiscall* DrawModelExecute)(void*, void*, void*, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
@@ -26,15 +24,10 @@ namespace H
 	extern PaintTraverse oPaintTraverse;
 	extern FrameStageNotify oFrameStageNotify;
 	extern LockCursor oLockCursor;
-	extern FireEventClientSide oFireEventClientSide;
-	extern FireEvent oFireEvent;
 	extern hkCamToFirstPeron ohkCamToFirstPeron;
 	extern DoPostScreenEffects oDoPostScreenEffects;
 	extern DrawModelExecute oDrawModelExecute;
 	extern EmitSound oEmitSound;
-
-	
-	
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
@@ -44,8 +37,6 @@ namespace H
 	extern void __stdcall PaintTraverseHook(int vguiID, bool force, bool allowForcing);
 	extern void __stdcall FrameStageNotifyHook(int curStage);
 	extern void __stdcall LockCursorHook();
-	extern bool __stdcall FireEventClientSideHook(GameEvent* event);
-	extern bool __stdcall FireEventHook(GameEvent* event, bool bDontBroadcast);
     extern void __fastcall hkCamToFirstPeronHook();
     extern void __stdcall DoPostScreenEffectsHook(int param);
 	extern void __fastcall DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);

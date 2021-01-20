@@ -33,6 +33,19 @@ public:
 
 	// Run stuff
 	void Run();
+
+	// LEGIT
+	std::vector<Hitboxes> LegitHitboxes;
+	void Legit();
+	int GetClosestToCrosshair();
+	QAngle GetClosestBoneToCrosshairAngle(int Index, float& distance, bool& valid);
+	void DoRecoilComponensation(QAngle& ang);
+
+	void SmoothLinear(QAngle& Ang, float x, float y);
+	void SmoothSlowToFast(QAngle& Ang, float x, float y);
+	void SmoothFastToSlow(QAngle& Ang, float x, float y);
+
+	void rage();
 };
 
 extern Aimbot* aimbot;

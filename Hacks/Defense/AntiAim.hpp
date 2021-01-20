@@ -13,6 +13,7 @@ public:
 	bool rage_left = true;
 	int rage_side = 1;
 
+	void legit2();
 	void rage2();
 	void rage3();
 

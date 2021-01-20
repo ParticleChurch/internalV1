@@ -100,6 +100,9 @@
     <ClCompile Include="GUI\animation.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Offense\Resolver.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -365,6 +368,9 @@
     </ClInclude>
     <ClInclude Include="GUI\animation.hpp">
       <Filter>Headers\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\Resolver.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

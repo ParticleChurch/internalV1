@@ -17,6 +17,12 @@ public:
 		*(BYTE*)((DWORD)this + offset) = val;
 	}
 
+	float GetSpread()
+	{
+		typedef float(__thiscall* oGetSpread)(void*);
+		return GetVFunc<oGetSpread>(this, 452)(this);
+	}
+
 	float GetInaccuracy()
 	{
 		typedef float(__thiscall* oGetInaccuracy)(void*);
