@@ -90,7 +90,9 @@ public:
 		}
 		break;
 		}
+		killsay->run(event);
 		resolver->LogShots(event);
+		esp->Run_GameEvent(event);
 	}
 };
 
@@ -322,6 +324,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
 	}
+	
 
 	//DONT ALLOW GAME CAPTURE, i think lol
 	static uintptr_t gameoverlay_return_address = 0;
@@ -599,10 +602,17 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	return false; //silent aim on false (only for client)
 }
 
+namespace H{
+	
+	std::vector<BulletTracer> traces;
+}
+
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && Config::GetBool("visuals-misc-noscope"))
 		return;
+
+	
 
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
@@ -610,7 +620,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 			return;
 
 		miscvisuals->NoScope();
-		esp->Run();
+		esp->Run_PaintTraverse();
 	}
 }
 
@@ -626,6 +636,23 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		if (r_jiggle_bones->GetInt() > 0)
 			r_jiggle_bones->SetValue(0);
 
+	}
+	if (curStage == FRAME_RENDER_START)
+	{
+		for (int i = 0; i < traces.size(); i++)
+		{
+			auto cur = traces[i];
+			//draw a line from local player's head position to the hit point
+			I::debugoverlay->AddLineOverlay(cur.src, cur.end, 125, 125, 1, true, -1);
+			//draw a box at the hit point
+			I::debugoverlay->AddBoxOverlay(cur.end, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 255, 0, 0, 127, -1.f);
+
+			//if the item is older than 5 seconds, delete it
+			if (fabs(I::globalvars->m_curTime - cur.SimTime) > 5.f)
+				traces.erase(traces.begin() + i);
+		}
+		while (traces.size() > 8)
+			traces.erase(traces.begin());
 	}
 		
 	

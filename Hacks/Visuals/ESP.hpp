@@ -8,9 +8,11 @@ private:
 	void DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg);
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
+	
 public:
 	std::vector<Vec> points;
-	void Run();
+	void Run_PaintTraverse();
+	void Run_GameEvent(GameEvent* event);
 
 	
 };

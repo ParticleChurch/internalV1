@@ -47,6 +47,7 @@
 #include "Interfaces/ModelRender.h"
 #include "Interfaces/StudioRender.hpp"
 #include "Interfaces/MaterialSystem.h"
+#include "Interfaces/IVDebugOverlay.hpp"
 
 //MORE CUSTOM
 #include "Custom/Math.hpp"

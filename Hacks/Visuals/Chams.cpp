@@ -6,10 +6,16 @@ void Chams::OverideMat(bool ignorez, int material, float transparent, Color rgba
 {
 	static Material* current;
 	current = GetCurMaterial(material);
-	current->ColorModulate(
-		rgba.r() / 255.0f,
-		rgba.g() / 255.0f,
-		rgba.b() / 255.0f);
+
+	if (material == 7 || material == 5 || material == 3 || material == 4)
+		current->FindVar("$envmaptint")->SetVectorValue(rgba.r() / 255.0f,
+			rgba.g() / 255.0f,
+			rgba.b() / 255.0f);
+	else
+		current->ColorModulate(
+			rgba.r() / 255.0f,
+			rgba.g() / 255.0f,
+			rgba.b() / 255.0f);
 
 	current->AlphaModulate(transparent);
 	current->SetMaterialVarFlag(MaterialVarFlag::IGNOREZ, ignorez);
@@ -31,6 +37,7 @@ void Chams::Init()
 
 	flat = I::materialsystem->CreateMaterial("flat", KeyValues::FromString("UnlitGeneric", nullptr));
 	normal = I::materialsystem->CreateMaterial("normal", KeyValues::FromString("VertexLitGeneric", nullptr));
+	glow = I::materialsystem->CreateMaterial("glow", KeyValues::FromString("VertexLitGeneric", "$additive 1 $envmap models/effects/cube_white $envmapfresnel 1 $alpha .7"));
 	{
 		const auto kv = KeyValues::FromString("VertexLitGeneric", "$envmap editor/cube_vertigo $envmapcontrast 1 $basetexture dev/zone_warning proxies { texturescroll { texturescrollvar $basetexturetransform texturescrollrate 0.6 texturescrollangle 90 } }");
 		kv->SetString("$envmaptint", "[.7 .7 .7]");

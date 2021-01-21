@@ -23,4 +23,6 @@ namespace I
 	MaterialSystem* materialsystem = (MaterialSystem*)NewInterface->GetInterface((char*)"materialsystem.dll", (char*)"VMaterialSystem080");
 	Sound* sound = (Sound*)NewInterface->GetInterface((char*)"engine.dll", (char*)"IEngineSoundClient003");
 
+	IVDebugOverlay* debugoverlay = (IVDebugOverlay*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VDebugOverlay004");
+
 }

@@ -212,7 +212,7 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Chams");
 
-#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent"
+#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent", "Glow"
 
 				CEditGroup* ESPGroup = w->AddEditGroup("visuals-chams-");
 

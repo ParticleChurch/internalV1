@@ -138,7 +138,7 @@ void ESP::DrawBacktrackingDots()
 	}
 }
 
-void ESP::Run()
+void ESP::Run_PaintTraverse()
 {
 	
 	antiaim->Visualize();
@@ -176,6 +176,7 @@ void ESP::Run()
 			I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));*/
 		}
 	}
+	
 	
 
 
@@ -292,4 +293,35 @@ void ESP::Run()
 		
 	}
 	//DrawBacktrackingDots();
+}
+
+void ESP::Run_GameEvent(GameEvent* event)
+{
+	switch (StrHash::HashRuntime(event->GetName())) {
+	case StrHash::Hash("bullet_impact"): //0
+	{
+		/*
+		bullet_impact
+		Note: Every time a bullet hits something
+
+		Name:	bullet_impact
+		Structure:
+		short	userid
+		float	x
+		float	y
+		float	z
+		*/
+		int iUser = event->GetInt("userid");
+
+		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex) return;
+
+		if (!G::LocalPlayer) return;
+
+		H::BulletTracer trace;
+		trace.src = G::LocalPlayer->GetEyePos();
+		trace.end =  Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+		trace.SimTime = G::LocalPlayer->GetSimulationTime();
+		H::traces.push_back(trace);
+	}
+	}
 }
