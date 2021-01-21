@@ -90,7 +90,7 @@ public:
 		}
 		break;
 		}
-		/*resolver->LogShots(event);*/
+		resolver->LogShots(event);
 	}
 };
 
@@ -503,6 +503,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		clantag->run();
 		miscvisuals->RankRevealer();
 
+		if (GetAsyncKeyState(VK_LMENU))
+		{
+			for (int i = 0; i < 64; i++)
+			{
+				resolver->ShotsMissed[i] = rand() % 20;
+			}
+		}
+
 		// bad use (E) and attack (LBUTTON)
 		if (G::cmd->buttons & IN_USE)
 		{
@@ -603,7 +611,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-	/*resolver->Resolve(curStage);*/
+	resolver->Resolve(curStage);
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{

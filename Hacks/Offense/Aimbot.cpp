@@ -815,8 +815,11 @@ void Aimbot::Run()
 	
 
 	// shoot
-	if(Config::GetBool("enable-autoshoot"))
+	if (Config::GetBool("enable-autoshoot"))
+	{
 		G::cmd->buttons |= IN_ATTACK;
+	}
+		
 }
 
 

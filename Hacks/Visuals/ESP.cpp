@@ -160,6 +160,20 @@ void ESP::Run()
 		{
 			I::surface->DrawSetColor(Color(255, 0, 0, 255));
 			I::surface->DrawLine(screen.x, screen.y, screen.x+1, screen.y+1);
+			/*static bool Once = true;
+			if (Once)
+			{
+				Once = false;
+				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+			}
+
+			static std::string TEXT = "x";
+			static std::wstring wide_string = std::wstring(TEXT.begin(), TEXT.end());
+
+			I::surface->DrawSetTextFont(FONT);
+			I::surface->DrawSetTextColor(Color(255,0,0,255));
+			I::surface->DrawSetTextPos(screen.x, screen.y );
+			I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));*/
 		}
 	}
 	

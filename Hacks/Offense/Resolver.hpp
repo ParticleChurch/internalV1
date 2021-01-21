@@ -3,11 +3,14 @@
 class Resolver
 {
 private:
-	std::deque<Vec> dequeBulletImpacts;
-	bool bPlayerHurt[64]; //when player_hurt called
-	bool bBulletImpact[64]; //when bullet_impact called
-	int bShotsMissed[64];
+	// 64 is the number of players
+	Vec Loc;
+	bool Hit[64];
+	
 public:
+	int ShotsMissed[64];
+
+
 	int TargetIndex = 0;
 	void LogShots(GameEvent* event);
 	void Resolve(int stage);

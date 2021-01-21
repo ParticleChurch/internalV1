@@ -1,25 +1,78 @@
 #include "../../Include.hpp"
 
 Resolver* resolver = new Resolver();
+/*
+ORDER GOES:
+WEAPON_FIRE
+BULLET_IMPACT
+PLAYER_HURT
+
+Logging on everything XD
+*/
 
 void Resolver::LogShots(GameEvent* event)
 {
-	/*ShowInfo();*/
-	static bool ShotEnd = true;
+	static bool ShotEnd = false;
 	switch (StrHash::HashRuntime(event->GetName())) {
 		// Called before bullet impact
-	case StrHash::Hash("weapon_fire"):
+	case StrHash::Hash("weapon_fire"): //0
 	{
+		/*
+		weapon_fire
+		Note: Every time a client fires their weapon
+
+		Name:	weapon_fire
+		Structure:	
+		short	userid	
+		string	weapon	weapon name used
+		bool	silenced	is weapon silenced
+		*/
+
 		int iUser = event->GetInt("userid");
 		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
 			return;
 
-		H::console.push_back("weapon_fire\n");
-		dequeBulletImpacts.clear();
+		ShotEnd = true;
+
 	}
 	break;
-	case StrHash::Hash("player_hurt"):
+	case StrHash::Hash("bullet_impact"): //0
 	{
+		/*
+		bullet_impact
+		Note: Every time a bullet hits something
+
+		Name:	bullet_impact
+		Structure:	
+		short	userid	
+		float	x	
+		float	y	
+		float	z	
+		*/
+		int iUser = event->GetInt("userid");
+
+		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
+			return;
+
+		/*H::console.push_back("bullet_impact");*/
+		Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+	}
+	break;
+	case StrHash::Hash("player_hurt"): //1
+	{
+		/*
+		player_hurt
+		Name:	player_hurt
+		Structure:	
+		short	userid	user ID of who was hurt
+		short	attacker	user ID of who attacked
+		byte	health	remaining health points
+		byte	armor	remaining armor points
+		string	weapon	weapon name attacker used, if not the world
+		short	dmg_health	damage done to health
+		byte	dmg_armor	damage done to armor
+		byte	hitgroup	hitgroup that was damaged
+		*/
 		int iUser = event->GetInt("userid");
 		int iAttacker = event->GetInt("attacker");
 
@@ -29,75 +82,86 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iAttacker) != G::LocalPlayerIndex)
 			return;
 
-		H::console.push_back("player_hurt");
-		bPlayerHurt[I::engine->GetPlayerForUserID(iUser)] = true;
-	}
-	break;
-	case StrHash::Hash("bullet_impact"):
-	{
-		int iUser = event->GetInt("userid");
-
-		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
-			return;
-
-		if (dequeBulletImpacts.empty())
-		{
-			H::console.push_back("bullet_impact");
-			dequeBulletImpacts.push_back(Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z")));
-			bBulletImpact[TargetIndex] = true;
-		}
+		/*H::console.push_back("player_hurt");*/
+		Hit[I::engine->GetPlayerForUserID(iUser)] = true;
 	}
 	break;
 	default:
 		return;
 	}
 
-	for (int i = 0; i < 64; i++)
+	if (ShotEnd)
+		ShotEnd = false;
+	else
+		return;
+
+	trace_t tr;
+	Ray_t ray(G::LocalPlayer->GetEyePos(), Loc);
+	CTraceFilter traceFilter(G::LocalPlayer);
+	I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
+	Entity* ShouldHitEntity = tr.Entity;
+
+	// No point in doing anything if we shouldn't have hit anything for now
+	if (!ShouldHitEntity)
+		return;
+
+	int index = ShouldHitEntity->Index();
+	if (index > 64)
+		return;
+
+	bool bad_resolve = false;
+	// If we should have hit an enemy, and did--> Good Resolver
+	if (Hit[index])
 	{
-		if (bBulletImpact[i] && !dequeBulletImpacts.empty())
-		{
-
-			trace_t tr;
-			Ray_t ray(G::LocalPlayer->GetEyePos(), dequeBulletImpacts.back());
-			CTraceFilter traceFilter(G::LocalPlayer);
-			//I::enginetrace->TraceRay(ray, 0x4600400B, &traceFilter, &tr);
-			I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
-
-			auto hitEnt = tr.Entity;
-			if (hitEnt && hitEnt->Index() == i && !bPlayerHurt[i])
-			{
-				H::console.push_back("Missed due to prediction @ " + std::to_string(i));
-				//missed due to shit resolver
-				bShotsMissed[i]++;
-
-				bBulletImpact[i] = false;
-				bPlayerHurt[i] = false;
-				dequeBulletImpacts.clear();
-			}
-			else if (bPlayerHurt[i])
-			{
-				H::console.push_back("Hit Shot @ " + std::to_string(i));
-
-				//shot real
-				bBulletImpact[i] = false;
-				bPlayerHurt[i] = false;
-				dequeBulletImpacts.clear();
-			}
-			else
-			{
-				//missed due to spread
-				H::console.push_back("Missed due to spread @ " + std::to_string(i));
-				bBulletImpact[i] = false;
-				bPlayerHurt[i] = false;
-				dequeBulletImpacts.clear();
-			}
-		}
+		/*H::console.push_back("Resolved (ish)");*/
+		Hit[index] = false;
 	}
-	
-	if (H::console.size() > 50 || GetAsyncKeyState(VK_LMENU))
+	// If we should have hit an enemy, and didn't--> Bad Resolver
+	else
 	{
 		H::console.clear();
 		H::console.resize(0);
+		ShotsMissed[index]++;
+		bad_resolve = true;
+	}
+
+	if (!bad_resolve)
+		return;
+
+	float MaxDesync = 60.f;
+	float Split = MaxDesync / 4;
+	if (ShotsMissed[index] > 0)
+	{
+		switch (ShotsMissed[index] % 9)
+		{
+		case 0:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(0));
+			break;
+		case 1:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(Split));
+			break;
+		case 2:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(2 * Split));
+			break;
+		case 3:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(3 * Split));
+			break;
+		case 4:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(4 * Split));
+			break;
+		case 5:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-Split));
+			break;
+		case 6:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-2 * Split));
+			break;
+		case 7:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-3 * Split));
+			break;
+		case 8:
+			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-4 * Split));
+			break;
+		}
 	}
 	
 }
@@ -112,8 +176,6 @@ void Resolver::Resolve(int stage)
 		return;
 
 	int team = localplayer->GetTeam();
-
-	
 
 	if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START || stage == FRAME_RENDER_END)
 	{
@@ -133,11 +195,12 @@ void Resolver::Resolve(int stage)
 			if (!player->PGetEyeAngles())
 				continue;
 
-			float MaxDesync = fabsf(player->GetMaxDesyncAngle());
+			/*float MaxDesync = fabsf(player->GetMaxDesyncAngle());*/
+			float MaxDesync = 60;
 			float Split = MaxDesync / 4;
 			player->PGetEyeAngles()->y = player->GetLBY();
 
-			switch (bShotsMissed[i] % 9)
+			switch (ShotsMissed[i] % 9)
 			{
 			case 0:
 				break;
@@ -200,9 +263,9 @@ void Resolver::ShowInfo()
 		float Split = MaxDesync / 4;
 		player->PGetEyeAngles()->y = player->GetLBY();
 
-		if (bShotsMissed[i] > 0)
+		if (ShotsMissed[i] > 0)
 		{
-			switch (bShotsMissed[i] % 9)
+			switch (ShotsMissed[i] % 9)
 			{
 			case 0:
 				break;

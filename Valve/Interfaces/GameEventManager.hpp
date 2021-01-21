@@ -12,7 +12,7 @@ public:
     }
 
     float GetFloat(const char* keyName, float defaultValue = 0.0f) {
-        typedef int(__thiscall* ogetFloat)(void*, const char*, float);
+        typedef float(__thiscall* ogetFloat)(void*, const char*, float);
         return GetVFunc<ogetFloat>(this, 8)(this, keyName, defaultValue);
     }
 
