@@ -1,5 +1,7 @@
 namespace H
 {
+	
+
 	extern void Init();
 	extern void UnHook();
 	extern void Eject();

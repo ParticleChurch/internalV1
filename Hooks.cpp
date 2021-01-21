@@ -90,7 +90,9 @@ public:
 		}
 		break;
 		}
+		killsay->run(event);
 		resolver->LogShots(event);
+		esp->Run_GameEvent(event);
 	}
 };
 
@@ -130,6 +132,21 @@ namespace H
 }
 
 
+template<typename ...Args>
+void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
+{
+	using ConColorMsg = void(*)(const Color&, const char*, ...);
+	static ConColorMsg con_color_msg = nullptr;
+	if (!con_color_msg) {
+		con_color_msg = reinterpret_cast<ConColorMsg>(GetProcAddress(
+			GetModuleHandleA("tier0.dll"),
+			"?ConColorMsg@@YAXABVColor@@PBDZZ")
+			);
+	}
+
+	con_color_msg(color, fmt, args...);
+}
+
 void H::Init()
 {
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
@@ -145,7 +162,7 @@ void H::Init()
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
 	std::cout << "\nHooking..." << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo Hooking");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Hooking\n");
 	d3d9VMT.Initialise((DWORD*)D3d9Device);
 	clientVMT.Initialise((DWORD*)I::client);
 	clientmodeVMT.Initialise((DWORD*)I::clientmode);
@@ -163,49 +180,55 @@ void H::Init()
 	static int SleepTime = 100;
 
 	std::cout << "Endscene...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Endscene...");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo Endscene...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
 
 	std::cout << "Reset...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Reset...");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo Reset...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.35f;
 
 	std::cout << "CreateMove...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "CreateMove...");
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo CreateMove...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.4f;
 
 	std::cout << "PaintTraverse...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "PaintTraverse...");
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo PaintTraverse...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.45f;
 
 	std::cout << "FrameStageNotify...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "FrameStageNotify...");
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo FrameStageNotify...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.5f;
 
 	std::cout << "LockCursor...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "LockCursor...");
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo LockCursor...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
@@ -217,33 +240,37 @@ void H::Init()
 	GUI2::LoadProgress = 0.65f;
 
 	std::cout << "hkCamToFirstPeronVMT...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "hkCamToFirstPeronVMT...");
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo hkCamToFirstPeronVMT...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.7f;
 
 	std::cout << "DoPostScreenEffects...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "DoPostScreenEffects...");
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo DoPostScreenEffects...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.75f;
 
 	std::cout << "DrawModelExecute...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "DrawModelExecute...");
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo DrawModelExecute...Success!");	
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.8f;
 
 	std::cout << "EmitSound...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "EmitSound...");
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
 	std::cout << "Success!" << std::endl;
-	I::engine->ClientCmd_Unrestricted("echo EmitSound...Success!");
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
 
 	GUI2::LoadProgress = 0.85f;
 }
@@ -322,6 +349,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
 	}
+	
 
 	//DONT ALLOW GAME CAPTURE, i think lol
 	static uintptr_t gameoverlay_return_address = 0;
@@ -610,13 +638,19 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 			return;
 
 		miscvisuals->NoScope();
-		esp->Run();
+		esp->Run_PaintTraverse();
 	}
 }
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	resolver->Resolve(curStage);
+
+	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
+	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
+	{
+		*disablePostProcessing = curStage == FRAME_RENDER_START && true;
+	}
 
 	if (curStage == FRAME_NET_UPDATE_END)
 	{
@@ -627,6 +661,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			r_jiggle_bones->SetValue(0);
 
 	}
+	esp->Run_FrameStageNotify(curStage);
 		
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())

@@ -10,6 +10,7 @@ private:
 	Material* crystal;
 	Material* chrome;
 	Material* pearlescent;
+	Material* glow;
 
 	Material* GetCurMaterial(int index)
 	{
@@ -34,6 +35,9 @@ private:
 			break;
 		case 6:
 			return pearlescent;
+			break;
+		case 7:
+			return glow;
 			break;
 		default:
 			return flat;

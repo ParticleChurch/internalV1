@@ -24,4 +24,6 @@ namespace I
 	extern StudioRender* studiorender;
 	extern MaterialSystem* materialsystem;
 	extern Sound* sound;
+
+	extern IVDebugOverlay* debugoverlay;
 }

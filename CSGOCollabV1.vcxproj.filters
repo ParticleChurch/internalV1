@@ -372,6 +372,9 @@
     <ClInclude Include="Hacks\Offense\Resolver.hpp">
       <Filter>Headers\Hacks\Offense</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IVDebugOverlay.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
