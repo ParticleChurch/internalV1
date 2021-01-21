@@ -479,8 +479,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 
 		// Fake lag Calculations
-		H::console.clear();
-		H::console.resize(0);
 		fakelag->Start();
 		
 		G::CM_Start(cmd, pSendPacket);
@@ -501,11 +499,13 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		// Fake Lag
 		*G::pSendPacket = fakelag->End();
-		H::console.push_back(std::to_string(I::engine->GetNetChannelInfo()->ChokedPackets));
 
 		// AA
 		antiaim->legit();
 		antiaim->rage();
+
+		
+
 
 		// Clantag
 		clantag->run();
@@ -514,10 +514,15 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		// bad use (E) and attack (LBUTTON)
 		if (G::cmd->buttons & IN_USE)
 		{
+			*G::pSendPacket = true;
 			G::cmd->viewangles = G::StartAngle;
 		}
 		else if ((G::cmd->buttons & IN_ATTACK) && G::LocalPlayer->CanShoot())
+		{
+			*G::pSendPacket = true;
 			G::cmd->viewangles = G::StartAngle;
+		}
+			
 
 		aimbot->Run();
 		/*aimbot->Legit();*/

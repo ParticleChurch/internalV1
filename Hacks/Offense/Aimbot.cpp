@@ -637,6 +637,14 @@ void Aimbot::Run()
 
 	if (fakelag->LaggingOnPeak) return;
 
+	static bool PrevAttackSendPacket = false;
+	// Janky Hide Shots
+	if (PrevAttackSendPacket) {
+		PrevAttackSendPacket = false;
+		*G::pSendPacket = true;
+	}
+		
+
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return;
 
@@ -802,10 +810,12 @@ void Aimbot::Run()
 	// Set up Resolver For Shot Log
 	resolver->TargetIndex = BestIndex;
 	
+	
 
 	// shoot
 	if (Config::GetBool("enable-autoshoot"))
 	{
+		PrevAttackSendPacket = false;
 		G::cmd->buttons |= IN_ATTACK;
 	}
 		

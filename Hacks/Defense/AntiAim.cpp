@@ -81,83 +81,15 @@ void AntiAim::legit()
 		}
 	}
 
-	fake.NormalizeAngle();
-	real.NormalizeAngle();
-}
-
-
-
-
-void AntiAim::legit2()
-{
-	if (!Config::GetBool("antiaim-legit-enable"))
-		return;
-
-	if (!G::LocalPlayer)
-		return;
-
-	if (!G::LocalPlayerAlive)
-		return;
-
-	fake = G::cmd->viewangles;
-	real = G::cmd->viewangles;
-
-	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
-		return;
-
-	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND))
-		return;
-
-	legit_left = Config::GetState("antiaim-legit-invert");
-	legit_side = legit_left ? 1 : -1;
-
-	bool BreakLBY = LBYBreak();
-	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-legit-max-angle") / 100.f;
-
-	//side by default = left
-	if (G::pSendPacket && !*G::pSendPacket)
+	if (*G::pSendPacket) 
 	{
-		float amount = Delta * 2 * legit_side;
-		G::cmd->viewangles.y += amount;
-
-		if (BreakLBY)
-		{
-			G::cmd->viewangles.y += amount;
-		}
+		Matrix3x4 Temp[128];
+		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
+		G::LocalPlayer->SetupBones(Temp, 128, 0x100, 0);
+		RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), Temp, FakeMatrix);
+		FakeAbsOrigin = G::LocalPlayer->GetVecOrigin();
+	}
 		
-	}
-	if (!BreakLBY)
-	{
-		float amount = Delta * 2 * legit_side;
-		G::cmd->viewangles.y += fakelag->PredictedVal ? 0 : amount;
-	}
-
-	if (BreakLBY)
-	{
-		float amount = Delta * -1 * legit_side;
-		G::cmd->viewangles.y += amount;
-		fakelag->PredictedVal = false;
-		*G::pSendPacket = false;
-	}
-
-	if (fakelag->PredictedVal) {
-		fake = G::cmd->viewangles;
-		real.x = G::cmd->viewangles.x;
-		real.y = G::cmd->viewangles.y + (Delta * legit_side);
-	}
-	else
-	{
-		if (!BreakLBY)
-		{
-			real.x = G::cmd->viewangles.x;
-			real.y = G::cmd->viewangles.y + (Delta * legit_side * -1);
-		}
-		else
-		{
-			real.x = G::cmd->viewangles.x;
-			real.y = G::cmd->viewangles.y + (Delta * legit_side);
-		}
-	}
 
 	fake.NormalizeAngle();
 	real.NormalizeAngle();
@@ -245,6 +177,15 @@ void AntiAim::rage()
 			real.x = G::cmd->viewangles.x;
 			real.y = G::cmd->viewangles.y + (Delta * rage_side);
 		}
+	}
+
+	if (*G::pSendPacket)
+	{
+		Matrix3x4 Temp[128];
+		G::LocalPlayer->SetupBones(FakeMatrix, 128, 0x100, 0);
+		G::LocalPlayer->SetupBones(Temp, 128, 0x100, 0);
+		RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), Temp, FakeMatrix);
+		FakeAbsOrigin = G::LocalPlayer->GetVecOrigin();
 	}
 
 	fake.NormalizeAngle();

@@ -122,6 +122,10 @@ void FakeLag::Start()
 
 	// If breaking distance or time --> Send packets
 	PredictedVal = DistanceBreaker() || TimeBreaker();
+
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back(std::to_string(I::engine->GetNetChannelInfo()->ChokedPackets));
 	
 	
 	if (PredictedVal)
