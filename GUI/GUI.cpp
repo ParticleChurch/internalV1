@@ -2349,7 +2349,6 @@ void GUI2::DrawActiveTab()
 
 				y += 30;
 			}
-
 			// draw weapon names
 			if (SelectedWeaponIndex * 2 + 1 >= WeaponGroups[SelectedWeaponGroup].size())
 				SelectedWeaponIndex = 0;
@@ -2368,9 +2367,10 @@ void GUI2::DrawActiveTab()
 			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 10));
 			Widget->DrawList->PathFillConvex(IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
 
+			int WeaponNamesHeight = ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30;
 			Widget->DrawList->AddRectFilled(
 				Widget->DC.CursorPos,
-				Widget->DC.CursorPos + ImVec2(110, ((WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30),
+				Widget->DC.CursorPos + ImVec2(110, WeaponNamesHeight),
 				IM_COL32(85, 90, 95, 255),
 				5.f,
 				ImDrawCornerFlags_All
@@ -2399,13 +2399,79 @@ void GUI2::DrawActiveTab()
 
 				y += 30;
 			}
-
-			ImGui::PopFont();
 			ImGui::PopStyleColor(3);
 
-			// draw skin names
-			{ // search bar
-				ImGui::SetCursorPos(ImVec2(202, 37));
+			// current selection
+			{
+				static Animation::Anim* MyAnimation = Animation::newAnimation("weapon-current-skin-hover", 0);
+				bool HasSelection = true; // TODO: actually load value
+				std::string SelectionName = "Candy Apple"; // TODO: gun name
+
+				const char* label = "Current: ";
+				ImVec2 labelSize = ImGui::CalcTextSize(label);
+
+				ImGui::SetCursorPos(ImVec2(202, 37 + (24 - labelSize.y)/2));
+				ImGui::Text(label);
+
+				ImGui::SetCursorPos(ImVec2(202 + labelSize.x + 5, 37));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(32, 33, 36, 255));
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				ImGui::BeginChild("##skin-weapon-current-selection", ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
+
+				Animation::changed(MyAnimation, ImGui::IsWindowHovered());
+				float AnimFactor = Animation::animate(Animation::age(MyAnimation), 0.15);
+				if (!MyAnimation->state)
+					AnimFactor = 1.f - AnimFactor;
+
+				ImGui::PushFont(Arial16);
+				unsigned char color = Animation::lerp(145, 255, AnimFactor);
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(color, color, color, 255));
+
+				ImGui::SetCursorPos(ImVec2(4, 4));
+
+				if (!HasSelection)
+					ImGui::Text("None"); 
+				else
+				{
+					auto win = ImGui::GetCurrentWindow();
+					int maxX = win->Size.x - 24;
+					
+					if (AnimFactor > 0)
+					{
+						ImGui::PushClipRect(win->Pos, win->Pos + ImVec2(maxX, win->Size.y), false);
+						ImGui::Text(SelectionName.c_str());
+						ImGui::PopClipRect();
+
+
+						ImGui::SetCursorPos(ImVec2(maxX + 7, 7));
+						ImGui::DrawXIcon(Animation::lerp(0, 200, AnimFactor), ImVec2(9, 9));
+						ImGui::SetCursorPos(ImVec2(maxX + 3, 3));
+						ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 150));
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
+						if (ImGui::Button("##remove-active-weapon-skin", ImVec2(18, 18)))
+						{
+							HasSelection = false; // TODO: actually do something
+						}
+						ImGui::PopStyleColor(3);
+					}
+					else
+					{
+						ImGui::Text(SelectionName.c_str());
+					}
+				}
+				
+				ImGui::PopFont();
+				ImGui::PopStyleColor(1);
+
+				ImGui::EndChild();
+			}
+
+			ImGui::PopFont();
+
+			// search bar
+			{ 
+				ImGui::SetCursorPos(ImVec2(202, 37 + 24 + 5));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(32, 33, 36, 255));
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-weapon-searchbar", ImVec2(Widget->Size.x - 202 - 10, 24), false);
@@ -2464,6 +2530,53 @@ void GUI2::DrawActiveTab()
 				ImGui::PopStyleVar(1);
 			}
 
+			// skin list
+			{
+				static std::vector<std::string> Skins = { "Groundwater","Candy Apple","Forest DDPAT","Arctic Camo","Desert Storm","Bengal Tiger","Copperhead","Skulls","Crimson Web","Blue Streak","Red Laminate","Gunsmoke","Jungle Tiger","Urban DDPAT","Virus","Granite Marbleized","Contrast Spray","Forest Leaves" };
+				std::string SelectedSkin = "Candy Apple";
+
+				ImGui::SetCursorPos(ImVec2(203, 37 + 24 + 5 + 24 + 5 + 1));
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(85, 90, 95, 255));
+				ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
+				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 203 - 11, 37 + WeaponNamesHeight - ImGui::GetCursorPosY()), false);
+				auto win = ImGui::GetCurrentWindow();
+				Widget->DrawList->AddRect(
+					win->Pos - ImVec2(1, 1),
+					win->Pos + win->Size + ImVec2(1, 1),
+					IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
+					0.f,0
+				);
+
+				ImGui::PushFont(Arial16);
+				for (size_t i = 0; i < Skins.size(); i++)
+				{
+					ImGui::SetCursorPos(ImVec2(0, i * 30));
+					if (SelectedSkin == Skins[i])
+					{
+						win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(60, 65, 70, 255));
+					}
+					else if (ImGui::Button(("##invisible-weapon-skin-select-" + Skins[i]).c_str(), ImVec2(win->Size.x, 30)))
+					{
+
+					}
+					else if (ImGui::IsItemHovered())
+					{
+						ImGui::SetCursorPos(ImVec2(0, i * 30));
+						win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(75, 80, 85, 255));
+					}
+
+					ImGui::SetCursorPos(ImVec2(5, i * 30 + (30 - ImGui::GetFontSize()) / 2));
+					ImGui::Text(Skins[i].c_str());
+				}
+				ImGui::PopFont();
+
+				ImGui::EndChild();
+				ImGui::PopStyleVar(1);
+				ImGui::PopStyleColor(4);
+			}
 
 			WindowHeight = Widget->ContentSize.y;
 			ImGui::EndChild();
@@ -2643,35 +2756,30 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
 
 			int x = 29, y = 5 + 24 + 5;
-			
-			int SelectedTabHeight = y;
-			int HoveredTabHeight = -1;
+			int SelectedTabIndex = -1;
+			int HoveredTabIndex = -1;
 
 			for (size_t i = 0; i < Config2::Tabs.size(); i++)
 			{
 				Config2::Tab* t = Config2::Tabs.at(i);
+				bool isSelected = t == ActiveTab;
+				bool isEject = t->Name == "Eject";
 
-				if (t == ActiveTab)
+				if (isEject || isSelected)
 				{
 					ImGui::PushFont(Arial18Bold);
-					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
+
+					if (isEject)
+						ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 100, 100, 255));
+					else
+						ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
 				}
-				if (t->Name == "Eject")
-				{
-					ImGui::PushFont(Arial18Bold);
-					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 100, 100, 255));
-				}
+
 
 				ImGui::SetCursorPos(ImVec2(x, y));
 				ImGui::TextEx(t->Name.c_str());
 
-				if (t == ActiveTab)
-				{
-					ImGui::PopFont();
-					ImGui::PopStyleColor(1);
-					SelectedTabHeight = y;
-				}
-				if (t->Name == "Eject")
+				if (isEject || isSelected)
 				{
 					ImGui::PopFont();
 					ImGui::PopStyleColor(1);
@@ -2682,12 +2790,13 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 				if (ImGui::Button(("##dummy-tab-select-" + t->Name).c_str(), ImVec2(OverlaySize.x - 10, 20)))
 				{
 					ActiveTab = t;
+					isSelected = true;
 				}
 
 				if (ImGui::IsItemHovered())
-				{
-					HoveredTabHeight = y;
-				}
+					HoveredTabIndex = i;
+				if (isSelected)
+					SelectedTabIndex = i;
 
 				y += ImGui::GetFontSize() + 2;
 			}
@@ -2697,13 +2806,16 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 
 			// selected triangle
-			ImGui::SetCursorPos(ImVec2(12, SelectedTabHeight + (18 - 8) / 2));
-			ImGui::DrawSelectionCursor(255, ImVec2(10, 8));
+			if (SelectedTabIndex >= 0)
+			{
+				ImGui::SetCursorPos(ImVec2(12, 34 + 20 * SelectedTabIndex + (18 - 8) / 2));
+				ImGui::DrawSelectionCursor(255, ImVec2(10, 8));
+			}
 
 			// hover triangle
-			if (HoveredTabHeight > 0 && SelectedTabHeight != HoveredTabHeight)
+			if (HoveredTabIndex >= 0 && SelectedTabIndex != HoveredTabIndex)
 			{
-				ImGui::SetCursorPos(ImVec2(12, HoveredTabHeight + (18 - 8) / 2));
+				ImGui::SetCursorPos(ImVec2(12, 34 + 20 * HoveredTabIndex + (18 - 8) / 2));
 				ImGui::DrawSelectionCursor(100, ImVec2(10, 8));
 			}
 		}
@@ -2727,7 +2839,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopStyleVar(7);
 	ImGui::PopStyleColor(10);
 
-	//*
+	/*
 	Ejected |= GUI::Main();
 	//*/
 }

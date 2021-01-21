@@ -905,7 +905,7 @@ namespace Config2
 			this->Minimum = Min;
 			this->Maximum = Max;
 			this->Decimals = max(min(Decimals, 6), 0);
-			this->Percision = pow(10, this->Decimals);
+			this->Percision = (int)pow(10, this->Decimals);
 			this->Value = min(max(this->Minimum, Value), this->Maximum);
 		}
 

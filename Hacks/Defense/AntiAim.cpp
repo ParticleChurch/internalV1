@@ -394,7 +394,7 @@ bool AntiAim::GetBestHeadAngle(QAngle& angle)
 	float closest_distance = 100.0f;
 
 	float radius = HEADEDGE + 0.1f;
-	float step = M_PI * 2.f / 8.f;
+	float step = (float)M_PI * 2.f / 8.f;
 
 	esp->points.clear();
 	esp->points.resize(0);
