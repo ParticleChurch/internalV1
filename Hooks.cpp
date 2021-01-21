@@ -602,17 +602,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	return false; //silent aim on false (only for client)
 }
 
-namespace H{
-	
-	std::vector<BulletTracer> traces;
-}
-
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && Config::GetBool("visuals-misc-noscope"))
 		return;
-
-	
 
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
 	if (I::panel && strcmp(I::panel->GetName(vguiID), "MatSystemTopPanel") == 0) {
@@ -628,6 +621,12 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	resolver->Resolve(curStage);
 
+	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
+	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
+	{
+		*disablePostProcessing = curStage == FRAME_RENDER_START && true;
+	}
+
 	if (curStage == FRAME_NET_UPDATE_END)
 	{
 		// PLAYER ANIM FIX FOR LOCAL PLAYER ONLY
@@ -637,23 +636,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			r_jiggle_bones->SetValue(0);
 
 	}
-	if (curStage == FRAME_RENDER_START)
-	{
-		for (int i = 0; i < traces.size(); i++)
-		{
-			auto cur = traces[i];
-			//draw a line from local player's head position to the hit point
-			I::debugoverlay->AddLineOverlay(cur.src, cur.end, 125, 125, 1, true, -1);
-			//draw a box at the hit point
-			I::debugoverlay->AddBoxOverlay(cur.end, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 255, 0, 0, 127, -1.f);
-
-			//if the item is older than 5 seconds, delete it
-			if (fabs(I::globalvars->m_curTime - cur.SimTime) > 5.f)
-				traces.erase(traces.begin() + i);
-		}
-		while (traces.size() > 8)
-			traces.erase(traces.begin());
-	}
+	esp->Run_FrameStageNotify(curStage);
 		
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())

@@ -1,13 +1,5 @@
 namespace H
 {
-
-	struct BulletTracer
-	{
-		Vec src;
-		Vec end;
-		float SimTime;
-	};
-	extern std::vector<BulletTracer> traces;
 	extern void Init();
 	extern void UnHook();
 	extern void Eject();

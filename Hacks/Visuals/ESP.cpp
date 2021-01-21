@@ -295,6 +295,27 @@ void ESP::Run_PaintTraverse()
 	//DrawBacktrackingDots();
 }
 
+void ESP::Run_FrameStageNotify(int stage)
+{
+	if (stage == FRAME_RENDER_START)
+	{
+		for (int i = 0; i < traces.size(); i++)
+		{
+			auto cur = traces[i];
+			//draw a line from local player's head position to the hit point
+			I::debugoverlay->AddLineOverlay(cur.src, cur.end, 125, 125, 1, true, -1);
+			//draw a box at the hit point
+			I::debugoverlay->AddBoxOverlay(cur.end, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 255, 0, 0, 127, -1.f);
+
+			//if the item is older than 5 seconds, delete it
+			if (fabs(I::globalvars->m_curTime - cur.SimTime) > 5.f)
+				traces.erase(traces.begin() + i);
+		}
+		while (traces.size() > 8)
+			traces.erase(traces.begin());
+	}
+}
+
 void ESP::Run_GameEvent(GameEvent* event)
 {
 	switch (StrHash::HashRuntime(event->GetName())) {
@@ -317,11 +338,11 @@ void ESP::Run_GameEvent(GameEvent* event)
 
 		if (!G::LocalPlayer) return;
 
-		H::BulletTracer trace;
+		BulletTracer trace;
 		trace.src = G::LocalPlayer->GetEyePos();
 		trace.end =  Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
 		trace.SimTime = G::LocalPlayer->GetSimulationTime();
-		H::traces.push_back(trace);
+		traces.push_back(trace);
 	}
 	}
 }
