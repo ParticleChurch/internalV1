@@ -52,7 +52,10 @@ void Chams::Init()
 
 void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
-	
+	static int tick_count = I::globalvars->m_tickCount;
+	bool NewTick = false;
+	if (tick_count != I::globalvars->m_tickCount)
+		NewTick = true;
 
 	bool is_arm = strstr(info.model->name, "arms") != nullptr;
 	bool is_player = strstr(info.model->name, "models/player") != nullptr;
@@ -74,7 +77,8 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
 				&& Config::GetBool("visuals-misc-thirdperson"))
 			{
-				RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
+				if(NewTick)
+					RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				OverideMat(
 						false,	//viz thru wall?
 						Config::GetState("visuals-chams-localplayer-fake-material"),		// material

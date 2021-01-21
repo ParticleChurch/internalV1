@@ -18,18 +18,16 @@ bool FakeLag::TimeBreaker()
 	NetChannel* info = I::engine->GetNetChannelInfo();
 	if (info)
 		latency += info->GetLatency(0) + info->GetLatency(1);
-
-	H::console.clear();
-	H::console.resize(0);
-	H::console.push_back(std::to_string(backtrack->TimeToTicks(latency)));*/
+*/
 
 	auto network = I::engine->GetNetChannelInfo();
 	float delta = 0.f;
 	if (network)
+	{
 		delta = network->GetLatency(0) + network->GetLatency(1);
+	}
 	
-
-	if (I::engine->GetNetChannelInfo()->ChokedPackets + backtrack->TimeToTicks(0.5f + delta / I::globalvars->m_intervalPerTick) >= TrigTicks)
+	if (I::engine->GetNetChannelInfo()->ChokedPackets + int(delta / I::globalvars->m_intervalPerTick) >= TrigTicks)
 		return true;
 	return false;
 }
@@ -124,6 +122,7 @@ void FakeLag::Start()
 
 	// If breaking distance or time --> Send packets
 	PredictedVal = DistanceBreaker() || TimeBreaker();
+	
 	
 	if (PredictedVal)
 		PrevPos = G::LocalPlayer->GetEyePos();

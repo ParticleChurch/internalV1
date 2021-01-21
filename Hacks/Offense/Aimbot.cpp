@@ -747,17 +747,6 @@ void Aimbot::Run()
 	if (accuracy < accuracy_amount)
 		return;
 
-	//if (G::LocalPlayer && G::LocalPlayerAlive && G::LocalPlayerWeapon)
-	//{
-	//	H::console.clear();
-	//	H::console.resize(0);
-	//	float Inaccuracy = G::LocalPlayerWeapon->GetInaccuracy(); //0.01 is accurate
-	//	Inaccuracy *= 550;
-	//	//clamp Inaccuracy so if its above 10 the its just 10
-	//	Inaccuracy = 100 - (10*(std::clamp(Inaccuracy, 0.f, 10.f)));
-	//	H::console.push_back("Inaccuracy: " + std::to_string(Inaccuracy));
-	//}
-
 	// Get Visible Entity with best damage
 	int BestVisIndex = -1;
 	int BestVisDamage = -1;
@@ -843,17 +832,7 @@ void Aimbot::Legit()
 	QAngle Ang = GetClosestBoneToCrosshairAngle(Index, Distance, Valid);
 	if (!Valid) return;
 
-	H::console.clear();
-	H::console.resize(0);
-	H::console.push_back(Ang.str());
-	H::console.push_back(std::to_string(G::LocalPlayer->GetShotsFired()));
-	bool key = GetAsyncKeyState(VK_LMENU);
-	if(key)
-		H::console.push_back("KEY PRESEED");
-	if(Valid)
-		H::console.push_back("VALID");
-
-	if (Valid && key)
+	if (Valid)
 	{	
 		I::engine->SetViewAngles(Ang);
 		G::cmd->viewangles = Ang;

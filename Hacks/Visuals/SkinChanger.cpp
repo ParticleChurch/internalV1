@@ -1023,18 +1023,12 @@ SkinChanger::SkinChanger()
 
 void SkinChanger::SetVal(int idx, std::string SkinName)
 {
-    H::console.clear();
-    H::console.resize(0);
     // If invalid index
     if (idx >= 34)
         return;
 
-    H::console.push_back("Valid Index @" + std::to_string(idx));
-
     // set new Value
     CurSkins[idx] = Skins[SkinName];
-
-    H::console.push_back(std::to_string(CurSkins[idx]));
 }
 
 void SkinChanger::Menu()

@@ -27,6 +27,8 @@ public:
 	bool GetBestHeadAngle(QAngle& angle);
 
 	void Visualize();
+
+	void ApplyLocalPlayer();
 };
 
 extern AntiAim* antiaim;

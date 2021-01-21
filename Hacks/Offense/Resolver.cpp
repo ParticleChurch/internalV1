@@ -54,7 +54,6 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
 			return;
 
-		/*H::console.push_back("bullet_impact");*/
 		Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
 	}
 	break;
@@ -82,7 +81,6 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iAttacker) != G::LocalPlayerIndex)
 			return;
 
-		/*H::console.push_back("player_hurt");*/
 		Hit[I::engine->GetPlayerForUserID(iUser)] = true;
 	}
 	break;
@@ -113,57 +111,19 @@ void Resolver::LogShots(GameEvent* event)
 	// If we should have hit an enemy, and did--> Good Resolver
 	if (Hit[index])
 	{
-		/*H::console.push_back("Resolved (ish)");*/
 		Hit[index] = false;
 	}
 	// If we should have hit an enemy, and didn't--> Bad Resolver
 	else
 	{
-		H::console.clear();
-		H::console.resize(0);
 		ShotsMissed[index]++;
 		bad_resolve = true;
 	}
 
 	if (!bad_resolve)
 		return;
-
-	float MaxDesync = 60.f;
-	float Split = MaxDesync / 4;
-	if (ShotsMissed[index] > 0)
-	{
-		switch (ShotsMissed[index] % 9)
-		{
-		case 0:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(0));
-			break;
-		case 1:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(Split));
-			break;
-		case 2:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(2 * Split));
-			break;
-		case 3:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(3 * Split));
-			break;
-		case 4:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(4 * Split));
-			break;
-		case 5:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-Split));
-			break;
-		case 6:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-2 * Split));
-			break;
-		case 7:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-3 * Split));
-			break;
-		case 8:
-			H::console.push_back("Prediction Error, switching angle to: " + std::to_string(-4 * Split));
-			break;
-		}
-	}
 	
+	// Log to some resolver console
 }
 
 void Resolver::Resolve(int stage)
@@ -196,7 +156,7 @@ void Resolver::Resolve(int stage)
 				continue;
 
 			/*float MaxDesync = fabsf(player->GetMaxDesyncAngle());*/
-			float MaxDesync = 60;
+			float MaxDesync = 90;
 			float Split = MaxDesync / 4;
 			player->PGetEyeAngles()->y = player->GetLBY();
 
@@ -205,96 +165,30 @@ void Resolver::Resolve(int stage)
 			case 0:
 				break;
 			case 1:
-				player->PGetEyeAngles()->y += Split;
+				player->PGetEyeAngles()->y += 4 * Split;
 				break;
 			case 2:
 				player->PGetEyeAngles()->y += 2 * Split;
 				break;
 			case 3:
-				player->PGetEyeAngles()->y += 3 * Split;
-				break;
-			case 4:
-				player->PGetEyeAngles()->y += 4 * Split;
-				break;
-			case 5:
-				player->PGetEyeAngles()->y -= Split;
-				break;
-			case 6:
 				player->PGetEyeAngles()->y -= 2 * Split;
 				break;
-			case 7:
-				player->PGetEyeAngles()->y -= 3 * Split;
-				break;
-			case 8:
+			case 4:
 				player->PGetEyeAngles()->y -= 4 * Split;
 				break;
-			}
-		}
-	}
-}
-
-void Resolver::ShowInfo()
-{
-	H::console.clear();
-	H::console.resize(0);
-
-	Entity* localplayer = (Entity*)I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
-	if (!localplayer)
-		return;
-
-	int team = localplayer->GetTeam();
-
-	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
-	{
-		Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
-
-		if (!player
-			|| player == localplayer
-			|| player->IsDormant()
-			|| !(player->GetHealth() > 0)
-			|| team == player->GetTeam())
-			continue;
-
-		//player->GetEyeAngles()->y = *player->GetLowerBodyYawTarget();
-		if (!player->PGetEyeAngles())
-			continue;
-
-		float MaxDesync = fabsf(player->GetMaxDesyncAngle());
-		float Split = MaxDesync / 4;
-		player->PGetEyeAngles()->y = player->GetLBY();
-
-		if (ShotsMissed[i] > 0)
-		{
-			switch (ShotsMissed[i] % 9)
-			{
-			case 0:
-				break;
-			case 1:
-				H::console.push_back(std::to_string(Split));
-				break;
-			case 2:
-				H::console.push_back(std::to_string(2 * Split));
-				break;
-			case 3:
-				H::console.push_back(std::to_string(3 * Split));
-				break;
-			case 4:
-				H::console.push_back(std::to_string(4 * Split));
-				break;
 			case 5:
-				H::console.push_back(std::to_string(-Split));
+				player->PGetEyeAngles()->y += 3 * Split;
 				break;
 			case 6:
-				H::console.push_back(std::to_string(-2 * Split));
+				player->PGetEyeAngles()->y -= 3 * Split;
 				break;
 			case 7:
-				H::console.push_back(std::to_string(-3 * Split));
+				player->PGetEyeAngles()->y += 1 * Split;
 				break;
 			case 8:
-				H::console.push_back(std::to_string(-4 * Split));
+				player->PGetEyeAngles()->y -= 1 * Split;
 				break;
 			}
 		}
-
 	}
 }

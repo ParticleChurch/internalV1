@@ -359,8 +359,13 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::Text("Ooooh Secret setting. Experiment XD");
 		ImGui::SliderFloat("###accuracy", &aimbot->accuracy_amount, 0, 100);
 
-		ImGui::Text("Edge Amount");
-		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);
+		/*ImGui::Text("Edge Amount");
+		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);*/
+		if (ImGui::Button("Reset Resolver"))
+		{
+			for (int i = 0; i < 64; i++)
+				resolver->ShotsMissed[i] = rand() % 20;
+		}
 		ImGui::End();
 	}
 	skinchanger->Menu();
@@ -474,6 +479,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 
 		// Fake lag Calculations
+		H::console.clear();
+		H::console.resize(0);
 		fakelag->Start();
 		
 		G::CM_Start(cmd, pSendPacket);
@@ -492,24 +499,17 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
-		// AA
-		antiaim->legit2();
-		antiaim->rage();
-
 		// Fake Lag
 		*G::pSendPacket = fakelag->End();
+		H::console.push_back(std::to_string(I::engine->GetNetChannelInfo()->ChokedPackets));
+
+		// AA
+		antiaim->legit();
+		antiaim->rage();
 
 		// Clantag
 		clantag->run();
 		miscvisuals->RankRevealer();
-
-		if (GetAsyncKeyState(VK_LMENU))
-		{
-			for (int i = 0; i < 64; i++)
-			{
-				resolver->ShotsMissed[i] = rand() % 20;
-			}
-		}
 
 		// bad use (E) and attack (LBUTTON)
 		if (G::cmd->buttons & IN_USE)
@@ -612,6 +612,17 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	resolver->Resolve(curStage);
+
+	if (curStage == FRAME_NET_UPDATE_END)
+	{
+		// PLAYER ANIM FIX FOR LOCAL PLAYER ONLY
+		static ConVar* r_jiggle_bones = I::cvar->FindVar("r_jiggle_bones");
+		r_jiggle_bones->onChangeCallbacks.size = 0;
+		if (r_jiggle_bones->GetInt() > 0)
+			r_jiggle_bones->SetValue(0);
+
+	}
+		
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{

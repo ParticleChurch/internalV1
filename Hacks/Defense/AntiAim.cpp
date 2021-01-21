@@ -85,6 +85,9 @@ void AntiAim::legit()
 	real.NormalizeAngle();
 }
 
+
+
+
 void AntiAim::legit2()
 {
 	if (!Config::GetBool("antiaim-legit-enable"))
@@ -112,6 +115,17 @@ void AntiAim::legit2()
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-legit-max-angle") / 100.f;
 
 	//side by default = left
+	if (G::pSendPacket && !*G::pSendPacket)
+	{
+		float amount = Delta * 2 * legit_side;
+		G::cmd->viewangles.y += amount;
+
+		if (BreakLBY)
+		{
+			G::cmd->viewangles.y += amount;
+		}
+		
+	}
 	if (!BreakLBY)
 	{
 		float amount = Delta * 2 * legit_side;
@@ -514,3 +528,4 @@ void AntiAim::Visualize()
 
 	
 }
+
