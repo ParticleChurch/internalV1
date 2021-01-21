@@ -1,7 +1,24 @@
 #include "Include.hpp"
 
+template<typename ...Args>
+void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
+{
+    using ConColorMsg = void(*)(const Color&, const char*, ...);
+    static ConColorMsg con_color_msg = nullptr;
+    if (!con_color_msg) {
+        con_color_msg = reinterpret_cast<ConColorMsg>(GetProcAddress(
+            GetModuleHandleA("tier0.dll"),
+            "?ConColorMsg@@YAXABVColor@@PBDZZ")
+            );
+    }
+
+    con_color_msg(color, fmt, args...);
+}
+
 void Init()
 {
+    I::engine->ClientCmd_Unrestricted("toggleconsole");
+    ConsoleColorMsg(Color(255, 128, 0, 255), "\n\nInjecting...\n");
     GUI2::LoadProgress = 0.f;
 
     if (GUI2::ConsoleOutput)
@@ -18,14 +35,17 @@ void Init()
 
     GUI2::LoadProgress = 0.05f;
     G::PatternConvarInit();
+    ConsoleColorMsg(Color(0, 255, 0, 255), "Patterns Found!\n");
     GUI2::LoadProgress = 0.1f;
     Config::Init();
+    ConsoleColorMsg(Color(0, 255, 0, 255), "Config Created!\n");
     Config2::Init();
     GUI2::LoadProgress = 0.15f;
     H::Init();
     GUI2::LoadProgress = 1.f;
 
-    I::engine->ClientCmd_Unrestricted("echo Cheat Injected");
+    ConsoleColorMsg(Color(50, 153, 255, 255), "Cheat Injected\n\n");
+    I::engine->ClientCmd_Unrestricted("toggleconsole");
 
     std::cout << "Initialization successful" << std::endl;
     while (!G::KillDLL) Sleep(100);
