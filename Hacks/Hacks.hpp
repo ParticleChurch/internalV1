@@ -3,6 +3,7 @@
 #include "Offense/Autowall.hpp"
 #include "Offense/Aimbot.hpp"
 #include "Offense/Resolver.hpp"
+#include "Offense/Doubletap.hpp"
 #include "Defense/FakeLag.hpp"
 #include "Defense/AntiAim.hpp"
 #include "Misc/Movement.hpp"

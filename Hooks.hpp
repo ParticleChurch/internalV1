@@ -1,7 +1,5 @@
 namespace H
 {
-	
-
 	extern void Init();
 	extern void UnHook();
 	extern void Eject();
@@ -42,7 +40,11 @@ namespace H
     extern void __fastcall hkCamToFirstPeronHook();
     extern void __stdcall DoPostScreenEffectsHook(int param);
 	extern void __fastcall DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
-	
-	
 	extern void __stdcall EmitSoundHook(SoundData data);
+
+
+	//DT???
+	typedef bool(__thiscall* WriteUsercmdDeltaToBuffer)(void*, int, void*, int, int, bool);
+	extern WriteUsercmdDeltaToBuffer oWriteUsercmdDeltaToBuffer;
+	extern	bool __fastcall WriteUsercmdDeltaToBufferHook(void* ecx, void* edx, int slot, void* buffer, int from, int to, bool isnewcommand);
 }

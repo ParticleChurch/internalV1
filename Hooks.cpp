@@ -129,6 +129,11 @@ namespace H
 	bool ThirdPersonToggle = false;
 
 	EventListener* g_EventListener;
+
+	//DT???
+	WriteUsercmdDeltaToBuffer oWriteUsercmdDeltaToBuffer;
+	void* WriteUsercmdDeltaToBufferReturn;
+	uintptr_t WriteUsercmd;
 }
 
 
@@ -149,6 +154,9 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 
 void H::Init()
 {
+	WriteUsercmdDeltaToBufferReturn = *(reinterpret_cast<void**>(FindPattern("engine.dll", "84 C0 74 04 B0 01 EB 02 32 C0 8B FE 46 3B F3 7E C9 84 C0 0F 84")));
+	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
+
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
 	IDirect3DDevice9* D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
@@ -232,6 +240,12 @@ void H::Init()
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
+
+	std::cout << "WriteUsercmdDeltaToBuffer...";
+	ConsoleColorMsg(Color(0, 255, 0, 255), "WriteUsercmdDeltaToBuffer...");
+	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
+	std::cout << "Success!" << std::endl;
+	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.6f;
@@ -499,17 +513,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
 	{
-		
-		float ServerTime = I::globalvars->ServerTime(cmd);
-
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 
+		G::CM_Start(cmd, pSendPacket);
+
 		// Fake lag Calculations
 		fakelag->Start();
-		
-		G::CM_Start(cmd, pSendPacket);
+
+		// Doubletap Stuff
+		/*doubletap->start();*/
+
+		// Update server time
+		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		// Movement
 		movement->BunnyHop();	
@@ -525,9 +542,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	
 		G::CM_MoveFixStart();
 
+
 		// Fake Lag
 		*G::pSendPacket = fakelag->End();
-
+		
 		// AA
 		antiaim->legit();
 		antiaim->rage();
@@ -616,6 +634,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			antiaim->real.NormalizeAngle();
 			antiaim->fake.NormalizeAngle();
 		}
+		
+		/*doubletap->end();*/
 		
 
 		G::CM_End();	
@@ -762,4 +782,77 @@ void __stdcall H::EmitSoundHook(SoundData data)
 	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
 	}
 	return oEmitSound(I::sound, data);
+}
+
+
+static void CWriteUsercmd(void* buf, CUserCmd* Cin, CUserCmd* Cout)
+{
+	static auto WriteUsercmdF = H::WriteUsercmd;
+
+	__asm
+	{
+		mov ecx, buf
+		mov edx, Cin
+		push Cout
+		call WriteUsercmdF
+		add esp, 4
+	}
+}
+
+bool __fastcall H::WriteUsercmdDeltaToBufferHook(void* ecx, void* edx, int slot, void* buf, int from, int to, bool isnewcommand)
+{
+	//return oWriteUsercmdDeltaToBuffer(ecx, slot, buf, from, to, isnewcommand);
+	static auto ofunct = oWriteUsercmdDeltaToBuffer;
+
+	if (doubletap->m_tick_to_shift <= 0 || I::clientstate->m_choked_commands > 3)
+		return ofunct(ecx, slot, buf, from, to, isnewcommand);
+
+	if (from != -1)
+		return true;
+
+	auto CL_SendMove = []() {
+		using CL_SendMove_t = void(__fastcall*)(void);
+		static CL_SendMove_t CL_SendMoveF = (CL_SendMove_t)FindPattern("engine.dll", "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? B9 ? ? ? ? 53 8B 98");
+
+		CL_SendMoveF();
+	};
+
+	int* pNumBackupCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x30);
+	int* pNumNewCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x2C);
+	auto net_channel = *reinterpret_cast<NetChannel**>(reinterpret_cast<uintptr_t>(I::clientstate) + 0x9C);
+	int32_t new_commands = *pNumNewCommands;
+
+	int32_t next_cmdnr = I::clientstate->m_last_outgoing_command + I::clientstate->m_choked_commands + 1;
+	int32_t total_new_commands = min(doubletap->m_tick_to_shift, 16);
+	doubletap->m_tick_to_shift -= total_new_commands;
+	doubletap->m_tick_to_recharge += total_new_commands;
+
+	from = -1;
+	*pNumNewCommands = total_new_commands;
+	*pNumBackupCommands = 0;
+
+	for (to = next_cmdnr - new_commands + 1; to <= next_cmdnr; to++) {
+		if (!ofunct(ecx, slot, buf, from, to, isnewcommand))
+			return false;
+
+		from = to;
+	}
+
+	CUserCmd* last_realCmd = I::input->GetUserCmd(slot, from);
+	CUserCmd fromCmd;
+
+	if (last_realCmd)
+		fromCmd = *last_realCmd;
+
+	CUserCmd toCmd = fromCmd;
+	toCmd.command_number++;
+	toCmd.tick_count++;
+
+	for (int i = new_commands; i <= total_new_commands; i++) {
+		CWriteUsercmd(buf, &toCmd, &fromCmd);
+		fromCmd = toCmd;
+		toCmd.command_number++;
+		toCmd.tick_count++;
+	}
+	return true;
 }

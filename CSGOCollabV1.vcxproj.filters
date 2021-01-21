@@ -103,6 +103,9 @@
     <ClCompile Include="Hacks\Offense\Resolver.cpp">
       <Filter>Source\Hacks\Offense</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Offense\Doubletap.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -373,6 +376,12 @@
       <Filter>Headers\Hacks\Offense</Filter>
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\IVDebugOverlay.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\Doubletap.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\ClientState.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
   </ItemGroup>

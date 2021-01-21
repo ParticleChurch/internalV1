@@ -18,6 +18,7 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 void Init()
 {
     I::engine->ClientCmd_Unrestricted("toggleconsole");
+    I::engine->ClientCmd_Unrestricted("clear");
     ConsoleColorMsg(Color(255, 128, 0, 255), "\n\nInjecting...\n");
     GUI2::LoadProgress = 0.f;
 

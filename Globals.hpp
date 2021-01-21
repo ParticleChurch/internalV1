@@ -55,6 +55,8 @@ namespace G {
 	extern float StartForwardMove;
 	extern float StartSideMove;
 
+	extern bool DoubleTap;
+
 	//Global Functions
 	extern void CM_Clamp();
 	extern void CM_Start(CUserCmd*, bool*);

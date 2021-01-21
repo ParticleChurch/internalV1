@@ -85,6 +85,8 @@ namespace G
 	float StartForwardMove;
 	float StartSideMove;
 
+	bool DoubleTap = true;
+
 	//Global Functions
 	void CM_Clamp()
 	{

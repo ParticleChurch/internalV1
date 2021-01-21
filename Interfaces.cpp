@@ -22,7 +22,6 @@ namespace I
 	StudioRender* studiorender = (StudioRender*)NewInterface->GetInterface((char*)"studiorender.dll", (char*)"VStudioRender026");
 	MaterialSystem* materialsystem = (MaterialSystem*)NewInterface->GetInterface((char*)"materialsystem.dll", (char*)"VMaterialSystem080");
 	Sound* sound = (Sound*)NewInterface->GetInterface((char*)"engine.dll", (char*)"IEngineSoundClient003");
-
 	IVDebugOverlay* debugoverlay = (IVDebugOverlay*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VDebugOverlay004");
-
+	ClientState* clientstate = **reinterpret_cast<ClientState***>(FindPattern("engine.dll", "A1 ? ? ? ? 8B 80 ? ? ? ? C3") + 1);
 }

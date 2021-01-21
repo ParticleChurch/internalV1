@@ -212,6 +212,14 @@ public:
 		return I::entitylist->GetClientEntityFromHandle(weaponHandle);
 	}
 
+	float& GetLastShotTime() {
+		//DT_BaseCombatWeapon might be this too
+		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
+		if (offset == 0)
+			offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
+		return *(float*)((DWORD)this + offset);
+	}
+
 	int* GetIDHigh()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
