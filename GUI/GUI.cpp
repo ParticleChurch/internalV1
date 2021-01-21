@@ -2839,7 +2839,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopStyleVar(7);
 	ImGui::PopStyleColor(10);
 
-	/*
+	//*
 	Ejected |= GUI::Main();
 	//*/
 }
