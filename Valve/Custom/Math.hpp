@@ -4,6 +4,10 @@ inline float DotProduct(const float* v1, const float* v2) {
 	return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
 
+inline float DotProduct(Vec v1, Vec v2) {
+	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
 inline void SinCos(float radians, float* sine, float* cosine)
 {
 	*sine = sin(radians);

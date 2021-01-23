@@ -384,6 +384,12 @@
     <ClInclude Include="Valve\Interfaces\ClientState.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\AnimationLayer.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\Interfaces\IMemAlloc.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

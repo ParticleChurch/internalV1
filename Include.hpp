@@ -25,6 +25,7 @@
 #include <chrono>                // time
 #include <map>                   // make config lookups fast
 #include <initializer_list>      // for vararg functions
+#include <array>				 // For animation arrays 
 
 #include "Utils/Utils.hpp"       //includes all utils...
 

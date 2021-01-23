@@ -14,6 +14,10 @@ public:
 	int TargetIndex = 0;
 	void LogShots(GameEvent* event);
 	void Resolve(int stage);
+
+	void AnimationFix(Entity* entity);
+	void ABSROTATION(Entity* entity);
+
 	void ShowInfo();
 	
 };

@@ -25,6 +25,7 @@
 #include "SDK/trace_t.hpp"
 #include "SDK/SurfaceData.hpp"
 #include "SDK/AnimState.hpp"
+#include "SDK/AnimationLayer.hpp"
 #include "SDK/UtlVector.hpp"
 #include "SDK/Material.h"
 #include "SDK/KeyValues.h"
@@ -49,6 +50,7 @@
 #include "Interfaces/MaterialSystem.h"
 #include "Interfaces/IVDebugOverlay.hpp"
 #include "Interfaces/ClientState.hpp"
+#include "Interfaces/IMemAlloc.hpp"
 
 //MORE CUSTOM
 #include "Custom/Math.hpp"

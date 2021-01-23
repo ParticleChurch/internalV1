@@ -326,6 +326,8 @@ namespace Config {
 			{
 				Widget* w = t->AddWidget("Misc");
 				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "visuals-misc-thirdperson-distance", "Thirdperson Distance", "", 0, 500, 0, 150, 150);
+
 				w->AddProperty(false, 0, "visuals-misc-revealranks", "Reveal Ranks", false, false, KeybindOptions(false, false, false));
 				w->AddProperty(false, 0, "visuals-misc-grenadeprediction", "Grenade Prediction", false, false, KeybindOptions(false, false, false));
 				w->AddProperty(false, 0, "visuals-misc-noscope", "No Scope", false, false, KeybindOptions(false, false, false));

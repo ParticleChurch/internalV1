@@ -85,7 +85,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& Config::GetBool("visuals-misc-thirdperson"))
 			{
 				if(NewTick && G::pSendPacket && *G::pSendPacket && !fakelag->LaggingOnPeak)
-					RotateBoneMatrix(Vec(0, antiaim->fake.y - antiaim->real.y, 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
+					RotateBoneMatrix(Vec(0, (antiaim->fake.y - antiaim->real.y), 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				OverideMat(
 						false,	//viz thru wall?
 						Config::GetState("visuals-chams-localplayer-fake-material"),		// material

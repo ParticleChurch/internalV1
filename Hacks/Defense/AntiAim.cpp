@@ -425,6 +425,7 @@ bool AntiAim::GetBestHeadAngle(QAngle& angle)
 
 void AntiAim::Visualize()
 {
+	return;
 	if (!G::LocalPlayer) return;
 	if (!G::LocalPlayerAlive) return;
 	int xSize;
@@ -469,4 +470,5 @@ void AntiAim::Visualize()
 
 	
 }
+
 
