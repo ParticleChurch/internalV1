@@ -162,6 +162,8 @@
     <ClCompile Include="GUI\HTTP.cpp" />
     <ClCompile Include="GUI\JSON\JSON.cpp" />
     <ClCompile Include="GUI\JSON\JSONValue.cpp" />
+    <ClCompile Include="GUI\SkinConstants.cpp" />
+    <ClCompile Include="GUI\TextService.cpp" />
     <ClCompile Include="GUI\VKeys.cpp" />
     <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
     <ClCompile Include="Hacks\Defense\FakeLag.cpp" />
@@ -199,6 +201,8 @@
     <ClInclude Include="GUI\HTTP.hpp" />
     <ClInclude Include="GUI\JSON\JSON.h" />
     <ClInclude Include="GUI\JSON\JSONValue.h" />
+    <ClInclude Include="GUI\SkinConstants.hpp" />
+    <ClInclude Include="GUI\TextService.hpp" />
     <ClInclude Include="GUI\VKeys.hpp" />
     <ClInclude Include="Hacks\Defense\AntiAim.hpp" />
     <ClInclude Include="Hacks\Defense\FakeLag.hpp" />

@@ -974,6 +974,21 @@ namespace Config2
 		// SKINCHANGER
 		{
 			Tab* t = new Tab("Skinchanger");
+
+			{ // knives
+				Group* g = t->Add("Knives");
+
+				g->Add("skinchanger-knife-skin", "x", new CKnifeSkin(0));
+				g->Add("skinchanger-knife-model", "x", new CKnifeModel(0));
+			}
+
+			{ // weapons
+				Group* g = t->Add("Guns");
+
+				for (size_t i = 0; i < Skins::WeaponGroups.size(); i++)
+					for (size_t j = 2; j < Skins::WeaponGroups[i].size()-1; j+=2)
+						g->Add("skinchanger-weapon-" + Skins::WeaponGroups[i][j + 1], "x", new CWeaponSkin(0));
+			}
 		}
 
 		// MOVEMENT
@@ -1000,6 +1015,18 @@ namespace Config2
 		{
 			Tab* t = new Tab("Eject");
 		}
+	}
+
+	Property* GetProperty(std::string Name)
+	{
+		auto Search = PropertyTable.find(Name);
+		if (Search == PropertyTable.end())
+		{
+			std::cout << "nonexistant property: \"" << Name << "\"" << std::endl;
+			return nullptr;
+		}
+		else
+			return Search->second;
 	}
 
 	void Free()

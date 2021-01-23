@@ -4,7 +4,7 @@
 #include <vector>
 #include "ConfigManager.hpp"
 #include "VKeys.hpp"
-//#include "../Include.hpp"
+#include "SkinConstants.hpp"
 
 constexpr bool CONFIG_DEBUG = true;
 
@@ -841,16 +841,25 @@ namespace Config2
 	{
 		BOOLEAN,
 		FLOAT,
+		KNIFESKIN,
+		KNIFEMODEL,
+		WEAPONSKIN,
 		EDITGROUP,
 	};
 	struct CBoolean;
 	struct CFloat;
 	struct CEditGroup;
+	struct CKnifeSkin;
+	struct CKnifeModel;
+	struct CWeaponSkin;
 
 	extern void Init();
+
+	// getters
 	extern Property* GetProperty(std::string Name);
 	extern bool GetBoolean(std::string Name);
-	extern float GetFloat(std::string Float);
+	extern float GetFloat(std::string Name);
+	extern size_t GetSkin(std::string Name);
 
 	extern void Free();
 };
@@ -948,6 +957,60 @@ namespace Config2
 			{
 				return false;
 			}
+		}
+	};
+	struct CKnifeSkin
+	{
+		static const PropertyType Type = PropertyType::KNIFESKIN;
+		size_t Index = 0;
+
+		CKnifeSkin(size_t Index = 0)
+		{
+			if (Index < Skins::KnifeSkins.size())
+				this->Index = Index;
+			else
+				std::cout << "Invalid CKnifeSkin index of " << Index << std::endl;
+		}
+
+		std::string Stringify()
+		{
+			return Skins::KnifeSkins.at(this->Index);
+		}
+	};
+	struct CKnifeModel
+	{
+		static const PropertyType Type = PropertyType::KNIFESKIN;
+		size_t Index = 0;
+
+		CKnifeModel(size_t Index = 0)
+		{
+			if (Index < Skins::KnifeModels.size())
+				this->Index = Index;
+			else
+				std::cout << "Invalid CKnifeModel index of " << Index << std::endl;
+		}
+
+		std::string Stringify()
+		{
+			return Skins::KnifeModels.at(this->Index);
+		}
+	};
+	struct CWeaponSkin
+	{
+		static const PropertyType Type = PropertyType::KNIFESKIN;
+		size_t Index = 0;
+
+		CWeaponSkin(size_t Index = 0)
+		{
+			if (Index < Skins::WeaponSkins.size())
+				this->Index = Index;
+			else
+				std::cout << "Invalid CWeaponSkin index of " << Index << std::endl;
+		}
+
+		std::string Stringify()
+		{
+			return Skins::WeaponSkins.at(this->Index);
 		}
 	};
 	struct CEditGroup
@@ -1073,6 +1136,13 @@ namespace Config2
 		{
 			this->Title = Title;
 		}
+		template <typename T>
+		Property* Add(std::string Name, std::string VisibleName, T* Value)
+		{
+			Property* x = new Property(Name, VisibleName, Value);
+			this->Properties.push_back(x);
+			return x;
+		}
 	};
 	struct Tab
 	{
@@ -1092,6 +1162,12 @@ namespace Config2
 			this->IsConfig = Name == "Config";
 			this->IsOffence = Name == "Offence";
 			Tabs.push_back(this);
+		}
+		Group* Add(std::string Title)
+		{
+			Group* x = new Group(Title);
+			this->Groups.push_back(x);
+			return x;
 		}
 	};
 }

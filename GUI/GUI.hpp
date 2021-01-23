@@ -1,6 +1,8 @@
 #pragma once
 #include "JSON/JSON.h"
 #include "animation.hpp"
+#include "SkinConstants.hpp"
+#include "TextService.hpp"
 
 namespace GUI {
 	constexpr int PropertyLabelsWidth = 150;

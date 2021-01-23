@@ -106,6 +106,12 @@
     <ClCompile Include="Hacks\Offense\Doubletap.cpp">
       <Filter>Source\Hacks\Offense</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\SkinConstants.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\TextService.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -383,6 +389,12 @@
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\ClientState.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\SkinConstants.hpp">
+      <Filter>Headers\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\TextService.hpp">
+      <Filter>Headers\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
