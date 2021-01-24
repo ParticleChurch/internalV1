@@ -30,6 +30,11 @@ public:
 		return GetVFunc<oGetInaccuracy>(this, 482)(this);
 	}
 
+	float_t m_flSpawnTime()
+	{
+		return *(float_t*)((uintptr_t)this + 0xA360);
+	}
+
 	WeaponData* GetWeaponData() {
 		typedef WeaponData* (__thiscall* ogetWeaponData)(void*);
 		return GetVFunc<ogetWeaponData>(this, 460)(this);
@@ -346,6 +351,16 @@ public:
 		*(QAngle*)((DWORD)this + offset) = angle;
 	}
 
+	Vec& GetAbsAngles()
+	{
+		Vec a;
+		if (!this)
+			return a;
+
+		typedef Vec& (__thiscall* OriginalFn)(void*);
+		return GetVFunc<OriginalFn>(this, 11)(this);
+	}
+
 	float GetSimulationTime() 
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");
@@ -359,9 +374,15 @@ public:
 		return *reinterpret_cast<AnimState**>(this + 0x3914);
 	}
 
+	AnimState2* GetAnimstate2() noexcept
+	{
+		return *reinterpret_cast<AnimState2**>(this + 0x3914);
+	}
+
 	float GetMaxDesyncAngle() noexcept
 	{
-		const auto animState = GetAnimstate();
+		
+		const auto animState = GetAnimstate2();
 
 		if (!animState)
 			return 0.0f;
@@ -373,6 +394,72 @@ public:
 
 		return animState->velocitySubtractY * yawModifier;
 	}
+
+	std::array< float, 24 >& m_flPoseParameter()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
+		return *reinterpret_cast<std::array<float, 24>*>(reinterpret_cast<uintptr_t>(this) + offset);
+	}
+
+	AnimationLayer* GetAnimOverlays()
+	{
+		return *(AnimationLayer**)((DWORD)this + 0x2990);
+	}
+
+	AnimationLayer* GetAnimOverlay(int i)
+	{
+		if (i < 15)
+			return &GetAnimOverlays()[i];
+		return nullptr;
+	}
+
+	bool& ClientAnimations()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
+		return *reinterpret_cast<bool*>(uintptr_t(this) + offset);
+	}
+
+	void UpdateAnimationState(AnimState* state, Vec angle)
+	{
+		static auto update_anim_state = FindPattern("client.dll", "55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24");
+
+		if (!update_anim_state)
+			return;
+
+		__asm
+		{
+			push 0
+		}
+
+		__asm
+		{
+			mov ecx, state
+
+			movss xmm1, dword ptr[angle + 4]
+			movss xmm2, dword ptr[angle]
+
+			call update_anim_state
+		}
+	}
+
+	void UpdateClientSideAnimation()
+	{
+		typedef void(__thiscall* oUpdateClientSideAnimation)(void*);
+		return GetVFunc<oUpdateClientSideAnimation>(this, 223)(this);
+	}
+
+	void SetAbsAngles(Vec angle)
+	{
+		using SetAbsAnglesFn = void(__thiscall*)(void*, const Vec& Angles);
+		static SetAbsAnglesFn SetAbsAngles = (SetAbsAnglesFn)FindPattern("client.dll", "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8");
+		SetAbsAngles(this, angle);
+	}
+
+
 
 	bool LBYUpdated()
 	{

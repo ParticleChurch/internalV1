@@ -28,7 +28,7 @@ float MiscVisuals::GetCameraBoomLength(float distance)
 	trace_t Trace;
 	Ray_t Ray(PlayerPos, IdealCameraPos);
 	CTraceFilter Filter(I::entitylist->GetClientEntity(I::engine->GetLocalPlayer()));
-	I::enginetrace->TraceRay(Ray, MASK_ALL, &Filter, &Trace);
+	I::enginetrace->TraceRay(Ray, CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_GRATE, &Filter, &Trace); // originaly mask all
 
 	if (Trace.Fraction <= 1)
 		return distance * Trace.Fraction * 0.9;
@@ -49,7 +49,7 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 		if (Config::GetBool("visuals-misc-thirdperson"))
 		{
 			I::input->m_fCameraInThirdPerson = true;
-			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, GetCameraBoomLength(150.f));
+			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, GetCameraBoomLength(Config::GetFloat("visuals-misc-thirdperson-distance")));
 		}
 		else
 		{

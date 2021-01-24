@@ -252,6 +252,7 @@
     <ClInclude Include="Valve\Interfaces\IClientEntityList.hpp" />
     <ClInclude Include="Valve\Interfaces\IEngineTrace.hpp" />
     <ClInclude Include="Valve\Interfaces\CInput.hpp" />
+    <ClInclude Include="Valve\Interfaces\IMemAlloc.hpp" />
     <ClInclude Include="Valve\Interfaces\InputSystem.hpp" />
     <ClInclude Include="Valve\Interfaces\IVDebugOverlay.hpp" />
     <ClInclude Include="Valve\Interfaces\IVEngineClient.hpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="Valve\Interfaces\PhysicsSurfaceProps.hpp" />
     <ClInclude Include="Valve\Interfaces\StudioRender.hpp" />
     <ClInclude Include="Valve\Interfaces\Surface.hpp" />
+    <ClInclude Include="Valve\SDK\AnimationLayer.hpp" />
     <ClInclude Include="Valve\SDK\AnimState.hpp" />
     <ClInclude Include="Valve\SDK\BSPFlags.hpp" />
     <ClInclude Include="Valve\SDK\ClientClass.h" />

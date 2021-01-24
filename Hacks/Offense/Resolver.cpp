@@ -137,6 +137,39 @@ void Resolver::Resolve(int stage)
 
 	int team = localplayer->GetTeam();
 
+	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+	{
+		for (int i = 1; i < I::engine->GetMaxClients(); ++i)
+		{
+			Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
+
+			if (!player
+				|| player == localplayer
+				|| player->IsDormant()
+				|| !(player->GetHealth() > 0)
+				|| team == player->GetTeam())
+				continue;
+
+			AnimationFix(player);
+			// we have decided to resolve!
+			switch (ShotsMissed[i] % 3) {
+			case 0:
+				ABSROTATION(player);
+				break;
+			case 1:
+				player->GetAnimstate()->m_flAbsRotation() = -60.f;
+				break;
+			case 2:
+				player->GetAnimstate()->m_flAbsRotation() = 60.f;
+				break;
+
+			}
+			AnimationFix(player);
+		}
+	}
+
+	//BRUTEFORCE METHOD!
+	/*
 	if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START || stage == FRAME_RENDER_END)
 	{
 		
@@ -155,7 +188,7 @@ void Resolver::Resolve(int stage)
 			if (!player->PGetEyeAngles())
 				continue;
 
-			/*float MaxDesync = fabsf(player->GetMaxDesyncAngle());*/
+			
 			float MaxDesync = 90;
 			float Split = MaxDesync / 4;
 			player->PGetEyeAngles()->y = player->GetLBY();
@@ -189,6 +222,95 @@ void Resolver::Resolve(int stage)
 				player->PGetEyeAngles()->y -= 1 * Split;
 				break;
 			}
+		}
+	}
+	*/
+}
+
+void Resolver::AnimationFix(Entity* entity)
+{
+	float m_flRealtime = I::globalvars->m_realTime;
+	float m_flCurtime = I::globalvars->m_curTime;
+	float m_flFrametime = I::globalvars->m_frameTime;
+	float m_flAbsFrametime = I::globalvars->m_absFrameTime;
+	float m_flInterpolation = I::globalvars->m_interpAmount;
+	float m_nFrames = I::globalvars->m_frameCount;
+	float m_nTicks = I::globalvars->m_tickCount;
+
+	int m_iNextSimulationTick = G::LocalPlayer->GetSimulationTime() / I::globalvars->m_intervalPerTick + 1;
+
+	I::globalvars->m_realTime = G::LocalPlayer->GetSimulationTime();
+	I::globalvars->m_curTime = G::LocalPlayer->GetSimulationTime();
+	I::globalvars->m_frameTime = I::globalvars->m_intervalPerTick;
+	I::globalvars->m_absFrameTime = I::globalvars->m_intervalPerTick;
+	I::globalvars->m_frameCount = m_iNextSimulationTick;
+	I::globalvars->m_tickCount = m_iNextSimulationTick;
+	I::globalvars->m_interpAmount = 0.f;
+
+
+	if (entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
+		entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
+
+	entity->ClientAnimations() = true;
+	entity->UpdateClientSideAnimation();
+
+
+	I::globalvars->m_realTime = m_flRealtime;
+	I::globalvars->m_curTime = m_flCurtime;
+	I::globalvars->m_frameTime = m_flFrametime;
+	I::globalvars->m_absFrameTime = m_flAbsFrametime;
+	I::globalvars->m_interpAmount = m_flInterpolation;
+	I::globalvars->m_frameTime = m_nFrames;
+	I::globalvars->m_tickCount = m_nTicks;
+
+
+
+
+	I::globalvars->m_realTime = G::LocalPlayer->GetSimulationTime();
+	I::globalvars->m_curTime = G::LocalPlayer->GetSimulationTime();
+	I::globalvars->m_frameTime = I::globalvars->m_intervalPerTick;
+	I::globalvars->m_absFrameTime = I::globalvars->m_intervalPerTick;
+	I::globalvars->m_frameCount = m_iNextSimulationTick;
+	I::globalvars->m_tickCount = m_iNextSimulationTick;
+	I::globalvars->m_interpAmount = 0.f;
+
+
+
+	if (entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
+		entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
+
+	entity->ClientAnimations() = true;
+	entity->UpdateClientSideAnimation();
+
+
+
+	I::globalvars->m_realTime = m_flRealtime;
+	I::globalvars->m_curTime = m_flCurtime;
+	I::globalvars->m_frameTime = m_flFrametime;
+	I::globalvars->m_absFrameTime = m_flAbsFrametime;
+	I::globalvars->m_interpAmount = m_flInterpolation;
+	I::globalvars->m_frameCount = m_nFrames;
+	I::globalvars->m_tickCount = m_nTicks;
+}
+
+void Resolver::ABSROTATION(Entity* entity)
+{
+	auto feet_yaw = entity->GetAnimOverlay(3)->m_flCycle > 0.9f && entity->GetAnimOverlay(3)->m_flWeight > 0.9f && entity->GetVecVelocity().VecLength2D() < 0.1f;
+	auto body_max_rotation = 60.f;
+	if (feet_yaw <= 60)
+	{
+		if (-60 > feet_yaw)
+			(*entity->PGetEyeAngles()).y += body_max_rotation;
+	}
+	else
+	{
+		(*entity->PGetEyeAngles()).y = body_max_rotation - entity->GetEyeAngles().y;
+	}
+	if (entity->GetAnimOverlay(3)->m_flCycle > 0.9)
+	{
+		for (int resolve_delta = 60.f; resolve_delta < -60.f; resolve_delta = resolve_delta - 20.f)
+		{
+			(*entity->PGetEyeAngles()).y = resolve_delta;
 		}
 	}
 }

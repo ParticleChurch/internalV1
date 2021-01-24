@@ -24,7 +24,7 @@ bool FakeLag::TimeBreaker()
 	float delta = 0.f;
 	if (network)
 	{
-		delta = network->GetLatency(0) + network->GetLatency(1);
+		delta = network->GetLatency(0);
 	}
 	
 	if (I::engine->GetNetChannelInfo()->ChokedPackets + int(delta / I::globalvars->m_intervalPerTick) >= TrigTicks)

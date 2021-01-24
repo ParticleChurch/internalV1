@@ -13,6 +13,7 @@ private:
 	bool DistanceBreaker();
 	bool TimeBreaker();
 	void LagOnPeak();
+
 public:
 	Vec PrevPos;
 	bool PredictedVal = true;

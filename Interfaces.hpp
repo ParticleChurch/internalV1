@@ -26,4 +26,5 @@ namespace I
 	extern Sound* sound;
 	extern IVDebugOverlay* debugoverlay;
 	extern ClientState* clientstate;
+	extern IMemAlloc* memalloc;
 }

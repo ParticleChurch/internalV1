@@ -24,4 +24,5 @@ namespace I
 	Sound* sound = (Sound*)NewInterface->GetInterface((char*)"engine.dll", (char*)"IEngineSoundClient003");
 	IVDebugOverlay* debugoverlay = (IVDebugOverlay*)NewInterface->GetInterface((char*)"engine.dll", (char*)"VDebugOverlay004");
 	ClientState* clientstate = **reinterpret_cast<ClientState***>(FindPattern("engine.dll", "A1 ? ? ? ? 8B 80 ? ? ? ? C3") + 1);
+	IMemAlloc* memalloc = *reinterpret_cast<IMemAlloc**> (GetProcAddress(GetModuleHandleA("tier0.dll"), "g_pMemAlloc"));
 }

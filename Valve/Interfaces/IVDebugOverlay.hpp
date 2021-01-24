@@ -13,4 +13,11 @@ private:
 public:
 	virtual void AddLineOverlay(const Vec& origin, const Vec& dest, int r, int g, int b, bool no_depth_test, float duration) = 0;
 
+	void AddCapsuleOverlay(Vec& mins, Vec& maxs, float pillradius, int r, int g, int b, int a, float duration)
+	{
+		typedef void(__thiscall* oAddCapsuleOverlay)(void*, Vec&, Vec&, float&, int, int, int, int, float);
+		return GetVFunc<oAddCapsuleOverlay>(this, 24)(this, mins, maxs, pillradius, r, g, b, a, duration);
+
+	}
+
 };

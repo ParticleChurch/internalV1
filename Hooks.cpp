@@ -4,6 +4,48 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
+static void CapsuleOverlay(Entity* pPlayer, Color col, float duration)
+{
+	if (!pPlayer)
+		return;
+
+	studiohdr_t* pStudioModel = I::modelinfo->GetStudioModel(pPlayer->GetModel());
+	if (!pStudioModel)
+		return;
+
+	static Matrix3x4 pBoneToWorldOut[128];
+	if (!pPlayer->SetupBones(pBoneToWorldOut, 128, 0x00000100, 0))
+		return;
+
+	mstudiohitboxset_t* pHitboxSet = pStudioModel->GetHitboxSet(0);
+	if (!pHitboxSet)
+		return;
+
+	auto VectorTransform2 = [](const Vec in1, Matrix3x4 in2, Vec& out)
+	{
+
+		out.x = DotProduct(in1, Vec(in2[0][0], in2[0][1], in2[0][2])) + in2[0][3];
+		out.y = DotProduct(in1, Vec(in2[1][0], in2[1][1], in2[1][2])) + in2[1][3];
+		out.z = DotProduct(in1, Vec(in2[2][0], in2[2][1], in2[2][2])) + in2[2][3];
+	};
+
+	for (int i = 0; i < pHitboxSet->numhitboxes; i++)
+	{
+		mstudiobbox_t* pHitbox = pHitboxSet->GetHitbox(i);
+		if (!pHitbox)
+			continue;
+
+		Vec vMin, vMax;
+		VectorTransform2(pHitbox->bbmin, pBoneToWorldOut[pHitbox->bone], vMin); //nullptr???
+		VectorTransform2(pHitbox->bbmax, pBoneToWorldOut[pHitbox->bone], vMax);
+
+		if (pHitbox->m_flRadius > -1)
+		{
+			I::debugoverlay->AddCapsuleOverlay(vMin, vMax, pHitbox->m_flRadius, col.r(), col.g(), col.b(), 255, duration);
+		}
+	}
+}
+
 class EventListener : public GameEventListener
 {
 public:
@@ -54,6 +96,10 @@ public:
 				orig = Config::GetState("antiaim-rage-invert");
 				Config::SetBool("antiaim-rage-invert", !orig);
 			}
+
+			Entity* ent = I::entitylist->GetClientEntity(userid);
+			if (ent && userid != localIdx)
+				CapsuleOverlay(ent, Color(255, 255, 255, 100), 1);
 		}
 		break;
 		case StrHash::Hash("player_death"):
@@ -82,11 +128,16 @@ public:
 			bool	thrusmoke	hitscan weapon went through smoke grenade
 			bool	attackerblind	attacker was blind from flashbang
 			*/
+			int DeathIndex = I::engine->GetPlayerForUserID(event->GetInt("userid"));
 
 			const auto localIdx = I::engine->GetLocalPlayer();
-			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || I::engine->GetPlayerForUserID(event->GetInt("userid")) == localIdx)
+			if (I::engine->GetPlayerForUserID(event->GetInt("attacker")) != localIdx || DeathIndex == localIdx)
 				break;
 			I::engine->ClientCmd_Unrestricted("play player/neck_snap_01");
+			/*Entity* ent = I::entitylist->GetClientEntity(DeathIndex);
+			if (ent)
+				CapsuleOverlay(ent, Color(255,0,0,255), 1);*/
+			
 		}
 		break;
 		}
@@ -408,6 +459,11 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			for (int i = 0; i < 64; i++)
 				resolver->ShotsMissed[i] = 0;
 		}
+		if (ImGui::Button("Randomize Resolver"))
+		{
+			for (int i = 0; i < 64; i++)
+				resolver->ShotsMissed[i] = rand() % 3;
+		}
 		ImGui::End();
 	}
 	skinchanger->Menu();
@@ -636,7 +692,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		}
 		
 		/*doubletap->end();*/
-		
 
 		G::CM_End();	
 
@@ -662,9 +717,64 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 	}
 }
 
+
+bool fresh_tick()
+{
+	static int old_tick_count;
+
+
+	if (old_tick_count != I::globalvars->m_tickCount)
+	{
+		old_tick_count = I::globalvars->m_tickCount;
+		return true;
+	}
+}
+
+void LocalAnimFix(Entity* entity)
+{
+	if (!entity || !entity->GetHealth() || !G::cmd)
+		return;
+
+	static float proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
+	
+	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
+	static AnimationLayer backup_layers[15];
+	
+	if (fresh_tick())
+	{
+		std::memcpy(backup_layers, entity->GetAnimOverlays(), (sizeof(AnimationLayer) * 15));
+		entity->ClientAnimations() = true;
+		entity->UpdateAnimationState(entity->GetAnimstate(), antiaim->real); //
+
+		if (entity->GetAnimstate())
+			entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
+		
+		entity->UpdateClientSideAnimation();
+		
+		if (G::pSendPacket && *G::pSendPacket)
+		{
+			proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
+			sent_pose_params = entity->m_flPoseParameter();
+		}
+		
+	}
+	
+	entity->ClientAnimations() = false;
+	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
+	entity->GetAnimstate()->m_flUnknownFraction = 0.f;
+	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
+	entity->m_flPoseParameter() = sent_pose_params;
+	
+}
+
+
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
+
+	
 	resolver->Resolve(curStage);
+
+	
 
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
@@ -695,6 +805,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			return oFrameStageNotify(curStage);
 		}
 
+		LocalAnimFix(G::LocalPlayer);
+
 		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
 
 		if (!G::LocalPlayerAlive)
@@ -715,7 +827,34 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		if (I::input->m_fCameraInThirdPerson)
 			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
 
-			
+		if (G::LocalPlayer && G::LocalPlayerAlive &&  
+			Config::GetBool("visuals-misc-thirdperson") )
+		{
+			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
+			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
+
+			auto t = -1.0f;
+
+			auto idx = I::engine->GetLocalPlayer();
+
+			__asm {
+				mov ecx, idx
+				call util_playerbyindex
+				cmp eax, 0
+				je gay
+				pushad
+				movss xmm1, t
+				push 0
+				mov ecx, eax
+				call draw_server_hitboxes
+				popad
+			}
+
+		gay:
+			{
+
+			}
+		}
 
 			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
 		
