@@ -43,15 +43,22 @@ void KillSay::run(GameEvent* event)
 
 		
 		player_info_t info;
-		if (!I::engine->GetPlayerInfo(victim, &info))
-			return;
-
-		// string parse p
 		std::string line = ("say " + Config::GetText("misc-other-killsay-input"));
-		size_t start_pos = line.find("%p");
-		if (start_pos == std::string::npos)
-			return;
-		line.replace(start_pos, 2, info.name);
+		if (I::engine->GetPlayerInfo(victim, &info))
+		{
+			// string parse p
+			size_t start_pos = line.find("%p");
+			if (start_pos != std::string::npos)
+				line.replace(start_pos, 2, info.name);
+		}
+		else
+		{
+			size_t start_pos = line.find("%p");
+			if (start_pos != std::string::npos)
+				line.replace(start_pos, 2, "");
+		}
+
+		
 
 		I::engine->ClientCmd_Unrestricted(line.c_str()); //kill say
 	}
