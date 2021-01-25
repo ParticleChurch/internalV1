@@ -980,16 +980,15 @@ namespace Config2
 			{ // knives
 				Group* g = t->Add("Knives");
 
-				g->Add("skinchanger-knife-skin", "x", new CKnifeSkin(0));
-				g->Add("skinchanger-knife-model", "x", new CKnifeModel(0));
+				g->Add("skinchanger-knife-skin", "x", new CPaintKit());
+				g->Add("skinchanger-knife-model", "x", new CKnife());
 			}
 
 			{ // weapons
 				Group* g = t->Add("Guns");
 
-				for (size_t i = 0; i < Skins::WeaponGroups.size(); i++)
-					for (size_t j = 2; j < Skins::WeaponGroups[i].size()-1; j+=2)
-						g->Add("skinchanger-weapon-" + Skins::WeaponGroups[i][j + 1], "x", new CWeaponSkin(0));
+				for (int i = 0; i < (int)Skins::Weapon::_COUNT; i++)
+					g->Add("skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[i])), Skins::WeaponNames[i], new CPaintKit());
 			}
 		}
 

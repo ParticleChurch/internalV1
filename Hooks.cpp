@@ -728,6 +728,8 @@ bool fresh_tick()
 		old_tick_count = I::globalvars->m_tickCount;
 		return true;
 	}
+
+	return false;
 }
 
 void LocalAnimFix(Entity* entity)

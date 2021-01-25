@@ -2283,6 +2283,7 @@ void GUI2::DrawActiveTab()
 
 		static size_t SelectedWeaponGroup = 0;
 		static size_t SelectedWeaponIndex = 0;
+		int WeaponNamesHeight = Skins::WeaponGroupWeapons[SelectedWeaponGroup].size() * 30;
 
 		// weapon changer
 		{
@@ -2300,110 +2301,117 @@ void GUI2::DrawActiveTab()
 
 			Widget->DrawList->AddRect(
 				Widget->DC.CursorPos - ImVec2(1, 1),
-				Widget->DC.CursorPos + ImVec2(63, Skins::WeaponGroups.size() * 30 + 1),
+				Widget->DC.CursorPos + ImVec2(63, (int)Skins::WeaponGroup::_COUNT * 30 + 1),
 				IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
 				5.f,
 				ImDrawCornerFlags_All
 			);
 			Widget->DrawList->AddRectFilled(
 				Widget->DC.CursorPos,
-				Widget->DC.CursorPos + ImVec2(62, Skins::WeaponGroups.size() * 30),
+				Widget->DC.CursorPos + ImVec2(62, (int)Skins::WeaponGroup::_COUNT * 30),
 				IM_COL32(85, 90, 95, 255),
 				5.f,
 				ImDrawCornerFlags_All
 			);
 			y = 37;
 
-			// draw group labels
 			ImGui::PushFont(Arial16);
 			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(0, 0, 0, 0));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
-			for (size_t i = 0; i < Skins::WeaponGroups.size(); i++)
+
+			// group labels
 			{
-				ImGui::SetCursorPos(ImVec2(10.f, y));
-				if (ImGui::Button(("##dummy-weapongroup-btn-" + Skins::WeaponGroups[i][0]).c_str(), ImVec2(62, 30)))
+				for (int i = 0; i < (int)Skins::WeaponGroup::_COUNT; i++)
 				{
-					SelectedWeaponGroup = i;
+					ImGui::SetCursorPos(ImVec2(10.f, y));
+					if (ImGui::Button(("##dummy-weapongroup-btn-" + Skins::WeaponGroupNames[i]).c_str(), ImVec2(62, 30)))
+					{
+						SelectedWeaponGroup = i;
+						SelectedWeaponIndex = 0;
+					}
+
+					ImGui::SetCursorPos(ImVec2(10.f, y));
+					Widget->DrawList->AddRectFilled(
+						Widget->DC.CursorPos,
+						Widget->DC.CursorPos + ImVec2(62, 30),
+						SelectedWeaponGroup == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75, 80, 85, 255) : 0,
+						5.f,
+						i == 0 ? ImDrawCornerFlags_Top : i == (int)Skins::WeaponGroup::_COUNT - 1 ? ImDrawCornerFlags_Bot : 0
+					);
+
+					ImGui::SetCursorPos(ImVec2(20.f, y + (30 - 16) / 2));
+					ImGui::TextEx(Skins::WeaponGroupNames[i].c_str());
+
+					y += 30;
+				}
+				// draw weapon names
+				if (SelectedWeaponIndex >= Skins::WeaponGroupWeapons[SelectedWeaponGroup].size())
 					SelectedWeaponIndex = 0;
-				}
+				WeaponNamesHeight = Skins::WeaponGroupWeapons[SelectedWeaponGroup].size() * 30;
 
-				ImGui::SetCursorPos(ImVec2(10.f, y));
+				ImGui::SetCursorPos(ImVec2(82, 37.f));
+				Widget->DrawList->AddRect(
+					Widget->DC.CursorPos - ImVec2(1, 1),
+					Widget->DC.CursorPos + ImVec2(111, WeaponNamesHeight + 1),
+					IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
+					5.f,
+					ImDrawCornerFlags_All
+				);
+				Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 20));
+				Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 17));
+				Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(74, 37 + SelectedWeaponGroup * 30 + 15));
+				Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 13));
+				Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 10));
+				Widget->DrawList->PathFillConvex(IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+
 				Widget->DrawList->AddRectFilled(
 					Widget->DC.CursorPos,
-					Widget->DC.CursorPos + ImVec2(62, 30),
-					SelectedWeaponGroup == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75,80,85, 255) : 0,
+					Widget->DC.CursorPos + ImVec2(110, WeaponNamesHeight),
+					IM_COL32(85, 90, 95, 255),
 					5.f,
-					i == 0 ? ImDrawCornerFlags_Top : i == Skins::WeaponGroups.size() - 1 ? ImDrawCornerFlags_Bot : 0
+					ImDrawCornerFlags_All
 				);
+				y = 37;
 
-				ImGui::SetCursorPos(ImVec2(20.f, y + (30-16)/2));
-				ImGui::TextEx(Skins::WeaponGroups[i][0].c_str());
-
-				y += 30;
-			}
-			// draw weapon names
-			if (SelectedWeaponIndex * 2 + 1 >= Skins::WeaponGroups[SelectedWeaponGroup].size())
-				SelectedWeaponIndex = 0;
-			ImGui::SetCursorPos(ImVec2(82, 37.f));
-			Widget->DrawList->AddRect(
-				Widget->DC.CursorPos - ImVec2(1, 1),
-				Widget->DC.CursorPos + ImVec2(111, ((Skins::WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30 + 1),
-				IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
-				5.f,
-				ImDrawCornerFlags_All
-			);
-			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 20));
-			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 17));
-			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(74, 37 + SelectedWeaponGroup * 30 + 15));
-			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(75, 37 + SelectedWeaponGroup * 30 + 13));
-			Widget->DrawList->PathLineTo(Widget->Pos + ImVec2(81, 37 + SelectedWeaponGroup * 30 + 10));
-			Widget->DrawList->PathFillConvex(IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
-
-			int WeaponNamesHeight = ((Skins::WeaponGroups[SelectedWeaponGroup].size() - 1) / 2) * 30;
-			Widget->DrawList->AddRectFilled(
-				Widget->DC.CursorPos,
-				Widget->DC.CursorPos + ImVec2(110, WeaponNamesHeight),
-				IM_COL32(85, 90, 95, 255),
-				5.f,
-				ImDrawCornerFlags_All
-			);
-			y = 37;
-
-			for (size_t i = 0; i < ((Skins::WeaponGroups[SelectedWeaponGroup].size() - 2) / 2); i++)
-			{
-				std::string WeaponName = Skins::WeaponGroups[SelectedWeaponGroup][i * 2 + 2];
-				std::string TechnicalWeaponName = Skins::WeaponGroups[SelectedWeaponGroup][i * 2 + 3];
-
-				ImGui::SetCursorPos(ImVec2(82, y));
-				if (ImGui::Button(("##dummy-weapongroup-btn-" + WeaponName).c_str(), ImVec2(110, 30)))
+				for (size_t i = 0; i < Skins::WeaponGroupWeapons[SelectedWeaponGroup].size(); i++)
 				{
-					SelectedWeaponIndex = i;
+					Skins::Weapon Weapon = Skins::WeaponGroupWeapons[SelectedWeaponGroup][i];
+					std::string WeaponName = Skins::WeaponNames[(int)Weapon];
+
+					ImGui::SetCursorPos(ImVec2(82, y));
+					if (ImGui::Button(("##dummy-weapongroup-btn-" + WeaponName).c_str(), ImVec2(110, 30)))
+					{
+						SelectedWeaponIndex = i;
+					}
+
+					ImGui::SetCursorPos(ImVec2(82, y));
+					Widget->DrawList->AddRectFilled(
+						Widget->DC.CursorPos,
+						Widget->DC.CursorPos + ImVec2(110, 30),
+						SelectedWeaponIndex == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75, 80, 85, 255) : 0,
+						5.f,
+						i == 0 ? ImDrawCornerFlags_Top : i == (Skins::WeaponGroupWeapons[SelectedWeaponGroup].size() - 1) ? ImDrawCornerFlags_Bot : 0
+					);
+
+					ImGui::SetCursorPos(ImVec2(92, y + (30 - 16) / 2));
+					ImGui::TextEx(WeaponName.c_str());
+
+					y += 30;
 				}
-
-				ImGui::SetCursorPos(ImVec2(82, y));
-				Widget->DrawList->AddRectFilled(
-					Widget->DC.CursorPos,
-					Widget->DC.CursorPos + ImVec2(110, 30),
-					SelectedWeaponIndex == i ? IM_COL32(60, 65, 70, 255) : ImGui::IsItemHovered() ? IM_COL32(75, 80, 85, 255) : 0,
-					5.f,
-					i == 0 ? ImDrawCornerFlags_Top : i == ((Skins::WeaponGroups[SelectedWeaponGroup].size() - 1) / 2 - 1) ? ImDrawCornerFlags_Bot : 0
-				);
-
-				ImGui::SetCursorPos(ImVec2(92, y + (30 - 16) / 2));
-				ImGui::TextEx(WeaponName.c_str());
-
-				y += 30;
 			}
+			
 			ImGui::PopStyleColor(3);
 
+			Skins::Weapon CurrentSelectedWeapon = Skins::WeaponGroupWeapons[SelectedWeaponGroup][SelectedWeaponIndex];
+			Config2::Property* CurrentWeaponSkinProp =
+				Config2::GetProperty("skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[(int)CurrentSelectedWeapon])));
+			Config2::CPaintKit* CurrentPaintKit = (Config2::CPaintKit*)CurrentWeaponSkinProp->Value;
 
-			Config2::Property* CurrentWeaponSkinProp = Config2::GetProperty("skinchanger-weapon-" + Skins::WeaponGroups[SelectedWeaponGroup][SelectedWeaponIndex * 2 + 3]);
-			Config2::CWeaponSkin* CurrentWeaponSkin = (Config2::CWeaponSkin*)CurrentWeaponSkinProp->Value;
-			bool WeaponHasSkinSelection = CurrentWeaponSkin->Index > 0;
-			std::string WeaponSkinName = WeaponHasSkinSelection ? Skins::WeaponSkins[CurrentWeaponSkin->Index] : "None";
+			bool WeaponHasSkinSelection = CurrentPaintKit->PaintKit->ID > 0;
+			std::string WeaponSkinName = WeaponHasSkinSelection ? CurrentPaintKit->Stringify() : "None";
 
-			// current selection
+			// current skin for this weapon
 			{
 				static Animation::Anim* MyAnimation = Animation::newAnimation("weapon-current-skin-hover", 0);
 
@@ -2453,7 +2461,7 @@ void GUI2::DrawActiveTab()
 						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
 						if (ImGui::Button("##remove-active-weapon-skin", ImVec2(18, 18)))
 						{
-							CurrentWeaponSkin->Index = 0;
+							CurrentPaintKit->ClearSelection();
 							WeaponHasSkinSelection = false;
 						}
 						ImGui::PopStyleColor(3);
@@ -2555,30 +2563,53 @@ void GUI2::DrawActiveTab()
 				std::string SearchQuery = WeaponSearchQuery;
 
 				ImGui::PushFont(Arial16);
-				size_t n = 0;
-				for (size_t i = 0; i < Skins::WeaponSkins.size(); i++)
+				size_t SkinsShown = 0;
+				for (size_t i = 0; i < Skins::PaintKits.size(); i++)
 				{
-					if (IsSearchingWeapon && !TextService::Contains(SearchQuery, Skins::WeaponSkins[i], false))
-						continue;
+					Skins::PaintKit PK = Skins::PaintKits[i];
+					std::vector<std::vector<int>> IntendedApplicants = {}; // {{Weapon Knife or Glove, Mode, Version},{same},{...}}
+					for (size_t j = 0; j < PK.Weapons.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Weapons[j], 0, (int)j });
+					for (size_t j = 0; j < PK.Knives.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Knives[j], 1, (int)j });
+					for (size_t j = 0; j < PK.Gloves.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Gloves[j], 2, (int)j });
 
-					ImGui::SetCursorPos(ImVec2(0, n * 30));
-					if (CurrentWeaponSkin->Index == i)
+					for (size_t j = 0; j < IntendedApplicants.size(); j++)
 					{
-						win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(60, 65, 70, 255));
-					}
-					else if (ImGui::Button(("##invisible-weapon-skin-select-" + Skins::WeaponSkins[i]).c_str(), ImVec2(win->Size.x, 30)))
-					{
-						CurrentWeaponSkin->Index = i;
-					}
-					else if (ImGui::IsItemHovered())
-					{
-						ImGui::SetCursorPos(ImVec2(0, n * 30));
-						win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(75, 80, 85, 255));
-					}
+						int NameId = IntendedApplicants[j][0];
+						int Mode = IntendedApplicants[j][1];
+						int Version = IntendedApplicants[j][2];
 
-					ImGui::SetCursorPos(ImVec2(5, n * 30 + (30 - ImGui::GetFontSize()) / 2));
-					ImGui::Text(Skins::WeaponSkins[i].c_str());
-					n++;
+						std::string SkinName = 
+							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
+							" | " + 
+							PK.VisibleName;
+
+						if (IsSearchingWeapon && !TextService::Contains(SearchQuery, SkinName, false))
+							continue;
+
+						ImGui::SetCursorPos(ImVec2(0, SkinsShown * 30));
+						if (CurrentPaintKit->PaintKit && CurrentPaintKit->PaintKit->ID == PK.ID && Mode == CurrentPaintKit->Mode && Version == CurrentPaintKit->Version)
+						{
+							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(60, 65, 70, 255));
+						}
+						else if (ImGui::Button(("##invisible-weapon-skin-select-" + SkinName).c_str(), ImVec2(win->Size.x, 30)))
+						{
+							CurrentPaintKit->PaintKit = &Skins::PaintKits[i];
+							CurrentPaintKit->Mode = Mode;
+							CurrentPaintKit->Version = Version;
+						}
+						else if (ImGui::IsItemHovered())
+						{
+							ImGui::SetCursorPos(ImVec2(0, SkinsShown * 30));
+							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), IM_COL32(75, 80, 85, 255));
+						}
+
+						ImGui::SetCursorPos(ImVec2(5, SkinsShown * 30 + (30 - ImGui::GetFontSize()) / 2));
+						ImGui::Text(SkinName.c_str());
+						SkinsShown++;
+					}
 				}
 				ImGui::PopFont();
 

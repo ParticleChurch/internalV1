@@ -841,17 +841,17 @@ namespace Config2
 	{
 		BOOLEAN,
 		FLOAT,
-		KNIFESKIN,
-		KNIFEMODEL,
-		WEAPONSKIN,
+		PAINTKIT,
+		KNIFE,
+		GLOVE,
 		EDITGROUP,
 	};
 	struct CBoolean;
 	struct CFloat;
 	struct CEditGroup;
-	struct CKnifeSkin;
-	struct CKnifeModel;
-	struct CWeaponSkin;
+	struct CPaintKit;
+	struct CKnife;
+	struct CGlove;
 
 	extern void Init();
 
@@ -859,7 +859,7 @@ namespace Config2
 	extern Property* GetProperty(std::string Name);
 	extern bool GetBoolean(std::string Name);
 	extern float GetFloat(std::string Name);
-	extern size_t GetSkin(std::string Name);
+	extern int GetPaintKit(std::string Name);
 
 	extern void Free();
 };
@@ -959,59 +959,63 @@ namespace Config2
 			}
 		}
 	};
-	struct CKnifeSkin
+	struct CPaintKit
 	{
-		static const PropertyType Type = PropertyType::KNIFESKIN;
-		size_t Index = 0;
+		static const PropertyType Type = PropertyType::PAINTKIT;
 
-		CKnifeSkin(size_t Index = 0)
+		int Mode = 0; // 0 == PaintKit.Weapons, 1 == PaintKit.Knives, 2 == PaintKit.Gloves
+		int Version = 0; // Index in mode
+
+		Skins::PaintKit* PaintKit;
+
+		CPaintKit(Skins::PaintKit* PaintKit = nullptr)
 		{
-			if (Index < Skins::KnifeSkins.size())
-				this->Index = Index;
+			if (PaintKit)
+				this->PaintKit = PaintKit;
 			else
-				std::cout << "Invalid CKnifeSkin index of " << Index << std::endl;
+				this->PaintKit = &Skins::PaintKits[0];
+		}
+
+		void ClearSelection()
+		{
+			this->PaintKit = &Skins::PaintKits[0];
+			this->Mode = 0;
+			this->Version = 0;
 		}
 
 		std::string Stringify()
 		{
-			return Skins::KnifeSkins.at(this->Index);
+			if (!this->PaintKit) return "-";
+
+			switch (this->Mode)
+			{
+			case 0:
+				if ((size_t)this->Version < this->PaintKit->Weapons.size())
+					return Skins::WeaponNames[(int)this->PaintKit->Weapons[this->Version]] + " | " + this->PaintKit->VisibleName;
+				else
+					return this->PaintKit->VisibleName;
+			case 1:
+				if ((size_t)this->Version < this->PaintKit->Knives.size())
+					return Skins::KnifeNames[(int)this->PaintKit->Knives[this->Version]] + " | " + this->PaintKit->VisibleName;
+				else
+					return this->PaintKit->VisibleName;
+			case 2:
+				if ((size_t)this->Version < this->PaintKit->Gloves.size())
+					return Skins::GloveNames[(int)this->PaintKit->Gloves[this->Version]] + " | " + this->PaintKit->VisibleName;
+				else
+					return this->PaintKit->VisibleName;
+			default:
+				return this->PaintKit->VisibleName;
+			}
 		}
 	};
-	struct CKnifeModel
+	struct CKnife
 	{
-		static const PropertyType Type = PropertyType::KNIFESKIN;
-		size_t Index = 0;
-
-		CKnifeModel(size_t Index = 0)
-		{
-			if (Index < Skins::KnifeModels.size())
-				this->Index = Index;
-			else
-				std::cout << "Invalid CKnifeModel index of " << Index << std::endl;
-		}
-
-		std::string Stringify()
-		{
-			return Skins::KnifeModels.at(this->Index);
-		}
+		static const PropertyType Type = PropertyType::KNIFE;
 	};
-	struct CWeaponSkin
+	struct CGlove
 	{
-		static const PropertyType Type = PropertyType::KNIFESKIN;
-		size_t Index = 0;
-
-		CWeaponSkin(size_t Index = 0)
-		{
-			if (Index < Skins::WeaponSkins.size())
-				this->Index = Index;
-			else
-				std::cout << "Invalid CWeaponSkin index of " << Index << std::endl;
-		}
-
-		std::string Stringify()
-		{
-			return Skins::WeaponSkins.at(this->Index);
-		}
+		static const PropertyType Type = PropertyType::GLOVE;
 	};
 	struct CEditGroup
 	{

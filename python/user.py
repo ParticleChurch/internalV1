@@ -93,7 +93,8 @@ for caser in cases_raw:
             else:
                 items[skin]=[weapon]
 
+s = 'PaintKit(%s, "%s", "%s", {%s}),'
 for pk in paint_kits:
     if pk['name'] in items:
         pk['apply_to'] = items[pk['name']]
-    print(pk)
+        print(s % (pk['id'], pk['name'], pk['visibleName'], str(pk['apply_to'])[1:-1]))

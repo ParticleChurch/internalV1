@@ -6,6 +6,12 @@ std::string TextService::ToLowercase(std::string Input)
 	return Input;
 }
 
+std::string TextService::RemoveWhitespace(std::string Input)
+{
+	Input.erase(std::remove_if(Input.begin(), Input.end(), ::isspace), Input.end());
+	return Input;
+}
+
 bool TextService::Contains(std::string needle, std::string haystack, bool CaseSensitive)
 {
 	if (needle.size() > haystack.size()) return false;

@@ -299,7 +299,7 @@ void ESP::Run_FrameStageNotify(int stage)
 {
 	if (stage == FRAME_RENDER_START)
 	{
-		for (int i = 0; i < traces.size(); i++)
+		for (size_t i = 0; i < traces.size(); i++)
 		{
 			auto cur = traces[i];
 			//draw a line from local player's head position to the hit point
