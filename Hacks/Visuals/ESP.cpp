@@ -377,6 +377,8 @@ void ESP::Run_GameEvent(GameEvent* event)
 
 		if (!G::LocalPlayer) return;
 
+		if (!Config::GetBool("visuals-misc-tracers")) return;
+
 		BulletTracer trace;
 		trace.src = G::LocalPlayer->GetEyePos();
 		trace.end =  Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));

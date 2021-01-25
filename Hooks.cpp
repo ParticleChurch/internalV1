@@ -97,9 +97,9 @@ public:
 				Config::SetBool("antiaim-rage-invert", !orig);
 			}
 
-			Entity* ent = I::entitylist->GetClientEntity(userid);
+			/*Entity* ent = I::entitylist->GetClientEntity(userid);
 			if (ent && userid != localIdx)
-				CapsuleOverlay(ent, Color(255, 255, 255, 100), 1);
+				CapsuleOverlay(ent, Color(255, 255, 255, 100), 1);*/
 		}
 		break;
 		case StrHash::Hash("player_death"):
@@ -466,7 +466,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		}
 		ImGui::End();
 	}
-	skinchanger->Menu();
+	/*skinchanger->Menu();*/
 	GUI2::Main();
 	//*/
 	ImGui::EndFrame();
@@ -717,7 +717,6 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 	}
 }
 
-
 bool fresh_tick()
 {
 	static int old_tick_count;
@@ -769,14 +768,9 @@ void LocalAnimFix(Entity* entity)
 	
 }
 
-
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-
-	
 	resolver->Resolve(curStage);
-
-	
 
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
@@ -830,7 +824,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
 
 		if (G::LocalPlayer && G::LocalPlayerAlive &&  
-			Config::GetBool("visuals-misc-thirdperson") )
+			Config::GetBool("visuals-misc-thirdperson") && false )
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
@@ -875,7 +869,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	backtrack->update(curStage);
 	world->Run(curStage);
 
-	skinchanger->run(curStage);
+	/*skinchanger->run(curStage);*/
 
 	return oFrameStageNotify(curStage);
 }
@@ -924,7 +918,6 @@ void __stdcall H::EmitSoundHook(SoundData data)
 	}
 	return oEmitSound(I::sound, data);
 }
-
 
 static void CWriteUsercmd(void* buf, CUserCmd* Cin, CUserCmd* Cout)
 {
