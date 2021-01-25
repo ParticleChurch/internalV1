@@ -2092,14 +2092,14 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
-	ImVec2 FrameSize(300, 350);
+	ImVec2 FrameSize(300, 288);
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(40, 40, 40, 255));
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(40, 40, 40, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(53, 54, 58, 255));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(53, 54, 58, ThisContentOpacity));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, ThisContentOpacity));
 	ImGui::PushFont(Arial18Italics);
@@ -2109,20 +2109,21 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
-
-
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(40, 40, 40, 0));
-	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, IM_COL32(40, 40, 40, 0));
-	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, IM_COL32(40, 40, 40, 0));
 	ImGui::PushFont(Arial18);
 
-	int InputPadding = FrameSize.x * 0.1f;
+	IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, 0);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, 0);
+
+	int InputPadding = FrameSize.x * 0.075f;
 
 	// email
 	static char Email[512];
 	{
 		ImVec2 Position(InputPadding, InputPadding);
-		
+
 		ImGui::SetCursorPos(Position);
 		ImGui::DrawAccountIcon(ThisContentOpacity);
 
@@ -2130,7 +2131,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
 		ImGui::InputTextWithPlaceholder("AccountEmail", "Email", Email, 512);
 
-		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175,175,175,ThisContentOpacity));
+		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
 	}
 
 	// password
@@ -2148,24 +2149,58 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
 	}
 
-	ImGui::PopFont();
 	ImGui::PopStyleColor(3);
 
-	ImGui::SetCursorPos(FrameSize * ImVec2(0.25f, 0.75f));
-	if (ImGui::Button("Play Now"))
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, 255));
+	// buttons
 	{
-		Config::UserInfo::Authenticated = true;
-		Config::UserInfo::Premium = true;
+		int XPos = InputPadding;
+		int YPos = 88 + InputPadding;
+		int ButtonWidth = FrameSize.x - XPos - XPos;
+		int ButtonHeight = 30;
+		int ButtonSpacing = 12;
 
-		UserData::Initialized = true;
-		UserData::Authenticated = true;
-		UserData::Premium = true;
+		ImGui::SetCursorPos(ImVec2(XPos, YPos));
+		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)))
+		{
+			Config::UserInfo::Authenticated = true;
+			Config::UserInfo::Premium = true;
+
+			UserData::Initialized = true;
+			UserData::Authenticated = true;
+			UserData::Premium = true;
+		}
+
+		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 1));
+		if (ImGui::Button("Register Online", ImVec2(ButtonWidth, 30)))
+		{
+			ShellExecute(0, 0, "http://a4g4.com/register/", 0, 0, SW_SHOW);
+		}
+
+		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 2));
+		if (ImGui::Button("Play Free", ImVec2(ButtonWidth, 30)))
+		{
+			Config::UserInfo::Authenticated = true;
+			Config::UserInfo::Premium = true;
+
+			UserData::Initialized = true;
+			UserData::Authenticated = true;
+			UserData::Premium = true;
+		}
+
+		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 3));
+		if (ImGui::Button("Cancel / Eject", ImVec2(ButtonWidth, 30)))
+			Ejected = true;
 	}
+	ImGui::PopStyleVar(2);
+	ImGui::PopStyleColor(4);
 
-	ImGui::SetCursorPos(FrameSize * ImVec2(0.25f, 0.90f));
-	if (ImGui::Button("Eject lol"))
-		Ejected = true;
-
+	ImGui::PopFont();
 	ImGui::End();
 	ImGui::PopStyleVar(4);
 	ImGui::PopStyleColor(4);
@@ -2904,7 +2939,11 @@ void GUI2::Main()
 
 	if (UserData::Initialized)
 	{
-		MainScreen();
+		//MainScreen();
+
+		if (GUI::HackMenu())
+			Ejected = true;
+		return;
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
