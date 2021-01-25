@@ -11,9 +11,16 @@ void Clantag::run()
 
 	LastUpdatedTime = I::globalvars->m_curTime;
 
+	/*std::string clantag = Config::GetText("misc-other-clantag-input");
+	static int brugh = 0;
+	brugh++;
+	if (brugh > clantag.length()) brugh = 0;
+	std::rotate(clantag.begin(), clantag.begin() + brugh, clantag.end());*/
+
 	static std::add_pointer_t<void __fastcall(const char*, const char*)> setClanTag = reinterpret_cast<decltype(setClanTag)>(FindPattern("engine.dll", "53 56 57 8B DA 8B F9 FF 15"));
+	
 	if (Config::UserInfo::Premium)
 		setClanTag(Config::GetText("misc-other-clantag-input").c_str(), Config::GetText("misc-other-clantag-input").c_str());
 	else
-		setClanTag("a4g4.com", "a4g4.com");
+		setClanTag("| a4g4.com |", "| a4g4.com |");
 }
