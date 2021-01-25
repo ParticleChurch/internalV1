@@ -159,6 +159,18 @@ public:
 		this->z /= b;
 	}
 
+	constexpr auto dotProduct(const Vec& v) const noexcept
+	{
+		return x * v.x + y * v.y + z * v.z;
+	}
+
+	Vec transform(Matrix3x4 mat) const noexcept
+	{
+		return Vec{ dotProduct({ mat[0][0], mat[0][1], mat[0][2] }) + mat[0][3],
+					   dotProduct({ mat[1][0], mat[1][1], mat[1][2] }) + mat[1][3],
+					   dotProduct({ mat[2][0], mat[2][1], mat[2][2] }) + mat[2][3] };
+	}
 };
 
 typedef Vec QAngle;
+

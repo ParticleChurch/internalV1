@@ -138,6 +138,65 @@ void ESP::DrawBacktrackingDots()
 	}
 }
 
+void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
+{
+	int xSize;
+	int ySize;
+	I::engine->GetScreenSize(xSize, ySize);
+
+	Matrix3x4 trans = ent->GetTransform();
+	Matrix3x4* transptr = &trans;
+	
+	Collideable* col = ent->GetCollideable();
+	if (!col)
+		return;
+	Vec origin = ent->GetVecOrigin();
+	Vec min = origin + col->obbMins();
+	Vec max = origin + col->obbMaxs();
+	
+	static Vec screen[] = { Vec(), Vec(), Vec(), Vec(), Vec(), Vec(), Vec(), Vec() };
+	Vec P[] = { Vec(min.x, min.y, min.z),
+						Vec(min.x, max.y, min.z),
+						Vec(max.x, max.y, min.z),
+						Vec(max.x, min.y, min.z),
+						Vec(max.x, max.y, max.z),
+						Vec(min.x, max.y, max.z),
+						Vec(min.x, min.y, max.z),
+						Vec(max.x, min.y, max.z) };
+	
+	for (auto a : P)
+	{
+		a = a.transform(trans);
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		if (!WorldToScreen(P[i], screen[i]))
+			return;
+	}
+		
+
+	
+	int left = xSize;
+	int right = 0;
+	int top = ySize;
+	int bottom = 0;
+	for (auto a : screen)
+	{
+		if (a.x < left)
+			left = a.x;
+		if (a.x > right)
+			right = a.x;
+		if (a.y < top)
+			top = a.y;
+		if (a.y > bottom)
+			bottom = a.y;
+	}
+
+	TL = Vec(left, top, 0);
+	BR = Vec(right, bottom, 0);
+}
+
 void ESP::Run_PaintTraverse()
 {
 	
@@ -199,30 +258,10 @@ void ESP::Run_PaintTraverse()
 		if (Ent->IsDormant())
 			continue;
 
-		Vec Bottom = Ent->GetVecOrigin();
-		Vec Top = Ent->GetBonePos(8);
-		Top.z += 10;
-
-		Vec Feet;
-		Vec Head;
-
-		if (!WorldToScreen(Top, Head))
-			continue;
-
-		if (!WorldToScreen(Bottom, Feet))
-			continue;
-
-		float Height = Feet.y - Head.y;
-		float Width = Height / 2.5f;
-
 		Vec TopLeft;
 		Vec BottomRight;
+		GetBounds(Ent, TopLeft, BottomRight);
 
-		TopLeft.x = int(Feet.x - Width / 2);
-		TopLeft.y = Head.y;
-
-		BottomRight.x = int(Feet.x + Width / 2);
-		BottomRight.y = Feet.y;
 
 		//if on localplayer team...
 		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())

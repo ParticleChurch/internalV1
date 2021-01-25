@@ -1,8 +1,29 @@
 #pragma once
 
+class Collideable {
+public:
+	virtual void* pad() = 0;
+	virtual const Vec& obbMins() = 0;
+	virtual const Vec& obbMaxs() = 0;
+};
+
 class Entity
 {
 public:
+	//VIRTUAL_METHOD(const matrix3x4&, toWorldTransform, 32, (), (this + sizeof(uintptr_t)))
+
+	const Matrix3x4& GetTransform()
+	{
+		typedef const Matrix3x4& (__thiscall* oGetTransform)(void*);
+		return GetVFunc<oGetTransform>(this + sizeof(uintptr_t), 3)(this + sizeof(uintptr_t));
+	}
+
+	Collideable* GetCollideable() 
+	{
+		typedef Collideable* (__thiscall* oGetCollideable)(void*);
+		return GetVFunc<oGetCollideable>(this, 3)(this);
+	}
+
 	float* pGetFlashMaxAlpha()
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
