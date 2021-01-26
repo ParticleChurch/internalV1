@@ -446,6 +446,10 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	//*
 	if (Config::GetBool("show-console"))
 	{
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowMinSize = ImVec2(35,40);
+
 		ImGui::Begin("console");
 		for (auto a : console)
 			ImGui::Text(a.c_str());
