@@ -1536,7 +1536,7 @@ bool GUI::HackMenu()
 	ImFont* font_before = ImGui::GetFont();
 	ImGui::PushFont(Arial14Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
-	ImGui::Begin("a4g4.com - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("a4g4.com", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	GUI::IgnoreLButton |= ImGui::IsItemHovered();
 	ImGui::PushFont(font_before);
 	ImGui::PopStyleVar();
@@ -2002,7 +2002,7 @@ void GUI2::LoadingScreen()
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
-	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 350 + 10, MovementFactor));
+	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 288 + 10, MovementFactor));
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
@@ -2153,10 +2153,10 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
-	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, 255));
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, ThisContentOpacity));
 	// buttons
 	{
 		int XPos = InputPadding;
