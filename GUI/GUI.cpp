@@ -2939,11 +2939,11 @@ void GUI2::Main()
 
 	if (UserData::Initialized)
 	{
-		//MainScreen();
+		MainScreen();
 
-		if (GUI::HackMenu())
-			Ejected = true;
-		return;
+		//if (GUI::HackMenu())
+		//	Ejected = true;
+		//return;
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
