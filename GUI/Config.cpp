@@ -967,6 +967,20 @@ namespace Config2
 		// DEFENCE
 		{
 			Tab* t = new Tab("Defence");
+
+			{
+				Group* g = t->Add("Bruh Moment");
+
+				Property* p = g->Add("defence-enable", "Enable", new CBoolean());
+
+				p = g->Add("another-boolean", "Dependant Boolean", new CBoolean());
+				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
+				p->Master = Config2::GetProperty("defence-enable");
+
+				p = g->Add("yet-another-boolean", "Also Dependant", new CBoolean());
+				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
+				p->Master = Config2::GetProperty("defence-enable");
+			}
 		}
 
 		// VISUALS
@@ -1024,11 +1038,27 @@ namespace Config2
 		auto Search = PropertyTable.find(Name);
 		if (Search == PropertyTable.end())
 		{
+			std::cout << "There are " << PropertyTable.size() << " items in the table" << std::endl;
 			std::cout << "nonexistant property: \"" << Name << "\"" << std::endl;
 			return nullptr;
 		}
 		else
 			return Search->second;
+	}
+
+	bool GetBoolean(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return false;
+
+		#define BRO(x) (((CBoolean*)((x)->Value))->Value)
+
+		if (p->Master && p->Master->Type == PropertyType::BOOLEAN)
+			return BRO(p) && BRO(p->Master);
+		else
+			return BRO(p);
+
+		#undef BRO
 	}
 
 	void Free()

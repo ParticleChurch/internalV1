@@ -28,6 +28,7 @@ namespace GUI2
 
 	extern ImVec2 DefaultMenuSize;
 	extern ImVec2 MinMenuSize;
+	extern int PropertyColumnPosition;
 
 	extern bool IsSearching;
 	extern char* SearchQuery;
