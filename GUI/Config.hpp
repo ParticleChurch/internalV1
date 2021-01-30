@@ -892,10 +892,10 @@ namespace Config2
 	{
 		static const PropertyType Type = PropertyType::BOOLEAN;
 
-		bool Value;
+		bool Value = false;
 		std::string Stringify()
 		{
-			return Value ? "true" : "false";
+			return this->Value ? "true" : "false";
 		}
 	};
 	struct CFloat
@@ -1078,6 +1078,9 @@ namespace Config2
 	struct Property
 	{
 	public:
+		bool (*IsVisible)() = nullptr;
+		Property* Master = nullptr;
+
 		// meta info
 		bool IsComplex = false;
 		bool IsPremium = false;
@@ -1132,20 +1135,39 @@ namespace Config2
 	{
 	private:
 		std::string Title;
+		float LastDrawHeight = -1.f;
 
 	public:
+		int Padding = 10;
+		int Rounding = 5;
+
 		std::vector<Property*> Properties;
 
 		Group(std::string Title)
 		{
 			this->Title = Title;
 		}
+
 		template <typename T>
 		Property* Add(std::string Name, std::string VisibleName, T* Value)
 		{
 			Property* x = new Property(Name, VisibleName, Value);
 			this->Properties.push_back(x);
 			return x;
+		}
+
+		float GetDrawHeight()
+		{
+			if (this->LastDrawHeight < 0.f)
+				// TODO: educated guess
+				return 100.f;
+
+			return this->LastDrawHeight;
+		}
+
+		void SetDrawHeight(float DrawHeight)
+		{
+			this->LastDrawHeight = DrawHeight;
 		}
 	};
 	struct Tab
