@@ -5,6 +5,7 @@
 #include "ConfigManager.hpp"
 #include "VKeys.hpp"
 #include "SkinConstants.hpp"
+#include "animation.hpp"
 
 constexpr bool CONFIG_DEBUG = true;
 
@@ -891,11 +892,18 @@ namespace Config2
 	struct CBoolean
 	{
 		static const PropertyType Type = PropertyType::BOOLEAN;
+		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
 
 		bool Value = false;
 		std::string Stringify()
 		{
 			return this->Value ? "true" : "false";
+		}
+
+		void Flip()
+		{
+			this->Value = !this->Value;
+			this->TimeChanged = Animation::now();
 		}
 	};
 	struct CFloat

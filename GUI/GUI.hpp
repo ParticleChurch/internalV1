@@ -18,12 +18,13 @@ namespace GUI {
 
 namespace GUI2
 {
-	constexpr bool ConsoleOutput = false;
+	constexpr bool ConsoleOutput = true;
 
 	extern bool Ejected;
 	extern float LoadProgress;
 	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;
+	extern Animation::Anim* IntroAnimation2;
 	extern Animation::Anim* SearchAnimation;
 
 	extern ImVec2 DefaultMenuSize;
@@ -36,6 +37,7 @@ namespace GUI2
 
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
+	extern void AuthenticationIntro();
 	extern void DrawNormalTab(Config2::Tab* t);
 	extern void DrawActiveTab();
 	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);

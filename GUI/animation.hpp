@@ -12,6 +12,7 @@ namespace Animation
     {
         easeInOutQuint = 0,
         linear,
+        easeInOutQuart,
     };
 
     struct Anim
@@ -37,7 +38,7 @@ namespace Animation
     extern void deleteAnimation(const char* name);
     extern bool changed(const char* name, int newState);
     extern bool changed(Anim* name, int newState);
-    extern float animate(double timePassed, double animationTime, Interpolation i = Interpolation::easeInOutQuint);
+    extern float animate(double timePassed, double animationTime, Interpolation i = Interpolation::easeInOutQuart);
 
     extern float lerp(float a, float b, float f);
 }

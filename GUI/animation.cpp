@@ -71,9 +71,10 @@ float Animation::animate(double timePassed, double animationTime, Animation::Int
     case Interpolation::linear:
         return f;
     case Interpolation::easeInOutQuint:
-    default:
-        // https://easings.net/#easeInOutQuint
         return f < 0.5f ? 16.f * f * f * f * f * f : 1.f - powf(-2.f * f + 2.f, 5.f) / 2.f;
+    case Interpolation::easeInOutQuart:
+    default:
+        return f < 0.5f ? 2.f * f * f: 1.f - powf(-2.f * f + 2.f, 2.f) / 2.f;
     }
 }
 

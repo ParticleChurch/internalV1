@@ -267,6 +267,14 @@ namespace ImGui
 		return (b - a) * f + a;
 	}
 
+	ImVec2 lerp(ImVec2 a, ImVec2 b, float f)
+	{
+		return ImVec2(
+			lerp(a.x, b.x, f),
+			lerp(a.y, b.y, f)
+		);
+	}
+
 	ImVec4 lerp(ImVec4 a, ImVec4 b, float f)
 	{
 		return ImVec4(
@@ -1756,7 +1764,7 @@ END:
 	=========== GUI VERSION 2.0 ===========
 */
 
-// Icon drawers
+// Util drawers
 namespace ImGui
 {
 	void DrawTeardrop(ImVec2 ScreenPosition, ImVec2 Dimensions, unsigned char Opacity = 255)
@@ -1880,6 +1888,37 @@ namespace ImGui
 		DrawList->PathClear();
 	}
 
+	void DrawErrorIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
+	{
+		constexpr float AspectRatio = 1.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float StrokeSize = 1.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->PathArcTo(Position + Size / 2.f, Size.x/2.f, 0, 2.f * IM_PI, Size.x);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 50, 50, Opacity), true, StrokeSize);
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.3f), Size.x / 8.f, IM_PI, 2.f * IM_PI, 8);
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.75f));
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 50, 50, Opacity));
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.75f), Size.x / 10.f, 0, 2.f * IM_PI, 8);
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 50, 50, Opacity));
+		DrawList->PathClear();
+	}
+
 	void DrawXIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
 	{
 		constexpr float AspectRatio = 1.f; // X / Y
@@ -1946,7 +1985,73 @@ namespace ImGui
 			}
 		}
 		InputText(("##" + Identifier).c_str(), Buffer, BufferLength);
+	}
 
+	std::string TruncateToEllipsis(std::string Input, float MaxWidth)
+	{
+		float CurrentWidth = CalcTextSize(Input.c_str()).x;
+		if (CurrentWidth <= MaxWidth) return Input;
+
+		int PredictedCharCount = Input.size() * MaxWidth / CurrentWidth;
+		std::string Output = Input.substr(0, PredictedCharCount);
+		CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+
+		if (CurrentWidth <= MaxWidth) // prediction was too short
+		{
+			int AddChars = 0;
+			while (CurrentWidth <= MaxWidth)
+			{
+				AddChars++;
+				Output = Input.substr(0, PredictedCharCount + AddChars);
+				CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+			}
+			return Input.substr(0, PredictedCharCount + AddChars - 1) + "...";
+		}
+		else // prediction was too long
+		{
+			int RemoveChars = 0;
+			while (CurrentWidth > MaxWidth && (RemoveChars < PredictedCharCount))
+			{
+				RemoveChars++;
+				Output = Input.substr(0, PredictedCharCount - RemoveChars);
+				CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+			}
+			return Input.substr(0, PredictedCharCount - RemoveChars) + "...";
+		}
+	}
+
+	bool DrawBooleanSwitch(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float SwitchFactor = 0.f, ImVec2 Size = ImVec2(30, 16))
+	{
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float OuterRadius = Size.y / 2.f;
+		float InnerRadius = OuterRadius - 2.f;
+		ImVec2 LeftCenter = Window->DC.CursorPos + ImVec2(OuterRadius, OuterRadius);
+		ImVec2 RightCenter = Window->DC.CursorPos + Size - ImVec2(OuterRadius, OuterRadius);
+		ImVec2 GrabCenter = lerp(LeftCenter, RightCenter, SwitchFactor);
+
+		DrawList->PathArcTo(LeftCenter, OuterRadius, IM_PI / 2.f, 3.f * IM_PI / 2.f, ceil(OuterRadius));
+		DrawList->PathArcTo(RightCenter, OuterRadius, 3.f * IM_PI / 2.f, 5.f * IM_PI / 2.f, ceil(OuterRadius));
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, ColorConvertFloat4ToU32(lerp(ColorA, ColorB, SwitchFactor)));
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(GrabCenter, InnerRadius, 0.f, 2.f * IM_PI, ceil(InnerRadius * 2.f));
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, ColorConvertFloat4ToU32(lerp(ColorB, ColorA, SwitchFactor)));
+		DrawList->PathClear();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, 0);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, OuterRadius);
+
+		// dummy button
+		bool Clicked = ImGui::Button(Identifier.c_str(), Size);
+
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar(1);
+
+		return Clicked;
 	}
 }
 
@@ -1967,25 +2072,68 @@ namespace ImGui
 
 	int DrawBooleanProperty(Config2::Property* p)
 	{
-		auto Window = ImGui::GetCurrentWindow();
+		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = ImGui::GetCursorPos();
+		ImVec2 Pos = GetCursorPos();
 
 		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
 
-		// draw label 
-		{
-			ImGui::SetCursorPos(Pos + ImVec2(0, (20 - ImGui::GetFontSize()) / 2));
-
-			ImGui::Text(p->VisibleName.c_str());
-		}
+		bool MasterLocked = false;
 
 		// draw switch
 		{
+			auto CBoolValue = (Config2::CBoolean*)p->Value;
+			if (p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN)
+			{
+				bool MasterAllows = ((Config2::CBoolean*)p->Master->Value)->Value;
+				bool ImEnabled = CBoolValue->Value;
+
+				MasterLocked = ImEnabled && !MasterAllows;
+			}
+
 			ImGui::SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
 
-			ImGui::SwitchButton(p->Name, ImVec2(30, 16), 0.1f, &Value->Value, true, 2);
+			double TimePassed = Animation::delta(Animation::now(), CBoolValue->TimeChanged);
+			double AnimFactor = Animation::animate(TimePassed, 0.15f);
+			if (!CBoolValue->Value)
+				AnimFactor = 1.f - AnimFactor;
+
+			bool Flipped = DrawBooleanSwitch("##" + p->Name, ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), AnimFactor);
+			if (Flipped)
+				CBoolValue->Flip();
 		}
+
+		// draw label 
+		{
+			int x = 0;
+
+
+			if (MasterLocked)
+			{
+				SetCursorPos(Pos + ImVec2(0, 4));
+				DrawErrorIcon(255, ImVec2(12, 12));
+
+				auto ID = GetID((p->Name + "-master-lock-hoverable").c_str());
+				auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
+				ItemAdd(BB, ID);
+				if (ItemHoverable(BB, ID))
+				{
+					PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+					BeginTooltipEx(ImGuiWindowFlags_None, ImGuiTooltipFlags_OverridePreviousTooltip);
+
+					Text(("This property has no effect because it is controlled by \"" + p->Master->VisibleName + "\"").c_str());
+
+					EndTooltip();
+					PopStyleVar();
+				}
+
+				x = 15;
+			}
+
+			ImGui::SetCursorPos(Pos + ImVec2(x, (20 - ImGui::GetFontSize()) / 2));
+			ImGui::Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - 10 - x).c_str());
+		}
+
 
 		return 20;
 	}
@@ -1997,6 +2145,7 @@ namespace GUI2
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
+	Animation::Anim* IntroAnimation2 = nullptr;
 	Animation::Anim* SearchAnimation = nullptr;
 
 	ImVec2 DefaultMenuSize = ImVec2(650, 330);
@@ -2034,7 +2183,7 @@ void GUI2::LoadingScreen()
 		double t = Animation::delta(Now, IntroAnimation->changed);
 		if (IntroAnimation->state == 0)
 		{
-			MovementFactor = Animation::animate(t, 0.5f); // TODO: play with interpolation?
+			MovementFactor = Animation::animate(t, 0.5f, Animation::Interpolation::easeInOutQuint);
 			OpacityFactor = 0.f;
 		}
 		else
@@ -2048,7 +2197,7 @@ void GUI2::LoadingScreen()
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
-	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 350 + 10, MovementFactor));
+	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 288 + 10, MovementFactor));
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
@@ -2063,9 +2212,15 @@ void GUI2::LoadingScreen()
 
 	auto DrawList = ImGui::GetWindowDrawList();
 
+	ImU32 BgColor = ImGui::ColorConvertFloat4ToU32(ImGui::lerp(
+		ImVec4(40.f / 255.f, 40.f / 255.f, 40.f / 255.f, ThisOpacity / 255.f),
+		ImVec4(53.f / 255.f, 54.f / 255.f, 58.f / 255.f, ThisOpacity / 255.f),
+		MovementFactor
+	));
+
 	// draw real background because imgui borders do not have enough segments
 	if (MovementFactor == 0.f)
-		DrawList->AddCircleFilled(WindowCenter, 100.f, IM_COL32(40, 40, 40, ThisOpacity), 64); // C = 2*100*pi = 628
+		DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 628
 	else
 	{
 		float radius = ImGui::lerp(100, 10, MovementFactor);
@@ -2076,7 +2231,7 @@ void GUI2::LoadingScreen()
 		DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
 		DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
 		DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI /2 , IM_PI, 16);
-		DrawList->PathFillConvex(IM_COL32(40, 40, 40, ThisOpacity));
+		DrawList->PathFillConvex(BgColor);
 	}
 
 	// draw progress
@@ -2199,10 +2354,10 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
-	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, 255));
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, ThisContentOpacity));
 	// buttons
 	{
 		int XPos = InputPadding;
@@ -2212,7 +2367,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		int ButtonSpacing = 12;
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
-		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)))
+		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)) && !IntroAnimation2)
 		{
 			Config::UserInfo::Authenticated = true;
 			Config::UserInfo::Premium = true;
@@ -2220,6 +2375,8 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 			UserData::Initialized = true;
 			UserData::Authenticated = true;
 			UserData::Premium = true;
+
+			IntroAnimation2 = Animation::newAnimation("intro-2", 0);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 1));
@@ -2229,7 +2386,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 2));
-		if (ImGui::Button("Play Free", ImVec2(ButtonWidth, 30)))
+		if (ImGui::Button("Play Free", ImVec2(ButtonWidth, 30)) && !IntroAnimation2)
 		{
 			Config::UserInfo::Authenticated = true;
 			Config::UserInfo::Premium = true;
@@ -2237,6 +2394,8 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 			UserData::Initialized = true;
 			UserData::Authenticated = true;
 			UserData::Premium = true;
+
+			IntroAnimation2 = Animation::newAnimation("intro-2", 0);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 3));
@@ -2251,6 +2410,57 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::PopStyleVar(4);
 	ImGui::PopStyleColor(4);
 	ImGui::PopFont();
+}
+
+void GUI2::AuthenticationIntro()
+{
+	// 0 = this is the first ever call of this function
+	// 1 = tweening opacity out
+	// 2 = tweening size
+	// 3 = tweening opacity in
+	// 69 = done
+	if (!(IntroAnimation2->state == 1 || IntroAnimation2->state == 2 || IntroAnimation2->state == 3))
+		Animation::changed(IntroAnimation2, 1);
+	
+	double age = Animation::age(IntroAnimation2);
+	switch (IntroAnimation2->state)
+	{
+	default:
+	case 1:
+		AuthenticationScreen(1.f - Animation::animate(age, 0.15f, Animation::Interpolation::linear));
+		if (age >= 0.15f)
+			Animation::changed(IntroAnimation2, 2);
+		break;
+	case 2:
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		float f = Animation::animate(age, .35f, Animation::Interpolation::easeInOutQuart);
+
+		ImVec2 Size = ImGui::lerp(ImVec2(300, 288), DefaultMenuSize, f);
+		ImVec4 Color = ImGui::lerp(ImVec4(53.f / 255.f, 54.f / 255.f, 58.f / 255.f, 1.f), ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f), f);
+		
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, Color);
+		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255,255,255,255));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, floor(ImGui::lerp(2.f, 0.f, f) + 0.5f));
+
+		ImGui::SetNextWindowSize(Size, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		ImGui::Begin("##intro-2", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
+		ImGui::End();
+
+		ImGui::PopStyleColor(2);
+		ImGui::PopStyleVar(1);
+
+		if (age >= .35f)
+			Animation::changed(IntroAnimation2, 3);
+	}
+	break;
+	case 3:
+		MainScreen(Animation::animate(age, 0.25f, Animation::Interpolation::linear), false);
+		if (age >= 0.25f)
+			Animation::changed(IntroAnimation2, 69); // we done here
+		break;
+	}
 }
 
 void GUI2::DrawNormalTab(Config2::Tab* t)
@@ -3011,15 +3221,14 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		ImGui::PopStyleVar(1);
 	}
 
+	if (ThisContentOpacity < 255)
+		ImGui::GetForegroundDrawList()->AddRectFilled(Window->Pos, Window->Pos + Window->Size, IM_COL32(30, 30, 30, 255 - ThisContentOpacity), 5.f);
+
 	ImGui::End();
 	ImGui::PopFont();
 
 	ImGui::PopStyleVar(7);
 	ImGui::PopStyleColor(10);
-
-	//*
-	Ejected |= GUI::Main();
-	//*/
 }
 
 void GUI2::Init()
@@ -3040,10 +3249,17 @@ void GUI2::Main()
 		Init = true;
 	}
 
-	if (UserData::Initialized)
+	if (IntroAnimation2 && IntroAnimation2->state != 69)
+	{
+		AuthenticationIntro();
+	}
+	else if (UserData::Initialized)
 	{
 		MainScreen();
-		return;
+
+		/*
+		Ejected |= GUI::Main();
+		//*/
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{

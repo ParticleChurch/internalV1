@@ -972,13 +972,11 @@ namespace Config2
 
 				Property* p = g->Add("defence-enable", "Enable", new CBoolean());
 
-				p = g->Add("another-boolean", "Dependant Boolean", new CBoolean());
-				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
+				p = g->Add("master-dependent-boolean", "Master Dependency", new CBoolean());
 				p->Master = Config2::GetProperty("defence-enable");
 
-				p = g->Add("yet-another-boolean", "Also Dependant", new CBoolean());
+				p = g->Add("visible-dependent-boolean", "Visible Dependency", new CBoolean());
 				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
-				p->Master = Config2::GetProperty("defence-enable");
 			}
 		}
 
