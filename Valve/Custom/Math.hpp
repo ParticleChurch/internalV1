@@ -17,7 +17,7 @@ inline void SinCos(float radians, float* sine, float* cosine)
 //-----------------------------------------------------------------------------
 // Euler QAngle -> Basis Vectors.  Each vector is optional
 //-----------------------------------------------------------------------------
-inline void AngleVectors(const QAngle& angles, Vec* forward, Vec* right, Vec* up)
+inline void AngleVectors(const QAngle& angles, Vec* forward, Vec* right = nullptr, Vec* up = nullptr)
 {
 	float sr, sp, sy, cr, cp, cy;
 	SinCos(DEG2RAD(angles.y), &sy, &cy);

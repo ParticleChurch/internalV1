@@ -7,6 +7,17 @@ public:
 	float y;
 	float z;
 
+	constexpr auto operator[](int i) const noexcept 
+	{ 
+		if (i == 0)
+			return x;
+		if (i == 1)
+			return y;
+		if (i == 2)
+			return z;
+		return 0.f;
+	}
+
 	//constructors
 	Vec() {
 		this->x = 0;
@@ -162,6 +173,23 @@ public:
 	constexpr auto dotProduct(const Vec& v) const noexcept
 	{
 		return x * v.x + y * v.y + z * v.z;
+	}
+
+	float Dist(const Vec& vOther) const
+	{
+		Vec delta;
+
+		delta.x = x - vOther.x;
+		delta.y = y - vOther.y;
+		delta.z = z - vOther.z;
+
+		return delta.VecLength();
+	}
+
+	Vec Clamp()
+	{
+		NormalizeAngle();
+		return *this;
 	}
 
 	Vec transform(Matrix3x4 mat) const noexcept

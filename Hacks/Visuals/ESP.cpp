@@ -211,33 +211,15 @@ void ESP::Run_PaintTraverse()
 		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
 
-	
-	for (auto p : points)
+	for (auto a : this->points)
 	{
-		Vec screen;
-		if (WorldToScreen(p, screen))
-		{
-			I::surface->DrawSetColor(Color(255, 0, 0, 255));
-			I::surface->DrawLine(screen.x, screen.y, screen.x+1, screen.y+1);
-			/*static bool Once = true;
-			if (Once)
-			{
-				Once = false;
-				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
-			}
-
-			static std::string TEXT = "x";
-			static std::wstring wide_string = std::wstring(TEXT.begin(), TEXT.end());
-
-			I::surface->DrawSetTextFont(FONT);
-			I::surface->DrawSetTextColor(Color(255,0,0,255));
-			I::surface->DrawSetTextPos(screen.x, screen.y );
-			I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));*/
-		}
+		int xSize;
+		int ySize;
+		I::engine->GetScreenSize(xSize, ySize);
+		Vec out;
+		if(WorldToScreen(a, out))
+			I::surface->DrawLine(xSize / 2, ySize, out.x, out.y);
 	}
-	
-	
-
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{
@@ -352,6 +334,16 @@ void ESP::Run_FrameStageNotify(int stage)
 		}
 		while (traces.size() > 8)
 			traces.erase(traces.begin());
+
+		for (size_t i = 0; i < points.size(); i++)
+		{
+			auto cur = points[i];
+			//draw a box at the hit point
+			I::debugoverlay->AddBoxOverlay(cur, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 0, 255, 255, 127, -1.f);
+
+		}
+		while (points.size() > 10)
+			points.erase(points.begin());
 	}
 }
 

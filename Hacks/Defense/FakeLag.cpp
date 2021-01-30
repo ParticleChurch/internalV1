@@ -26,8 +26,12 @@ bool FakeLag::TimeBreaker()
 	{
 		delta = network->GetLatency(0);
 	}
-	
-	if (I::engine->GetNetChannelInfo()->ChokedPackets + int(delta / I::globalvars->m_intervalPerTick) >= TrigTicks)
+	/*H::console.clear();
+	H::console.resize(0);
+	int val = I::engine->GetNetChannelInfo()->ChokedPackets + int(delta / I::globalvars->m_intervalPerTick) - 1;
+	H::console.push_back("LAG_VAL: " + std::to_string(val));*/
+
+	if (I::engine->GetNetChannelInfo()->ChokedPackets + int(delta / I::globalvars->m_intervalPerTick) + 1 > TrigTicks)
 		return true;
 	return false;
 }

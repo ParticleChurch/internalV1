@@ -18,13 +18,7 @@ public:
 	void AnimationFix(Entity* entity);
 	void ABSROTATION(Entity* entity);
 
-	void ShowInfo();
 	
 };
 
 extern Resolver* resolver;
-
-// weaponfire
-// othershit
-// weaponfire
-// playerhurt (if hurting!)

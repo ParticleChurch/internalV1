@@ -69,6 +69,169 @@ bool Safepoint(Vec& loc, float radius, int index)
 	return true;
 }
 
+
+
+
+//TEMP2_________________________
+inline float QuickRandom(float low, float high)
+{
+	return low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+}
+
+inline void fast_sqrt(float* __restrict p_out, float* __restrict p_in)
+{
+	_mm_store_ss(p_out, _mm_sqrt_ss(_mm_load_ss(p_in)));
+	// compiles to movss, sqrtss, movss
+}
+
+inline void fast_rsqrt(float a, float* out)
+{
+	const auto xx = _mm_load_ss(&a);
+	auto xr = _mm_rsqrt_ss(xx);
+	auto xt = _mm_mul_ss(xr, xr);
+	xt = _mm_mul_ss(xt, xx);
+	xt = _mm_sub_ss(_mm_set_ss(3.f), xt);
+	xt = _mm_mul_ss(xt, _mm_set_ss(0.5f));
+	xr = _mm_mul_ss(xr, xt);
+	_mm_store_ss(out, xr);
+}
+
+float fast_vec_normalize(Vec& vec)
+{
+	const auto sqrlen = vec.SquareLength() + 1.0e-10f;
+	float invlen;
+	fast_rsqrt(sqrlen, &invlen);
+	vec.x *= invlen;
+	vec.y *= invlen;
+	vec.z *= invlen;
+	return sqrlen * invlen;
+}
+
+void vector_angles(const Vec& forward, QAngle& angles) 
+{
+	float tmp, yaw, pitch;
+
+	if (forward[2] == 0.0f && forward[0] == 0.0f)
+	{
+		yaw = 0;
+
+		if (forward[2] > 0.0f)
+			pitch = 90.0f;
+		else
+			pitch = 270.0f;
+	}
+	else
+	{
+#ifdef QUICK_MATH
+		yaw = (fast_atan2(forward[1], forward[0]) * 180.0f / M_PI);
+#else
+		yaw = (atan2f(forward[1], forward[0]) * 180.0f / M_PI);
+#endif
+
+		if (yaw < 0.0f)
+			yaw += 360.0f;
+
+		float sqin = forward[0] * forward[0] + forward[1] * forward[1];
+		fast_sqrt(&tmp, &sqin);
+
+#ifdef QUICK_MATH
+		pitch = (fast_atan2(-forward[2], tmp) * 180.0f / M_PI);
+#else
+		pitch = (atan2f(-forward[2], tmp) * 180.0f / M_PI);
+#endif
+
+		if (pitch < 0.0f)
+			pitch += 360.0f;
+	}
+
+	pitch -= floorf(pitch / 360.0f + 0.5f) * 360.0f;
+	yaw -= floorf(yaw / 360.0f + 0.5f) * 360.0f;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	else if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	angles.x = pitch;
+	angles.y = yaw;
+	angles.z = 0;
+}
+
+inline void NormalizeNoClamp(QAngle& f)
+{
+
+	f.x -= floorf(f.x / 360.0f + 0.5f) * 360.0f;
+
+	f.y -= floorf(f.y / 360.0f + 0.5f) * 360.0f;
+
+	f.z -= floorf(f.z / 360.0f + 0.5f) * 360.0f;
+}
+
+// can add hitbox later
+float CalcHitChance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox)
+{
+	auto weapon = G::LocalPlayerWeapon;
+	if (!weapon)
+		return 0.f;
+
+
+	//const auto hitchance_cfg = get_config(weapon)->hitchance->get<float>();
+
+	Vec forward, right, up;
+	Vec eyepos = G::LocalPlayer->GetEyePos();
+	const auto spread = weapon->GetSpread();
+	const auto inaccuracy = weapon->GetInaccuracy();
+	const auto angles = vangles.Clamp();
+	AngleVectors(angles, &forward, &right, &up);
+	fast_vec_normalize(forward);
+	fast_vec_normalize(right);
+	fast_vec_normalize(up);
+	auto endpoint = point;
+
+	auto hits = 0;
+	auto i = 0;
+
+	while (i < 255)
+	{
+		const auto b = QuickRandom(0.f, 2.0f * M_PI);
+		const auto c = QuickRandom(0.0f, 1.0f);
+		const auto d = QuickRandom(0.f, 2.0f * M_PI);
+
+		const auto spread_val = c * spread;
+		const auto inaccuracy_val = c * inaccuracy;
+
+		const Vec v_spread((cos(b) * spread_val) + (cos(d) * inaccuracy_val), (sin(b) * spread_val) + (sin(d) * inaccuracy_val), 0);
+		Vec dir;
+
+		dir.x = forward.x + (right.x * v_spread.x) + (up.x * v_spread.y);
+		dir.y = forward.y + (right.y * v_spread.x) + (up.y * v_spread.y);
+		dir.z = forward.z + (right.z * v_spread.x) + (up.z * v_spread.y);
+
+		fast_vec_normalize(dir);
+
+		QAngle spread_view;
+		Vec end;
+		vector_angles(dir, spread_view);
+		NormalizeNoClamp(spread_view);
+		Vec a = angles;
+		a -= (spread_view - angles);
+		AngleVectors(a, &end);
+		fast_vec_normalize(end);
+
+		trace_t Trace;
+		const auto trace_end = eyepos + (end * endpoint.Dist(eyepos));
+		Ray_t Ray(eyepos, trace_end);
+		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &Trace);
+
+		if (Trace.Entity == player && hbox == Trace.hitbox) // eg. in head
+			hits++;
+
+		i++;
+	}
+
+	return (hits / 255.f);
+}
+
 //general help functions
 Vec Aimbot::CalculateAngle(Vec Target)
 {
@@ -420,6 +583,7 @@ void Aimbot::VisibleScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint)
 
 			if (dam > mindamage_visible && dam > BestDamage)
 			{
+				VisHitbox = HITBOX;
 				BestDamage = dam;
 				BestIndex = a.index;
 				BestAimPoint = left;
@@ -551,6 +715,7 @@ void Aimbot::AutowallScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint)
 
 			if (dam > mindamage_hidden && dam > BestDamage)
 			{
+				AutowallHitbox = HITBOX;
 				BestDamage = dam;
 				BestIndex = a.index;
 				BestAimPoint = left;
@@ -636,6 +801,8 @@ void Aimbot::Run()
 	if (!G::LocalPlayer->CanShoot()) return;
 
 	if (fakelag->LaggingOnPeak) return;
+
+	
 
 	static bool PrevAttackSendPacket = false;
 	// Janky Hide Shots
@@ -774,11 +941,15 @@ void Aimbot::Run()
 
 	// Calculate angle/index to best point
 	int BestIndex = BestHiddenIndex;
+	Vec BestPoint = BestHiddenAimpoint;
+	int BestHitbox = AutowallHitbox;
 	QAngle Angle = CalculateAngle(BestHiddenAimpoint);
 	if (BestVisDamage > BestHiddenDamage)
 	{
+		BestHitbox = VisHitbox;
 		BestIndex = BestVisIndex;
 		Angle = CalculateAngle(BestVisAimpoint);
+		BestPoint = BestVisAimpoint;
 	}
 		
 	Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
@@ -794,6 +965,19 @@ void Aimbot::Run()
 	Smooth(Angle);
 	Angle.NormalizeAngle();
 
+	//HITCHANCE BABY!
+	float chance = CalcHitChance(Angle, BestPoint, G::EntList[BestIndex].entity, (Hitboxes)BestHitbox);
+
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back("hitchance: " + std::to_string(1-hitchance));
+	H::console.push_back("chance: " + std::to_string(chance));
+
+	if (chance < 1-hitchance)
+		return;
+
+	
+
 	// Adjust for aimstep
 	/*float step = Config::GetFloat("aimbot_aimstep");
 	delta /= delta.VecLength();*/
@@ -803,14 +987,15 @@ void Aimbot::Run()
 		I::engine->SetViewAngles(Angle);
 	G::cmd->viewangles = Angle;
 
+
+	
+
 	// Check if close enough to shoot
 	/*if (ang.VecLength2D() - Angle.VecLength2D() > 1.f)
 		return;*/
 
 	// Set up Resolver For Shot Log
 	resolver->TargetIndex = BestIndex;
-	
-	
 
 	// shoot
 	if (Config::GetBool("enable-autoshoot"))

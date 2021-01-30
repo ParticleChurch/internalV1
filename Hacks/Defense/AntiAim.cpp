@@ -107,7 +107,8 @@ void AntiAim::rage()
 		return;
 
 	//set up rage style anyway
-	G::cmd->viewangles.y += 180;
+	/*G::cmd->viewangles.y += 180;*/
+	G::cmd->viewangles.y = AtTargets();
 	G::cmd->viewangles.NormalizeAngle();
 
 	rage_left = Config::GetState("antiaim-rage-invert");
@@ -116,6 +117,15 @@ void AntiAim::rage()
 	static bool Switcher = false;
 	if (*G::pSendPacket)
 		Switcher = !Switcher;
+
+	static bool Switcher2 = false;
+	static float time = 0;
+	if (I::globalvars->m_curTime - time > 0.05)
+	{
+		time = I::globalvars->m_curTime;
+		Switcher2 = !Switcher2;
+	}
+	
 
 	switch (Config::GetState("antiaim-rage-pitch"))
 	{
@@ -133,7 +143,7 @@ void AntiAim::rage()
 	}
 
 	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real");
-	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real-jitter") * (Switcher ? -1 : 1);
+	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real-jitter") * (Switcher2 ? -1 : 1) / 2;
 
 	bool BreakLBY = LBYBreak();
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-rage-fake") / 100.f;
@@ -190,6 +200,47 @@ void AntiAim::rage()
 
 	fake.NormalizeAngle();
 	real.NormalizeAngle();
+}
+
+float AntiAim::AtTargets()
+{
+	float BestFOV = FLT_MAX;
+	QAngle BestAng = G::StartAngle;
+	for (auto a : G::EntList)
+	{
+		if (a.index == G::LocalPlayerIndex)
+			continue;
+
+		if (!a.entity)
+			continue;
+
+		player_info_t PlayerInfo;
+		if (!I::engine->GetPlayerInfo(a.index, &PlayerInfo))
+			continue;
+
+		if (!(a.health > 0))
+			continue;
+
+		if (a.dormant)
+			continue;
+
+		if (a.team == G::LocalPlayerTeam)
+			continue;
+
+		QAngle AngToTarg = aimbot->CalculateAngle(a.EyePos);
+		Vec delta = AngToTarg - G::StartAngle;
+		delta.NormalizeAngle();
+
+		float fov =  min(sqrtf(powf(delta.x, 2.0f) + powf(delta.y, 2.0f)), 180.0f);
+
+		if (fov < BestFOV)
+		{
+			BestFOV = fov;
+			BestAng = AngToTarg;
+		}
+	}
+
+	return BestAng.y + 180.f;
 }
 
 void AntiAim::rage2()

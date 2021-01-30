@@ -299,6 +299,14 @@ public:
 		return *(int*)((DWORD)this + offset);
 	}
 
+	float GetFireReadyTime()
+	{
+		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
+		if (offset == 0)
+			offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
+		return *(float*)((DWORD)this + offset);
+	}
+
 	float GetFlashMaxAlpha()
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");

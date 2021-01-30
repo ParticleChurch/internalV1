@@ -10,6 +10,7 @@ public:
 	int legit_side = 1;
 	//functions for rage
 	void rage();
+	float AtTargets();
 	bool rage_left = true;
 	int rage_side = 1;
 

@@ -1536,7 +1536,7 @@ bool GUI::HackMenu()
 	ImFont* font_before = ImGui::GetFont();
 	ImGui::PushFont(Arial14Italics);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
-	ImGui::Begin("a4g4.com", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("a4g4.com - PRIVATE BETA v1.0.3", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 	GUI::IgnoreLButton |= ImGui::IsItemHovered();
 	ImGui::PushFont(font_before);
 	ImGui::PopStyleVar();
@@ -1752,11 +1752,7 @@ END:
 }
 
 
-/*
-	=========== GUI VERSION 2.0 ===========
-*/
-
-// Icon drawers
+// V2
 namespace ImGui
 {
 	void DrawTeardrop(ImVec2 ScreenPosition, ImVec2 Dimensions, unsigned char Opacity = 255)
@@ -1950,47 +1946,6 @@ namespace ImGui
 	}
 }
 
-// Property drawers
-namespace ImGui
-{
-	int DrawTextProperty(Config2::Property* p)
-	{
-		auto Window = ImGui::GetCurrentWindow();
-		auto DrawList = Window->DrawList;
-		ImVec2 Pos = ImGui::GetCursorPos();
-
-		ImGui::SetCursorPos(Pos + ImVec2(0, (20 - ImGui::GetFontSize()) / 2));
-		ImGui::Text(p->VisibleName.c_str());
-
-		return 20;
-	}
-
-	int DrawBooleanProperty(Config2::Property* p)
-	{
-		auto Window = ImGui::GetCurrentWindow();
-		auto DrawList = Window->DrawList;
-		ImVec2 Pos = ImGui::GetCursorPos();
-
-		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
-
-		// draw label 
-		{
-			ImGui::SetCursorPos(Pos + ImVec2(0, (20 - ImGui::GetFontSize()) / 2));
-
-			ImGui::Text(p->VisibleName.c_str());
-		}
-
-		// draw switch
-		{
-			ImGui::SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
-
-			ImGui::SwitchButton(p->Name, ImVec2(30, 16), 0.1f, &Value->Value, true, 2);
-		}
-
-		return 20;
-	}
-}
-
 namespace GUI2
 {
 	bool Ejected = false;
@@ -1999,9 +1954,8 @@ namespace GUI2
 	Animation::Anim* IntroAnimation = nullptr;
 	Animation::Anim* SearchAnimation = nullptr;
 
-	ImVec2 DefaultMenuSize = ImVec2(650, 330);
-	ImVec2 MinMenuSize = ImVec2(575, 242);
-	int PropertyColumnPosition = 150;
+	ImVec2 DefaultMenuSize = ImVec2(600,400);
+	ImVec2 MinMenuSize = ImVec2(500, 242);
 
 	bool IsSearching = false;
 	char* SearchQuery = nullptr;
@@ -2048,7 +2002,7 @@ void GUI2::LoadingScreen()
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImVec2 WindowCenter(io.DisplaySize.x / 2, io.DisplaySize.y / 2);
-	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 288 + 10, MovementFactor));
+	ImVec2 FrameSize(ImGui::lerp(200 + 10, 300 + 10, MovementFactor), ImGui::lerp(200 + 10, 350 + 10, MovementFactor));
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
@@ -2199,10 +2153,10 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, ThisContentOpacity));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, ThisContentOpacity));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, ThisContentOpacity));
-	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
+	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85/2, 90/2, 95/2, 255));
 	// buttons
 	{
 		int XPos = InputPadding;
@@ -2258,62 +2212,8 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
-	int WidgetPadding = 10;
-	int WidgetWidth = Window->ContentRegionRect.GetWidth();
-	int WidgetX = WidgetPadding, WidgetY = WidgetPadding;
+	ImGui::TextEx(("This is the tab for: " + t->Name).c_str());
 
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58, 255));
-
-	for (size_t g = 0; g < t->Groups.size(); g++)
-	{
-		Config2::Group* Group = t->Groups[g];
-		int GroupX = Group->Padding, GroupY = Group->Padding;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, Group->Rounding);
-		ImGui::PushFont(Arial16);
-
-		// TODO: each group should have meta properties like "backgroundColor"
-		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
-		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - WidgetPadding - WidgetX, Group->GetDrawHeight()));
-		auto GroupWindow = ImGui::GetCurrentWindow();
-
-		// draw properties
-		{
-			size_t nDrawnProps = 0;
-			int PropertyPadding = 0;
-			for (size_t p = 0; p < Group->Properties.size(); p++)
-			{
-				auto Property = Group->Properties[p];
-				if (Property->IsVisible && !Property->IsVisible()) continue;
-
-				if (nDrawnProps > 0)
-					GroupY += 5;
-
-				ImGui::SetCursorPos(ImVec2(GroupX, GroupY));
-
-				switch (Property->Type)
-				{
-				case Config2::PropertyType::BOOLEAN:
-					GroupY += ImGui::DrawBooleanProperty(Property);
-					break;
-				default:
-					GroupY += ImGui::DrawTextProperty(Property);
-					break;
-				}
-
-				nDrawnProps++;
-			}
-		}
-
-		GroupY += Group->Padding;
-		ImGui::EndChild();
-		Group->SetDrawHeight(GroupY);
-
-		ImGui::PopStyleVar(1);
-		ImGui::PopFont();
-	}
-
-	ImGui::PopStyleColor(1);
 	return;
 }
 
@@ -2326,10 +2226,10 @@ void GUI2::DrawActiveTab()
 
 	if (ActiveTab->Name == "Eject")
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.f);
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58 ,255));
 		ImGui::SetCursorPos(ImVec2(10.f, 10.f));
-		ImGui::BeginChild("##eject-confirm", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 171));
+		ImGui::BeginChild("##eject-confirm", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 153));
 
 		// title text
 		{
@@ -2353,11 +2253,9 @@ void GUI2::DrawActiveTab()
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f));
 			ImGui::TextEx("- your theme will not be saved");
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f));
-			ImGui::TextEx("- this will remove the cheat from your computer's memory");
+			ImGui::TextEx("- this will free the cheat from CS:GO's memory");
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f + 18.f));
 			ImGui::TextEx("- this will disable all effects");
-			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f + 18.f + 18.f));
-			ImGui::TextEx("- there is a *small* chance that CS:GO will crash");
 
 			ImGui::PopFont();
 		}
@@ -2371,7 +2269,7 @@ void GUI2::DrawActiveTab()
 
 			ImGui::PushFont(Arial18BoldItalics);
 
-			ImGui::SetCursorPos(ImVec2(10.f, 131));
+			ImGui::SetCursorPos(ImVec2(10.f, 113));
 			Ejected |= ImGui::Button("EJECT NOW##confirm", ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
 
 			ImGui::PopFont();
@@ -2811,7 +2709,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	// draw border because imgui borders are inset which makes me wanna kms
 	{
 		auto BackgroundDrawList = ImGui::GetBackgroundDrawList();
-		float BorderThickness = 0.f;
+		float BorderThickness = 2.f;
 		float BorderRadius = ImGui::GetStyle().WindowRounding;
 		ImVec4 BorderColor = ImGui::GetStyle().Colors[ImGuiCol_Border];
 		BackgroundDrawList->AddRect(
@@ -3041,11 +2939,11 @@ void GUI2::Main()
 
 	if (UserData::Initialized)
 	{
-		MainScreen();
+		//MainScreen();
 
-		//if (GUI::HackMenu())
-		//	Ejected = true;
-		//return;
+		if (GUI::HackMenu())
+			Ejected = true;
+		return;
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{

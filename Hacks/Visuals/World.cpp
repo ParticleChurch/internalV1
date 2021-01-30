@@ -10,6 +10,7 @@ void World::WorldMod(Material* mat)
 
 void World::PropMod(Material* mat)
 {
+	//r_DrawSpecificStaticProp - set to 1 to get props working...
 	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
 	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
 	

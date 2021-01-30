@@ -28,6 +28,8 @@ public:
 	float accuracy_amount = 0.0f;
 
 	// Scan Stuff
+	int VisHitbox;
+	int AutowallHitbox;
 	void VisibleScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);
 	void AutowallScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);
 
