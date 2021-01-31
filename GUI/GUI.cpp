@@ -3257,7 +3257,7 @@ void GUI2::Main()
 	{
 		//MainScreen();
 
-		//Ejected |= GUI::Main();
+		Ejected |= GUI::Main();
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
