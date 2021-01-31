@@ -969,6 +969,7 @@ namespace Config2
 
 			{
 				Group* g = t->Add("Bruh Moment");
+				g->ShowTitle = false;
 
 				Property* p = g->Add("defence-enable", "Enable", new CBoolean());
 
@@ -977,6 +978,25 @@ namespace Config2
 
 				p = g->Add("visible-dependent-boolean", "Visible Dependency", new CBoolean());
 				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
+			}
+
+			{
+				Group* g = t->Add("Showcase");
+
+				Property* p = g->Add("showcase-normal", "Normal Switch", new CBoolean());
+
+				p = g->Add("showcase-chained", "Chained", new CBoolean());
+				p->Master = Config2::GetProperty("showcase-normal");
+
+				p = g->Add("showcase-dependant", "Dependant", new CBoolean());
+				p->IsVisible = []() { return Config2::GetBoolean("showcase-normal"); };
+
+				p = g->Add("showcase-premium", "Premium", new CBoolean());
+				p->IsPremium = true;
+
+				p = g->Add("showcase-premium-chained", "Premium and Chained", new CBoolean());
+				p->IsPremium = true;
+				p->Master = Config2::GetProperty("showcase-normal");
 			}
 		}
 

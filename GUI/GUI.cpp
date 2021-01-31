@@ -1763,6 +1763,23 @@ END:
 /*
 	=========== GUI VERSION 2.0 ===========
 */
+namespace GUI2
+{
+	bool Ejected = false;
+	float LoadProgress = 0.f;
+	float VisibleLoadProgress = 0.f;
+	Animation::Anim* IntroAnimation = nullptr;
+	Animation::Anim* IntroAnimation2 = nullptr;
+	Animation::Anim* SearchAnimation = nullptr;
+
+	ImVec2 DefaultMenuSize = ImVec2(650, 330);
+	ImVec2 MinMenuSize = ImVec2(575, 242);
+	int PropertyColumnPosition = 200;
+
+	bool IsSearching = false;
+	char* SearchQuery = nullptr;
+	Config2::Tab* ActiveTab = nullptr;
+};
 
 // Util drawers
 namespace ImGui
@@ -1919,6 +1936,71 @@ namespace ImGui
 		DrawList->PathClear();
 	}
 
+	void DrawInfoIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
+	{
+		constexpr float AspectRatio = 1.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float StrokeSize = 1.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->PathArcTo(Position + Size / 2.f, Size.x / 2.f, 0, 2.f * IM_PI, Size.x);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(175, 175, 175, Opacity), true, StrokeSize);
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.3f), StrokeSize, 0, 2.f * IM_PI, 8);
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(175, 175, 175, Opacity));
+		DrawList->PathClear();
+
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.4f + StrokeSize));
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.8f));
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(175, 175, 175, Opacity), false, StrokeSize*2.f);
+		DrawList->PathClear();
+	}
+
+	void DrawWarningIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
+	{
+		constexpr float AspectRatio = 1.1547005383792517f; // X / Y, aspect ratio of equilateral triangle = 2/sqrt(3)
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		// C = 2*PI*radius
+		float StrokeSize = 1.f;
+		float CornerRadius = Size.x / 10.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->PathArcTo(Position + ImVec2(CornerRadius, Size.y - CornerRadius), CornerRadius, IM_PI / 2.f, 7.f * IM_PI / 6.f, max(CornerRadius, 4));
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, CornerRadius), CornerRadius, 7.f * IM_PI / 6.f, 11.f * IM_PI / 6.f, max(CornerRadius, 4));
+		DrawList->PathArcTo(Position + ImVec2(Size.x - CornerRadius, Size.y - CornerRadius), CornerRadius, 11.f * IM_PI / 6.f, 5.f * IM_PI / 2.f, max(CornerRadius, 4));
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 0, Opacity), true, StrokeSize);
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.35f), Size.x / 10.f, IM_PI, 2.f * IM_PI, 8);
+		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.75f));
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 0, Opacity));
+		DrawList->PathClear();
+
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.8f), Size.x / 14.f, 0, 2.f * IM_PI, 8);
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 0, Opacity));
+		DrawList->PathClear();
+	}
+
 	void DrawXIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
 	{
 		constexpr float AspectRatio = 1.f; // X / Y
@@ -2020,6 +2102,71 @@ namespace ImGui
 		}
 	}
 
+	void ToolTip(std::string str, int ItemHeightForVerticalFlip = 20)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		PushFont(Arial16);
+		ImVec2 TextDimensions = CalcTextSize(str.c_str());
+		PopFont();
+
+		ImVec2 WindowSize = TextDimensions + ImVec2(10, 10);
+		ImVec2 PointerSize = ImVec2(5, 5);
+		int VerticalPadding = 5;
+		ItemHeightForVerticalFlip += VerticalPadding * 2;
+
+		ImVec2 PointerPos = GetCurrentWindow()->DC.CursorPos - ImVec2(0, 5);
+
+		// invert vertically if there is not enough space above, and there is more space below
+		bool VerticalInvert = (PointerPos.y < (WindowSize.y + PointerSize.y)) && (PointerPos.y < (io.DisplaySize.y - PointerPos.y - ItemHeightForVerticalFlip));
+		if (VerticalInvert)
+		{
+			PointerPos += ImVec2(0, ItemHeightForVerticalFlip);
+		}
+
+		ImVec2 WindowPos = PointerPos - ImVec2(PointerSize.x / 2.f + 10, VerticalInvert ? (-PointerSize.y) : (WindowSize.y + PointerSize.y));
+
+		// move horizontally
+		if (WindowPos.x + WindowSize.x > io.DisplaySize.x)
+		{
+			WindowPos += ImVec2(io.DisplaySize.x - (WindowPos.x + WindowSize.x), 0);
+			if (WindowPos.x < 0)
+			{
+				WindowPos -= ImVec2(WindowPos.x/2, 0);
+			}
+		}
+
+		auto DrawList = GetForegroundDrawList();
+
+		if (!VerticalInvert)
+		{
+			DrawList->PathLineTo(PointerPos - PointerSize); // top left of pointer
+			DrawList->PathArcTo(WindowPos + ImVec2(5, WindowSize.y - 5), 5, IM_PI / 2.f, IM_PI, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(5, 5), 5, IM_PI, 3.f * IM_PI / 2.f, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, 5), 5, 3.f * IM_PI / 2.f, 2.f * IM_PI, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, WindowSize.y - 5), 5, 2.f * IM_PI, 5.f * IM_PI / 2.f, 4);
+			DrawList->PathLineTo(PointerPos + ImVec2(PointerSize.x, -PointerSize.y)); // top right of pointer
+			DrawList->PathLineTo(PointerPos); 
+		}
+		else
+		{
+			DrawList->PathLineTo(PointerPos + PointerSize); // bottom right of pointer
+			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, 5), 5, 3.f * IM_PI / 2.f, 2.f * IM_PI, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, WindowSize.y - 5), 5, 2.f * IM_PI, 5.f * IM_PI / 2.f, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(5, WindowSize.y - 5), 5, IM_PI / 2.f, IM_PI, 4);
+			DrawList->PathArcTo(WindowPos + ImVec2(5, 5), 5, IM_PI, 3.f * IM_PI / 2.f, 4);
+			DrawList->PathLineTo(PointerPos + ImVec2(-PointerSize.x, PointerSize.y)); // bottom left of pointer
+			DrawList->PathLineTo(PointerPos);
+		}
+
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(85, 90, 95, 255));
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(42, 45, 47, 255), true, 2.f);
+		DrawList->PathClear();
+
+		// Draw Text
+		DrawList->AddText(Arial16, 16, WindowPos + ImVec2(5, 5), IM_COL32(255, 255, 255, 255), str.c_str());
+	}
+
 	bool DrawBooleanSwitch(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float SwitchFactor = 0.f, ImVec2 Size = ImVec2(30, 16))
 	{
 		auto Window = ImGui::GetCurrentWindow();
@@ -2079,6 +2226,7 @@ namespace ImGui
 		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
 
 		bool MasterLocked = false;
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
 		// draw switch
 		{
@@ -2099,63 +2247,52 @@ namespace ImGui
 				AnimFactor = 1.f - AnimFactor;
 
 			bool Flipped = DrawBooleanSwitch("##" + p->Name, ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), AnimFactor);
-			if (Flipped)
+			if (Flipped && !PremiumLocked)
 				CBoolValue->Flip();
 		}
 
 		// draw label 
 		{
-			int x = 0;
+			ImVec2 IconSize(14,14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y)/2));
 
-
-			if (MasterLocked)
+			if (PremiumLocked)
 			{
-				SetCursorPos(Pos + ImVec2(0, 4));
-				DrawErrorIcon(255, ImVec2(12, 12));
-
-				auto ID = GetID((p->Name + "-master-lock-hoverable").c_str());
-				auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
-				ItemAdd(BB, ID);
-				if (ItemHoverable(BB, ID))
-				{
-					PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
-					BeginTooltipEx(ImGuiWindowFlags_None, ImGuiTooltipFlags_OverridePreviousTooltip);
-
-					Text(("This property has no effect because it is controlled by \"" + p->Master->VisibleName + "\"").c_str());
-
-					EndTooltip();
-					PopStyleVar();
-				}
-
-				x = 15;
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "This property is locked because you do not have premium";
+			}
+			else if (MasterLocked)
+			{
+				DrawWarningIcon(255, IconSize);
+				ToolTipString = "This property has no effect because it is controlled by \"" + p->Master->VisibleName + "\"";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
 			}
 
-			ImGui::SetCursorPos(Pos + ImVec2(x, (20 - ImGui::GetFontSize()) / 2));
-			ImGui::Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - 10 - x).c_str());
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x/2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - ImGui::GetFontSize()) / 2));
+			ImGui::Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 
 		return 20;
 	}
 }
-
-namespace GUI2
-{
-	bool Ejected = false;
-	float LoadProgress = 0.f;
-	float VisibleLoadProgress = 0.f;
-	Animation::Anim* IntroAnimation = nullptr;
-	Animation::Anim* IntroAnimation2 = nullptr;
-	Animation::Anim* SearchAnimation = nullptr;
-
-	ImVec2 DefaultMenuSize = ImVec2(650, 330);
-	ImVec2 MinMenuSize = ImVec2(575, 242);
-	int PropertyColumnPosition = 150;
-
-	bool IsSearching = false;
-	char* SearchQuery = nullptr;
-	Config2::Tab* ActiveTab = nullptr;
-};	
 
 void GUI2::LoadingScreen()
 {
@@ -2393,7 +2530,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 			UserData::Initialized = true;
 			UserData::Authenticated = true;
-			UserData::Premium = true;
+			UserData::Premium = false;
 
 			IntroAnimation2 = Animation::newAnimation("intro-2", 0);
 		}
@@ -2477,29 +2614,38 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
 		Config2::Group* Group = t->Groups[g];
-		int GroupX = Group->Padding, GroupY = Group->Padding;
+		int GroupHeight = Group->GetDrawHeight();
+		int GroupY = Group->Padding;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, Group->Rounding);
 		ImGui::PushFont(Arial16);
 
 		// TODO: each group should have meta properties like "backgroundColor"
 		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
-		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - WidgetPadding - WidgetX, Group->GetDrawHeight()));
+		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - WidgetPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
 		auto GroupWindow = ImGui::GetCurrentWindow();
+
+		if (Group->ShowTitle)
+		{
+			ImGui::SetCursorPos(ImVec2(5, GroupY));
+			ImGui::PushFont(Arial18BoldItalics);
+			ImGui::Text(Group->Title.c_str());
+			ImGui::PopFont();
+			GroupY += 18 + 5;
+		}
 
 		// draw properties
 		{
 			size_t nDrawnProps = 0;
-			int PropertyPadding = 0;
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{
 				auto Property = Group->Properties[p];
 				if (Property->IsVisible && !Property->IsVisible()) continue;
 
 				if (nDrawnProps > 0)
-					GroupY += 5;
+					GroupY += Group->Padding;
 
-				ImGui::SetCursorPos(ImVec2(GroupX, GroupY));
+				ImGui::SetCursorPos(ImVec2(0, GroupY));
 
 				switch (Property->Type)
 				{
@@ -2521,6 +2667,8 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 
 		ImGui::PopStyleVar(1);
 		ImGui::PopFont();
+
+		WidgetY += GroupHeight + WidgetPadding;
 	}
 
 	ImGui::PopStyleColor(1);
@@ -3255,9 +3403,11 @@ void GUI2::Main()
 	}
 	else if (UserData::Initialized)
 	{
-		//MainScreen();
-
-		Ejected |= GUI::Main();
+		if (Config::GetBool("show-menu"))
+		{
+			MainScreen();
+			Ejected |= GUI::Main();
+		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{

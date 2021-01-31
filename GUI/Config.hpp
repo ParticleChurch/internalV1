@@ -1142,12 +1142,13 @@ namespace Config2
 	struct Group
 	{
 	private:
-		std::string Title;
 		float LastDrawHeight = -1.f;
 
 	public:
-		int Padding = 10;
+		int Padding = 5;
 		int Rounding = 5;
+		std::string Title;
+		bool ShowTitle = true;
 
 		std::vector<Property*> Properties;
 
@@ -1166,11 +1167,31 @@ namespace Config2
 
 		float GetDrawHeight()
 		{
-			if (this->LastDrawHeight < 0.f)
-				// TODO: educated guess
-				return 100.f;
+			// return actual height
+			if (this->LastDrawHeight >= 0.f)
+				return this->LastDrawHeight;
+			
+			// try to calculate it
+			float h = this->ShowTitle ? 5 + 18 : 0;
+			for (size_t p = 0; p < this->Properties.size(); p++)
+			{
+				auto Property = this->Properties[p];
+				if (Property->IsVisible && !Property->IsVisible()) continue;
+				
+				h += this->Padding;
+				switch (Property->Type)
+				{
+				case Config2::PropertyType::BOOLEAN:
+					h += 20;
+					break;
+				default:
+					h += 20;
+					break;
+				}
+			}
+			h += this->Padding;
 
-			return this->LastDrawHeight;
+			return h;
 		}
 
 		void SetDrawHeight(float DrawHeight)
