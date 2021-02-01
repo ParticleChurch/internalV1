@@ -44,13 +44,19 @@ void Init()
     Config2::Init();
     GUI2::LoadProgress = 0.15f;
     H::Init();
+    GUI2::LoadProgress = 0.85f;
+    bool ThreadDied = false;
+    Keybind::Init(&G::KillDLL, &ThreadDied);
     GUI2::LoadProgress = 1.f;
 
     ConsoleColorMsg(Color(50, 153, 255, 255), "Cheat Injected\n\n");
     I::engine->ClientCmd_Unrestricted("toggleconsole");
 
     std::cout << "Initialization successful" << std::endl;
+    
     while (!G::KillDLL) Sleep(100);
+    while (!ThreadDied) Sleep(100);
+
     std::cout << "\nEjecting...\n";
 
     FreeConsole();

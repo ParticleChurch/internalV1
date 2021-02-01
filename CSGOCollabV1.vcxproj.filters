@@ -112,6 +112,9 @@
     <ClCompile Include="GUI\TextService.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\Keybind.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -401,6 +404,9 @@
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\IMemAlloc.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Keybind.hpp">
+      <Filter>Headers\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

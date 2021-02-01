@@ -945,6 +945,7 @@ namespace Config2
 {
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
+	Property* SettingKeybindFor = nullptr;
 
 	void Init()
 	{
@@ -1075,6 +1076,27 @@ namespace Config2
 			return BRO(p);
 
 		#undef BRO
+	}
+
+	void ProcessKeys()
+	{
+		auto io = ImGui::GetIO();
+		bool WantKeyboard = io.WantCaptureKeyboard;
+		bool WantMouse = io.WantCaptureMouse;
+
+		Keybind::Lock = true;
+		while (Keybind::KeyChangeStack.size() > 0)
+		{
+			auto log = Keybind::KeyChangeStack[0];
+
+			if (log.State)
+				std::cout << "Pressed " << Keybind::KeyNames[log.Key] << std::endl;
+			else
+				std::cout << "Released " << Keybind::KeyNames[log.Key] << std::endl;
+
+			Keybind::KeyChangeStack.erase(Keybind::KeyChangeStack.begin());
+		}
+		Keybind::Lock = false;
 	}
 
 	void Free()

@@ -3417,4 +3417,6 @@ void GUI2::Main()
 	{
 		AuthenticationScreen();
 	}
+
+	Config2::ProcessKeys();
 }

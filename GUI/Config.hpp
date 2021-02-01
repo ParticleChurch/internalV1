@@ -837,6 +837,7 @@ namespace Config2
 
 	extern std::map<std::string, Property*> PropertyTable;
 	extern std::vector<Tab*> Tabs;
+	extern Property* SettingKeybindFor;
 
 	enum class PropertyType
 	{
@@ -862,6 +863,7 @@ namespace Config2
 	extern float GetFloat(std::string Name);
 	extern int GetPaintKit(std::string Name);
 
+	extern void ProcessKeys();
 	extern void Free();
 };
 

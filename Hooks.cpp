@@ -336,8 +336,6 @@ void H::Init()
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
 	std::cout << "Success!" << std::endl;
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
-
-	GUI2::LoadProgress = 0.85f;
 }
 
 void H::UnHook()

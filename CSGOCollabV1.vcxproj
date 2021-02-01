@@ -162,6 +162,7 @@
     <ClCompile Include="GUI\HTTP.cpp" />
     <ClCompile Include="GUI\JSON\JSON.cpp" />
     <ClCompile Include="GUI\JSON\JSONValue.cpp" />
+    <ClCompile Include="GUI\Keybind.cpp" />
     <ClCompile Include="GUI\SkinConstants.cpp" />
     <ClCompile Include="GUI\TextService.cpp" />
     <ClCompile Include="GUI\VKeys.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="GUI\ConfigConstants.hpp" />
     <ClInclude Include="GUI\ConfigManager.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
+    <ClInclude Include="GUI\Keybind.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
     <ClInclude Include="GUI\JSON\JSON.h" />
     <ClInclude Include="GUI\JSON\JSONValue.h" />

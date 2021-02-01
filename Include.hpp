@@ -41,6 +41,9 @@
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
+
+#include "GUI/Keybind.hpp"
+
 #include "GUI/Config.hpp"
 #include "GUI/GUI.hpp"
 

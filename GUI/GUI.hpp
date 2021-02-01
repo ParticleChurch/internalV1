@@ -18,7 +18,7 @@ namespace GUI {
 
 namespace GUI2
 {
-	constexpr bool ConsoleOutput = false;
+	constexpr bool ConsoleOutput = true;
 
 	extern bool Ejected;
 	extern float LoadProgress;
