@@ -21,6 +21,7 @@ namespace GUI2
 	constexpr bool ConsoleOutput = true;
 
 	extern bool Ejected;
+	extern bool WantMouse;
 	extern float LoadProgress;
 	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;

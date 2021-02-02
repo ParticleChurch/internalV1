@@ -9,22 +9,27 @@ namespace Keybind
 	constexpr int nKeys = 91;
 	extern int KeyMap[];
 	extern bool KeyState[];
+	extern std::vector<void*> Binds[];
 	extern std::string KeyNames[];
 	extern bool Lock;
+	extern bool UpdatorRunning;
+	extern bool* WantMouseCapture;
 
 	struct KeyLogEntry
 	{
 		int Key;
 		bool State;
+		bool WantCaptureMouse;
 
-		KeyLogEntry(int key, bool state)
+		KeyLogEntry(int key, bool state, bool wantmouse)
 		{
 			this->Key = key;
 			this->State = state;
+			this->WantCaptureMouse = wantmouse;
 		}
 	};
 	extern std::vector<KeyLogEntry> KeyChangeStack; // most recent entry last
 
 	extern void ForceUpdate();
-	extern void Init(bool* EjectSignal, bool* ThreadClosedSignal);
+	extern void Init(bool* EjectSignal, bool* ImGuiWantCaptureMouse);
 }

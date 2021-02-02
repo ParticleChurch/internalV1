@@ -75,18 +75,21 @@ namespace Keybind
     };
 
     bool KeyState[nKeys] = {};
+    std::vector<void*> Binds[nKeys] = {};
 
     std::vector<KeyLogEntry> KeyChangeStack = {};
     bool Lock = false;
+    bool UpdatorRunning = false;
+    bool* WantMouseCapture = nullptr;
 
     void KeyDown(int key)
     {
-        KeyChangeStack.push_back(KeyLogEntry(key, true));
+        KeyChangeStack.push_back(KeyLogEntry(key, true, *WantMouseCapture));
     }
 
     void KeyUp(int key)
     {
-        KeyChangeStack.push_back(KeyLogEntry(key, false));
+        KeyChangeStack.push_back(KeyLogEntry(key, false, *WantMouseCapture));
     }
 }
 
@@ -111,11 +114,12 @@ void Keybind::ForceUpdate()
 struct ThreadData
 {
     bool* ExitWhenTrue;
-    bool* SetToTrueOnceExited;
 };
 
 DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
 {
+    Keybind::UpdatorRunning = true;
+
     ThreadData* Info = (ThreadData*)pInfo;
     while (!*Info->ExitWhenTrue)
     {
@@ -123,18 +127,19 @@ DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
         Sleep(10);
         while (Keybind::Lock) Sleep(0);
     }
-    *Info->SetToTrueOnceExited = true;
     free(Info);
+
+    Keybind::UpdatorRunning = false;
     return 0;
 }
 
-void Keybind::Init(bool* EjectSignal, bool* ThreadClosedSignal)
+void Keybind::Init(bool* EjectSignal, bool* ImGuiWantCaptureMouse)
 {
     ThreadData* Info = (ThreadData*)malloc(sizeof(ThreadData));
     if (!Info) return;
 
     Info->ExitWhenTrue = EjectSignal;
-    Info->SetToTrueOnceExited = ThreadClosedSignal;
+    WantMouseCapture = ImGuiWantCaptureMouse;
 
     CreateThread(NULL, 0, PeriodicUpdator, (void*)Info, 0, 0);
 }

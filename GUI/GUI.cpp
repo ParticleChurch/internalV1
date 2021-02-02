@@ -1766,6 +1766,7 @@ END:
 namespace GUI2
 {
 	bool Ejected = false;
+	bool WantMouse = false;
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
@@ -2124,7 +2125,7 @@ namespace ImGui
 			PointerPos += ImVec2(0, ItemHeightForVerticalFlip);
 		}
 
-		ImVec2 WindowPos = PointerPos - ImVec2(PointerSize.x / 2.f + 10, VerticalInvert ? (-PointerSize.y) : (WindowSize.y + PointerSize.y));
+		ImVec2 WindowPos = PointerPos - ImVec2(WindowSize.x/2, VerticalInvert ? (-PointerSize.y) : (WindowSize.y + PointerSize.y));
 
 		// move horizontally
 		if (WindowPos.x + WindowSize.x > io.DisplaySize.x)
@@ -2228,6 +2229,89 @@ namespace ImGui
 		bool MasterLocked = false;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
+		// draw keybind shit
+		{
+			PushFont(Arial14);
+
+			if (Value->BoundToKey >= 0)
+			{
+				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? "press" : "hold";
+				const char* KeyName = Keybind::KeyNames[Value->BoundToKey].c_str();
+				const char* Suffix =
+					Value->BindMode == Config2::KeybindMode::TOGGLE ? "to toggle" : 
+					Value->BindMode == Config2::KeybindMode::HOLDTOENABLE ? "to enable" : "to disable";
+
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				ImVec2 KeyNameSize = CalcTextSize(KeyName);
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+
+				int x = GUI2::PropertyColumnPosition + 35;
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, (20 - PrefixSize.y) / 2));
+				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+				Text(Prefix);
+				PopStyleColor(1);
+				x += 5 + PrefixSize.x;
+
+				PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
+				PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
+				PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
+				PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				SetCursorPos(Pos + ImVec2(x, 0));
+				if (Button(KeyName, ImVec2(KeyNameSize.x + 10, 20)))
+				{
+					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
+					for (size_t i = 0; i < vec.size(); i++)
+						if (vec.at(i) == (void*)p)
+							vec.erase(vec.begin() + i--);
+
+					Value->BoundToKey = -1;
+				}
+				else if (IsItemHovered())
+				{
+					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x/2 + 5, 0));
+					ToolTip("Click To Clear", 20);
+					GUI2::WantMouse = true;
+				}
+
+				PopStyleColor(4);
+				PopStyleVar(2);
+				x += KeyNameSize.x + 10 + 5;
+
+
+				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
+				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+				Text(Suffix);
+				PopStyleColor(1);
+
+			}
+			else
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
+
+				PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
+				PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
+				PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
+				PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				if (!Config2::SettingKeybindFor && Button(("Bind##"+p->Name).c_str(), ImVec2(40, 20)))
+				{
+					Config2::SettingKeybindFor = p;
+				}
+				else if (!Config2::SettingKeybindFor)
+					GUI2::WantMouse |= IsItemHovered();
+
+				PopStyleColor(4);
+				PopStyleVar(2);
+			}
+
+			PopFont();
+		}
+
 		// draw switch
 		{
 			auto CBoolValue = (Config2::CBoolean*)p->Value;
@@ -2239,7 +2323,7 @@ namespace ImGui
 				MasterLocked = ImEnabled && !MasterAllows;
 			}
 
-			ImGui::SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
 
 			double TimePassed = Animation::delta(Animation::now(), CBoolValue->TimeChanged);
 			double AnimFactor = Animation::animate(TimePassed, 0.15f);
@@ -2247,6 +2331,7 @@ namespace ImGui
 				AnimFactor = 1.f - AnimFactor;
 
 			bool Flipped = DrawBooleanSwitch("##" + p->Name, ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), AnimFactor);
+			GUI2::WantMouse |= IsItemHovered();
 			if (Flipped && !PremiumLocked)
 				CBoolValue->Flip();
 		}
@@ -2279,14 +2364,15 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x/2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
 				}
 			}
 
-			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - ImGui::GetFontSize()) / 2));
-			ImGui::Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 
@@ -3250,6 +3336,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
 			ImGui::InputText(InputLabel, SearchQuery, 256);
 			ImGui::PopStyleColor(1);
+			WantMouse |= ImGui::IsItemHovered();
 
 			if (!IsSearching)
 			{
@@ -3273,6 +3360,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 					if (ImGui::GetActiveID() == InputID)
 						ImGui::ClearActiveID();
 				}
+				WantMouse |= ImGui::IsItemHovered();
 				ImGui::PopStyleColor(3);
 			}
 			ImGui::PopFont();
@@ -3351,6 +3439,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			// hover triangle
 			if (HoveredTabIndex >= 0 && SelectedTabIndex != HoveredTabIndex)
 			{
+				WantMouse = true;
 				ImGui::SetCursorPos(ImVec2(12, 34 + 20 * HoveredTabIndex + (18 - 8) / 2));
 				ImGui::DrawSelectionCursor(100, ImVec2(10, 8));
 			}
@@ -3397,6 +3486,7 @@ void GUI2::Main()
 		Init = true;
 	}
 
+	WantMouse = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
 		AuthenticationIntro();

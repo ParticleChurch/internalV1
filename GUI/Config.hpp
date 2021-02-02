@@ -848,6 +848,12 @@ namespace Config2
 		GLOVE,
 		EDITGROUP,
 	};
+	enum class KeybindMode
+	{
+		TOGGLE,
+		HOLDTOENABLE,
+		HOLDTODISABLE,
+	};
 	struct CBoolean;
 	struct CFloat;
 	struct CEditGroup;
@@ -895,6 +901,9 @@ namespace Config2
 	{
 		static const PropertyType Type = PropertyType::BOOLEAN;
 		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+
+		int BoundToKey = -1;
+		KeybindMode BindMode = KeybindMode::TOGGLE;
 
 		bool Value = false;
 		std::string Stringify()
@@ -1174,7 +1183,7 @@ namespace Config2
 				return this->LastDrawHeight;
 			
 			// try to calculate it
-			float h = this->ShowTitle ? 5 + 18 : 0;
+			float h = this->ShowTitle ? 5.f + 18.f : 0.f;
 			for (size_t p = 0; p < this->Properties.size(); p++)
 			{
 				auto Property = this->Properties[p];

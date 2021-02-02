@@ -1088,12 +1088,68 @@ namespace Config2
 		while (Keybind::KeyChangeStack.size() > 0)
 		{
 			auto log = Keybind::KeyChangeStack[0];
+			bool ismouse = Keybind::KeyMap[log.Key] == VK_LBUTTON;
 
-			if (log.State)
-				std::cout << "Pressed " << Keybind::KeyNames[log.Key] << std::endl;
+			if (ismouse && log.WantCaptureMouse)
+				goto CONT;
+
+			// TODO: io.WantCaptureMouse and io.WantCaptureKeyboard ?
+
+			if (SettingKeybindFor && log.State)
+			{
+				switch (SettingKeybindFor->Type)
+				{
+				case PropertyType::BOOLEAN:
+				{
+					CBoolean* b = (CBoolean*)SettingKeybindFor->Value;
+					b->BoundToKey = log.Key;
+					Keybind::Binds[log.Key].push_back(SettingKeybindFor);
+				}
+				break;
+				default:
+					std::cout << "idk how to deal with bind on non-boolean property " << SettingKeybindFor->Name << std::endl;
+					break;
+				}
+
+				SettingKeybindFor = nullptr;
+			}
 			else
-				std::cout << "Released " << Keybind::KeyNames[log.Key] << std::endl;
+			{
+				std::vector<void*> Properties = Keybind::Binds[log.Key];
+				for (size_t i = 0; i < Properties.size(); i++)
+				{
+					Property* p = (Property*)Properties[i];
+					switch (p->Type)
+					{
+					case PropertyType::BOOLEAN:
+					{
+						CBoolean* b = (CBoolean*)p->Value;
+						switch (b->BindMode)
+						{
+						default:
+						case KeybindMode::TOGGLE:
+							if (log.State)
+								b->Flip();
+							break;
+						case KeybindMode::HOLDTOENABLE:
+							if (b->Value != log.State)
+								b->Flip();
+							break;
+						case KeybindMode::HOLDTODISABLE:
+							if (b->Value == log.State)
+								b->Flip();
+							break;
+						}
+					}
+					break;
+					default:
+						std::cout << "idk how to deal with bind on non-boolean property " << p->Name << std::endl;
+						break;
+					}
+				}
+			}
 
+			CONT:
 			Keybind::KeyChangeStack.erase(Keybind::KeyChangeStack.begin());
 		}
 		Keybind::Lock = false;
