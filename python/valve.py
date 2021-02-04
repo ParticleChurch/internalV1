@@ -1,4 +1,5 @@
 import re
+import os
 
 def parse(str):
     out = []
@@ -65,3 +66,48 @@ def parse(str):
                 value_str += c
         last_c = c
     return out
+
+def filename(x):
+    return ''.join([y for y in x if (y in "._" or y.isalnum())])
+
+def __export(items, base, n, N):
+    if not os.path.exists(base):
+        os.mkdir(base)
+    for (name, value) in items:
+        if isinstance(value, list):
+            n = __export(value, os.path.join(base, filename(name + "/")), n, N)
+        elif isinstance(value, str):
+            with open(os.path.join(base, filename(name + ".txt")), "wb+") as f:
+                f.write(value.encode("utf-16"))
+            n += 1
+            if n % 25 == 0:
+                print("%.2f%% done" % (100*n/N), end = "\t\t\r")
+    return n
+
+def __count(items):
+    N = 0
+    for (name, value) in items:
+        if isinstance(value, list):
+            N += __count(value)
+        elif isinstance(value, str):
+            N += 1
+    return N
+
+def export(items, base = "export/"):
+    N = __count(items)
+    print("files to be created: %s" % N)
+    __export(items, base, 0, N)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

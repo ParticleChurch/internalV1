@@ -946,6 +946,9 @@ namespace Config2
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
 	Property* SettingKeybindFor = nullptr;
+	std::string KeybindTypeNames[] = {
+		"Toggle", "Enable", "Disable"
+	};
 
 	void Init()
 	{
