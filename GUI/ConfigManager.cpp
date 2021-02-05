@@ -96,7 +96,7 @@ DWORD WINAPI ConfigManager::ImportThreaded(void* _)
 	};
 	Configs.push_back(cdata);
 
-	std::cout << "Imported " << str.size() << " bytes from : " << filename << std::endl;
+	L::Log(("Imported " + std::to_string(str.size()) + " bytes from : " + filename).c_str());
 	return 0;
 }
 
@@ -115,7 +115,7 @@ DWORD WINAPI ConfigManager::ExportThreaded(void* _)
 
 	file.close();
 
-	std::cout << "Exported " << s.size() << " bytes to : " << filename << std::endl;
+	L::Log(("Exported " + std::to_string(s.size()) + " bytes to : " + filename).c_str());
 	return 0;
 }
 
@@ -146,6 +146,6 @@ void ConfigManager::Load(ConfigManager::ConfigData cdata)
 	Config::ClearAllKeybinds();
 
 	size_t nProperties = Config::LoadFromString(cdata.Value);
-	std::cout << "Loaded " << nProperties << " properties" << std::endl;
+	L::Log(("Loaded " + std::to_string(nProperties) + " properties").c_str());
 	// todo notify the user
 }

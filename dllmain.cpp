@@ -23,17 +23,10 @@ void Init()
     ConsoleColorMsg(Color(255, 128, 0, 255), "\n\nInjecting...\n");
     GUI2::LoadProgress = 0.f;
 
-    if (GUI2::ConsoleOutput)
-    {
-        AllocConsole();
-        FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
-        freopen_s(&fpstdin, "CONIN$", "r", stdin);
-        freopen_s(&fpstdout, "CONOUT$", "w", stdout);
-        freopen_s(&fpstderr, "CONOUT$", "w", stderr);
-    }
+    L::Init();
 
-    std::cout << "Successfully Injected\n";
-    std::cout << N::DumpTable() << std::endl;
+    L::Log("Successfully Injected");
+    L::Log(N::DumpTable().c_str());
 
     GUI2::LoadProgress = 0.05f;
     G::PatternConvarInit();
@@ -52,12 +45,13 @@ void Init()
     ConsoleColorMsg(Color(50, 153, 255, 255), "Cheat Injected\n\n");
     I::engine->ClientCmd_Unrestricted("toggleconsole");
 
-    std::cout << "Initialization successful" << std::endl;
+    L::Log("Initialization successful");
     
     while (!G::KillDLL) Sleep(100);
     while (Keybind::UpdatorRunning) Sleep(100);
 
-    std::cout << "\nEjecting...\n";
+    L::Log("\nEjecting");
+    L::Free();
 
     FreeConsole();
     FreeLibraryAndExitThread(G::DLLModule, 0);

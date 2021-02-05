@@ -49,7 +49,7 @@ DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	JSONValue* value = JSON::Parse(std::wstring(output.begin(), output.end()).c_str());
 	if (!value)
 	{
-		std::cout << "Failed to parse JSON response" << std::endl;
+		L::Log("Failed to parse JSON response");
 		free(Info);
 		IsAttemptingLogin = false;
 		return 1;
@@ -57,7 +57,7 @@ DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	JSONObject root;
 	if (!value->IsObject())
 	{
-		std::cout << "Failed to parse JSON response" << std::endl;
+		L::Log("Failed to parse JSON response");
 		free(Info);
 		IsAttemptingLogin = false;
 		delete value;
@@ -163,7 +163,7 @@ DWORD WINAPI AttemptLogin(LPVOID pInfo)
 
 	goto JSONPARSE_SUCCESS;
 JSONPARSE_FAILED:
-	std::cout << "Failed to parse login reponse" << std::endl;
+	L::Log("Failed to parse login reponse");
 	free(Info);
 	IsAttemptingLogin = false;
 	Config::UserInfo::Clear();
@@ -246,7 +246,7 @@ problemo:
 	// segfault lol
 	int x = *(int*)0;
 	// prevent dumbass compiler from ignoring our segfault >:(
-	std::cout << x << std::endl;
+	L::Log(std::to_string(x).c_str());
 }
 Config::Property* GUI::CurrentlyChoosingKeybindFor = nullptr;
 bool GUI::IgnoreLButton = false;

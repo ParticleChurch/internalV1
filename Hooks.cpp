@@ -221,7 +221,7 @@ void H::Init()
 	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
 
-	std::cout << "\nHooking..." << std::endl;
+	L::Log("\nHooking...");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Hooking\n");
 	d3d9VMT.Initialise((DWORD*)D3d9Device);
 	clientVMT.Initialise((DWORD*)I::client);
@@ -239,64 +239,64 @@ void H::Init()
 
 	static int SleepTime = 100;
 
-	std::cout << "Endscene...";
+	L::Log("Endscene...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Endscene...");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
 
-	std::cout << "Reset...";
+	L::Log("Reset...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Reset...");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.35f;
 
-	std::cout << "CreateMove...";
+	L::Log("CreateMove...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "CreateMove...");
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.4f;
 
-	std::cout << "PaintTraverse...";
+	L::Log("PaintTraverse...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "PaintTraverse...");
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.45f;
 
-	std::cout << "FrameStageNotify...";
+	L::Log("FrameStageNotify...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "FrameStageNotify...");
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.5f;
 
-	std::cout << "LockCursor...";
+	L::Log("LockCursor...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "LockCursor...");
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
 
-	std::cout << "WriteUsercmdDeltaToBuffer...";
+	L::Log("WriteUsercmdDeltaToBuffer...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "WriteUsercmdDeltaToBuffer...");
 	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
@@ -307,37 +307,37 @@ void H::Init()
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.65f;
 
-	std::cout << "hkCamToFirstPeronVMT...";
+	L::Log("hkCamToFirstPeronVMT...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "hkCamToFirstPeronVMT...");
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.7f;
 
-	std::cout << "DoPostScreenEffects...";
+	L::Log("DoPostScreenEffects...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "DoPostScreenEffects...");
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.75f;
 
-	std::cout << "DrawModelExecute...";
+	L::Log("DrawModelExecute...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "DrawModelExecute...");
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.8f;
 
-	std::cout << "EmitSound...";
+	L::Log("EmitSound...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "EmitSound...");
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
-	std::cout << "Success!" << std::endl;
+	L::Log("Success!");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
 }
 
@@ -346,48 +346,48 @@ void H::UnHook()
 	I::inputsystem->EnableInput(true);
 
 
-	//std::cout << "WndProc...";
+	//L::Log("WndProc...", end = "");
 	D3dInit = false; //for wndproc... haven't found better solution
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "modelrenderVMT...";
+	//L::Log("modelrenderVMT...", end = "");
 	modelrenderVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "inputVMT...";
+	//L::Log("inputVMT...", end = "");
 	inputVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "gameeventmanagerVMT...";
+	//L::Log("gameeventmanagerVMT...", end = "");
 	gameeventmanagerVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "surfaceVMT...";
+	//L::Log("surfaceVMT...", end = "");
 	surfaceVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "panelVMT...";
+	//L::Log("panelVMT...", end = "");
 	panelVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "d3d9VMT...";
+	//L::Log("d3d9VMT...", end = "");
 	d3d9VMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "clientmodeVMT...";
+	//L::Log("clientmodeVMT...", end = "");
 	if(G::pSendPacket) //make sure it isnt already a nullptr
 		*G::pSendPacket = true;
 	clientmodeVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "clientVMT...";
+	//L::Log("clientVMT...", end = "");
 	clientVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
-	//std::cout << "soundVMT...";
+	//L::Log("soundVMT...", end = "");
 	soundVMT.RestoreOriginal();
-	//std::cout << "Success!" << std::endl;
+	//L::Log("Success!");
 
 	delete g_EventListener;
 	delete aimbot;

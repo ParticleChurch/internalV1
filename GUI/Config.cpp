@@ -478,7 +478,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetBool: nonexistant property: \"" << Name << "\"" << std::endl;
+				L::Log(("Config::GetBool: nonexistant property: \"" + Name + "\"").c_str());
 			return false;
 		}
 		else
@@ -489,7 +489,7 @@ namespace Config {
 			else
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetBool: non boolean value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetBool: non boolean value: \"" + Name + "\"").c_str());
 				return false;
 			}
 		}
@@ -500,7 +500,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetFloat: nonexistant property: \"" << Name << "\"" << std::endl;
+				L::Log(("Config::GetFloat: nonexistant property: \"" + Name + "\"").c_str());
 			return 0.f;
 		}
 		else
@@ -511,7 +511,7 @@ namespace Config {
 			else
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetFloat: non float value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetFloat: non float value: \"" + Name + "\"").c_str());
 				return 0.f;
 			}
 		}
@@ -522,8 +522,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetColor: nonexistant property: \"" << Name << "\"" << std::endl;
-			return Color(0, 0, 0);
+				L::Log(("Config::GetColor: nonexistant property: \"" + Name + "\"").c_str());
 		}
 		else
 		{
@@ -533,7 +532,7 @@ namespace Config {
 			else
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetColor: non color value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetColor: non color value: \"" + Name + "\"").c_str());
 				return Color(0, 0, 0);
 			}
 		}
@@ -544,7 +543,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetState: nonexistant property: \"" << Name << "\"" << std::endl;
+				L::Log(("Config::GetState: nonexistant property: \"" + Name + "\"").c_str());
 			return 0;
 		}
 		else
@@ -561,7 +560,7 @@ namespace Config {
 			default:
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetState: non stateful value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetState: non stateful value: \"" + Name + "\"").c_str());
 				return 0;
 			}
 			}
@@ -573,7 +572,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetSelections: nonexistant property: \"" << Name << "\"" << std::endl;
+				L::Log(("Config::GetSelections: nonexistant property: \"" + Name + "\"").c_str());
 			return 0;
 		}
 		else
@@ -584,7 +583,7 @@ namespace Config {
 			else
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetSelections: non multiselector value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetSelections: non multiselector value: \"" + Name + "\"").c_str());
 				return 0;
 			}
 		}
@@ -595,7 +594,7 @@ namespace Config {
 		if (search == PropertyLookup.end())
 		{
 			if (CONFIG_DEBUG)
-				std::cout << "Config::GetText: nonexistant property: \"" << Name << "\"" << std::endl;
+				L::Log(("Config::GetText: nonexistant property: \"" + Name + "\"").c_str());
 			return "";
 		}
 		else
@@ -606,7 +605,7 @@ namespace Config {
 			else
 			{
 				if (CONFIG_DEBUG)
-					std::cout << "Config::GetText: non text input value: \"" << Name << "\"" << std::endl;
+					L::Log(("Config::GetText: non text input value: \"" + Name + "\"").c_str());
 				return "";
 			}
 		}
@@ -946,9 +945,9 @@ namespace Config {
 
 				bool valueParsed = p->Parse(value);
 				if (!valueParsed)
-					std::cout << "Failed to parse " << propName << ", w/ val = " << value << std::endl;
+					L::Log(("Failed to parse " + propName + ", w/ val = " + value).c_str());
 				if (!keybindParsed)
-					std::cout << "Failed to keybind " << propName << ", w/ key = " << keybind << std::endl;
+					L::Log(("Failed to keybind " + propName + ", w/ key = " + keybind).c_str());
 
 				if (keybindParsed || valueParsed)
 					numPropsAffected++;
@@ -1083,7 +1082,7 @@ namespace Config2
 		auto Search = PropertyTable.find(Name);
 		if (Search == PropertyTable.end())
 		{
-			std::cout << "nonexistent property: \"" << Name << "\"" << std::endl;
+			L::Log(("nonexistent property: \"" + Name + "\"").c_str());
 			return nullptr;
 		}
 		else
@@ -1161,7 +1160,7 @@ namespace Config2
 				}
 				break;
 				default:
-					std::cout << "idk how to deal with bind on non-boolean property " << SettingKeybindFor->Name << std::endl;
+					L::Log(("idk how to deal with bind on non-boolean property " + SettingKeybindFor->Name).c_str());
 					break;
 				}
 
@@ -1197,7 +1196,7 @@ namespace Config2
 					}
 					break;
 					default:
-						std::cout << "idk how to deal with bind on non-boolean property " << p->Name << std::endl;
+						L::Log(("idk how to deal with bind on non-boolean property " + p->Name).c_str());
 						break;
 					}
 				}

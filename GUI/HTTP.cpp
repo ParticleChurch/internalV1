@@ -1,8 +1,8 @@
 #include "HTTP.hpp"
+#include "../Logger.hpp"
 
 namespace HTTP
 {
-    bool debug = true;
     std::string userAgent = "WinHTTP/1.0";
     INTERNET_PORT port = INTERNET_DEFAULT_HTTPS_PORT; // 443
     DWORD requestFlags = INTERNET_FLAG_SECURE | defaultNoCacheFlags | defaultBaseFlags;
@@ -10,10 +10,7 @@ namespace HTTP
 
     byte* Post(std::string URL, std::string input, DWORD* bytesRead)
     {
-        if (debug)
-        {
-            std::cout << "HTTP::Post to url " << URL << std::endl;
-        }
+        L::Log(("HTTP::Post to url " + URL).c_str());
 
 
         // split string into host and directory
@@ -39,11 +36,7 @@ namespace HTTP
             host = URL.substr(0, directoryIndex);
             directory = URL.substr(directoryIndex + 1);
         }
-
-        if (debug)
-        {
-            std::cout << "Determined that host = \"" << host << "\", and directory = \"" << directory << "\"" << std::endl;
-        }
+        L::Log(("Determined that host = \"" + host + "\", and directory = \"" + directory + "\"").c_str());
 
         HINTERNET hInternet = InternetOpen(
             userAgent.c_str(),
@@ -53,8 +46,7 @@ namespace HTTP
         );
         if (!hInternet)
         {
-            if (debug)
-                std::cout << "Failed to open hInternet w/ error: " << GetLastError() << std::endl;
+            L::Log(("Failed to open hInternet w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -68,8 +60,7 @@ namespace HTTP
         );
         if (!hConnection)
         {
-            if (debug)
-                std::cout << "Failed to open hConnection w/ error: " << GetLastError() << std::endl;
+            L::Log(("Failed to open hConnection w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -87,8 +78,7 @@ namespace HTTP
         );
         if (!hRequest)
         {
-            if (debug)
-                std::cout << "Failed to open hRequest w/ error: " << GetLastError() << std::endl;
+            L::Log(("Failed to open hRequest w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -106,13 +96,10 @@ namespace HTTP
             (void*)input.c_str(), input.size()
         );
 
-        if (debug)
-        {
-            if (requestSuccess)
-                std::cout << "Request completed successfully" << std::endl;
-            else
-                std::cout << "Request failed, error: " << GetLastError() << std::endl;
-        }
+        if (requestSuccess)
+            L::Log("Request completed successfully");
+        else
+            L::Log(("Request failed, error: " + std::to_string(GetLastError())).c_str());
 
         if (!requestSuccess)
             return nullptr;
@@ -127,8 +114,7 @@ namespace HTTP
         DWORD chunkBytesRead = 0;
         if (!chunkBuffer)
         {
-            if (debug)
-                std::cout << "failed to malloc for chunk buffer" << std::endl;
+            L::Log("failed to malloc for chunk buffer");
             free(fileBuffer);
             return nullptr;
         }
@@ -141,8 +127,7 @@ namespace HTTP
             byte* re = (byte*)realloc(fileBuffer, fileSize + chunkBytesRead);
             if (!re)
             {
-                if (debug)
-                    std::cout << "failed to realloc dynamic buffer" << std::endl;
+                L::Log("failed to realloc dynamic buffer");
                 free(fileBuffer);
                 free(chunkBuffer);
                 return nullptr;
@@ -159,8 +144,7 @@ namespace HTTP
 
         if (fileSize == 0)
         {
-            if (debug)
-                std::cout << "Got no bytes in response w/ error: " << GetLastError() << std::endl;
+            L::Log(("Got no bytes in response w/ error: " + std::to_string(GetLastError())).c_str());
             free(fileBuffer);
             return nullptr;
         }
