@@ -7,21 +7,13 @@ void SkinChanger::ForceSkin(Entity* weap, int paintkit)
     if (paintkit == 0)
         return;
 
-    int* idhigh = weap->GetIDHigh();
-    if (idhigh == nullptr) // nullptr check this shit, sometimes its annoying
-        return;
+    *weap->GetFallbackPaintKit() = paintkit;
+    *weap->GetEntityQuality() = 0;
+    *weap->GetFallbackSeed() = 0;
+    *weap->GetFallbackStatTrak() = -1;
+    *weap->GetFallbackWear() = 0;
 
-    *idhigh = 1; // the reason we set this is so the game is forced to use the fallback values
-
-    int* paintkit_ = weap->GetPaintKit();
-    if (!paintkit_) return;
-
-    *paintkit_ = paintkit; // we'll set this in our FrameStage hook
-
-    float* wear = weap->GetFallBackWear();
-    if (!wear) return;
-
-    *wear = 0.0000000001f; // lower = better
+    *weap->GetItemIDHigh() = -1;
 }
 
 std::map <std::string, int> GetSkins()
@@ -1011,6 +1003,13 @@ void SkinChanger::Apply(Entity* Ent)
     ForceSkin(weapon, CurSkins[weaponIDX]);
 }
 
+void SkinChanger::Update()
+{
+    using ForceUpdateFn = void(__cdecl*)();
+    static auto ForceUpdate = (ForceUpdateFn)FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
+    ForceUpdate();
+}
+
 SkinChanger::SkinChanger()
 {
     // Set all CurSkins to defualt by defualt
@@ -1088,6 +1087,7 @@ void SkinChanger::Menu()
             AppliedGun = current_item1;
             AppliedSkin = current_item2;
             SetVal(chosen, current_item2);
+            Update();
         }
         ImGui::Text(std::string("Last applied " + std::string(AppliedSkin) + " to " + AppliedGun).c_str());
        
@@ -1100,8 +1100,6 @@ void SkinChanger::run(int stage)
 {
 	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
 	{
-       
-       
         for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++) // iterate through everything
         {
             Entity* weapon = (Entity*)I::entitylist->GetClientEntity(i); // define your weapon

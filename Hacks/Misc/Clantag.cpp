@@ -24,3 +24,9 @@ void Clantag::run()
 	else
 		setClanTag("| a4g4.com |", "| a4g4.com |");
 }
+
+void Clantag::reset()
+{
+	static std::add_pointer_t<void __fastcall(const char*, const char*)> setClanTag = reinterpret_cast<decltype(setClanTag)>(FindPattern("engine.dll", "53 56 57 8B DA 8B F9 FF 15"));
+	setClanTag("", "");
+}

@@ -35,6 +35,9 @@
 
 #include "Globals.hpp"
 
+//MORE CUSTOM
+#include "Utils/Math.hpp"
+
 // imgui
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "ImGui/imgui.h"

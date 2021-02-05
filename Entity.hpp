@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 class Collideable {
 public:
@@ -186,20 +186,7 @@ public:
 		return *(int*)((DWORD)this + offset);
 	}
 
-	float GetNextAttack()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		return *(float*)((DWORD)this + offset);
-	}
-
-	float GetNextPrimaryAttack() {
-		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
-		return *(float*)((DWORD)this + offset);
-	}
+	
 
 	float GetNextSecondaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
@@ -239,21 +226,11 @@ public:
 	}
 
 	float& GetLastShotTime() {
-		//DT_BaseCombatWeapon might be this too
 		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
 		if (offset == 0)
 			offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
 		return *(float*)((DWORD)this + offset);
 	}
-
-	int* GetIDHigh()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
-		return (int*)((DWORD)this + offset);
-	}
-
 
 	int* GetViewModelID()
 	{
@@ -262,27 +239,130 @@ public:
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iViewModelIndex");
 		return (int*)((DWORD)this + offset);
 	}
+	
 
-	int* GetPaintKit()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_nFallbackPaintKit");
+	//SKINCHANGER VALUES ______________________________________________________________________________
+	// When changed, can be used to make a weapon appear as something else, 
+	// most commonly used to change the default knives.
+	int* GetItemDefinitionIndex() {
+		static DWORD offset = N::GetOffset("DT_WeaponBaseItem", "m_iItemDefinitionIndex");
 		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatWeapon", "m_nFallbackPaintKit");
+			offset = N::GetOffset("DT_WeaponBaseItem", "m_iItemDefinitionIndex");
 		return (int*)((DWORD)this + offset);
 	}
 
-	float* GetFallBackWear()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flFallbackWear");
+	// When set to a non-zero value, fallback values will be used.
+	int* GetItemIDHigh() {
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
 		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flFallbackWear");
-		return (float*)((DWORD)this + offset);
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// Defines the quality of this weapon. Qualities 4 and 11 are the same as 0.
+	// Knives always use quality 3 which makes the star appear.
+	int* GetEntityQuality() {
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iEntityQuality");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_iEntityQuality");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// This and m_OriginalOwnerXuidHigh contain the XUIDs of the player who originally purchased this weapon.
+	int* GetOriginalOwnerXuidLow()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidLow");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidLow");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// This and m_OriginalOwnerXuidLow contain the XUIDs of the player who originally purchased this weapon.
+	int* GetOriginalOwnerXuidHigh()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidHigh");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidHigh");
+		return (int*)((DWORD)this + offset);
+	}
+	/*
+	The amount of recorded kills on the weapons StatTrak counter. When set to -1 the StatTrak counter will not appear.
+	Setting this to 0 or above will automatically enable the StatTrak counter.
+	Note: The kill counter will not increment automatically.
+	If you are having issues with the StatTrak counter appearing as USER ERROR, set m_iAccountID to your XUID Low value
+	*/
+	int* GetFallbackStatTrak()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackStatTrak");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackStatTrak");
+		return (int*)((DWORD)this + offset);
+	}
+
+	//WILL DO CUSTOM NAMES FOR WEAPONS LATER
+
+	// The ID of the paint kit to apply. All valid IDs can be found in the csgo/scripts/items/items_game.txt file.
+	int* GetFallbackPaintKit()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackPaintKit");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackPaintKit");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// Used to randomize the pattern on the weapon for supported paint kits such as Fade, Crimson Web, Case Hardened, etc.
+	int* GetFallbackWear()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_flFallbackWear");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_flFallbackWear");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// Float value ranging from 0 to 1 used to determine how worn the paint on the weapon is.
+	int* GetFallbackSeed()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackSeed");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackSeed");
+		return (int*)((DWORD)this + offset);
+	}
+
+	// END SKINCHANGER VALUES ______________________________________________________________________________
+
+	float GetNextAttack()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
+	float GetNextPrimaryAttack() {
+		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
+		return *(float*)((DWORD)this + offset);
+	}
+
+	//basically return false if still getting weapon out, otherwise true
+	bool CanShoot2() {
+		Entity* weap = this->GetActiveWeapon();
+		if (!this || !weap)
+			return false;
+		float ServerTime = GetServerTime();
+		float NextAttack = this->GetNextAttack();
+		return NextAttack <= GetServerTime();
 	}
 
 	bool CanShoot() {
-		if (!this || !this->GetActiveWeapon())
+		Entity* weap = this->GetActiveWeapon();
+		if (!this || !weap)
 			return false;
-		return this->GetActiveWeapon()->GetNextPrimaryAttack() <= GetServerTime();
+		float ServerTime = GetServerTime();
+		float NextAttack = this->GetNextAttack();
+		float NextPrimary = weap->GetNextPrimaryAttack();
+		return NextPrimary <= GetServerTime() && NextAttack <= GetServerTime();
 	}
 
 	Vec GetAimPunchAngle() {
@@ -515,6 +595,8 @@ public:
 		typedef bool(__thiscall* oPlayer)(void*);
 		return GetVFunc<oPlayer>(this, 157)(this);
 	}
+
+	
 
 	ClientClass* GetClientClass()
 	{

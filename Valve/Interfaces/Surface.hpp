@@ -141,6 +141,12 @@ public:
 		GetVFunc< OriginalFn >(this, 79)(this, font, text, wide, tall);
 	}
 
+	void PlaySoundFile(const char* filename)
+	{
+		typedef void(__thiscall* oPlaySound)(PVOID, const char*);
+		return GetVFunc< oPlaySound >(this, 82)(this, filename);
+	}
+
 	void DrawOutlinedCircle(int x, int y, int r, int seg)
 	{
 		typedef void(__thiscall* oDrawOutlinedCircle)(PVOID, int, int, int, int);

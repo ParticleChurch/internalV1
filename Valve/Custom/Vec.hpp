@@ -60,6 +60,27 @@ public:
 		z = 0;
 	}
 
+	void Normalize()
+	{
+		if (this->x > 89) this->x = 89;
+		else if (this->x < -89) this->x = -89;
+
+		while (this->y > 180)
+			this->y -= 360;
+		while (this->y < -180)
+			this->y += 180;
+	}
+
+	void NormalizeNoClamp()
+	{
+
+		x -= floorf(x / 360.0f + 0.5f) * 360.0f;
+
+		y -= floorf(y / 360.0f + 0.5f) * 360.0f;
+
+		z -= floorf(z / 360.0f + 0.5f) * 360.0f;
+	}
+
 	inline float VecLength() {
 		return sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
 	}

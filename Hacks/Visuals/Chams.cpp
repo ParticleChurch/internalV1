@@ -74,8 +74,9 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	Entity* ent = I::entitylist->GetClientEntity(info.entityIndex);
 	Entity* local = I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	static player_info_t bInfo;
+	bool ValidInfo = I::engine->GetPlayerInfo(info.entityIndex, &bInfo);
 
-	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && I::engine->GetPlayerInfo(info.entityIndex, &bInfo))
+	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && ValidInfo)
 	{
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
@@ -117,6 +118,22 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 					Config::GetColor("visuals-chams-enemy-hidden-color"),
 					thisptr, ctx, state, info, customBoneToWorld);
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
+				I::modelrender->ForcedMaterialOverride(nullptr);
+			}
+
+			if (Config::GetBool("visuals-chams-enemy-backtrack-enable"))
+			{
+				for (auto a : G::EntList[bInfo.userid].BacktrackRecords)
+				{
+					OverideMat(
+						true,	//viz thru wall?
+						Config::GetState("visuals-chams-enemy-backtrack-material"),	//material?
+						Config::GetFloat("visuals-chams-enemy-backtrack-opacity") / 100.f,	//transparent?
+						Config::GetColor("visuals-chams-enemy-backtrack-color"),
+						thisptr, ctx, state, info, a.Matrix);
+					H::oDrawModelExecute(thisptr, ctx, state, info, a.Matrix);
+				}
+				
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 

@@ -9,7 +9,7 @@ public:
 	std::map<int, int> CurSkins;
 	std::map<std::string, int> Skins;
 
-
+	void Update();
 
 	SkinChanger();
 	void SetVal(int, std::string);

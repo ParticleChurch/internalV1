@@ -315,9 +315,6 @@
     <ClInclude Include="Valve\SDK\KeyValues.h">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
-    <ClInclude Include="Valve\Custom\Math.hpp">
-      <Filter>Headers\Valve\Custom</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\SDK\SoundData.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
@@ -407,6 +404,9 @@
     </ClInclude>
     <ClInclude Include="GUI\Keybind.hpp">
       <Filter>Headers\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Math.hpp">
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

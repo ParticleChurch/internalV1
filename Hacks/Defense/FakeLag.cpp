@@ -44,30 +44,29 @@ void FakeLag::LagOnPeak()
 		return;
 
 	bool DamageIncoming = false;
-	for (auto a : G::EntList)
+
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
 	{
-		if (a.index == G::LocalPlayerIndex) // entity is Localplayer
+		if (it->second.index == G::LocalPlayerIndex) // entity is Localplayer
 			continue;
 
-		if (!(a.entity)) // entity DOES NOT exist
+		if (!(it->second.entity)) // entity DOES NOT exist
 			continue;
 
-		if (!a.player) // entity is NOT player
+		if (!(it->second.health > 0)) // entity is NOT alive
 			continue;
 
-		if (!(a.health > 0)) // entity is NOT alive
+		if (it->second.team == G::LocalPlayerTeam) // Entity is on same team
 			continue;
 
-		if (a.team == G::LocalPlayerTeam) // Entity is on same team
+		if (it->second.dormant)	// Entity is dormant
 			continue;
 
-		if (a.dormant)	// Entity is dormant
+		if (!ValidSimTime(it->second.CurSimTime)) // if not valid simtime
 			continue;
 
-		if (!backtrack->Valid(a.lastSimTime)) // if not valid simtime
-			continue;
-
-		if (autowall->GetDamage(a.entity, G::LocalPlayer, NextPos) > 1)
+		if (autowall->GetDamage(it->second.entity, G::LocalPlayer, NextPos) > 1)
 		{
 			DamageIncoming = true;
 			break;

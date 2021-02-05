@@ -3,7 +3,6 @@
 //for windprc hook
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
 static void CapsuleOverlay(Entity* pPlayer, Color col, float duration)
 {
 	if (!pPlayer)
@@ -171,6 +170,7 @@ namespace H
 	EmitSound oEmitSound;
 
 	//GUI Vars
+	IDirect3DDevice9* D3d9Device; // PIXEL/SKINCHANGER FIX?
 	bool D3dInit = false;
 	HWND CSGOWindow = NULL;
 	WNDPROC oWndProc = NULL;
@@ -178,13 +178,14 @@ namespace H
 	//TEMP
 	std::vector < std::string> console;
 	bool ThirdPersonToggle = false;
-
 	EventListener* g_EventListener;
 
 	//DT???
 	WriteUsercmdDeltaToBuffer oWriteUsercmdDeltaToBuffer;
 	void* WriteUsercmdDeltaToBufferReturn;
 	uintptr_t WriteUsercmd;
+
+	
 }
 
 
@@ -209,7 +210,7 @@ void H::Init()
 	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
 
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
-	IDirect3DDevice9* D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
+	D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
 	// TODO: this is definetly not the best way to do this, lmao
 	while (!(CSGOWindow = FindWindowA(NULL, "Counter-Strike: Global Offensive"))) {
@@ -300,6 +301,8 @@ void H::Init()
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.6f;
+
+	clantag->reset();
 
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.65f;
@@ -447,9 +450,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::Begin("console");
 		for (auto a : console)
 			ImGui::Text(a.c_str());
-		ImGui::Text("Ooooh Secret setting. Experiment XD");
-		ImGui::SliderFloat("###accuracy", &aimbot->accuracy_amount, 0, 100);
-
 		/*ImGui::Text("Edge Amount");
 		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);*/
 		if (ImGui::Button("Reset Resolver"))
@@ -470,7 +470,17 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui::EndFrame();
 	ImGui::Render();
 
+	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec; IDirect3DVertexShader9* vertShader;
+	D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
+	D3d9Device->GetVertexDeclaration(&vertDec);
+	D3d9Device->GetVertexShader(&vertShader);
+
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
+	pixel_state->Apply();
+	pixel_state->Release();
+	D3d9Device->SetVertexDeclaration(vertDec);
+	D3d9Device->SetVertexShader(vertShader);
 
 	if (GUI2::Ejected)
 	{
@@ -582,9 +592,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		// Update server time
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
-
-		
-
 		// Movement
 		movement->BunnyHop();	
 		movement->SlowWalk();
@@ -605,6 +612,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		// AA
 		antiaim->legit();
 		antiaim->rage();
+
+		
 
 		// Clantag
 		clantag->run();
@@ -633,9 +642,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			// we are currently releasing a grenade, do not FUCK with angles
 			G::cmd->viewangles = G::StartAngle;
 		}
-
-
-		/*aimbot->Legit();*/
 
 		// decide when to enable desync
 		// we need to implement in movefixend or something lol
@@ -696,6 +702,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 			antiaim->real.NormalizeAngle();
 			antiaim->fake.NormalizeAngle();
+			
 		}
 		
 		/*doubletap->end();*/
@@ -795,6 +802,12 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 	}
 	esp->Run_FrameStageNotify(curStage);
+
+	if (curStage == FRAME_RENDER_START && !I::engine->IsInGame())
+	{
+		G::EntList.clear();
+		G::LocalPlayerAlive = false;
+	}
 		
 	
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())

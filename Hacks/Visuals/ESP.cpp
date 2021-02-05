@@ -101,12 +101,14 @@ void ESP::DrawSkeleton(Entity* Ent)
 
 void ESP::DrawBacktrackingDots()
 {
-	for (int i = 1; i < 65; i++) { //AIDS
-		if (backtrack->Records[i].empty())
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	{
+		if (it->second.BacktrackRecords.empty())
 			continue;
 		static bool start = true;
 		start = true;
-		for (auto tick : backtrack->Records[i])
+		for (auto tick : it->second.BacktrackRecords)
 		{
 			static Vec LastScreen;
 			if (start) {
@@ -122,20 +124,21 @@ void ESP::DrawBacktrackingDots()
 			{
 				Vec screen;
 				Vec loc = tick.Bone(8);
-				if (WorldToScreen(loc, screen) && 
-					LastScreen.x > 0  && LastScreen.x < 1920
+				if (WorldToScreen(loc, screen) &&
+					LastScreen.x > 0 && LastScreen.x < 1920
 					&& LastScreen.y > 0 && LastScreen.y < 1080)
 				{
 					//if (!tick.Shooting)
 					//	I::surface->DrawSetColor(Color(255, 255, 255, 255));
 					//else
 					I::surface->DrawSetColor(Color(255, 0, 0, 255));
-					I::surface->DrawLine(screen.x, screen.y, LastScreen.x , LastScreen.y);
+					I::surface->DrawLine(screen.x, screen.y, LastScreen.x, LastScreen.y);
 					LastScreen = screen;
 				}
 			}
 		}
 	}
+	
 }
 
 void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
@@ -202,6 +205,7 @@ void ESP::Run_PaintTraverse()
 	
 	antiaim->Visualize();
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
+	/*DrawBacktrackingDots();*/
 
 	static DWORD FONT = I::surface->FontCreate();
 	static bool Once = true;
@@ -220,6 +224,8 @@ void ESP::Run_PaintTraverse()
 		if(WorldToScreen(a, out))
 			I::surface->DrawLine(xSize / 2, ySize, out.x, out.y);
 	}
+
+	
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
 	{

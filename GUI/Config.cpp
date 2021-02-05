@@ -43,116 +43,126 @@ namespace Config {
 
 	void Init()
 	{
-		/* OFFENSE TAB */
+		// currently doing legit/rage offsensive tabs till new gui
+		/* Legit Tab */
 		{
-			Tab* t = new Tab("Offense");
+			Tab* t = new Tab("Legit-Offensive");
 			{
+				
 				Widget* w = t->AddWidget("Aimbot");
+				w->AddProperty(true, 0, "legit-aim-enable", "Enable", false, false, KeybindOptions(true, true, true));
 
-				w->AddProperty(false, 0, "enable-aimbot", "Enable", false, false, KeybindOptions(true, true, true));
-				w->AddProperty(false, 0, "enable-silentaim", "Silent Aim", true, true);
-				w->AddProperty(false, 0, "enable-autoshoot", "Autoshoot", true, true);
-				w->AddProperty(false, 1, "enable-autowall", "Autowall", true, true);
-				/*w->AddProperty(false, 1, "aimbot_aimstep", "Aimstep", "degrees", 0, 180, 0, 0, 0);*/
-				w->AddSeparator();
 
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
-
-				CEditGroup* AimGunGroup = w->AddEditGroup("aimbot-");
+				
+				CEditGroup* AimGunGroup = w->AddEditGroup("legitaim-");
 
 				AimGunGroup->AddGroup("pistol-", "Pistol");
-				w->AddProperty(false, 0, "aimbot-pistol-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-pistol-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-
-				w->AddProperty(false, 0, "aimbot-pistol-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-pistol-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-pistol-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-pistol-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-pistol-if-lethal", "Baim If Lethal", true, true);
+				w->AddProperty(false, 1, "legitaim-pistol-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
+				w->AddProperty(false, 1, "legitaim-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 0, "legitaim-pistol-smoothing", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "legitaim-pistol-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 
 				AimGunGroup->AddGroup("smg-", "SMG");
-				w->AddProperty(false, 0, "aimbot-smg-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-smg-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-smg-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-smg-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-smg-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-smg-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-smg-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-smg-if-lethal", "Baim If Lethal", true, true);
+				w->AddProperty(false, 1, "legitaim-smg-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
+				w->AddProperty(false, 1, "legitaim-smg-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 0, "legitaim-smg-smoothing", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "legitaim-smg-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 
 				AimGunGroup->AddGroup("heavy-", "Heavy");
-				w->AddProperty(false, 0, "aimbot-heavy-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-heavy-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-heavy-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-heavy-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-heavy-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-heavy-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-heavy-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-heavy-if-lethal", "Baim If Lethal", true, true);
+				w->AddProperty(false, 1, "legitaim-heavy-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
+				w->AddProperty(false, 1, "legitaim-heavy-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 0, "legitaim-heavy-smoothing", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "legitaim-heavy-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 
 				AimGunGroup->AddGroup("rifle-", "Rifle");
-				w->AddProperty(false, 0, "aimbot-rifle-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-rifle-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-rifle-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-rifle-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-rifle-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-rifle-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-rifle-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-rifle-if-lethal", "Baim If Lethal", true, true);
+				w->AddProperty(false, 1, "legitaim-rifle-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
+				w->AddProperty(false, 1, "legitaim-rifle-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 0, "legitaim-rifle-smoothing", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "legitaim-rifle-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
 
-				AimGunGroup->AddGroup("scout-", "Scout");
-				w->AddProperty(false, 0, "aimbot-scout-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-scout-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-scout-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-scout-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-scout-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-scout-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-scout-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-scout-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-scout-if-lethal", "Baim If Lethal", true, true);
-
-				AimGunGroup->AddGroup("awp-", "AWP");
-				w->AddProperty(false, 0, "aimbot-awp-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-awp-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-awp-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-awp-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-awp-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-awp-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-awp-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-awp-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-awp-if-lethal", "Baim If Lethal", true, true);
-
-				AimGunGroup->AddGroup("auto-", "Auto");
-				w->AddProperty(false, 0, "aimbot-auto-smoothing-method", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
-				w->AddProperty(false, 1, "aimbot-auto-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-auto-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
-				w->AddProperty(false, 1, "aimbot-auto-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
-				w->AddProperty(false, 0, "aimbot-auto-hitbox-priority", "Hitbox Priority", CDropdown{ HITBOXES_CONFIG });
-				w->AddProperty(false, 1, "aimbot-auto-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-auto-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-auto-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
-				w->AddProperty(false, 1, "aimbot-auto-if-lethal", "Baim If Lethal", true, true);
-
+				AimGunGroup->AddGroup("sniper-", "Snipers");
+				w->AddProperty(false, 1, "legitaim-sniper-fov", "FOV", "DEG", 0, 180, 1, 0, 0);
+				w->AddProperty(false, 1, "legitaim-sniper-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 0, "legitaim-sniper-smoothing", "Smoothing Method", CDropdown{ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" });
+				w->AddProperty(false, 1, "legitaim-sniper-smoothing-amount", "Smoothing Amount", "%", 0, 100, 1, 0, 0);
+	
 #undef HITBOXES_CONFIG
-
-			}
-			{
-				/*Widget* w = t->AddWidget("Triggerbot");
-
-				w->AddProperty(false, 0, "enable-triggerbot", "Enable", true, true, KeybindOptions(true, true, true));
-				w->AddProperty(false, 1, "triggerbot-through-wall", "Through Wall", true, true);
-				w->AddProperty(false, 0, "triggerbot-delay", "Delay", "MS", 0, 1000, 0, 0, 0);
-				w->AddProperty(false, 2, "triggerbot-magnet", "Magnet", true, true);*/
 			}
 			{
 				Widget* w = t->AddWidget("Other");
 				w->AddProperty(false, 1, "backtracking-time", "Backtracking Time", "MS", 0, 200, 0, 0, 0);
 			}
+			Tabs.push_back(t);
+		}
+
+		/* Rage Tab */
+		{
+			Tab* t = new Tab("Rage-Offensive");
+			{
+
+				Widget* w = t->AddWidget("Aimbot");
+				w->AddProperty(true, 0, "rage-aim-enable", "Enable", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(true, 0, "rage-aim-silent", "Silent Aim", true, true);
+				w->AddProperty(true, 0, "rage-aim-autoshoot", "Auto Shoot", true, true);
+
+
+#define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
+
+				CEditGroup* AimGunGroup = w->AddEditGroup("rageaim-");
+
+				AimGunGroup->AddGroup("pistol-", "Pistol");
+				w->AddProperty(false, 1, "rageaim-pistol-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-pistol-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-pistol-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-pistol-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-pistol-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("smg-", "SMG");
+				w->AddProperty(false, 1, "rageaim-smg-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-smg-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-smg-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-smg-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-smg-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("heavy-", "Heavy");
+				w->AddProperty(false, 1, "rageaim-heavy-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-heavy-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-heavy-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-heavy-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-heavy-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("rifle-", "Rifle");
+				w->AddProperty(false, 1, "rageaim-rifle-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-rifle-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-rifle-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-rifle-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-rifle-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("scout-", "Scout");
+				w->AddProperty(false, 1, "rageaim-scout-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-scout-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-scout-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-scout-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-scout-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("awp-", "AWP");
+				w->AddProperty(false, 1, "rageaim-awp-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-awp-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-awp-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-awp-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-awp-fireiflethal", "Fire if Lethal", false, false);
+
+				AimGunGroup->AddGroup("auto-", "Auto");
+				w->AddProperty(false, 1, "rageaim-auto-hitbox", "Select Hitbox Scan", CMultiSelector{ HITBOXES_CONFIG });
+				w->AddProperty(false, 1, "rageaim-auto-mindamage-visible", "Visible Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-auto-mindamage-hidden", "Hidden Min Damage", "HP", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-auto-hitchance", "Min Hitchance", "%", 0, 100, 0, 0, 0);
+				w->AddProperty(false, 1, "rageaim-auto-fireiflethal", "Fire if Lethal", false, false);
+
+#undef HITBOXES_CONFIG
+			}
+			// backtracking max here
 			Tabs.push_back(t);
 		}
 
@@ -229,6 +239,13 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-hidden-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->AddProperty(false, 2, "visuals-chams-enemy-hidden-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
+				w->EndIndent();
+
+				w->AddText("Backtrack", "visuals-chams-enemy-backtrack-label"); w->BeginIndent();
+				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-enable", "Enable", false, false, KeybindOptions(true, true, true));
+				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-color", "Color", new Color(0, 150, 255));
+				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-material", "Material", CDropdown{ CHAM_MATERIALS });
+				w->AddProperty(false, 2, "visuals-chams-enemy-backtrack-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
 				ESPGroup->AddGroup("friend-", "Firends");

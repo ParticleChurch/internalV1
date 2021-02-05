@@ -2,10 +2,6 @@
 
 Doubletap* doubletap = new Doubletap();
 
-static int TimeToTicks(float time) {
-	return (int)(0.5f + time / I::globalvars->m_intervalPerTick);
-}
-
 static float TicksToTime(int ticks) {
 	return I::globalvars->m_intervalPerTick * (float)(ticks);
 }

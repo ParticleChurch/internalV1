@@ -52,5 +52,3 @@
 #include "Interfaces/ClientState.hpp"
 #include "Interfaces/IMemAlloc.hpp"
 
-//MORE CUSTOM
-#include "Custom/Math.hpp"

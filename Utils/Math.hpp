@@ -215,3 +215,107 @@ inline void RotateBoneMatrix(Vec AAangle, Vec origin, Matrix3x4* pCustomBoneToWo
 		BoneMatrix[i].c[2][3] = OutPos.z;
 	}
 }
+
+
+static int TimeToTicks(float time) noexcept
+{
+	return static_cast<int>(0.5f + time / I::globalvars->m_intervalPerTick);
+}
+static float GetLerp()
+{
+	auto ratio = std::clamp(G::InterpRatio->GetFloat(), G::MinInterpRatio->GetFloat(), G::MaxInterpRatio->GetFloat());
+	return (std::max)(G::Interp->GetFloat(), (ratio / ((G::MaxUpdateRate) ? G::MaxUpdateRate->GetFloat() : G::UpdateRate->GetFloat())));
+}
+static bool ValidSimTime(float SimulationTime)
+{
+	auto network = I::engine->GetNetChannelInfo();
+	if (!network)
+		return false;
+
+	auto delta = std::clamp(network->GetLatency(0) + network->GetLatency(1) + GetLerp(), 0.f, G::MaxUnlag->GetFloat()) - (I::globalvars->ServerTime() - SimulationTime);
+	return std::fabsf(delta) <= 0.2f;
+}
+
+inline float QuickRandom(float low, float high)
+{
+	return low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+}
+
+inline void fast_sqrt(float* __restrict p_out, float* __restrict p_in)
+{
+	_mm_store_ss(p_out, _mm_sqrt_ss(_mm_load_ss(p_in)));
+	// compiles to movss, sqrtss, movss
+}
+
+inline void fast_rsqrt(float a, float* out)
+{
+	const auto xx = _mm_load_ss(&a);
+	auto xr = _mm_rsqrt_ss(xx);
+	auto xt = _mm_mul_ss(xr, xr);
+	xt = _mm_mul_ss(xt, xx);
+	xt = _mm_sub_ss(_mm_set_ss(3.f), xt);
+	xt = _mm_mul_ss(xt, _mm_set_ss(0.5f));
+	xr = _mm_mul_ss(xr, xt);
+	_mm_store_ss(out, xr);
+}
+
+static float fast_vec_normalize(Vec& vec)
+{
+	const auto sqrlen = vec.SquareLength() + 1.0e-10f;
+	float invlen;
+	fast_rsqrt(sqrlen, &invlen);
+	vec.x *= invlen;
+	vec.y *= invlen;
+	vec.z *= invlen;
+	return sqrlen * invlen;
+}
+
+inline void vector_angles(const Vec& forward, QAngle& angles)
+{
+	float tmp, yaw, pitch;
+
+	if (forward[2] == 0.0f && forward[0] == 0.0f)
+	{
+		yaw = 0;
+
+		if (forward[2] > 0.0f)
+			pitch = 90.0f;
+		else
+			pitch = 270.0f;
+	}
+	else
+	{
+#ifdef QUICK_MATH
+		yaw = (fast_atan2(forward[1], forward[0]) * 180.0f / M_PI);
+#else
+		yaw = (atan2f(forward[1], forward[0]) * 180.0f / M_PI);
+#endif
+
+		if (yaw < 0.0f)
+			yaw += 360.0f;
+
+		float sqin = forward[0] * forward[0] + forward[1] * forward[1];
+		fast_sqrt(&tmp, &sqin);
+
+#ifdef QUICK_MATH
+		pitch = (fast_atan2(-forward[2], tmp) * 180.0f / M_PI);
+#else
+		pitch = (atan2f(-forward[2], tmp) * 180.0f / M_PI);
+#endif
+
+		if (pitch < 0.0f)
+			pitch += 360.0f;
+	}
+
+	pitch -= floorf(pitch / 360.0f + 0.5f) * 360.0f;
+	yaw -= floorf(yaw / 360.0f + 0.5f) * 360.0f;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	else if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	angles.x = pitch;
+	angles.y = yaw;
+	angles.z = 0;
+}

@@ -235,6 +235,7 @@
     <ClInclude Include="Interfaces.hpp" />
     <ClInclude Include="Netvars.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />
+    <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\StrHash.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\InterfaceTools.hpp" />
@@ -242,7 +243,6 @@
     <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />
     <ClInclude Include="Valve\Custom\Color.hpp" />
-    <ClInclude Include="Valve\Custom\Math.hpp" />
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
     <ClInclude Include="Valve\Custom\WeaponId.hpp" />

@@ -206,16 +206,25 @@ float AntiAim::AtTargets()
 {
 	float BestFOV = FLT_MAX;
 	QAngle BestAng = G::StartAngle;
-	for (auto a : G::EntList)
+
+	/*
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
 	{
+		//it->first is key	  (User Id)
+		//it->second is value (Player struct)
+	}
+	*/
+
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	{
+		auto a = it->second;
+
 		if (a.index == G::LocalPlayerIndex)
 			continue;
 
 		if (!a.entity)
-			continue;
-
-		player_info_t PlayerInfo;
-		if (!I::engine->GetPlayerInfo(a.index, &PlayerInfo))
 			continue;
 
 		if (!(a.health > 0))
@@ -231,7 +240,7 @@ float AntiAim::AtTargets()
 		Vec delta = AngToTarg - G::StartAngle;
 		delta.NormalizeAngle();
 
-		float fov =  min(sqrtf(powf(delta.x, 2.0f) + powf(delta.y, 2.0f)), 180.0f);
+		float fov = min(sqrtf(powf(delta.x, 2.0f) + powf(delta.y, 2.0f)), 180.0f);
 
 		if (fov < BestFOV)
 		{

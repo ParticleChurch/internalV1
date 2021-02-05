@@ -19,63 +19,99 @@ namespace G
 	WeaponData* LocalPlayerWeaponData;
 
 	// Other Entitys
-	EntItem EntList[64];
+	std::map<int, Player> EntList;
 	void UpdateEntities()
 	{
+		/*
+		std::map<int, Player>::iterator it;
+		for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+		{
+			//it->first is key	  (User Id)
+			//it->second is value (Player struct)
+		}
+		*/
 
+		std::map<int, Player>::iterator it;
+		for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+		{
+			it->second.Valid = false;
+		}
+		
+
+		player_info_t TempInfo;
 		for (int i = 1; i < 65; i++)
 		{
-			if (i == G::LocalPlayerIndex)
-				continue;
+			// Localplayer Check
+			if (i == G::LocalPlayerIndex) continue;
 
-			EntList[i].index = i;
+			// Entity Existance Check
 			Entity* ent = I::entitylist->GetClientEntity(i);
-			if (!ent)
+			if (!ent) continue;
+
+			// If Not Player
+			if (!I::engine->GetPlayerInfo(i, &TempInfo)) continue;
+
+			int UserId = TempInfo.userid;
+				
+			// If not in the list... ADD IT BOY
+			if (EntList.find(UserId) == EntList.end())
 			{
-				// WE DONT NEED TO FREE NOW, JUST AT THE VERY END after unhooking and maybe not even then...
-				if (ent && EntList[i].entity)
-				{
-					free(EntList[i].entity);
-					free(EntList[i].model);
-				}
-				continue;
+				Player NewPlayer;
+				EntList.insert(std::pair<int, Player>(UserId, NewPlayer));
 			}
-			else {
-				if (!EntList[i].entity)
-					EntList[i].entity = new Entity();
-				EntList[i].entity = ent;
+			
+			// Update Player Crap
+			EntList[UserId].entity		= ent;
+			EntList[UserId].weap		= ent->GetActiveWeapon();
+			EntList[UserId].index		= i;
+			EntList[UserId].health		= ent->GetHealth();
+			EntList[UserId].team		= ent->GetTeam();
+			EntList[UserId].dormant		= ent->IsDormant();
+			EntList[UserId].Flags		= ent->GetFlags();
+			EntList[UserId].Valid		= true;
+			EntList[UserId].CurSimTime	= ent->GetSimulationTime();
+			EntList[UserId].EyePos		= ent->GetEyePos();
+			EntList[UserId].info		= TempInfo;
+
+			// If it is a Valid SimTime
+			if (ValidSimTime(EntList[UserId].CurSimTime))
+			{
+				ent->SetupBones(EntList[UserId].Matrix, 128, 0x100);
+				EntList[UserId].LastValidSimTime = EntList[UserId].CurSimTime;	
 			}
 
-			static player_info_t info;
-			EntList[i].player = I::engine->GetPlayerInfo(i, &info);
-			if (EntList[i].player)	// If Player
-				EntList[i].userid = info.userid;
-			else
-				continue;
-			EntList[i].health = EntList[i].entity->GetHealth();
-			EntList[i].team = EntList[i].entity->GetTeam();
-			EntList[i].dormant = EntList[i].entity->IsDormant();
-			EntList[i].lastSimTime = EntList[i].entity->GetSimulationTime();
-			if (backtrack->Valid(EntList[i].lastSimTime))
-				EntList[i].entity->SetupBones(EntList[i].Matrix, 128, 0x100);
-			Model* model = EntList[i].entity->GetModel();
+			Model* model = EntList[UserId].entity->GetModel();
 			if (model)
 			{
-				if (!EntList[i].model)
+				if (!EntList[UserId].model)
 				{
-					EntList[i].model = new Model();
-					EntList[i].model = model;
+					EntList[UserId].model = new Model();
+					EntList[UserId].model = model;
 				}
 				else
 				{
-					EntList[i].model = model;
+					EntList[UserId].model = model;
 				}
 			}
 			else
 			{
-				free(EntList[i].model);
+				free(EntList[UserId].model);
 			}
-			EntList[i].EyePos = EntList[i].entity->GetEyePos();
+			
+
+			// Update Resolver Shit
+			// This part is experimental
+			if (EntList[UserId].weap)
+				EntList[UserId].LastShotTime = EntList[UserId].weap->GetLastShotTime();
+
+			// If LBY off by more then 1 degree...
+			float lby = ent->GetLBY();
+			if (fabsf(EntList[UserId].CurLBY - lby) > 1.f)
+			{
+				EntList[UserId].OldLBY = EntList[UserId].CurLBY;
+				EntList[UserId].CurLBY = lby;
+			}
+			EntList[UserId].InAir = !(EntList[UserId].Flags & FL_ONGROUND);
 		}
 	}
 	

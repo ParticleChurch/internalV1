@@ -1,53 +1,56 @@
 #pragma once
 class Aimbot
 {
+private:
+	// Data stuff
+	struct legit
+	{
+		float fov;
+		std::vector<Hitboxes> hitboxes;
+		int smoothing;
+		float smoothing_amount;
+		float hidden_max = 10.f;
+	}legit;
+
+	struct rage
+	{
+		std::vector<Hitboxes> hitboxes;
+		int hid_mindam; // hidden min damage
+		int vis_mindam; // visible min damage
+		float hitchance;
+		bool FireIfLethal;
+	}rage;
+
+	// General Private Functions
+	float CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox);
+	bool ValidPlayer(Player player);
+	int GetHitGroup(int Hitbox);
+	void GetClosestEntity(int& RecordUserID, float& Distance);
+
+	// Legit Functions
+	void Legit();
+	bool UpdateLegitVal();
+	void GetLegitHitboxes(int gun);
+	QAngle GetClosestAng(int RecordUserID, bool& valid);
+	void Smooth(QAngle& Ang);
+	void SmoothLinear(QAngle& Ang);
+	void SmoothSlowToFast(QAngle& Ang);
+	void SmoothFastToSlow(QAngle& Ang);
+
+	// Rage Functions
+	void Rage();
+	bool UpdateRageVal();
+	void GetRageHitboxes(int gun);
+	bool ScanPlayer(int RecordUserID, Vec& Point);
+
 public:
-	// Math Shiz
+	// General Public Functions
 	Vec CalculateAngle(Vec Target);
 	Vec CalculateAngle(Vec Source, Vec Target);
 	float CrosshairDist(Vec TargetAngle);
-	void Smooth(Vec& Angle);
-
-	// Hitbox/Hitgroup Management
-	int GetHitGroup(int Hitbox);
-	std::vector<Hitboxes> priority;
-	void GetPriorityHitbox(int gun);
-	std::vector<Hitboxes> hboxes;
-	void GetHitboxes(int gun);
-
-	// Data stuff
-	int smooth_method = 0;
-	float smooth_amount = 0;
-	float fov = 0;
-	int priority_hitbox = 0;
-	float mindamage_visible = 0;
-	float mindamage_hidden = 0;
-	float hitchance = 0;
-
-	// secret stuff
-	float accuracy_amount = 0.0f;
-
-	// Scan Stuff
-	int VisHitbox;
-	int AutowallHitbox;
-	void VisibleScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);
-	void AutowallScan(int& BestIndex, int& BestDamage, Vec& BestAimPoint);
-
-	// Run stuff
+	
+	// CHAET RUN MAEN
 	void Run();
-
-	// LEGIT
-	std::vector<Hitboxes> LegitHitboxes;
-	void Legit();
-	int GetClosestToCrosshair();
-	QAngle GetClosestBoneToCrosshairAngle(int Index, float& distance, bool& valid);
-	void DoRecoilComponensation(QAngle& ang);
-
-	void SmoothLinear(QAngle& Ang, float x, float y);
-	void SmoothSlowToFast(QAngle& Ang, float x, float y);
-	void SmoothFastToSlow(QAngle& Ang, float x, float y);
-
-	void rage();
 };
 
 extern Aimbot* aimbot;
