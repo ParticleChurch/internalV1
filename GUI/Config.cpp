@@ -1020,6 +1020,11 @@ namespace Config2
 				p = g->Add("showcase-premium-chained", "Premium and Chained", new CBoolean());
 				p->IsPremium = true;
 				p->Master = Config2::GetProperty("showcase-normal");
+
+				p = g->Add("showcase-float", "Floating Point", new CFloat(69.f, 420.f, 69.420f, 3, "MS"));
+
+				p = g->Add("showcase-float-premium", "Premium Float", new CFloat(0.f, 100.f, 50.f, 1, "%"));
+				p->IsPremium = true;
 			}
 		}
 
@@ -1078,11 +1083,24 @@ namespace Config2
 		auto Search = PropertyTable.find(Name);
 		if (Search == PropertyTable.end())
 		{
-			std::cout << "nonexistant property: \"" << Name << "\"" << std::endl;
+			std::cout << "nonexistent property: \"" << Name << "\"" << std::endl;
 			return nullptr;
 		}
 		else
 			return Search->second;
+	}
+
+	int GetKeybind(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return -1;
+		if (p->Type != PropertyType::BOOLEAN) return -1;
+
+		CBoolean* v = (CBoolean*)p->Value;
+		if (v->BoundToKey >= 0)
+			return Keybind::KeyMap[v->BoundToKey];
+
+		return -1;
 	}
 
 	bool GetBoolean(std::string Name)
@@ -1100,11 +1118,25 @@ namespace Config2
 		#undef BRO
 	}
 
+	float GetFloat(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return false;
+
+		return ((CFloat*)p->Value)->Get();
+	}
+
+	int GetPaintKit(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return false;
+
+		return ((CPaintKit*)p->Value)->PaintKit->ID;
+	}
+
 	void ProcessKeys()
 	{
 		auto io = ImGui::GetIO();
-		bool WantKeyboard = io.WantCaptureKeyboard;
-		bool WantMouse = io.WantCaptureMouse;
 
 		Keybind::Lock = true;
 		while (Keybind::KeyChangeStack.size() > 0)
@@ -1115,14 +1147,14 @@ namespace Config2
 			if (ismouse && log.WantCaptureMouse)
 				goto CONT;
 
-			// TODO: io.WantCaptureMouse and io.WantCaptureKeyboard ?
-
 			if (SettingKeybindFor && log.State)
 			{
 				switch (SettingKeybindFor->Type)
 				{
 				case PropertyType::BOOLEAN:
 				{
+					if (Keybind::KeyMap[log.Key] == VK_ESCAPE) break;
+
 					CBoolean* b = (CBoolean*)SettingKeybindFor->Value;
 					b->BoundToKey = log.Key;
 					Keybind::Binds[log.Key].push_back(SettingKeybindFor);

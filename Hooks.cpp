@@ -502,6 +502,12 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
+	bool IsMouseInput =
+		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL ||
+		uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK ||
+		uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONDBLCLK ||
+		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
+		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK;
 
 	// keydowns
 	int KeyDown = -1;
@@ -555,12 +561,14 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		Config::KeyReleased(KeyUp);
 
 	// give imgui input
-	if (D3dInit && Config::GetBool("show-menu") && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
-		return true;
-	}
+	if (D3dInit && Config::GetBool("show-menu"))
+		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
-	I::inputsystem->EnableInput(!Config::GetBool("show-menu") || IsKeyboardInput && (!ImGui::GetIO().WantCaptureKeyboard));
-	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	auto io = ImGui::GetIO();
+	if ((IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard))
+		return false;
+	else
+		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 float RandomVal(float min, float max)

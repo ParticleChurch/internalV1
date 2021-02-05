@@ -2201,6 +2201,52 @@ namespace ImGui
 
 		return Clicked;
 	}
+
+	float DrawInputFloat(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float Factor = 0.5f, ImVec2 Size = ImVec2(100, 16))
+	{
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
+		ImGuiID ID = Window->GetID(Identifier.c_str());
+		ImVec2 GrabCenter(Window->DC.CursorPos.x + Size.y / 2.f + Factor * (Size.x - Size.y), Window->DC.CursorPos.y + Size.y / 2.f);
+
+		// draw bar
+		{
+			DrawList->AddRectFilled(Window->DC.CursorPos, Window->DC.CursorPos + Size, ColorConvertFloat4ToU32(ColorB), Size.y);
+			DrawList->AddRectFilled(Window->DC.CursorPos + ImVec2(2, 2), Window->DC.CursorPos + Size - ImVec2(2, 2), ColorConvertFloat4ToU32(ColorA), Size.y);
+			DrawList->AddRectFilled(Window->DC.CursorPos, ImVec2(GrabCenter.x + Size.y / 2.f, Window->DC.CursorPos.y + Size.y), ColorConvertFloat4ToU32(ColorB), Size.y);
+		}
+
+		// draw grab
+		{
+			DrawList->AddCircleFilled(GrabCenter, Size.y / 2.f - 2.f, ColorConvertFloat4ToU32(ColorA));
+		}
+
+		// behavior
+		ItemAdd(BB, ID);
+		if (ItemHoverable(BB, ID) && GImGui->IO.MouseClicked[0])
+		{
+			SetActiveID(ID, Window);
+			SetFocusID(ID, Window);
+			FocusWindow(Window);
+		}
+		if (GImGui->ActiveId == ID)
+		{
+			if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
+			{
+				Factor = (GImGui->IO.MousePos.x - (Window->DC.CursorPos.x + Size.y / 2.f)) / (Size.x - Size.y);
+			}
+			else
+			{
+				ClearActiveID();
+			}
+		}
+		if (Factor < 0.f) Factor = 0.f;
+		if (Factor > 1.f) Factor = 1.f;
+
+		return Factor;
+	}
 }
 
 // Property drawers
@@ -2345,8 +2391,9 @@ namespace ImGui
 				PopStyleColor(1);
 
 			}
-			else // the key is not bound
+			else if (!PremiumLocked) // the key is not bound & we are able to bind it
 			{
+				
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
 
 				PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
@@ -2392,7 +2439,6 @@ namespace ImGui
 				AnimFactor = 1.f - AnimFactor;
 
 			bool Flipped = DrawBooleanSwitch("##" + p->Name, ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), AnimFactor);
-			GUI2::WantMouse |= IsItemHovered();
 			if (Flipped)
 			{
 				GUI2::WantMouse = true;
@@ -2409,6 +2455,16 @@ namespace ImGui
 					}
 				}
 			}
+
+			if (IsItemHovered())
+			{
+				GUI2::WantMouse = true;
+				if (PremiumLocked)
+				{
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 30/2, 0));
+					ToolTip("Premium users only", 20);
+				}
+			}
 		}
 
 		// draw label 
@@ -2420,7 +2476,7 @@ namespace ImGui
 			if (PremiumLocked)
 			{
 				DrawErrorIcon(255, IconSize);
-				ToolTipString = "This property is locked because you do not have premium";
+				ToolTipString = "Premium users only";
 			}
 			else if (MasterLocked)
 			{
@@ -2450,6 +2506,93 @@ namespace ImGui
 			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
+
+		return 20;
+	}
+
+	int DrawFloatProperty(Config2::Property* p)
+	{
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		Config2::CFloat* Value = (Config2::CFloat*)p->Value;
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+
+		// draw label 
+		{
+			ImVec2 IconSize(14, 14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			if (PremiumLocked)
+			{
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "Premium users only";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
+			}
+
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		}
+		
+		// draw bar
+		float SpaceAfterBar = 30;
+		float BarLength = Window->ContentRegionRect.GetWidth() - GUI2::PropertyColumnPosition - Pos.x - SpaceAfterBar;
+		{
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
+
+			float DrawValue = Value->GetFactor();
+			float UserSetValue = DrawInputFloat(p->Name + "##bar", ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), DrawValue, ImVec2(BarLength, 16));
+
+			if (DrawValue != UserSetValue)
+			{
+				GUI2::WantMouse = true;
+				Config2::SettingKeybindFor = nullptr;
+	
+				if (!PremiumLocked)
+					Value->SetFactor(UserSetValue);
+			}
+
+			if (IsItemHovered())
+			{
+				GUI2::WantMouse = true;
+				if (PremiumLocked)
+				{
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
+					ToolTip(PremiumLocked ? "Premium users only" : Value->Stringify(), 20);
+				}
+			}
+		}
+
+		// draw unitx
+		{
+			PushFont(Arial12);
+			const char* txt = Value->Unit.c_str();
+			ImVec2 Size = CalcTextSize(txt);
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + BarLength + SpaceAfterBar / 2.f - Size.x / 2.f, (20 - Size.y) / 2));
+			PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+			TextEx(txt);
+			PopStyleColor(1);
+			PopFont();
+		}
 
 		return 20;
 	}
@@ -2812,6 +2955,9 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 				{
 				case Config2::PropertyType::BOOLEAN:
 					GroupY += ImGui::DrawBooleanProperty(Property);
+					break;
+				case Config2::PropertyType::FLOAT:
+					GroupY += ImGui::DrawFloatProperty(Property);
 					break;
 				default:
 					GroupY += ImGui::DrawTextProperty(Property);

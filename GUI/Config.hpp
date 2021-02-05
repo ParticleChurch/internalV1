@@ -866,6 +866,7 @@ namespace Config2
 
 	// getters
 	extern Property* GetProperty(std::string Name);
+	extern int GetKeybind(std::string Name);
 	extern bool GetBoolean(std::string Name);
 	extern float GetFloat(std::string Name);
 	extern int GetPaintKit(std::string Name);
@@ -929,18 +930,27 @@ namespace Config2
 		int Percision;
 
 	public:
-		CFloat(float Min = 0, float Max = 1, float Value = 0.50f, int Decimals = 2)
+		std::string Unit = "";
+
+		CFloat(float Min = 0, float Max = 1, float Value = 0.50f, int Decimals = 2, std::string Unit = "")
 		{
 			this->Minimum = Min;
 			this->Maximum = Max;
 			this->Decimals = max(min(Decimals, 6), 0);
 			this->Percision = (int)pow(10, this->Decimals);
-			this->Value = min(max(this->Minimum, Value), this->Maximum);
+			this->Unit = Unit;
+
+			this->Set(Value);
 		}
 
 		float Get()
 		{
 			return this->Value;
+		}
+
+		float GetFactor()
+		{
+			return (this->Value - this->Minimum) / (this->Maximum - this->Minimum);
 		}
 
 		void Set(float v)
@@ -949,20 +959,24 @@ namespace Config2
 			this->Value = min(max(this->Minimum, v), this->Maximum);
 		}
 
+		void SetFactor(float v)
+		{
+			this->Set(v * (this->Maximum - this->Minimum) + this->Minimum);
+		}
 
 		std::string Stringify()
 		{
-			if (this->Decimals < 1) return std::to_string((int)(this->Value + 0.5f));
+			std::string s = std::to_string((int64_t)((double)this->Value * (double)this->Percision + 0.5));
+			if (this->Decimals <= 0) return s;
+			if (s == "0")
+			{
+				s = "0.";
+				for (int i = 0; i < this->Decimals; i++) s += "0";
+				return s;
+			}
+			while (s.length() < (size_t)this->Decimals) s = "0" + s;
 
-			std::string s = std::to_string(this->Value);
-			size_t i = s.find(".");
-			if (i == std::string::npos)
-				return s + "." + std::string(this->Decimals, '0');
-
-			size_t dcount = s.size() - (i + 1);
-			if (dcount == this->Decimals) return s;
-			else if ((int)dcount < this->Decimals) return s + std::string(this->Decimals - dcount, '0');
-			else return s.substr(0, i + this->Decimals + 1);
+			return s.substr(0, s.length() - this->Decimals) + "." + s.substr(s.length() - this->Decimals, this->Decimals);
 		}
 
 		bool Parse(std::string v)
