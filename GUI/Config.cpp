@@ -241,12 +241,14 @@ namespace Config {
 				w->AddProperty(false, 2, "visuals-chams-enemy-hidden-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
 
+				/*
 				w->AddText("Backtrack", "visuals-chams-enemy-backtrack-label"); w->BeginIndent();
 				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-enable", "Enable", false, false, KeybindOptions(true, true, true));
 				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-color", "Color", new Color(0, 150, 255));
 				w->AddProperty(false, 0, "visuals-chams-enemy-backtrack-material", "Material", CDropdown{ CHAM_MATERIALS });
 				w->AddProperty(false, 2, "visuals-chams-enemy-backtrack-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
 				w->EndIndent();
+				*/
 
 				ESPGroup->AddGroup("friend-", "Firends");
 				w->AddText("Visible", "visuals-chams-friend-visible-label"); w->BeginIndent();

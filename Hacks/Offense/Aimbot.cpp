@@ -791,7 +791,7 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 
 void Aimbot::Run()
 {
-	//Legit();
+	Legit();
 	Rage();
 }
 
