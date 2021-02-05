@@ -2233,22 +2233,76 @@ namespace ImGui
 		{
 			PushFont(Arial14);
 
-			if (Value->BoundToKey >= 0)
+			if (p == Config2::SettingKeybindFor) // this is being set right now
 			{
-				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? "press" : "hold";
-				const char* KeyName = Keybind::KeyNames[Value->BoundToKey].c_str();
-				const char* Suffix =
-					Value->BindMode == Config2::KeybindMode::TOGGLE ? "to toggle" : 
-					Value->BindMode == Config2::KeybindMode::HOLDTOENABLE ? "to enable" : "to disable";
 
+				PushFont(Arial12);
+				const char* Prefix = "MODE:";
 				ImVec2 PrefixSize = CalcTextSize(Prefix);
-				ImVec2 KeyNameSize = CalcTextSize(KeyName);
-				ImVec2 SuffixSize = CalcTextSize(Suffix);
-
-				int x = GUI2::PropertyColumnPosition + 35;
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, (20 - PrefixSize.y) / 2));
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
 				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
 				Text(Prefix);
+				PopStyleColor(1);
+				PopFont();
+
+				PushStyleColor(ImGuiCol_Button, 0);
+				PushStyleColor(ImGuiCol_ButtonHovered, 0);
+				PushStyleColor(ImGuiCol_ButtonActive, 0);
+				PushStyleColor(ImGuiCol_ChildBg, IM_COL32(85, 90, 95, 255));
+				PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
+				int ItemWidth = 60;
+				BeginChild(("##bindmode-" + p->Name).c_str(), ImVec2(ItemWidth * 3, 20), true);
+				auto bruh_window = GetCurrentWindow();
+				auto bruh_dl = bruh_window->DrawList;
+				SetCursorPos(ImVec2(ItemWidth * (int)Value->BindMode, 0));
+				bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), IM_COL32(60, 65, 70, 255), 0, 0);
+				for (int i = 0; i < 3; i++)
+				{
+					SetCursorPos(ImVec2(ItemWidth * i, 0));
+					if (Button((Config2::KeybindTypeNames[i] + "##" + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+					{
+						Value->BindMode = (Config2::KeybindMode)i;
+					}
+					GUI2::WantMouse |= IsItemHovered();
+				}
+				EndChild();
+				PopStyleColor(5);
+				PopStyleVar(2);
+
+				PushFont(Arial12);
+				const char* Suffix = "[PRESS A KEY]";
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
+				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+				Text(Suffix);
+				PopStyleColor(1);
+				PopFont();
+
+			}
+			else if (Value->BoundToKey >= 0) // this key is already bound
+			{
+				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? "PRESS" : "HOLD";
+				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
+				const char* Suffix =
+					Value->BindMode == Config2::KeybindMode::TOGGLE ? "TO TOGGLE" : 
+					Value->BindMode == Config2::KeybindMode::HOLDTOENABLE ? "TO ENABLE" : "TO DISABLE";
+
+				PushFont(Arial12);
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+				PopFont();
+				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
+
+				int x = GUI2::PropertyColumnPosition + 39;
+				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
+				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+				PushFont(Arial12);
+				Text(Prefix);
+				PopFont();
 				PopStyleColor(1);
 				x += 5 + PrefixSize.x;
 
@@ -2260,7 +2314,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
 				SetCursorPos(Pos + ImVec2(x, 0));
-				if (Button(KeyName, ImVec2(KeyNameSize.x + 10, 20)))
+				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
 					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
 					for (size_t i = 0; i < vec.size(); i++)
@@ -2268,6 +2322,8 @@ namespace ImGui
 							vec.erase(vec.begin() + i--);
 
 					Value->BoundToKey = -1;
+					Config2::SettingKeybindFor = nullptr;
+					GUI2::WantMouse = true;
 				}
 				else if (IsItemHovered())
 				{
@@ -2283,11 +2339,13 @@ namespace ImGui
 
 				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
 				PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
+				PushFont(Arial12);
 				Text(Suffix);
+				PopFont();
 				PopStyleColor(1);
 
 			}
-			else
+			else // the key is not bound
 			{
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
 
@@ -2298,12 +2356,15 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
-				if (!Config2::SettingKeybindFor && Button(("Bind##"+p->Name).c_str(), ImVec2(40, 20)))
+				if (Button(("Bind##"+p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config2::SettingKeybindFor = p;
+					GUI2::WantMouse = true;
 				}
-				else if (!Config2::SettingKeybindFor)
-					GUI2::WantMouse |= IsItemHovered();
+				else if(IsItemHovered())
+				{
+					GUI2::WantMouse = true;
+				}
 
 				PopStyleColor(4);
 				PopStyleVar(2);
@@ -2332,8 +2393,22 @@ namespace ImGui
 
 			bool Flipped = DrawBooleanSwitch("##" + p->Name, ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(0.1f, 0.5f, 1.f, 1.f), AnimFactor);
 			GUI2::WantMouse |= IsItemHovered();
-			if (Flipped && !PremiumLocked)
-				CBoolValue->Flip();
+			if (Flipped)
+			{
+				GUI2::WantMouse = true;
+				Config2::SettingKeybindFor = nullptr;
+				if (!PremiumLocked)
+				{
+					CBoolValue->Flip();
+					if (Value->BoundToKey >= 0)
+					{
+						if (Value->BindMode == Config2::KeybindMode::HOLDTODISABLE)
+							Value->BindMode = Config2::KeybindMode::HOLDTOENABLE;
+						else if (Value->BindMode == Config2::KeybindMode::HOLDTOENABLE)
+							Value->BindMode = Config2::KeybindMode::HOLDTODISABLE;
+					}
+				}
+			}
 		}
 
 		// draw label 
@@ -3223,6 +3298,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), Interactable ? ImGuiCond_Once : ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowSize(DefaultMenuSize, Interactable ? ImGuiCond_Once : ImGuiCond_Always);
 
+	// some global styles cuz lmao
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
@@ -3347,6 +3423,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			}
 			else
 			{
+				Config2::SettingKeybindFor = nullptr;
 				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
 				ImGui::DrawXIcon(Animation::lerp(0, 200, SearchAnimationFactor), ImVec2(9, 9));
 				// dummy button
@@ -3415,6 +3492,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 				{
 					ActiveTab = t;
 					isSelected = true;
+					Config2::SettingKeybindFor = nullptr;
 				}
 
 				if (ImGui::IsItemHovered())
@@ -3496,7 +3574,7 @@ void GUI2::Main()
 		if (Config::GetBool("show-menu"))
 		{
 			MainScreen();
-			Ejected |= GUI::Main();
+			//Ejected |= GUI::Main();
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating

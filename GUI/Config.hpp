@@ -854,6 +854,7 @@ namespace Config2
 		HOLDTOENABLE,
 		HOLDTODISABLE,
 	};
+	extern std::string KeybindTypeNames[];
 	struct CBoolean;
 	struct CFloat;
 	struct CEditGroup;

@@ -1,0 +1,11 @@
+"items_game"
+{
+	"game_info"
+	{
+		"first_valid_class"		"2"
+		"last_valid_class"		"3"
+		"first_valid_item_slot"		"0"
+		"last_valid_item_slot"		"54"
+		"num_item_presets"		"4"
+	}
+}
