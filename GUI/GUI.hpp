@@ -39,7 +39,7 @@ namespace GUI2
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
 	extern void AuthenticationIntro();
-	extern void DrawNormalTab(Config2::Tab* t);
+	extern void DrawNormalTab(Config2::Tab* t, std::string GroupPrefix = "");
 	extern void DrawActiveTab();
 	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);
 	extern void Init();

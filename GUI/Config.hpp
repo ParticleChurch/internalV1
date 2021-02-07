@@ -846,6 +846,7 @@ namespace Config2
 		PAINTKIT,
 		KNIFE,
 		GLOVE,
+		HSTATEFUL,
 		EDITGROUP,
 	};
 	enum class KeybindMode
@@ -857,10 +858,11 @@ namespace Config2
 	extern std::string KeybindTypeNames[];
 	struct CBoolean;
 	struct CFloat;
-	struct CEditGroup;
 	struct CPaintKit;
 	struct CKnife;
 	struct CGlove;
+	struct CHorizontalState;
+	struct CEditGroup;
 
 	extern void Init();
 
@@ -870,6 +872,7 @@ namespace Config2
 	extern bool GetBoolean(std::string Name);
 	extern float GetFloat(std::string Name);
 	extern int GetPaintKit(std::string Name);
+	extern int GetState(std::string Name);
 
 	extern void ProcessKeys();
 	extern void Free();
@@ -932,7 +935,7 @@ namespace Config2
 	public:
 		std::string Unit = "";
 
-		CFloat(float Min = 0, float Max = 1, float Value = 0.50f, int Decimals = 2, std::string Unit = "")
+		CFloat(float Min = 0, float Max = 1, int Decimals = 2, std::string Unit = "")
 		{
 			this->Minimum = Min;
 			this->Maximum = Max;
@@ -940,7 +943,7 @@ namespace Config2
 			this->Percision = (int)pow(10, this->Decimals);
 			this->Unit = Unit;
 
-			this->Set(Value);
+			this->Set(Min);
 		}
 
 		float Get()
@@ -974,7 +977,7 @@ namespace Config2
 				for (int i = 0; i < this->Decimals; i++) s += "0";
 				return s;
 			}
-			while (s.length() < (size_t)this->Decimals) s = "0" + s;
+			while (s.length() <= (size_t)this->Decimals) s = "0" + s;
 
 			return s.substr(0, s.length() - this->Decimals) + "." + s.substr(s.length() - this->Decimals, this->Decimals);
 		}
@@ -1050,6 +1053,43 @@ namespace Config2
 	struct CGlove
 	{
 		static const PropertyType Type = PropertyType::GLOVE;
+	};
+	struct CHorizontalState
+	{
+		static const PropertyType Type = PropertyType::HSTATEFUL;
+
+		int LastState = 0;
+		size_t State = 0;
+		std::vector<std::string> States;
+		bool Bindable;
+		bool FitToWidth;
+
+		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+
+		CHorizontalState(std::vector<std::string> States, bool Bindable = true, bool FitToWidth = false)
+		{
+			this->States = States;
+			this->Bindable = Bindable;
+			this->FitToWidth = FitToWidth;
+		}
+
+		void Next()
+		{
+			if (++this->State >= this->States.size()) this->State = 0;
+		}
+
+		bool Set(size_t NewState)
+		{
+			if (NewState >= this->States.size()) NewState = this->States.size() - 1;
+			if (NewState < 0) NewState = 0;
+			if (NewState == this->State) return false;
+
+			this->LastState = this->State;
+			this->State = NewState;
+			this->TimeChanged = Animation::now();
+
+			return true;
+		}
 	};
 	struct CEditGroup
 	{
@@ -1227,21 +1267,16 @@ namespace Config2
 	};
 	struct Tab
 	{
-	private:
-		bool IsProfile = false;
-		bool IsConfig = false;
-		bool IsOffence = false;
-
-	public:
 		std::string Name;
 		std::vector<Group*> Groups;
+
+		int TopPadding = 0;
+		int VerticalPadding = 10;
+		int HorizontalPadding = 10;
 
 		Tab(std::string Name)
 		{
 			this->Name = Name;
-			this->IsProfile = Name == "Profile";
-			this->IsConfig = Name == "Config";
-			this->IsOffence = Name == "Offence";
 			Tabs.push_back(this);
 		}
 		Group* Add(std::string Title)

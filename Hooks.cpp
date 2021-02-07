@@ -237,7 +237,7 @@ void H::Init()
 	
 	H::g_EventListener = new EventListener();
 
-	static int SleepTime = 100;
+	constexpr int SleepTime = 0;
 
 	L::Log("Endscene...", "");
 	ConsoleColorMsg(Color(0, 255, 0, 255), "Endscene...");

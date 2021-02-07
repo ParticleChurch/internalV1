@@ -970,66 +970,134 @@ namespace Config2
 
 	void Init()
 	{
+		Tab* t;
+		Group* g;
+		Property* p;
+
 		// OFFENCE
 		{
-			Tab* t = new Tab("Offence");
+			t = new Tab("Offence");
+			t->TopPadding = -10;
+			Group* OffenceMeta = t->Add("__META__");
+			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false, true));
 
-			// LEGIT PAGE
+			/*
+				LEGIT PAGE
+			*/
 			{
+				g = t->Add("legit-Aimbot");
 
+				Property* Enable = g->Add("legit-aimbot-enable", "Enable", new CBoolean());
+
+				p = g->Add("legit-aimbot-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				p = g->Add("legit-aimbot-smoothing", "Smoothing", new CFloat(0, 100, 1, "%"));
 			}
 
-			// RAGE PAGE
+
+			/*
+				RAGE PAGE
+			*/
 			{
-				
+				g = t->Add("rage-Aimbot");
+
+				Property* Enable = g->Add("rage-aimbot-enable", "Enable", new CBoolean());
+
+				p = g->Add("rage-aimbot-silent", "Silent Aim", new CBoolean());
+				p->Master = Enable;
+
+				p = g->Add("rage-aimbot-autofire", "Auto Fire", new CBoolean());
+				p->Master = Enable;
+
+				p = g->Add("rage-aimbot-lethal", "Ignore Hitboxes If Lethal", new CBoolean());
+				p->Master = Enable;
 			}
 		}
 
 		// DEFENCE
 		{
-			Tab* t = new Tab("Defence");
+			t = new Tab("Defence");
+			t->TopPadding = -10;
+			Group* OffenceMeta = t->Add("__META__");
+			Property* OffenceMode = OffenceMeta->Add("defence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false, true));
 
+			/*
+				LEGIT PAGE
+			*/
+
+			// fakelag
 			{
-				Group* g = t->Add("Bruh Moment");
-				g->ShowTitle = false;
+				g = t->Add("legit-Fake Lag");
 
-				Property* p = g->Add("defence-enable", "Enable", new CBoolean());
+				Property* Enable = g->Add("legit-fakelag-enable", "Enable", new CBoolean());
 
-				p = g->Add("master-dependent-boolean", "Master Dependency", new CBoolean());
-				p->Master = Config2::GetProperty("defence-enable");
-
-				p = g->Add("visible-dependent-boolean", "Visible Dependency", new CBoolean());
-				p->IsVisible = []() { return Config2::GetBoolean("defence-enable"); };
+				p = g->Add("legit-fakelag-time", "Max Time", new CFloat(1, 16, 0, "TICKS"));
+				p->Master = Enable;
+				p = g->Add("legit-fakelag-distance", "Max Distance", new CFloat(1, 64, 0, "UNITS"));
+				p->Master = Enable;
+				p = g->Add("legit-fakelag-trigger-time", "Triggered Max Time", new CFloat(1, 16, 0, "TICKS"));
+				p->Master = Enable;
+				p = g->Add("legit-fakelag-trigger-fistance", "Triggered Max Distance", new CFloat(1, 64, 0, "UNITS"));
+				p->Master = Enable;
 			}
 
+			// anti aim
 			{
-				Group* g = t->Add("Showcase");
+				g = t->Add("legit-Anti-Aim");
 
-				Property* p = g->Add("showcase-normal", "Normal Switch", new CBoolean());
+				Property* Enable = g->Add("legit-antiaim-enable", "Enable", new CBoolean());
 
-				p = g->Add("showcase-chained", "Chained", new CBoolean());
-				p->Master = Config2::GetProperty("showcase-normal");
+				p = g->Add("legit-antiaim-desync", "Desync", new CFloat(1, 100, 1, "%"));
+				p->Master = Enable;
+			}
 
-				p = g->Add("showcase-dependant", "Dependant", new CBoolean());
-				p->IsVisible = []() { return Config2::GetBoolean("showcase-normal"); };
 
-				p = g->Add("showcase-premium", "Premium", new CBoolean());
-				p->IsPremium = true;
+			/*
+				RAGE PAGE
+			*/
+			// fakelag
+			{
+				g = t->Add("rage-Fake Lag");
 
-				p = g->Add("showcase-premium-chained", "Premium and Chained", new CBoolean());
-				p->IsPremium = true;
-				p->Master = Config2::GetProperty("showcase-normal");
+				Property* Enable = g->Add("rage-fakelag-enable", "Enable", new CBoolean());
 
-				p = g->Add("showcase-float", "Floating Point", new CFloat(69.f, 420.f, 69.420f, 3, "MS"));
+				p = g->Add("rage-fakelag-time", "Max Time", new CFloat(1, 16, 0, "TICKS"));
+				p->Master = Enable;
+				p = g->Add("rage-fakelag-distance", "Max Distance", new CFloat(1, 64, 0, "UNITS"));
+				p->Master = Enable;
+				p = g->Add("rage-fakelag-trigger-time", "Triggered Max Time", new CFloat(1, 16, 0, "TICKS"));
+				p->Master = Enable;
+				p = g->Add("rage-fakelag-trigger-fistance", "Triggered Max Distance", new CFloat(1, 64, 0, "UNITS"));
+				p->Master = Enable;
+			}
 
-				p = g->Add("showcase-float-premium", "Premium Float", new CFloat(0.f, 100.f, 50.f, 1, "%"));
-				p->IsPremium = true;
+			// anti aim
+			{
+				g = t->Add("rage-Anti-Aim");
+
+				Property* Enable = g->Add("rage-antiaim-enable", "Enable", new CBoolean());
+
+				p = g->Add("rage-antiaim-real-offset", "Rotate Real", new CFloat(0, 180, 1, "DEG"));
+				p->Master = Enable;
+
+				p = g->Add("rage-antiaim-real-jitter", "Real Rotation Jitter", new CFloat(0, 180, 1, "DEG"));
+				p->Master = Enable;
+
+				p = g->Add("rage-antiaim-fake-offset", "Rotate Fake", new CFloat(0, 100, 1, "%"));
+				p->Master = Enable;
+
+				p = g->Add("rage-antiaim-fake-jitter", "Fake Rotation Jitter", new CFloat(0, 100, 1, "%"));
+				p->Master = Enable;
+
+				p = g->Add("rage-antiaim-invert-on-hit", "Invert Rotation On Hit", new CBoolean());
+				p->Master = Enable;
 			}
 		}
 
 		// VISUALS
 		{
 			Tab* t = new Tab("Visuals");
+			g = t->Add("nigga");
+			g->Add("bruh", "test", new CFloat());
 		}
 
 		// SKINCHANGER
@@ -1131,6 +1199,22 @@ namespace Config2
 		if (!p) return false;
 
 		return ((CPaintKit*)p->Value)->PaintKit->ID;
+	}
+
+	int GetState(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return 0;
+
+		switch (p->Type)
+		{
+		case PropertyType::BOOLEAN: // I write Config::GetBoolean, and you use this? >:(
+			return (int)(((CBoolean*)p->Value)->Value);
+		case PropertyType::HSTATEFUL:
+			return (int)(((CHorizontalState*)p->Value)->State);
+		}
+
+		return 0;
 	}
 
 	void ProcessKeys()

@@ -2105,6 +2105,8 @@ namespace ImGui
 
 	void ToolTip(std::string str, int ItemHeightForVerticalFlip = 20)
 	{
+		constexpr int MinWidth = 20;
+
 		ImGuiIO& io = ImGui::GetIO();
 
 		PushFont(Arial16);
@@ -2112,6 +2114,12 @@ namespace ImGui
 		PopFont();
 
 		ImVec2 WindowSize = TextDimensions + ImVec2(10, 10);
+		int TextOffset = 0;
+		if (WindowSize.x < MinWidth)
+		{
+			TextOffset = (MinWidth - WindowSize.x) / 2;
+			WindowSize.x = MinWidth;
+		}
 		ImVec2 PointerSize = ImVec2(5, 5);
 		int VerticalPadding = 5;
 		ItemHeightForVerticalFlip += VerticalPadding * 2;
@@ -2165,7 +2173,7 @@ namespace ImGui
 		DrawList->PathClear();
 
 		// Draw Text
-		DrawList->AddText(Arial16, 16, WindowPos + ImVec2(5, 5), IM_COL32(255, 255, 255, 255), str.c_str());
+		DrawList->AddText(Arial16, 16, WindowPos + ImVec2(5 + TextOffset, 5), IM_COL32(255, 255, 255, 255), str.c_str());
 	}
 
 	bool DrawBooleanSwitch(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float SwitchFactor = 0.f, ImVec2 Size = ImVec2(30, 16))
@@ -2554,7 +2562,7 @@ namespace ImGui
 		}
 		
 		// draw bar
-		float SpaceAfterBar = 30;
+		float SpaceAfterBar = 43;
 		float BarLength = Window->ContentRegionRect.GetWidth() - GUI2::PropertyColumnPosition - Pos.x - SpaceAfterBar;
 		{
 			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
@@ -2574,22 +2582,17 @@ namespace ImGui
 			if (IsItemHovered())
 			{
 				GUI2::WantMouse = true;
-				if (PremiumLocked)
-				{
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
-					ToolTip(PremiumLocked ? "Premium users only" : Value->Stringify(), 20);
-				}
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
+				ToolTip(PremiumLocked ? "Premium users only" : Value->Stringify(), 20);
 			}
 		}
 
-		// draw unitx
+		// draw unit
 		{
 			PushFont(Arial12);
-			const char* txt = Value->Unit.c_str();
-			ImVec2 Size = CalcTextSize(txt);
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + BarLength + SpaceAfterBar / 2.f - Size.x / 2.f, (20 - Size.y) / 2));
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + BarLength + 5, (20 - GetFontSize()) / 2));
 			PushStyleColor(ImGuiCol_Text, IM_COL32(175, 175, 175, 255));
-			TextEx(txt);
+			TextEx(Value->Unit.c_str());
 			PopStyleColor(1);
 			PopFont();
 		}
@@ -2904,20 +2907,22 @@ void GUI2::AuthenticationIntro()
 	}
 }
 
-void GUI2::DrawNormalTab(Config2::Tab* t)
+void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 {
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
-	int WidgetPadding = 10;
 	int WidgetWidth = Window->ContentRegionRect.GetWidth();
-	int WidgetX = WidgetPadding, WidgetY = WidgetPadding;
+	int WidgetX = t->HorizontalPadding, WidgetY = t->TopPadding + t->VerticalPadding;
 
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58, 255));
 
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
 		Config2::Group* Group = t->Groups[g];
+		if (Group->Title == "__META__") continue;
+		if (Group->Title.substr(0, GroupPrefix.size()) != GroupPrefix) continue;
+
 		int GroupHeight = Group->GetDrawHeight();
 		int GroupY = Group->Padding;
 
@@ -2926,14 +2931,14 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 
 		// TODO: each group should have meta properties like "backgroundColor"
 		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
-		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - WidgetPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
 		auto GroupWindow = ImGui::GetCurrentWindow();
 
 		if (Group->ShowTitle)
 		{
 			ImGui::SetCursorPos(ImVec2(5, GroupY));
 			ImGui::PushFont(Arial18BoldItalics);
-			ImGui::Text(Group->Title.c_str());
+			ImGui::Text(Group->Title.substr(GroupPrefix.size()).c_str());
 			ImGui::PopFont();
 			GroupY += 18 + 5;
 		}
@@ -2975,7 +2980,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t)
 		ImGui::PopStyleVar(1);
 		ImGui::PopFont();
 
-		WidgetY += GroupHeight + WidgetPadding;
+		WidgetY += GroupHeight + t->VerticalPadding;
 	}
 
 	ImGui::PopStyleColor(1);
@@ -2990,7 +2995,79 @@ void GUI2::DrawActiveTab()
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
-	if (ActiveTab->Name == "Eject")
+	if (ActiveTab->Name == "Offence" || ActiveTab->Name == "Defence")
+	{
+		bool IsOffencePage = ActiveTab->Name == "Offence";
+
+		static Config2::Property* MasterSwitch = Config2::GetProperty(IsOffencePage ? "offence-mode" : "defence-mode");
+		if (!MasterSwitch)
+		{
+			MasterSwitch = Config2::GetProperty(IsOffencePage ? "offence-mode" : "defence-mode");
+			if (!MasterSwitch) return;
+		}
+		Config2::CHorizontalState* MasterMode = (Config2::CHorizontalState*)MasterSwitch->Value;
+
+		// big switch at the top
+		{
+			int Width = Window->ContentRegionRect.GetWidth() - 20;
+
+			ImGui::PushStyleColor(ImGuiCol_Button, 0);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(32, 33, 36, 255));
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(80,80,80, 255));
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 2.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
+			ImGui::PushFont(Arial18BoldItalics);
+
+			ImGui::SetCursorPos(ImVec2(10, 10));
+			ImGui::BeginChild(IsOffencePage ? "offence-main-top-gui-switch" : "defence-main-top-gui-switch", ImVec2(Width, 40), true, 0);
+
+			auto bruh_window = ImGui::GetCurrentWindow();
+			auto bruh_dl = bruh_window->DrawList;
+
+			double TimePassed = Animation::delta(Animation::now(), MasterMode->TimeChanged);
+			double AnimFactor = Animation::animate(TimePassed, 0.15f, Animation::Interpolation::easeInOutQuint);
+			if (MasterMode->State == 0) AnimFactor = 1.f - AnimFactor;
+			float XOffset = Animation::lerp(5.f, Width/2.f, AnimFactor);
+			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width/2 - 5, 35), IM_COL32(100, 100, 100, 255), 5.f);
+
+			ImGui::SetCursorPos(ImVec2(0, 0));
+			if (ImGui::Button(IsOffencePage ? "Legit##big-switch-offence" : "Legit##big-switch-defence", ImVec2(Width / 2, 40)))
+			{
+				WantMouse = true;
+				Config2::SettingKeybindFor = nullptr;
+				MasterMode->Set(0);
+			}
+			WantMouse |= ImGui::IsItemHovered();
+
+			ImGui::SetCursorPos(ImVec2(Width / 2, 0));
+			if (ImGui::Button(IsOffencePage ? "Rage##big-switch-offence" : "Rage##big-switch-defence", ImVec2(Width / 2, 40)))
+			{
+				WantMouse = true;
+				Config2::SettingKeybindFor = nullptr;
+				MasterMode->Set(1);
+			}
+			WantMouse |= ImGui::IsItemHovered();
+
+			ImGui::EndChild();
+
+			ImGui::PopStyleColor(5);
+			ImGui::PopStyleVar(2);
+			ImGui::PopFont();
+		}
+
+		// the rest of the shit
+		{
+			ImGui::SetCursorPos(ImVec2(0, 60));
+			ImGui::BeginChild(IsOffencePage ? "##embedded-offence" : "##embedded-defence");
+
+			DrawNormalTab(ActiveTab, MasterMode->State == 0 ? "legit-" : "rage-");
+
+			ImGui::EndChild();
+		}
+	}
+	else if (ActiveTab->Name == "Eject")
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58 ,255));
