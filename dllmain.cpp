@@ -45,7 +45,7 @@ void Init()
     ConsoleColorMsg(Color(50, 153, 255, 255), "Cheat Injected\n\n");
     I::engine->ClientCmd_Unrestricted("toggleconsole");
 
-    L::Log("Initialization successful");
+    L::Log(TXT("Initialization successful"));
     
     while (!G::KillDLL) Sleep(100);
     while (Keybind::UpdatorRunning) Sleep(100);

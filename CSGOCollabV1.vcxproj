@@ -157,6 +157,7 @@
     <ClCompile Include="GlobalVars.cpp" />
     <ClCompile Include="GUI\animation.cpp" />
     <ClCompile Include="GUI\Config.cpp" />
+    <ClCompile Include="GUI\ConfigConstants.cpp" />
     <ClCompile Include="GUI\ConfigManager.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="GUI\HTTP.cpp" />

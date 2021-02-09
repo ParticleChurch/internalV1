@@ -27,6 +27,7 @@
 #include <initializer_list>      // for vararg functions
 #include <array>				 // For animation arrays 
 
+#include "GUI/TextService.hpp"
 #include "Logger.hpp"            // logger
 #include "Utils/Utils.hpp"       //includes all utils...
 
