@@ -523,6 +523,7 @@ namespace Config {
 		{
 			if (CONFIG_DEBUG)
 				L::Log(("Config::GetColor: nonexistant property: \"" + Name + "\"").c_str());
+			return Color(0,0,0);
 		}
 		else
 		{
@@ -958,7 +959,6 @@ namespace Config {
 	}
 }
 
-
 namespace Config2
 {
 	std::map<std::string, Property*> PropertyTable{};
@@ -1096,8 +1096,6 @@ namespace Config2
 		// VISUALS
 		{
 			Tab* t = new Tab("Visuals");
-			g = t->Add("nigga");
-			g->Add("bruh", "test", new CFloat());
 		}
 
 		// SKINCHANGER
@@ -1129,9 +1127,33 @@ namespace Config2
 			Tab* t = new Tab("Misc");
 		}
 
-		// PROFILE
+		// THEME
 		{
 			Tab* t = new Tab("Theme");
+
+			{
+				Group* g = t->Add("General");
+
+				g->Add("theme-topbar-background", "Topbar Background", new CColor(true));
+				g->Add("theme-topbar-text", "Topbar Text", new CColor(true));
+				g->Add("theme-border-thickness", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
+				p = g->Add("theme-border-color", "Outline", new CColor(true));
+				p->IsVisible = []() { return GetFloat("theme-border-thickness") > 0.f; };
+
+				g->Add("theme-tab-background-use-image", "Background Uses Image", new CBoolean(false));
+				p = g->Add("theme-tab-background-image", "Background Image", new CLabel());
+				p->IsVisible = []() { return GetBoolean("theme-tab-background-use-image"); };
+				p = g->Add("theme-tab-background-color", "Background Color", new CColor(false));
+				p->IsVisible = []() { return !GetBoolean("theme-tab-background-use-image"); };
+
+				g->Add("theme-tablist-background", "Tab List Background", new CColor(true));
+				g->Add("theme-tablist-text", "Tab List Text", new CColor(false));
+				g->Add("theme-eject-tab-text", "Eject Tab", new CColor(false));
+
+				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false));
+				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false));
+			}
+
 		}
 
 		// CONFIG
@@ -1215,6 +1237,14 @@ namespace Config2
 		}
 
 		return 0;
+	}
+
+	CColor GetColor(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return CColor(true);
+
+		return *(CColor*)p->Value;
 	}
 
 	void ProcessKeys()

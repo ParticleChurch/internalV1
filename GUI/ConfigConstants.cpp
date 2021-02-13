@@ -1,6 +1,6 @@
 #include "ConfigConstants.hpp"
 
-const char* ConfigManager::ConfigAllDisabled = HEAPTXT(R"(
+const char* ConfigManager::ConfigAllDisabled = R"(
 # a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
 # For help making a config, please visit https://a4g4.com/help/config
 # 
@@ -248,7 +248,7 @@ menu-option-color2                    :: (0, 150, 255)
 
 ## Opacities
 
-)");
+)";
 
 /*
 * 
@@ -273,7 +273,7 @@ menu-option-color2                    :: (0, 150, 255)
 * 
 * 
 */
-const char* ConfigManager::ConfigDefaultLegit = HEAPTXT(R"(
+const char* ConfigManager::ConfigDefaultLegit = R"(
 # a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
 # For help making a config, please visit https://a4g4.com/help/config
 # 
@@ -506,7 +506,7 @@ menu-option-color2                    :: (0, 110, 182)
 
 ## Opacities
 
-)");
+)";
 
 /*
 *
@@ -531,7 +531,7 @@ menu-option-color2                    :: (0, 110, 182)
 *
 *
 */
-const char* ConfigManager::ConfigDefualtRage = HEAPTXT(R"(
+const char* ConfigManager::ConfigDefualtRage = R"(
 # a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
 # For help making a config, please visit https://a4g4.com/help/config
 # 
@@ -764,4 +764,4 @@ menu-option-color2                    :: (180, 0, 0)
 
 ## Opacities
 
-)");
+)";

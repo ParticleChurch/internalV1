@@ -2284,6 +2284,7 @@ namespace ImGui
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
 		// draw keybind shit
+		if (Value->Bindable)
 		{
 			PushFont(Arial14);
 
@@ -2342,7 +2343,7 @@ namespace ImGui
 				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? "PRESS" : "HOLD";
 				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
 				const char* Suffix =
-					Value->BindMode == Config2::KeybindMode::TOGGLE ? "TO TOGGLE" : 
+					Value->BindMode == Config2::KeybindMode::TOGGLE ? "TO TOGGLE" :
 					Value->BindMode == Config2::KeybindMode::HOLDTOENABLE ? "TO ENABLE" : "TO DISABLE";
 
 				PushFont(Arial12);
@@ -2381,7 +2382,7 @@ namespace ImGui
 				}
 				else if (IsItemHovered())
 				{
-					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x/2 + 5, 0));
+					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
 					ToolTip("Click To Clear", 20);
 					GUI2::WantMouse = true;
 				}
@@ -2401,7 +2402,7 @@ namespace ImGui
 			}
 			else if (!PremiumLocked) // the key is not bound & we are able to bind it
 			{
-				
+
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
 
 				PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
@@ -2411,12 +2412,12 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
-				if (Button(("Bind##"+p->Name).c_str(), ImVec2(40, 20)))
+				if (Button(("Bind##" + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config2::SettingKeybindFor = p;
 					GUI2::WantMouse = true;
 				}
-				else if(IsItemHovered())
+				else if (IsItemHovered())
 				{
 					GUI2::WantMouse = true;
 				}
@@ -2429,6 +2430,7 @@ namespace ImGui
 		}
 
 		// draw switch
+		if (true) // here only because vs won't let me collapse it otherwise for some reason
 		{
 			auto CBoolValue = (Config2::CBoolean*)p->Value;
 			if (p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN)
@@ -2469,7 +2471,7 @@ namespace ImGui
 				GUI2::WantMouse = true;
 				if (PremiumLocked)
 				{
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 30/2, 0));
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 30 / 2, 0));
 					ToolTip("Premium users only", 20);
 				}
 			}
@@ -2477,9 +2479,9 @@ namespace ImGui
 
 		// draw label 
 		{
-			ImVec2 IconSize(14,14);
+			ImVec2 IconSize(14, 14);
 			std::string ToolTipString = "Click for more info";
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y)/2));
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 
 			if (PremiumLocked)
 			{
@@ -2497,11 +2499,11 @@ namespace ImGui
 			}
 
 			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
 			ItemAdd(BB, ID);
 			if (ItemHoverable(BB, ID))
 			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x/2, (20 - IconSize.y) / 2));
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
 				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
@@ -2513,7 +2515,6 @@ namespace ImGui
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
 			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
-
 
 		return 20;
 	}
@@ -2544,7 +2545,7 @@ namespace ImGui
 			}
 
 			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + ImVec2(12, 12));
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
 			ItemAdd(BB, ID);
 			if (ItemHoverable(BB, ID))
 			{
@@ -2595,6 +2596,105 @@ namespace ImGui
 			TextEx(Value->Unit.c_str());
 			PopStyleColor(1);
 			PopFont();
+		}
+
+		return 20;
+	}
+
+	int DrawColorProperty(Config2::Property* p)
+	{
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		Config2::CColor* Value = (Config2::CColor*)p->Value;
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+
+		// draw label 
+		{
+			ImVec2 IconSize(14, 14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			if (PremiumLocked)
+			{
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "Premium users only";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
+			}
+
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		}
+
+		// draw color
+		{
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+			ImVec4 ImColor = *Value;
+
+			PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+			if (ColorButton(("##color-button-" + p->Name).c_str(), ImColor, ImGuiColorEditFlags_NoTooltip, ImVec2(40, 20)))
+				OpenPopup(("##color-picker-" + p->Name).c_str());
+			else if (IsItemHovered())
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 20, 0));
+				ToolTip(Value->Stringify(), 20);
+			}
+			PopStyleVar(1);
+
+			SetNextWindowSize(ImVec2(210, Value->HasAlpha ? 235 : 255));
+			if (BeginPopup(("##color-picker-" + p->Name).c_str()))
+			{
+				PushFont(Arial16);
+				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
+				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
+				SetCursorPos(ImVec2(210 /2, 13) - Size / 2);
+				Text(Title.c_str());
+				PopFont();
+
+				SetCursorPos(ImVec2(5, 30));
+				SetNextItemWidth(200);
+				if (Value->HasAlpha)
+				{
+					ColorPicker4(("##color-editor-" + p->Name).c_str(), &ImColor.x,
+						ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_PickerHueWheel |
+						ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHSV
+					);
+				}
+				else
+				{
+					ColorPicker3(("##color-editor-" + p->Name).c_str(), &ImColor.x,
+						ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoSmallPreview |
+						ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHSV
+					);
+				}
+
+				Value->R = (unsigned char)((int)(ImColor.x * 255.f + 0.5f) % 256);
+				Value->G = (unsigned char)((int)(ImColor.y * 255.f + 0.5f) % 256);
+				Value->B = (unsigned char)((int)(ImColor.z * 255.f + 0.5f) % 256);
+				Value->A = (unsigned char)((int)(ImColor.w * 255.f + 0.5f) % 256);
+
+				EndPopup();
+			}
+			PopStyleColor(1);
 		}
 
 		return 20;
@@ -2964,7 +3064,11 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 				case Config2::PropertyType::FLOAT:
 					GroupY += ImGui::DrawFloatProperty(Property);
 					break;
+				case Config2::PropertyType::COLOR:
+					GroupY += ImGui::DrawColorProperty(Property);
+					break;
 				default:
+				case Config2::PropertyType::LABEL:
 					GroupY += ImGui::DrawTextProperty(Property);
 					break;
 				}
@@ -3529,19 +3633,22 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2(0.f, 0.5f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 5.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 2.f);
 	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(0, 0, 0, 0));
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(34, 34, 34, 255));
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(0, 0, 0, 255));
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, (ImVec4)Config2::GetColor("theme-topbar-background")); // IM_COL32(34, 34, 34, 255)
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, (ImVec4)Config2::GetColor("theme-topbar-background")); // IM_COL32(0, 0, 0, 255)
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(30, 30, 30, 255));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(30, 30, 30, 0));
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(85, 90, 95, 255));
 
 	ImGui::PushFont(Arial14BoldItalics);
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(120, 120, 120, 255));
+	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-topbar-text")); // IM_COL32(120, 120, 120, 255)
 	int TitleBarHeight = 24;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
 	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
@@ -3554,18 +3661,19 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 	// draw border because imgui borders are inset which makes me wanna kms
 	{
-		auto BackgroundDrawList = ImGui::GetBackgroundDrawList();
-		float BorderThickness = 0.f;
-		float BorderRadius = ImGui::GetStyle().WindowRounding;
-		ImVec4 BorderColor = ImGui::GetStyle().Colors[ImGuiCol_Border];
-		BackgroundDrawList->AddRect(
-			Window->Pos - ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
-			Window->Pos + Window->Size + ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
-			ImGui::ColorConvertFloat4ToU32(BorderColor),
-			BorderRadius,
-			ImDrawCornerFlags_All,
-			BorderThickness
-		);
+		float BorderThickness = Config2::GetFloat("theme-border-thickness");
+		if (BorderThickness > 0.f)
+		{
+			auto BackgroundDrawList = ImGui::GetBackgroundDrawList();
+			BackgroundDrawList->AddRect(
+				Window->Pos - ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
+				Window->Pos + Window->Size + ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
+				Config2::GetColor("theme-border-color"),
+				ImGui::GetStyle().WindowRounding,
+				ImDrawCornerFlags_All,
+				BorderThickness
+			);
+		}
 	}
 
 	if (!ActiveTab && Config2::Tabs.size() > 0)
@@ -3765,8 +3873,8 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::End();
 	ImGui::PopFont();
 
-	ImGui::PopStyleVar(7);
-	ImGui::PopStyleColor(10);
+	ImGui::PopStyleVar(9);
+	ImGui::PopStyleColor(11);
 }
 
 void GUI2::Init()
@@ -3780,6 +3888,7 @@ void GUI2::Init()
 
 void GUI2::Main()
 {
+	L::Verbose("running GUI2::Main");
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3797,7 +3906,7 @@ void GUI2::Main()
 		if (Config::GetBool("show-menu"))
 		{
 			MainScreen();
-			Ejected |= GUI::Main();
+			//Ejected |= GUI::Main();
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating

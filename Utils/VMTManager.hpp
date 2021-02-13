@@ -25,7 +25,7 @@ private:
 	}
 
 public:
-	bool	Initialise(DWORD* InstancePointer) // Pass a &class
+	bool Initialize(DWORD* InstancePointer) // Pass a &class
 	{
 		// Store the instance pointers and such, and work out how big the table is
 		Instance = InstancePointer;

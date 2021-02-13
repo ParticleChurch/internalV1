@@ -17,43 +17,38 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 
 void Init()
 {
-    srand(static_cast <unsigned> (time(0)));
-    I::engine->ClientCmd_Unrestricted("toggleconsole");
-    I::engine->ClientCmd_Unrestricted("clear");
-    ConsoleColorMsg(Color(255, 128, 0, 255), "\n\nInjecting...\n");
     GUI2::LoadProgress = 0.f;
+    srand(static_cast <unsigned> (time(0)));
 
     L::Init();
-
-    L::Log("Successfully Injected");
-    L::Log(N::DumpTable().c_str());
-
+    L::Log("Entry point executed");
     GUI2::LoadProgress = 0.05f;
+
+    L::Log("Finding convars");
     G::PatternConvarInit();
-    ConsoleColorMsg(Color(0, 255, 0, 255), "Patterns Found!\n");
     GUI2::LoadProgress = 0.1f;
+
+    L::Log("Initializing configs");
     Config::Init();
-    ConsoleColorMsg(Color(0, 255, 0, 255), "Config Created!\n");
     Config2::Init();
     GUI2::LoadProgress = 0.15f;
+
+    L::Log("Initializing hooks");
     H::Init();
     GUI2::LoadProgress = 0.85f;
+
+    L::Log("Initializing keybinds");
     Keybind::Init(&G::KillDLL, &GUI2::WantMouse);
     GUI2::LoadProgress = 1.f;
 
-
-    ConsoleColorMsg(Color(50, 153, 255, 255), "Cheat Injected\n\n");
-    I::engine->ClientCmd_Unrestricted("toggleconsole");
-
-    L::Log(TXT("Initialization successful"));
-    
+    L::Log("DLLMain complete. Now waiting for ejection");
     while (!G::KillDLL) Sleep(100);
+
+    L::Log("Ejected, waiting for keybind thread");
     while (Keybind::UpdatorRunning) Sleep(100);
 
-    L::Log("\nEjecting");
+    L::Log("Freeing DLL");
     L::Free();
-
-    FreeConsole();
     FreeLibraryAndExitThread(G::DLLModule, 0);
 }
 

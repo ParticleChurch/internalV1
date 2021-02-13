@@ -841,12 +841,14 @@ namespace Config2
 
 	enum class PropertyType
 	{
+		LABEL,
 		BOOLEAN,
 		FLOAT,
 		PAINTKIT,
 		KNIFE,
 		GLOVE,
 		HSTATEFUL,
+		COLOR,
 		EDITGROUP,
 	};
 	enum class KeybindMode
@@ -856,11 +858,13 @@ namespace Config2
 		HOLDTODISABLE,
 	};
 	extern std::string KeybindTypeNames[];
+	struct CLabel;
 	struct CBoolean;
 	struct CFloat;
 	struct CPaintKit;
 	struct CKnife;
 	struct CGlove;
+	struct CColor;
 	struct CHorizontalState;
 	struct CEditGroup;
 
@@ -873,6 +877,7 @@ namespace Config2
 	extern float GetFloat(std::string Name);
 	extern int GetPaintKit(std::string Name);
 	extern int GetState(std::string Name);
+	extern CColor GetColor(std::string Name);
 
 	extern void ProcessKeys();
 	extern void Free();
@@ -902,6 +907,11 @@ namespace UserData
 
 namespace Config2
 {
+	struct CLabel
+	{
+		static const PropertyType Type = PropertyType::LABEL;
+		// placeholder for when you just want the text to show up
+	};
 	struct CBoolean
 	{
 		static const PropertyType Type = PropertyType::BOOLEAN;
@@ -909,6 +919,12 @@ namespace Config2
 
 		int BoundToKey = -1;
 		KeybindMode BindMode = KeybindMode::TOGGLE;
+		bool Bindable = true;
+
+		CBoolean(bool Bindable = true)
+		{
+			this->Bindable = Bindable;
+		}
 
 		bool Value = false;
 		std::string Stringify()
@@ -1146,6 +1162,95 @@ namespace Config2
 			{
 				delete this->Properties[i];
 			}
+		}
+	};
+	struct CColor
+	{
+		static const PropertyType Type = PropertyType::COLOR;
+
+		unsigned char R = 0;
+		unsigned char G = 0;
+		unsigned char B = 0;
+		unsigned char A = 255; // 255 = opaque, 0 = transparent
+
+		bool HasAlpha = false;
+
+		CColor(bool HasAlpha = false)
+		{
+			this->HasAlpha = HasAlpha;
+		}
+
+		bool Parse(std::string Value)
+		{
+			Value = TextService::RemoveWhitespace(Value);
+			size_t open = Value.find_first_of("(");
+			size_t close = Value.find_first_of(")");
+			if (open == std::string::npos || close == std::string::npos || close < open)
+				return false;
+
+			try
+			{
+				size_t r_end = Value.find_first_of(",", open + 1);
+				if (r_end == std::string::npos) return false;
+				this->R = (unsigned char)std::stoi(Value.substr(open + 1, r_end - open - 1));
+
+				size_t g_end = Value.find_first_of(",", r_end + 1);
+				if (g_end == std::string::npos) return false;
+				this->G = (unsigned char)std::stoi(Value.substr(r_end + 1, g_end - r_end - 1));
+
+				if (this->HasAlpha)
+				{
+					size_t b_end = Value.find_first_of(",", g_end + 1);
+					if (b_end == std::string::npos) return false;
+					this->B = (unsigned char)std::stoi(Value.substr(g_end + 1, b_end - g_end - 1));
+
+					this->A = (unsigned char)std::stoi(Value.substr(b_end + 1, close - b_end - 1));
+				}
+				else
+				{
+					this->B = (unsigned char)std::stoi(Value.substr(g_end + 1, close - g_end - 1));
+					this->A = 255;
+				}
+				return true;
+			}
+			catch (...)
+			{
+				return false;
+			}
+		}
+
+		std::string Stringify()
+		{
+			if (this->HasAlpha)
+				return "rgba(" + std::to_string((int)this->R) + ", " + std::to_string((int)this->G) + ", " + std::to_string((int)this->B) + ", " + std::to_string((int)this->A) + ")";
+			else
+				return "rgb(" + std::to_string((int)this->R) + ", " + std::to_string((int)this->G) + ", " + std::to_string((int)this->B) + ")";
+		}
+
+		unsigned char& operator[] (size_t idx)
+		{
+			switch (idx)
+			{
+			default:
+			case 0:
+				return this->R;
+			case 1:
+				return this->G;
+			case 2:
+				return this->B;
+			case 3:
+				return this->A;
+			}
+		}
+
+		operator ImVec4 ()
+		{
+			return ImVec4((float)this->R / 255.f, (float)this->G / 255.f, (float)this->B / 255.f, (float)this->A / 255.f);
+		}
+
+		operator ImU32 ()
+		{
+			return IM_COL32(this->R, this->G, this->B, this->A);
 		}
 	};
 

@@ -213,132 +213,89 @@ void H::Init()
 	D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
 	// TODO: this is definetly not the best way to do this, lmao
+	L::Log("WndProc Hook");
 	while (!(CSGOWindow = FindWindowA(NULL, "Counter-Strike: Global Offensive"))) {
 		Sleep(10);
 	}
-	GUI2::LoadProgress = 0.2f;
-
 	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
+	GUI2::LoadProgress = 0.2f;
 
-	L::Log("\nHooking...");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Hooking\n");
-	d3d9VMT.Initialise((DWORD*)D3d9Device);
-	clientVMT.Initialise((DWORD*)I::client);
-	clientmodeVMT.Initialise((DWORD*)I::clientmode);
-	surfaceVMT.Initialise((DWORD*)I::surface);
-	panelVMT.Initialise((DWORD*)I::panel);
-	gameeventmanagerVMT.Initialise((DWORD*)I::gameeventmanager);
-	inputVMT.Initialise((DWORD*)I::input);
-	modelrenderVMT.Initialise((DWORD*)I::modelrender);
-	soundVMT.Initialise((DWORD*)I::sound);
+	L::Log("Reading Virtual Method Table");
+	d3d9VMT.Initialize((DWORD*)D3d9Device);
+	clientVMT.Initialize((DWORD*)I::client);
+	clientmodeVMT.Initialize((DWORD*)I::clientmode);
+	surfaceVMT.Initialize((DWORD*)I::surface);
+	panelVMT.Initialize((DWORD*)I::panel);
+	gameeventmanagerVMT.Initialize((DWORD*)I::gameeventmanager);
+	inputVMT.Initialize((DWORD*)I::input);
+	modelrenderVMT.Initialize((DWORD*)I::modelrender);
+	soundVMT.Initialize((DWORD*)I::sound);
 	GUI2::LoadProgress = 0.25f;
 
-	
 	H::g_EventListener = new EventListener();
 
 	constexpr int SleepTime = 0;
 
-	L::Log("Endscene...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Endscene...");
+	L::Log("D3D9 => EndScene");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
 
-	L::Log("Reset...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Reset...");
+	L::Log("D3D9 => Reset");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.35f;
 
-	L::Log("CreateMove...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "CreateMove...");
+	L::Log("ClientMode => CreateMove");
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.4f;
 
-	L::Log("PaintTraverse...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "PaintTraverse...");
+	L::Log("Panel => PaintTraverse");
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.45f;
 
-	L::Log("FrameStageNotify...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "FrameStageNotify...");
+	L::Log("Client => FrameStageNotify");
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.5f;
 
-	L::Log("LockCursor...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "LockCursor...");
+	L::Log("Surface => LockCursor");
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
 
-	L::Log("WriteUsercmdDeltaToBuffer...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "WriteUsercmdDeltaToBuffer...");
+	L::Log("Client => WriteUsercmdDeltaToBuffer");
 	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.6f;
 
-	clantag->reset();
-
+	L::Log("Input => hkCamToFirstPeron");
+	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.65f;
 
-	L::Log("hkCamToFirstPeronVMT...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "hkCamToFirstPeronVMT...");
-	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
-	Sleep(SleepTime);
-	GUI2::LoadProgress = 0.7f;
-
-	L::Log("DoPostScreenEffects...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "DoPostScreenEffects...");
+	L::Log("ClientMode => DoPostScreenEffects");
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
+	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.70f;
 
+	L::Log("ModelRender => DrawModelExecute");
+	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.75f;
 
-	L::Log("DrawModelExecute...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "DrawModelExecute...");
-	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n");
-
+	L::Log("Sound => EmitSound");
+	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
 	Sleep(SleepTime);
 	GUI2::LoadProgress = 0.8f;
 
-	L::Log("EmitSound...", "");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "EmitSound...");
-	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
-	L::Log("Success!");
-	ConsoleColorMsg(Color(0, 255, 0, 255), "Success!\n"); 
+	L::Log("Clearing clantag");
+	clantag->reset();
+	Sleep(SleepTime);
+	GUI2::LoadProgress = 0.85f;
 }
 
 void H::UnHook()
@@ -404,6 +361,7 @@ void H::Eject()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
+	L::Verbose("endscene hook executed");
 	if (!D3dInit) {
 		D3dInit = true;
 
@@ -438,13 +396,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	/*
-	if (GUI::Main())
-		G::KillDLL = true;
-
-	
-	//*/
-	//*
 	if (Config::GetBool("show-console"))
 	{
 		ImGui::Begin("console");
