@@ -3,7 +3,7 @@
 namespace L
 {
 	std::string FilePath = "particle.log";
-	std::ofstream File(FilePath);
+	std::ofstream File;
 	FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
 }
 
@@ -15,6 +15,17 @@ void L::Init()
 		freopen_s(&fpstdin, "CONIN$", "r", stdin);
 		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+	}
+
+	if (Mode == LogMode::File || Mode == LogMode::Both)
+	{
+		File = std::ofstream(FilePath, std::ios::trunc);
+		if (!File.is_open())
+		{
+			// lmao
+			Log("!!!!!!!!ATTENTION!!!!!!!!");
+			Log("FAILED TO OPEN LOG FILE !!!!!!!!!");
+		}
 	}
 }
 

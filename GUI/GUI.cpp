@@ -1471,7 +1471,6 @@ bool GUI::LoginMenu()
 
 bool GUI::Main()
 {
-
 	// by default, do not ignore
 	// gui code will set to true if hovering over a button
 	GUI::IgnoreLButton = false;
@@ -2828,7 +2827,6 @@ void GUI2::LoadingScreen()
 		IntroAnimation->state = 1;
 		IntroAnimation->changed = Now;
 	}
-
 }
 
 void GUI2::AuthenticationScreen(float ContentOpacity)
@@ -3013,7 +3011,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 	auto DrawList = Window->DrawList;
 
 	int WidgetWidth = Window->ContentRegionRect.GetWidth();
-	int WidgetX = t->HorizontalPadding, WidgetY = t->TopPadding + t->VerticalPadding;
+	int WidgetX = t->HorizontalPadding + ImGui::GetCursorPosX(), WidgetY = t->TopPadding + t->VerticalPadding + ImGui::GetCursorPosY();
 
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58, 255));
 
@@ -3162,14 +3160,8 @@ void GUI2::DrawActiveTab()
 		}
 
 		// the rest of the shit
-		{
-			ImGui::SetCursorPos(ImVec2(0, 60));
-			ImGui::BeginChild(IsOffencePage ? "##embedded-offence" : "##embedded-defence");
-
-			DrawNormalTab(ActiveTab, MasterMode->State == 0 ? "legit-" : "rage-");
-
-			ImGui::EndChild();
-		}
+		ImGui::SetCursorPos(ImVec2(0, 60));
+		DrawNormalTab(ActiveTab, MasterMode->State == 0 ? "legit-" : "rage-");
 	}
 	else if (ActiveTab->Name == "Eject")
 	{
@@ -3610,6 +3602,73 @@ void GUI2::DrawActiveTab()
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar(1);
 	}
+	else if (ActiveTab->Name == "Theme")
+	{
+		int WidgetWidth = Window->ContentRegionRect.GetWidth();
+
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(53, 54, 58, 255));
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
+		ImGui::SetCursorPos(ImVec2(10, 10));
+		ImGui::BeginChild("##theme-import/export", ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
+		auto InnerWindow = ImGui::GetCurrentWindow();
+
+		ImGui::SetCursorPos(ImVec2(5, 5));
+		ImGui::PushFont(Arial18BoldItalics);
+		ImGui::Text("Save / Load");
+		ImGui::PopFont();
+
+		// draw icon
+		{
+			ImVec2 IconSize(14, 14);
+			ImVec2 Pos(0, 5 + 18 + 5);
+			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+			ImGui::DrawInfoIcon(255, IconSize);
+
+			auto ID = ImGui::GetID("theme-import-export-info-btn");
+			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
+			ImGui::ItemAdd(BB, ID);
+			if (ImGui::ItemHoverable(BB, ID))
+			{
+				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ImGui::ToolTip("Click for more info", IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, "http://a4g4.com/help/index.php#theme", 0, 0, SW_SHOW);
+				}
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(85, 90, 95, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(75, 80, 85, 255));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(60, 65, 70, 255));
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
+			if (ImGui::Button("Export##theme", ImVec2(60, 20)))
+			{
+				Config2::PromptExportThemeFile();
+			}
+
+			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
+			if (ImGui::Button("Import##theme", ImVec2(60, 20)))
+			{
+				Config2::PromptImportThemeFile();
+			}
+
+			ImGui::PopStyleColor(4);
+			ImGui::PopStyleVar(2);
+		}
+
+		ImGui::EndChild();
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(1);
+
+		// the rest of the shit
+		ImGui::SetCursorPos(ImVec2(0, 120));
+		DrawNormalTab(ActiveTab);
+	}
 	else
 	{
 		DrawNormalTab(ActiveTab);
@@ -3879,16 +3938,18 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 void GUI2::Init()
 {
+	L::Verbose("GUI2::Init running");
 	while (!SearchQuery)
 		if (SearchQuery = new char[256])
 			ZeroMemory(SearchQuery, 256);
 
 	SearchAnimation = Animation::newAnimation("search-open/close", 0);
+	L::Verbose("GUI2::Init complete");
 }
 
 void GUI2::Main()
 {
-	L::Verbose("running GUI2::Main");
+	L::Verbose("GUI2::Main executed");
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3899,29 +3960,41 @@ void GUI2::Main()
 	WantMouse = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
-		L::Verbose("AuthenticationIntro");
+		L::Verbose("GUI2::AuthenticationIntro running");
 		AuthenticationIntro();
+		L::Verbose("GUI2::AuthenticationIntro complete");
 	}
 	else if (UserData::Initialized)
 	{
 		if (Config::GetBool("show-menu"))
 		{
-			L::Verbose("MainScreen");
+			L::Verbose("GUI2::MainScreen running");
 			MainScreen();
+			L::Verbose("GUI2::MainScreen complete");
+
+			//*
+			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
+			L::Verbose("GUI::Main complete");
+			//*/
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
-		L::Verbose("LoadingScreen");
+		L::Verbose("GUI2::LoadingScreen running");
 		LoadingScreen();
+		L::Verbose("GUI2::LoadingScreen complete");
 	}
 	else
 	{
-		L::Verbose("AuthenticationScreen");
+		L::Verbose("GUI2::AuthenticationScreen running");
 		AuthenticationScreen();
+		L::Verbose("GUI2::AuthenticationScreen complete");
 	}
 
-	L::Verbose("ProcessKeys");
+	L::Verbose("Config2::ProcessKeys running");
 	Config2::ProcessKeys();
+	L::Verbose("Config2::ProcessKeys complete");
+
+	L::Verbose("GUI2::Main complete");
 }

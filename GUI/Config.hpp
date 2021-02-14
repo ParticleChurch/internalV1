@@ -1,4 +1,8 @@
 #pragma once
+#include <Windows.h>
+#include <fstream>
+#include <shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 #include "../Valve/Custom/Color.hpp"
 #include <map>
 #include <vector>
@@ -831,6 +835,9 @@ namespace Config {
 
 namespace Config2
 {
+	constexpr unsigned char VERSION_MAJOR = 1;
+	constexpr unsigned char VERSION_MINOR = 1;
+
 	struct Property;
 	struct Group;
 	struct Tab;
@@ -839,7 +846,7 @@ namespace Config2
 	extern std::vector<Tab*> Tabs;
 	extern Property* SettingKeybindFor;
 
-	enum class PropertyType
+	enum class PropertyType : int
 	{
 		LABEL,
 		BOOLEAN,
@@ -878,6 +885,16 @@ namespace Config2
 	extern int GetPaintKit(std::string Name);
 	extern int GetState(std::string Name);
 	extern CColor GetColor(std::string Name);
+	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
+	extern char* ExportTheme(size_t* nBytesOut);
+	extern char* ExportConfig(size_t* nBytesOut);
+	extern void LoadTheme(char* Theme, size_t nBytes);
+	extern void LoadConfig(char* Config, size_t nBytes);
+
+	extern void PromptImportThemeFile();
+	extern void PromptExportThemeFile();
+	extern void PromptImportConfigFile();
+	extern void PromptExportConfigFile();
 
 	extern void ProcessKeys();
 	extern void Free();

@@ -1,4 +1,5 @@
 #include "Keybind.hpp"
+#include "../Logger.hpp"
 
 
 namespace Keybind
@@ -118,17 +119,20 @@ struct ThreadData
 
 DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
 {
+    L::Verbose("Keybind PeriodicUpdator init");
     Keybind::UpdatorRunning = true;
 
     ThreadData* Info = (ThreadData*)pInfo;
     while (!*Info->ExitWhenTrue)
     {
+        L::Verbose("Keybind PeriodicUpdator loop");
         Keybind::ForceUpdate();
         Sleep(10);
-        while (Keybind::Lock) Sleep(0);
+        while (Keybind::Lock) Sleep(1);
     }
     free(Info);
 
+    L::Verbose("Keybind PeriodicUpdator return");
     Keybind::UpdatorRunning = false;
     return 0;
 }
@@ -141,5 +145,8 @@ void Keybind::Init(bool* EjectSignal, bool* ImGuiWantCaptureMouse)
     Info->ExitWhenTrue = EjectSignal;
     WantMouseCapture = ImGuiWantCaptureMouse;
 
+    L::Verbose("Creating Keybind PeriodicUpdator thread");
     CreateThread(NULL, 0, PeriodicUpdator, (void*)Info, 0, 0);
+    Sleep(0);
+    L::Verbose("Keybind::Init complete");
 }

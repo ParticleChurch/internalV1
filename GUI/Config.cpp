@@ -1131,6 +1131,7 @@ namespace Config2
 		// THEME
 		{
 			Tab* t = new Tab("Theme");
+			t->TopPadding = -10;
 
 			{
 				Group* g = t->Add("General");
@@ -1248,16 +1249,315 @@ namespace Config2
 		return *(CColor*)p->Value;
 	}
 
+	bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity)
+	{
+		if (!p || !buffer || !size || !capacity)
+		{
+			L::Log(XOR("ExportSingleProperty failed - null parameter(s)"));
+			return false;
+		}
+		L::Verbose("ExportSingleProperty running for p = ", "");
+		L::Verbose(p->Name.c_str());
+
+		size_t space_left = *capacity - *size;
+		size_t space_needed = 0;
+
+		// determine space_needed
+		switch (p->Type)
+		{
+		case PropertyType::BOOLEAN:
+		{
+			space_needed = p->Name.length() + 1;
+			space_needed += 1;
+		} break;
+		case PropertyType::FLOAT:
+		{
+			space_needed = p->Name.length() + 1;
+			space_needed += sizeof(float);
+		} break;
+		case PropertyType::COLOR:
+		{
+			space_needed = p->Name.length() + 1;
+			space_needed += sizeof(unsigned char) * 4;
+		} break;
+		default:
+			L::Log((XOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
+			return true;
+		}
+		L::Verbose(("ExportSingleProperty - buffer is at (" + std::to_string(*size) + "/" + std::to_string(*capacity) + "), but i need " + std::to_string(space_needed)).c_str());
+
+		// adjust capacity
+		if (space_needed > space_left)
+		{
+			char* re = (char*)realloc(*buffer, *capacity + (space_needed - space_left));
+			if (!re)
+			{
+				L::Log("ExportSingleProperty failed - could not expand buffer");
+				return false;
+			}
+			else
+			{
+				*buffer = re;
+				*capacity += (space_needed - space_left);
+				L::Verbose("ExportSingleProperty reallocated to @", "");
+				L::Verbose((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*capacity)).c_str());
+			}
+		}
+
+		// write to buffer
+		{
+			// property name
+			L::Verbose(("ExportSingleProperty writing " + std::to_string(p->Name.length() + 1) + " bytes @ " + std::to_string((DWORD)(*buffer + *size)) + " for property name").c_str());
+			memcpy(*buffer + *size, (void*)(p->Name.c_str()), p->Name.length() + 1);
+			*size += p->Name.length() + 1;
+			space_needed -= p->Name.length() + 1;
+
+			// value
+			switch (p->Type)
+			{
+			case PropertyType::BOOLEAN:
+			{
+				(*buffer)[*size] = ((CBoolean*)p->Value)->Value ? 0xFF : 0x0;
+			} break;
+			case PropertyType::FLOAT:
+			{
+				float v = ((CFloat*)p->Value)->Get();
+				memcpy(*buffer + *size, (void*)&v, sizeof(float));
+			} break;
+			case PropertyType::COLOR:
+			{
+				CColor* c = (CColor*)p->Value;
+				(*buffer)[*size + 0] = c->R;
+				(*buffer)[*size + 1] = c->G;
+				(*buffer)[*size + 2] = c->B;
+				(*buffer)[*size + 3] = c->A;
+			} break;
+			}
+			*size += space_needed;
+		}
+
+		L::Verbose("ExportSingleProperty success");
+		return true;
+	}
+
+	char* ExportTheme(size_t* nBytesOut)
+	{
+		size_t size = 0;
+		size_t capacity = 24; // 420PARTICLE.CHURCH/THEME
+		char* buffer = (char*)malloc(capacity);
+		if (!buffer)
+		{
+			L::Log(XOR("Config2::ExportTheme failed - initial malloc failed"));
+			return nullptr;
+		}
+
+		memcpy(buffer, "\x69\x04\x20", 3);
+		size += 3;
+
+		memcpy(buffer + size, XOR("PARTICLE.CHURCH/THEME"), sizeof("PARTICLE.CHURCH/THEME") - 1);
+		size += sizeof("PARTICLE.CHURCH/THEME") - 1;
+		
+		static Tab* ThemeTab = nullptr;
+		if (!ThemeTab)
+		{
+			for (size_t i = 0; i < Tabs.size(); i++)
+			{
+				if (Tabs.at(i)->Name == "Theme")
+				{
+					ThemeTab = Tabs.at(i);
+					break;
+				}
+			}
+
+			if (!ThemeTab)
+			{
+				L::Log("Config2::ExportTheme failed - couldn't find theme tab");
+				free(buffer);
+				return nullptr;
+			}
+		}
+
+		for (size_t g = 0; g < ThemeTab->Groups.size(); g++)
+		{
+			Group* group = ThemeTab->Groups.at(g);
+			for (size_t i = 0; i < group->Properties.size(); i++)
+			{
+				Property* p = group->Properties.at(i);
+				if (!ExportSingleProperty(p, &buffer, &size, &capacity))
+				{
+					L::Log(XOR("Config2::ExportTheme failed - ExportSingleProperty failed"));
+					free(buffer);
+					return nullptr;
+				}
+			}
+		}
+		L::Log(XOR("Config2::ExportTheme success"));
+
+		*nBytesOut = size;
+		return buffer;
+	}
+
+	void LoadTheme(char* Theme, size_t nBytes)
+	{
+		L::Log("LMAO GOOD TRY THOUGH");
+	}
+
+	DWORD WINAPI _PromptExportThemeFile(void* _)
+	{
+		L::Log("_PromptExportThemeFile executing...");
+
+		// prompt user to save file
+		char filename[MAX_PATH];
+		{
+			ZeroMemory(&filename, MAX_PATH);
+			strcpy(filename, "autoload.pctheme");
+
+			OPENFILENAME ofn{};
+			ZeroMemory(&ofn, sizeof(ofn));
+
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFilter = "Particle Theme File (.pctheme)\0*.pctheme\0All Files\0*.*\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrTitle = "Export Theme";
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
+
+			L::Verbose("_PromptExportThemeFile initiating user input");
+			if (!GetSaveFileName(&ofn) || filename[0] == '\0')
+			{
+				L::Log("_PromptExportThemeFile failed - user terminated");
+				return 1;
+			}
+			L::Verbose("_PromptExportThemeFile got filepath: ", "");
+			L::Verbose(filename);
+		}
+
+		// open the file
+		L::Verbose("_PromptExportThemeFile opening file");
+		std::ofstream file(filename, std::ios::binary);
+		if (!file.is_open())
+		{
+			L::Log("_PromptExportThemeFile failed - cannot open file");
+			return 2;
+		}
+
+		// export the theme
+		L::Verbose("_PromptExportThemeFile passing execution to Config2::ExportTheme()");
+		size_t nBytesOut = 0;
+		char* data = Config2::ExportTheme(&nBytesOut);
+		if (!data || nBytesOut == 0)
+		{
+			L::Log("_PromptExportThemeFile failed - Config2::ExportTheme failed");
+			file.close();
+			return 3;
+		}
+
+		// write to file
+		L::Verbose("_PromptExportThemeFile writing to file and closing");
+		file.write(data, nBytesOut);
+		file.close();
+		return 0;
+	}
+
+	DWORD WINAPI _PromptImportThemeFile(void* _)
+	{
+		L::Log("_PromptImportThemeFile executing...");
+
+		// prompt user to open file
+		char filename[MAX_PATH];
+		{
+			ZeroMemory(&filename, MAX_PATH);
+
+			OPENFILENAME ofn{};
+			ZeroMemory(&ofn, sizeof(ofn));
+
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFilter = "Particle Theme File (.pctheme)\0*.pctheme\0All Files\0*.*\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrTitle = "Import Theme";
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
+
+			L::Verbose("_PromptImportThemeFile initiating user input");
+			if (!GetOpenFileName(&ofn) || filename[0] == '\0')
+			{
+				L::Log("_PromptImportThemeFile failed - user terminated");
+				return 1;
+			}
+			L::Verbose("_PromptImportThemeFile got filepath: ", "");
+			L::Verbose(filename);
+		}
+		
+		// open the file
+		L::Verbose("_PromptImportThemeFile opening file");
+		std::ifstream file(filename, std::ios::binary);
+		if (!file.is_open())
+		{
+			L::Log("_PromptImportThemeFile failed - cannot open file");
+			return 2;
+		}
+
+		// calculate its length
+		file.seekg(0, std::ios::end);
+		std::streampos bytes = file.tellg();
+		if (bytes > 100000)
+		{
+			L::Log("_PromptImportThemeFile failed - file too big: ", "");
+			L::Log(std::to_string(bytes).c_str(), " bytes\n");
+			return 3;
+		}
+		file.seekg(0);
+		file.clear();
+		L::Verbose("_PromptImportThemeFile got file length: ", "");
+		L::Verbose(std::to_string(bytes).c_str());
+
+		// read it into memory
+		char* buffer = (char*)malloc(bytes);
+		if (!buffer)
+		{
+			L::Log("_PromptImportThemeFile failed - couldn't malloc file space");
+			return 4;
+		}
+		L::Verbose("_PromptImportThemeFile reading file into memory & closing file handle");
+		if (!file.read(buffer, bytes))
+		{
+			L::Log("_PromptImportThemeFile failed - couldn't read file data");
+			file.close();
+			free(buffer);
+			return 5;
+		}
+		file.close();
+
+		L::Verbose("_PromptImportThemeFile passing execution to Config2::LoadTheme()");
+		Config2::LoadTheme(buffer, bytes);
+		free(buffer);
+		return 0;
+	}
+
+	void PromptImportThemeFile()
+	{
+		HANDLE t = CreateThread(NULL, 0, _PromptImportThemeFile, NULL, NULL, NULL);
+		if (t) CloseHandle(t);
+	}
+
+	void PromptExportThemeFile()
+	{
+		HANDLE t = CreateThread(NULL, 0, _PromptExportThemeFile, NULL, NULL, NULL);
+		if (t) CloseHandle(t);
+	}
+
 	void ProcessKeys()
 	{
 		auto io = ImGui::GetIO();
 
 		Keybind::Lock = true;
-		L::Verbose("Processing keys...");
 		while (Keybind::KeyChangeStack.size() > 0)
 		{
 			auto log = Keybind::KeyChangeStack[0];
 			bool ismouse = Keybind::KeyMap[log.Key] == VK_LBUTTON;
+			L::Verbose(("ProcessKeys - key " + std::to_string(log.Key) + (log.State ? " down" : " up")).c_str());
 
 			if (ismouse && log.WantCaptureMouse)
 				goto CONT;
@@ -1276,7 +1576,7 @@ namespace Config2
 				}
 				break;
 				default:
-					L::Log(("idk how to deal with bind on non-boolean property " + SettingKeybindFor->Name).c_str());
+					L::Log(("ProcessKeys - idk how to deal with bind on non-boolean property " + SettingKeybindFor->Name).c_str());
 					break;
 				}
 
@@ -1312,7 +1612,7 @@ namespace Config2
 					}
 					break;
 					default:
-						L::Log(("idk how to deal with bind on non-boolean property " + p->Name).c_str());
+						L::Log(("ProcessKeys - idk how to deal with bind on non-boolean property " + p->Name).c_str());
 						break;
 					}
 				}
