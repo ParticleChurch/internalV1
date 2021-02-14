@@ -3,22 +3,18 @@
 class Resolver
 {
 private:
-	// 64 is the number of players
-	Vec Loc;
-	bool Hit[64];
-	
 public:
+	int OldShotsMissed[64];
 	int ShotsMissed[64];
 
 
 	int TargetIndex = 0;
 	void LogShots(GameEvent* event);
 	void Resolve(int stage);
-
 	void AnimationFix(Entity* entity);
-	void ABSROTATION(Entity* entity);
 
-	
+	void BruteForce(Entity* entity, int index);
+
 };
 
 extern Resolver* resolver;

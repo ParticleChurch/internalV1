@@ -3899,24 +3899,29 @@ void GUI2::Main()
 	WantMouse = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
+		L::Verbose("AuthenticationIntro");
 		AuthenticationIntro();
 	}
 	else if (UserData::Initialized)
 	{
 		if (Config::GetBool("show-menu"))
 		{
+			L::Verbose("MainScreen");
 			MainScreen();
 			Ejected |= GUI::Main();
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
+		L::Verbose("LoadingScreen");
 		LoadingScreen();
 	}
 	else
 	{
+		L::Verbose("AuthenticationScreen");
 		AuthenticationScreen();
 	}
 
+	L::Verbose("ProcessKeys");
 	Config2::ProcessKeys();
 }

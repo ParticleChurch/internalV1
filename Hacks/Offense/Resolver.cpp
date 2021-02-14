@@ -10,9 +10,24 @@ PLAYER_HURT
 Logging on everything XD
 */
 
+template<typename ...Args>
+static void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
+{
+	using ConColorMsg = void(*)(const Color&, const char*, ...);
+	static ConColorMsg con_color_msg = nullptr;
+	if (!con_color_msg) {
+		con_color_msg = reinterpret_cast<ConColorMsg>(GetProcAddress(
+			GetModuleHandleA("tier0.dll"),
+			"?ConColorMsg@@YAXABVColor@@PBDZZ")
+			);
+	}
+
+	con_color_msg(color, fmt, args...);
+}
+
 void Resolver::LogShots(GameEvent* event)
 {
-	static bool ShotEnd = false;
+	static int ImpactEntIndex;
 	switch (StrHash::HashRuntime(event->GetName())) {
 		// Called before bullet impact
 	case StrHash::Hash("weapon_fire"): //0
@@ -32,8 +47,8 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
 			return;
 
-		ShotEnd = true;
-
+		for (int i = 0; i < 64; i++)
+			OldShotsMissed[i] = ShotsMissed[i];
 	}
 	break;
 	case StrHash::Hash("bullet_impact"): //0
@@ -54,7 +69,36 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
 			return;
 
-		Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+		Vec Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+
+		trace_t tr;
+		Ray_t ray(G::LocalPlayer->GetEyePos(), Loc);
+		CTraceFilter traceFilter(G::LocalPlayer);
+		I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
+		Entity* ShouldHitEntity = tr.Entity;
+
+		// No point in doing anything if we shouldn't have hit anything for now
+		if (!ShouldHitEntity)
+		{
+			return;
+		}
+			
+
+		int index = ShouldHitEntity->Index();
+
+		// Not player entity
+		if (index > 64)
+			return;
+
+		// Keep track of the entity we supossedly missed due to resolver
+		ImpactEntIndex = index;
+
+		// No need to increase if already increased once...
+		if (ShotsMissed[index] > OldShotsMissed[index])
+			return;
+
+		// Log the shot up by 1
+		ShotsMissed[index]++;
 	}
 	break;
 	case StrHash::Hash("player_hurt"): //1
@@ -81,49 +125,18 @@ void Resolver::LogShots(GameEvent* event)
 		if (I::engine->GetPlayerForUserID(iAttacker) != G::LocalPlayerIndex)
 			return;
 
-		Hit[I::engine->GetPlayerForUserID(iUser)] = true;
+		// if they are the same indexes --> HIT!
+		if (ImpactEntIndex == I::engine->GetPlayerForUserID(iUser))
+		{
+			// No shots were missed, revert back to normal
+			ShotsMissed[ImpactEntIndex]--;
+				
+		}
 	}
 	break;
 	default:
 		return;
-	}
-
-	if (ShotEnd)
-		ShotEnd = false;
-	else
-		return;
-
-	trace_t tr;
-	Ray_t ray(G::LocalPlayer->GetEyePos(), Loc);
-	CTraceFilter traceFilter(G::LocalPlayer);
-	I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
-	Entity* ShouldHitEntity = tr.Entity;
-
-	// No point in doing anything if we shouldn't have hit anything for now
-	if (!ShouldHitEntity)
-		return;
-
-	int index = ShouldHitEntity->Index();
-	if (index > 64)
-		return;
-
-	bool bad_resolve = false;
-	// If we should have hit an enemy, and did--> Good Resolver
-	if (Hit[index])
-	{
-		Hit[index] = false;
-	}
-	// If we should have hit an enemy, and didn't--> Bad Resolver
-	else
-	{
-		ShotsMissed[index]++;
-		bad_resolve = true;
-	}
-
-	if (!bad_resolve)
-		return;
-	
-	// Log to some resolver console
+	}	
 }
 
 void Resolver::Resolve(int stage)
@@ -151,80 +164,10 @@ void Resolver::Resolve(int stage)
 				continue;
 
 			AnimationFix(player);
-			// we have decided to resolve!
-			switch (ShotsMissed[i] % 3) {
-			case 0:
-				ABSROTATION(player);
-				break;
-			case 1:
-				player->GetAnimstate()->m_flAbsRotation() = -60.f;
-				break;
-			case 2:
-				player->GetAnimstate()->m_flAbsRotation() = 60.f;
-				break;
-
-			}
+			BruteForce(player, i);
 			AnimationFix(player);
 		}
 	}
-
-	//BRUTEFORCE METHOD!
-	/*
-	if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START || stage == FRAME_RENDER_END)
-	{
-		
-		for (int i = 1; i < I::engine->GetMaxClients(); ++i)
-		{
-			Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
-
-			if (!player
-				|| player == localplayer
-				|| player->IsDormant()
-				|| !(player->GetHealth() > 0)
-				|| team == player->GetTeam())
-				continue;
-
-			//player->GetEyeAngles()->y = *player->GetLowerBodyYawTarget();
-			if (!player->PGetEyeAngles())
-				continue;
-
-			
-			float MaxDesync = 90;
-			float Split = MaxDesync / 4;
-			player->PGetEyeAngles()->y = player->GetLBY();
-
-			switch (ShotsMissed[i] % 9)
-			{
-			case 0:
-				break;
-			case 1:
-				player->PGetEyeAngles()->y += 4 * Split;
-				break;
-			case 2:
-				player->PGetEyeAngles()->y += 2 * Split;
-				break;
-			case 3:
-				player->PGetEyeAngles()->y -= 2 * Split;
-				break;
-			case 4:
-				player->PGetEyeAngles()->y -= 4 * Split;
-				break;
-			case 5:
-				player->PGetEyeAngles()->y += 3 * Split;
-				break;
-			case 6:
-				player->PGetEyeAngles()->y -= 3 * Split;
-				break;
-			case 7:
-				player->PGetEyeAngles()->y += 1 * Split;
-				break;
-			case 8:
-				player->PGetEyeAngles()->y -= 1 * Split;
-				break;
-			}
-		}
-	}
-	*/
 }
 
 void Resolver::AnimationFix(Entity* entity)
@@ -290,28 +233,80 @@ void Resolver::AnimationFix(Entity* entity)
 	I::globalvars->m_tickCount = m_nTicks;
 }
 
-void Resolver::ABSROTATION(Entity* entity)
+void Resolver::BruteForce(Entity* entity, int index)
 {
-	/*auto feet_yaw = entity->GetAnimOverlay(3)->m_flCycle > 0.9f && entity->GetAnimOverlay(3)->m_flWeight > 0.9f && entity->GetVecVelocity().VecLength2D() < 0.1f;
-	auto body_max_rotation = 60.f;
-	if (feet_yaw <= 60)
+	// Deal with OnShot (ish)
+	if (I::globalvars->m_curTime - entity->GetLastShotTime() < I::globalvars->m_intervalPerTick)
 	{
-		if (-60 > feet_yaw)
-			(*entity->PGetEyeAngles()).y += body_max_rotation;
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 	}
-	else
+	
+	// If they aint on the ground, then their head is gonna be where the lby is
+	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
-		(*entity->PGetEyeAngles()).y = body_max_rotation - entity->GetEyeAngles().y;
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
+		return;
 	}
-	if (entity->GetAnimOverlay(3)->m_flCycle > 0.9)
-	{
-		for (int resolve_delta = 60.f; resolve_delta < -60.f; resolve_delta = resolve_delta - 20.f)
-		{
-			(*entity->PGetEyeAngles()).y = resolve_delta;
-		}
-	}*/
-	float lby = entity->GetLBY();
-	float Eye = entity->GetEyeAngles().y;
 
-	entity->GetAnimstate()->m_flAbsRotation() = (lby + Eye) / 2.f;
+	float Velocity = entity->GetVecVelocity().VecLength2D();
+	float MAS = entity->MaxAccurateSpeed() / 3.f; // max accurate speed
+	// If they are on the ground, and are going faster than max accurate speed...
+	if (Velocity > MAS)
+	{
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
+		return;
+	}
+
+	// If they are not standing still, but are slow-walking...
+	if (Velocity < MAS && Velocity > 5.f)
+	{
+		switch (ShotsMissed[index] % 5) {
+		case 0:
+			// do fucking nothing
+			break;
+		case 1:
+			entity->GetAnimstate()->m_flAbsRotation() = -35.f;
+			break;
+		case 2:
+			entity->GetAnimstate()->m_flAbsRotation() = 35.f;
+			break;
+		case 3:
+			entity->GetAnimstate()->m_flAbsRotation() = -12.5f;
+			break;
+		case 4:
+			entity->GetAnimstate()->m_flAbsRotation() = 12.5f;
+			break;
+		}
+		return;
+	}
+
+	// If they are standing still...
+	if (Velocity < 5.f)
+	{
+		switch (ShotsMissed[index] % 7) {
+		case 0:
+			// do fucking nothing
+			break;
+		case 1:
+			entity->GetAnimstate()->m_flAbsRotation() = 20.f;
+			break;
+		case 2:
+			entity->GetAnimstate()->m_flAbsRotation() = -20.f;
+			break;
+		case 3:
+			entity->GetAnimstate()->m_flAbsRotation() = 35.f;
+			break;
+		case 4:
+			entity->GetAnimstate()->m_flAbsRotation() = -35.f;
+			break;
+		case 5:
+			entity->GetAnimstate()->m_flAbsRotation() = 60.f;
+			break;
+		case 6:
+			entity->GetAnimstate()->m_flAbsRotation() = -60.f;
+			break;
+		}
+		return;
+	}
+
 }

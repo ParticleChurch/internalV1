@@ -188,7 +188,6 @@ namespace H
 	
 }
 
-
 template<typename ...Args>
 void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 {
@@ -371,6 +370,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 	L::Verbose("endscene hook executed");
 	if (!D3dInit) {
+		L::Verbose("INITIALIZING D3D");
 		D3dInit = true;
 
 		ImGui::CreateContext();
@@ -380,7 +380,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
+		L::Verbose("INITIALIZED D3D");
 	}
+	
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -391,6 +393,11 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::Begin("console");
 		for (auto a : console)
 			ImGui::Text(a.c_str());
+		if (ImGui::Button("Clear Console"))
+		{
+			H::console.clear();
+			H::console.resize(0);
+		}
 		/*ImGui::Text("Edge Amount");
 		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);*/
 		if (ImGui::Button("Reset Resolver"))
@@ -406,6 +413,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::End();
 	}
 	/*skinchanger->Menu();*/
+	
 	GUI2::Main();
 	//*/
 	ImGui::EndFrame();
