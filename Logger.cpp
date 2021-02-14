@@ -48,7 +48,7 @@ void L::Log(const char* txt, const char* end, bool flush)
 	}
 }
 
-void L::Verbose(const char* txt, const char* end, bool flush)
+__forceinline void L::Verbose(const char* txt, const char* end, bool flush)
 {
 	if (VerboseOutputEnabled)
 		Log(txt, end, flush);

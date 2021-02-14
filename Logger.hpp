@@ -19,6 +19,6 @@ namespace L
 
 	extern void Init();
 	extern void Log(const char* txt, const char* end = "\n", bool flush = true);
-	extern void Verbose(const char* txt, const char* end = "\n", bool flush = true);
+	extern __forceinline void Verbose(const char* txt, const char* end = "\n", bool flush = true);
 	extern void Free();
 }
