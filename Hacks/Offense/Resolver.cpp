@@ -263,9 +263,6 @@ void Resolver::AnimationFix(Entity* entity)
 	I::globalvars->m_frameTime = m_nFrames;
 	I::globalvars->m_tickCount = m_nTicks;
 
-
-
-
 	I::globalvars->m_realTime = G::LocalPlayer->GetSimulationTime();
 	I::globalvars->m_curTime = G::LocalPlayer->GetSimulationTime();
 	I::globalvars->m_frameTime = I::globalvars->m_intervalPerTick;
@@ -295,7 +292,7 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::ABSROTATION(Entity* entity)
 {
-	auto feet_yaw = entity->GetAnimOverlay(3)->m_flCycle > 0.9f && entity->GetAnimOverlay(3)->m_flWeight > 0.9f && entity->GetVecVelocity().VecLength2D() < 0.1f;
+	/*auto feet_yaw = entity->GetAnimOverlay(3)->m_flCycle > 0.9f && entity->GetAnimOverlay(3)->m_flWeight > 0.9f && entity->GetVecVelocity().VecLength2D() < 0.1f;
 	auto body_max_rotation = 60.f;
 	if (feet_yaw <= 60)
 	{
@@ -312,5 +309,9 @@ void Resolver::ABSROTATION(Entity* entity)
 		{
 			(*entity->PGetEyeAngles()).y = resolve_delta;
 		}
-	}
+	}*/
+	float lby = entity->GetLBY();
+	float Eye = entity->GetEyeAngles().y;
+
+	entity->GetAnimstate()->m_flAbsRotation() = (lby + Eye) / 2.f;
 }

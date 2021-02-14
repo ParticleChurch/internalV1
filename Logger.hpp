@@ -14,7 +14,7 @@ namespace L
 		Both,
 	};
 	constexpr LogMode Mode = LogMode::Both;
-	constexpr bool VerboseOutputEnabled = false;
+	constexpr bool VerboseOutputEnabled = true;
 	extern std::string FilePath;
 
 	extern void Init();

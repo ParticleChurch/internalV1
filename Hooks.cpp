@@ -361,6 +361,14 @@ void H::Eject()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
+	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
+	if (I::engine->IsInGame())
+	{
+		D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
+		D3d9Device->GetVertexDeclaration(&vertDec);
+		D3d9Device->GetVertexShader(&vertShader);
+	}
+
 	L::Verbose("endscene hook executed");
 	if (!D3dInit) {
 		D3dInit = true;
@@ -373,24 +381,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
 	}
-	
-
-	//DONT ALLOW GAME CAPTURE, i think lol
-	static uintptr_t gameoverlay_return_address = 0;
-
-	if (!gameoverlay_return_address) {
-		MEMORY_BASIC_INFORMATION info;
-		VirtualQuery(_ReturnAddress(), &info, sizeof(MEMORY_BASIC_INFORMATION));
-
-		char mod[MAX_PATH];
-		GetModuleFileNameA((HMODULE)info.AllocationBase, mod, MAX_PATH);
-
-		if (strstr(mod, "gameoverlay"))
-			gameoverlay_return_address = (uintptr_t)(_ReturnAddress());
-	}
-
-	if (gameoverlay_return_address != (uintptr_t)(_ReturnAddress()))
-		return oEndScene(device);
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -421,23 +411,21 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui::EndFrame();
 	ImGui::Render();
 
-	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec; IDirect3DVertexShader9* vertShader;
-	D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
-	D3d9Device->GetVertexDeclaration(&vertDec);
-	D3d9Device->GetVertexShader(&vertShader);
-
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
-	pixel_state->Apply();
-	pixel_state->Release();
-	D3d9Device->SetVertexDeclaration(vertDec);
-	D3d9Device->SetVertexShader(vertShader);
 
 	if (GUI2::Ejected)
 	{
 		G::KillDLL = true;
 		H::Eject();
 		Config2::Free();
+	}
+
+	if (I::engine->IsInGame())
+	{
+		pixel_state->Apply();
+		pixel_state->Release();
+		D3d9Device->SetVertexDeclaration(vertDec);
+		D3d9Device->SetVertexShader(vertShader);
 	}
 
 	return oEndScene(device);
