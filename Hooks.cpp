@@ -408,7 +408,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		if (ImGui::Button("Randomize Resolver"))
 		{
 			for (int i = 0; i < 64; i++)
-				resolver->ShotsMissed[i] = rand() % 3;
+				resolver->ShotsMissed[i] = rand() % 10;
 		}
 		ImGui::End();
 	}

@@ -290,6 +290,28 @@ void ESP::Run_PaintTraverse()
 			if (!Config::GetBool("visuals-esp-enemy-enable"))
 				continue;
 
+			// DO FUCKING RESOLVER FLAGS
+			static DWORD FONT = I::surface->FontCreate();
+			static bool Once = true;
+			if (Once)
+			{
+				Once = false;
+				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+			}
+
+			if (i < 64 and Config::GetBool("visuals-esp-enemy-resolverflags"))
+			{
+				std::string TEXT = resolver->ResolverFlag[i];
+				static std::wstring wide_string;
+				wide_string = std::wstring(TEXT.begin(), TEXT.end());
+
+				I::surface->DrawSetTextFont(FONT);
+				I::surface->DrawSetTextColor(Color(255,255,255));
+				I::surface->DrawSetTextPos(BottomRight.x, (TopLeft.y + BottomRight.y) / 2);
+				I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
+			}
+			
+
 			if (Config::GetBool("visuals-esp-enemy-bbox"))
 			{
 				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-bbox-color"));

@@ -235,16 +235,20 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::BruteForce(Entity* entity, int index)
 {
+	ResolverFlag[index] = "";
 	// Deal with OnShot (ish)
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() < I::globalvars->m_intervalPerTick)
 	{
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
+		ResolverFlag[index] = "Onshot (ish)";
+		return;
 	}
 	
 	// If they aint on the ground, then their head is gonna be where the lby is
 	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
+		ResolverFlag[index] = "Off Ground";
 		return;
 	}
 
@@ -254,27 +258,34 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (Velocity > MAS)
 	{
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
+		ResolverFlag[index] = "Faster than Max Accurate Speed";
 		return;
 	}
 
 	// If they are not standing still, but are slow-walking...
 	if (Velocity < MAS && Velocity > 5.f)
 	{
+		ResolverFlag[index] = "Slow-walking: ";
 		switch (ShotsMissed[index] % 5) {
 		case 0:
 			// do fucking nothing
+			ResolverFlag[index] += "0";
 			break;
 		case 1:
 			entity->GetAnimstate()->m_flAbsRotation() = -35.f;
+			ResolverFlag[index] += "-35";
 			break;
 		case 2:
 			entity->GetAnimstate()->m_flAbsRotation() = 35.f;
+			ResolverFlag[index] += "35";
 			break;
 		case 3:
 			entity->GetAnimstate()->m_flAbsRotation() = -12.5f;
+			ResolverFlag[index] += "-12.5";
 			break;
 		case 4:
 			entity->GetAnimstate()->m_flAbsRotation() = 12.5f;
+			ResolverFlag[index] += "12.5";
 			break;
 		}
 		return;
@@ -283,26 +294,34 @@ void Resolver::BruteForce(Entity* entity, int index)
 	// If they are standing still...
 	if (Velocity < 5.f)
 	{
+		ResolverFlag[index] = "Standing: ";
 		switch (ShotsMissed[index] % 7) {
 		case 0:
 			// do fucking nothing
+			ResolverFlag[index] += "0";
 			break;
 		case 1:
+			ResolverFlag[index] += "20";
 			entity->GetAnimstate()->m_flAbsRotation() = 20.f;
 			break;
 		case 2:
+			ResolverFlag[index] += "-20";
 			entity->GetAnimstate()->m_flAbsRotation() = -20.f;
 			break;
 		case 3:
+			ResolverFlag[index] += "35";
 			entity->GetAnimstate()->m_flAbsRotation() = 35.f;
 			break;
 		case 4:
+			ResolverFlag[index] += "-35";
 			entity->GetAnimstate()->m_flAbsRotation() = -35.f;
 			break;
 		case 5:
+			ResolverFlag[index] += "60";
 			entity->GetAnimstate()->m_flAbsRotation() = 60.f;
 			break;
 		case 6:
+			ResolverFlag[index] += "-60";
 			entity->GetAnimstate()->m_flAbsRotation() = -60.f;
 			break;
 		}

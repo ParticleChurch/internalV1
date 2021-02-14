@@ -304,6 +304,7 @@ namespace Config {
 				w->AddProperty(false, 0, "visuals-esp-enemy-health", "Health", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-health-color", "Foreground", new Color(0, 255, 0)); w->EndIndent();
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-health-color-background", "Background", new Color(255, 0, 0)); w->EndIndent();
+				w->AddProperty(false, 0, "visuals-esp-enemy-resolverflags", "Resolver Flags", false, false);
 				/*w->AddProperty(false, 0, "visuals-esp-enemy-ammo ", "Ammo", false, false);
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color", "Foreground", new Color(0, 0, 255)); w->EndIndent();
 				w->BeginIndent(); w->AddProperty(false, 2, "visuals-esp-enemy-ammo-color-background ", "Background", new Color(100, 100, 100)); w->EndIndent();*/
@@ -1252,6 +1253,7 @@ namespace Config2
 		auto io = ImGui::GetIO();
 
 		Keybind::Lock = true;
+		L::Verbose("Processing keys...");
 		while (Keybind::KeyChangeStack.size() > 0)
 		{
 			auto log = Keybind::KeyChangeStack[0];
