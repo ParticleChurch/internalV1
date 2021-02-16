@@ -17,6 +17,7 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 
 void Init()
 {
+    //LMAO_______________________________
     GUI2::LoadProgress = 0.f;
     srand(static_cast <unsigned> (time(0)));
 
