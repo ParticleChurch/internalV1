@@ -62,6 +62,8 @@ public:
 
 	virtual void FireGameEvent(GameEvent* event)
 	{
+		L::Verbose("EventListener::FireGameEvent -> processing event: ", "");
+		L::Verbose(event->GetName());
 		switch (StrHash::HashRuntime(event->GetName())) {
 		case StrHash::Hash("player_hurt"):
 		{
@@ -140,9 +142,13 @@ public:
 		}
 		break;
 		}
+		
 		killsay->run(event);
 		resolver->LogShots(event);
 		esp->Run_GameEvent(event);
+
+		L::Verbose("EventListener::FireGameEvent -> end processing event: ", "");
+		L::Verbose(event->GetName());
 	}
 };
 
@@ -234,66 +240,66 @@ void H::Init()
 
 	H::g_EventListener = new EventListener();
 
-	constexpr int SleepTime = 0;
+	constexpr DWORD SleepTime = 0;
 
-	L::Log("D3D9 => EndScene");
+	L::Log("DLLMAIN HOOKING D3D9 => EndScene");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
 
-	L::Log("D3D9 => Reset");
+	L::Log("DLLMAIN HOOKING D3D9 => Reset");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.35f;
 
-	L::Log("ClientMode => CreateMove");
+	L::Log("DLLMAIN HOOKING ClientMode => CreateMove");
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.4f;
 
-	L::Log("Panel => PaintTraverse");
+	L::Log("DLLMAIN HOOKING Panel => PaintTraverse");
 	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.45f;
 
-	L::Log("Client => FrameStageNotify");
+	L::Log("DLLMAIN HOOKING Client => FrameStageNotify");
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.5f;
 
-	L::Log("Surface => LockCursor");
+	L::Log("DLLMAIN HOOKING Surface => LockCursor");
 	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.55f;
 
-	L::Log("Client => WriteUsercmdDeltaToBuffer");
+	L::Log("DLLMAIN HOOKING Client => WriteUsercmdDeltaToBuffer");
 	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.6f;
 
-	L::Log("Input => hkCamToFirstPeron");
+	L::Log("DLLMAIN HOOKING Input => hkCamToFirstPeron");
 	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.65f;
 
-	L::Log("ClientMode => DoPostScreenEffects");
+	L::Log("DLLMAIN HOOKING ClientMode => DoPostScreenEffects");
 	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.70f;
 
-	L::Log("ModelRender => DrawModelExecute");
+	L::Log("DLLMAIN HOOKING ModelRender => DrawModelExecute");
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.75f;
 
-	L::Log("Sound => EmitSound");
+	L::Log("DLLMAIN HOOKING Sound => EmitSound");
 	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.8f;
 
-	L::Log("Clearing clantag");
+	L::Log("DLLMAIN Clearing clantag");
 	clantag->reset();
-	Sleep(SleepTime);
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.85f;
 }
 
@@ -360,6 +366,8 @@ void H::Eject()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
+	L::Verbose("H::EndSceneHook - begin");
+
 	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
 	if (I::engine->IsInGame())
 	{
@@ -368,9 +376,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		D3d9Device->GetVertexShader(&vertShader);
 	}
 
-	L::Verbose("endscene hook executed");
 	if (!D3dInit) {
-		L::Verbose("INITIALIZING D3D");
+		L::Verbose("H::EndSceneHook d3d9 init begin");
 		D3dInit = true;
 
 		ImGui::CreateContext();
@@ -380,7 +387,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
-		L::Verbose("INITIALIZED D3D");
+		L::Verbose("H::EndSceneHook d3d9 init complete");
 	}
 	
 
@@ -436,7 +443,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		D3d9Device->SetVertexShader(vertShader);
 	}
 
-	return oEndScene(device);
+	auto ogOutput = oEndScene(device);
+	L::Verbose("H::EndSceneHook - complete");
+	return ogOutput;
 }
 
 long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters)
@@ -527,6 +536,7 @@ float RandomVal(float min, float max)
 
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
+	L::Verbose("H::CreateMoveHook - begin");
 	if (!cmd->command_number)
 		return true;
 
@@ -668,11 +678,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	}
 
 	oCreateMove(I::clientmode, flInputSampleTime, cmd);
+	L::Verbose("H::CreateMoveHook - complete");
 	return false; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
+	L::Verbose("H::PaintTraverseHook - begin");
+
 	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && Config::GetBool("visuals-misc-noscope"))
 		return;
 
@@ -684,6 +697,8 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		miscvisuals->NoScope();
 		esp->Run_PaintTraverse();
 	}
+
+	L::Verbose("H::PaintTraverseHook - complete");
 }
 
 bool fresh_tick()
@@ -739,6 +754,8 @@ void LocalAnimFix(Entity* entity)
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
+	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
+
 	resolver->Resolve(curStage);
 
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
@@ -846,15 +863,16 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 	/*skinchanger->run(curStage);*/
 
-	return oFrameStageNotify(curStage);
+	oFrameStageNotify(curStage);
+	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
 }
 
 void __stdcall H::LockCursorHook()
 {
-	if (Config::GetBool("show-menu")) {
-		return I::surface->UnlockCursor();
-	}
-	return oLockCursor(I::surface);
+	if (Config::GetBool("show-menu"))
+		I::surface->UnlockCursor();
+	else
+		oLockCursor(I::surface);
 }
 
 void __fastcall H::hkCamToFirstPeronHook()
@@ -873,9 +891,13 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
 	/*return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);*/
-	chams->Init();
+	L::Verbose("H::DrawModelExecuteHook - begin");
+	
+	chams->Init(); // BRO, there MUST be a better way to do this
 	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
 	// 
+
+	L::Verbose("H::DrawModelExecuteHook - complete");
 }
 
 void __stdcall H::EmitSoundHook(SoundData data)

@@ -3972,7 +3972,7 @@ void GUI2::Main()
 			MainScreen();
 			L::Verbose("GUI2::MainScreen complete");
 
-			//*
+			/*
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");

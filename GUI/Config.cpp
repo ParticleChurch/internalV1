@@ -1167,6 +1167,8 @@ namespace Config2
 		{
 			Tab* t = new Tab("Eject");
 		}
+
+		LoadTheme(ConfigConstants::ThemeDefaultDark, ConfigConstants::ThemeDefaultDarkSize);
 	}
 
 	Property* GetProperty(std::string Name)
@@ -1249,91 +1251,98 @@ namespace Config2
 		return *(CColor*)p->Value;
 	}
 
-	bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity)
+	bool ExportSingleProperty(Property* p, char** buffer, size_t* bufferSpaceOccupied, size_t* bufferSpaceAllocated)
 	{
-		if (!p || !buffer || !size || !capacity)
+		if (!p || !buffer || !bufferSpaceOccupied || !bufferSpaceAllocated)
 		{
 			L::Log(XOR("ExportSingleProperty failed - null parameter(s)"));
 			return false;
 		}
-		L::Verbose("ExportSingleProperty running for p = ", "");
+		L::Verbose(XOR("ExportSingleProperty running for p = "), "");
 		L::Verbose(p->Name.c_str());
 
-		size_t space_left = *capacity - *size;
-		size_t space_needed = 0;
+		size_t vacantSpaceInBuffer = *bufferSpaceAllocated - *bufferSpaceOccupied;
+		size_t spaceRequired = sizeof(size_t);
+		size_t valueLength = 0; // bytes
 
 		// determine space_needed
 		switch (p->Type)
 		{
 		case PropertyType::BOOLEAN:
 		{
-			space_needed = p->Name.length() + 1;
-			space_needed += 1;
+			valueLength = 1;
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
 		} break;
 		case PropertyType::FLOAT:
 		{
-			space_needed = p->Name.length() + 1;
-			space_needed += sizeof(float);
+			valueLength = sizeof(float);
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
 		} break;
 		case PropertyType::COLOR:
 		{
-			space_needed = p->Name.length() + 1;
-			space_needed += sizeof(unsigned char) * 4;
+			valueLength = sizeof(unsigned char) * 4;
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
 		} break;
 		default:
 			L::Log((XOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
 			return true;
 		}
-		L::Verbose(("ExportSingleProperty - buffer is at (" + std::to_string(*size) + "/" + std::to_string(*capacity) + "), but i need " + std::to_string(space_needed)).c_str());
 
 		// adjust capacity
-		if (space_needed > space_left)
+		if (vacantSpaceInBuffer < spaceRequired)
 		{
-			char* re = (char*)realloc(*buffer, *capacity + (space_needed - space_left));
+			char* re = (char*)realloc(*buffer, *bufferSpaceAllocated + (spaceRequired - vacantSpaceInBuffer));
 			if (!re)
 			{
-				L::Log("ExportSingleProperty failed - could not expand buffer");
+				L::Log(XOR("ExportSingleProperty failed - could not expand buffer"));
 				return false;
 			}
 			else
 			{
 				*buffer = re;
-				*capacity += (space_needed - space_left);
-				L::Verbose("ExportSingleProperty reallocated to @", "");
-				L::Verbose((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*capacity)).c_str());
+				*bufferSpaceAllocated += spaceRequired - vacantSpaceInBuffer;
+				L::Verbose(XOR("ExportSingleProperty reallocated to @"), "");
+				L::Verbose((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*bufferSpaceAllocated)).c_str());
 			}
 		}
 
 		// write to buffer
 		{
+			// value length
+			memcpy(*buffer + *bufferSpaceOccupied, (void*)(&valueLength), sizeof(size_t));
+			*bufferSpaceOccupied += sizeof(size_t);
+			spaceRequired -= sizeof(size_t);
+
 			// property name
-			L::Verbose(("ExportSingleProperty writing " + std::to_string(p->Name.length() + 1) + " bytes @ " + std::to_string((DWORD)(*buffer + *size)) + " for property name").c_str());
-			memcpy(*buffer + *size, (void*)(p->Name.c_str()), p->Name.length() + 1);
-			*size += p->Name.length() + 1;
-			space_needed -= p->Name.length() + 1;
+			memcpy(*buffer + *bufferSpaceOccupied, (void*)(p->Name.c_str()), p->Name.length() + 1);
+			*bufferSpaceOccupied += p->Name.length() + 1;
+			spaceRequired -= p->Name.length() + 1;
 
 			// value
 			switch (p->Type)
 			{
 			case PropertyType::BOOLEAN:
 			{
-				(*buffer)[*size] = ((CBoolean*)p->Value)->Value ? 0xFF : 0x0;
+				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value ? 0xFF : 0x0;
 			} break;
 			case PropertyType::FLOAT:
 			{
 				float v = ((CFloat*)p->Value)->Get();
-				memcpy(*buffer + *size, (void*)&v, sizeof(float));
+				memcpy(*buffer + *bufferSpaceOccupied, (void*)&v, sizeof(float));
 			} break;
 			case PropertyType::COLOR:
 			{
 				CColor* c = (CColor*)p->Value;
-				(*buffer)[*size + 0] = c->R;
-				(*buffer)[*size + 1] = c->G;
-				(*buffer)[*size + 2] = c->B;
-				(*buffer)[*size + 3] = c->A;
+				(*buffer)[*bufferSpaceOccupied + 0] = c->R;
+				(*buffer)[*bufferSpaceOccupied + 1] = c->G;
+				(*buffer)[*bufferSpaceOccupied + 2] = c->B;
+				(*buffer)[*bufferSpaceOccupied + 3] = c->A;
 			} break;
 			}
-			*size += space_needed;
+			*bufferSpaceOccupied += spaceRequired;
 		}
 
 		L::Verbose("ExportSingleProperty success");
@@ -1342,21 +1351,21 @@ namespace Config2
 
 	char* ExportTheme(size_t* nBytesOut)
 	{
+		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/THEME";
+		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/THEME") - 1;
+
 		size_t size = 0;
-		size_t capacity = 24; // 420PARTICLE.CHURCH/THEME
-		char* buffer = (char*)malloc(capacity);
+		size_t capacity = headerSize;
+		char* buffer = (char*)malloc(headerSize);
 		if (!buffer)
 		{
 			L::Log(XOR("Config2::ExportTheme failed - initial malloc failed"));
 			return nullptr;
 		}
 
-		memcpy(buffer, "\x69\x04\x20", 3);
-		size += 3;
+		memcpy(buffer, header, headerSize);
+		size += headerSize;
 
-		memcpy(buffer + size, XOR("PARTICLE.CHURCH/THEME"), sizeof("PARTICLE.CHURCH/THEME") - 1);
-		size += sizeof("PARTICLE.CHURCH/THEME") - 1;
-		
 		static Tab* ThemeTab = nullptr;
 		if (!ThemeTab)
 		{
@@ -1397,9 +1406,105 @@ namespace Config2
 		return buffer;
 	}
 
-	void LoadTheme(char* Theme, size_t nBytes)
+	void LoadTheme(const char* Theme, size_t nBytes)
 	{
-		L::Log("LMAO GOOD TRY THOUGH");
+		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/THEME";
+		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/THEME") - 1;
+
+		L::Verbose("Loading theme with ", std::to_string(nBytes).c_str());
+		L::Verbose(" bytes");
+		if (nBytes < headerSize)
+		{
+			L::Log("Tried to load a theme that doesn't have enough bytes");
+			return;
+		}
+
+		if (memcmp(header, Theme, headerSize))
+		{
+			L::Log("Tried to load a theme with invalid header");
+			return;
+		}
+
+		size_t i = headerSize;
+		while (i < nBytes)
+		{
+			size_t remaining = nBytes - i;
+			size_t valueLength = 0;
+			char* name = nullptr;
+			size_t nameSize = 0;
+
+			// +1 because there must be at least 1 more byte for the propertyName
+			if (remaining < sizeof(size_t) + 1) break;
+			valueLength = *(size_t*)(Theme + i);
+			i += sizeof(size_t);
+			remaining -= sizeof(size_t);
+
+			// hhhhhxxxxYYY
+
+			// get name
+			name = (char*)(Theme + i);
+			for (size_t j = 0; j < remaining; j++)
+			{
+				if (name[j] == '\0')
+				{
+					nameSize = j + 1;
+					break;
+				}
+			}
+
+			// didn't find a null terminator
+			if (nameSize == 0) break;
+			i += nameSize;
+			remaining -= nameSize;
+
+			// make sure there is enough space for the value
+			if (remaining < valueLength) break;
+
+			Property* p = GetProperty(name);
+			if (!p)
+			{
+				// this property does not exist, probably an older version of the config editor
+				L::Log(XOR("Theme attempted to load invalid property: "), "");
+				L::Log(name);
+				i += valueLength;
+				continue;
+			}
+
+			switch (p->Type)
+			{
+			case PropertyType::BOOLEAN:
+			{
+				if (valueLength != 1) goto INVALID_LENGTH;
+				((CBoolean*)p->Value)->Value = *(Theme + i) > 0x7f;
+			} break;
+			case PropertyType::FLOAT:
+			{
+				if (valueLength != sizeof(float)) goto INVALID_LENGTH;
+				((CFloat*)p->Value)->Set(*(float*)(Theme + i));
+			} break;
+			case PropertyType::COLOR:
+			{
+				if (valueLength != sizeof(unsigned char) * 4) goto INVALID_LENGTH;
+				CColor* c = (CColor*)p->Value;
+				c->R = *(Theme + i + 0);
+				c->G = *(Theme + i + 1);
+				c->B = *(Theme + i + 2);
+				c->A = *(Theme + i + 3);
+			} break;
+			}
+
+			L::Log(XOR("Loaded theme for property: "), "");
+			L::Log(p->Name.c_str());
+			i += valueLength;
+			continue;
+
+		INVALID_LENGTH:
+			L::Log(XOR("Got unexpected value length for property: "), p->Name.c_str());
+			L::Log(XOR(" with type = "), std::to_string((int)p->Type).c_str());
+			L::Log(XOR(" (got "), std::to_string(valueLength).c_str());
+			L::Log(XOR(" bytes)"));
+			i += valueLength;
+		}
 	}
 
 	DWORD WINAPI _PromptExportThemeFile(void* _)

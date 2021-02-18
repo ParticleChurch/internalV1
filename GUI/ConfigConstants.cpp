@@ -1,5 +1,8 @@
 #include "ConfigConstants.hpp"
 
+const char* ConfigConstants::ThemeDefaultDark = "i\x04 PARTICLE.CHURCH/THEME\x04\x00\x00\x00theme-topbar-background\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-topbar-text\x00xxxÿ\x04\x00\x00\x00theme-border-thickness\x00\x00\x00\x00\x00\x04\x00\x00\x00theme-border-color\x00\x00\x00\x00ÿ\x01\x00\x00\x00theme-tab-background-use-image\x00\x00\x04\x00\x00\x00theme-tab-background-color\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-tablist-background\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-tablist-text\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-eject-tab-text\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-searchbar-background\x00\x00\x00\x00ÿ\x04\x00\x00\x00theme-searchbar-text\x00\x00\x00\x00ÿ";
+size_t ConfigConstants::ThemeDefaultDarkSize = 364;
+
 const char* ConfigManager::ConfigAllDisabled = R"(
 # a4g4.com config generated on mm/dd/yyyy @ hh:mm:ss
 # For help making a config, please visit https://a4g4.com/help/config

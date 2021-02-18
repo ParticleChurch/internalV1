@@ -125,8 +125,9 @@ DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
     ThreadData* Info = (ThreadData*)pInfo;
     while (!*Info->ExitWhenTrue)
     {
-        L::Verbose("Keybind PeriodicUpdator loop");
+        L::Verbose("Keybind::ForceUpdate - begin");
         Keybind::ForceUpdate();
+        L::Verbose("Keybind::ForceUpdate - complete");
         Sleep(10);
         while (Keybind::Lock) Sleep(1);
     }

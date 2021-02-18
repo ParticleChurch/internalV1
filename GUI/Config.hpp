@@ -888,7 +888,7 @@ namespace Config2
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
 	extern char* ExportTheme(size_t* nBytesOut);
 	extern char* ExportConfig(size_t* nBytesOut);
-	extern void LoadTheme(char* Theme, size_t nBytes);
+	extern void LoadTheme(const char* Theme, size_t nBytes);
 	extern void LoadConfig(char* Config, size_t nBytes);
 
 	extern void PromptImportThemeFile();

@@ -6,15 +6,15 @@
 
 namespace L
 {
-	enum class LogMode
+	enum class LogMode : int
 	{
 		None = 0,
 		File,
 		Console,
 		Both,
 	};
-	constexpr LogMode Mode = LogMode::Both;
-	constexpr bool VerboseOutputEnabled = true;
+	constexpr LogMode OutputMode = LogMode::Both;
+	constexpr LogMode VerboseMode = LogMode::File;
 	extern std::string FilePath;
 
 	extern void Init();
