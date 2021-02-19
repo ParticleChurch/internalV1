@@ -12,4 +12,7 @@ namespace ConfigConstants
 {
 	extern size_t ThemeDefaultDarkSize;
 	extern const char* ThemeDefaultDark;
+
+	extern size_t ThemeDefaultLightSize;
+	extern const char* ThemeDefaultLight;
 }

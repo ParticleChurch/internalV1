@@ -1139,23 +1139,48 @@ namespace Config2
 				g->Add("theme-topbar-background", "Topbar Background", new CColor(true));
 				g->Add("theme-topbar-text", "Topbar Text", new CColor(true));
 				g->Add("theme-border-thickness", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
-				p = g->Add("theme-border-color", "Outline", new CColor(true));
-				p->IsVisible = []() { return GetFloat("theme-border-thickness") > 0.f; };
+				g->Add("theme-border-color", "Outline", new CColor(true))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-border-thickness");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
 
-				g->Add("theme-tab-background-use-image", "Background Uses Image", new CBoolean(false));
-				p = g->Add("theme-tab-background-image", "Background Image", new CLabel());
-				p->IsVisible = []() { return GetBoolean("theme-tab-background-use-image"); };
-				p = g->Add("theme-tab-background-color", "Background Color", new CColor(false));
-				p->IsVisible = []() { return !GetBoolean("theme-tab-background-use-image"); };
+				g->Add("theme-tab-background-color", "Background Color", new CColor(false));
+				g->Add("theme-tab-background-image", "Background Image", new CLabel())->IsVisible = []() {return false; };
 
 				g->Add("theme-tablist-background", "Tab List Background", new CColor(true));
-				g->Add("theme-tablist-text", "Tab List Text", new CColor(false));
-				g->Add("theme-eject-tab-text", "Eject Tab", new CColor(false));
+				g->Add("theme-tablist-text", "Tab List Text", new CColor(true));
+				g->Add("theme-active-tablist-text", "Active Tab List Text", new CColor(true));
+				g->Add("theme-eject-tab-text", "Eject Tab", new CColor(true));
+				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true))->IsVisible = []() {return false; };;
+				
+				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false))->IsVisible = []() {return false; };;
+				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false))->IsVisible = []() {return false; };;
 
-				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false));
-				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false));
+				g->Add("theme-button-text", "Button Text", new CColor(true));
+				g->Add("theme-button-background", "Button Background", new CColor(false));
+				g->Add("theme-button-hovered", "Button Hovered", new CColor(false));
+				g->Add("theme-button-active", "Button Pressed", new CColor(false));
+				g->Add("theme-button-border-thickness", "Button Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-button-border", "Button Outline", new CColor(false))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-button-border-thickness");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
+
+				g->Add("theme-info", "Info Icon", new CColor(false))->IsVisible = []() {return false; };
+				g->Add("theme-warning", "Warning Icon", new CColor(false))->IsVisible = []() {return false; };;
+				g->Add("theme-error", "Error Icon", new CColor(false))->IsVisible = []() {return false; };;
 			}
 
+			{
+				Group* g = t->Add("Tabs");
+
+				g->Add("theme-widget-background", "Widget Background", new CColor(true));
+				g->Add("theme-widget-title", "Widget Title", new CColor(true));
+				g->Add("theme-property-name", "Property Name", new CColor(true));
+				g->Add("theme-property-unit", "Slider Unit Text", new CColor(true));
+				g->Add("theme-property-base", "Property Base", new CColor(false));
+				g->Add("theme-property-accent", "Property Accent", new CColor(false));
+			}
 		}
 
 		// CONFIG
@@ -1339,7 +1364,7 @@ namespace Config2
 				(*buffer)[*bufferSpaceOccupied + 0] = c->R;
 				(*buffer)[*bufferSpaceOccupied + 1] = c->G;
 				(*buffer)[*bufferSpaceOccupied + 2] = c->B;
-				(*buffer)[*bufferSpaceOccupied + 3] = c->A;
+				(*buffer)[*bufferSpaceOccupied + 3] = c->HasAlpha ? c->A : 0xFF;
 			} break;
 			}
 			*bufferSpaceOccupied += spaceRequired;
@@ -1489,7 +1514,8 @@ namespace Config2
 				c->R = *(Theme + i + 0);
 				c->G = *(Theme + i + 1);
 				c->B = *(Theme + i + 2);
-				c->A = *(Theme + i + 3);
+				if (c->HasAlpha)
+					c->A = *(Theme + i + 3);
 			} break;
 			}
 
