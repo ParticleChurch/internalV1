@@ -859,7 +859,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	miscvisuals->NoSmoke_FrameStageNotify();
 
 	backtrack->update(curStage);
-	world->Run(curStage);
+	world->Run_FrameStageNotify(curStage);
 
 	/*skinchanger->run(curStage);*/
 
@@ -884,6 +884,7 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 {
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
 	miscvisuals->NoSmoke_DoPostScreenEffects();
+	world->Run_DoPostScreenEffect();
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }

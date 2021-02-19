@@ -36,7 +36,23 @@ void World::SkyboxMod(Material* mat)
 	mat->ColorModulate(Config::GetColor("visuals-world-skybox-color"));
 }
 
-void World::Run(int CurStage)
+void World::LightMod()
+{
+	if (!Config::GetBool("visuals-world-enable"))
+		return;
+
+	static ConVar* red = I::cvar->FindVar("mat_ambient_light_r");
+	static ConVar* green = I::cvar->FindVar("mat_ambient_light_g");
+	static ConVar* blue = I::cvar->FindVar("mat_ambient_light_b");
+
+	Color clr = Config::GetColor("visuals-world-color");
+
+	red->SetValue(clr.r() / 255.f);
+	green->SetValue(clr.g() / 255.f);
+	blue->SetValue(clr.b() / 255.f);
+}
+
+void World::Run_FrameStageNotify(int CurStage)
 {
 	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
 		static int LastState = -1;
@@ -104,4 +120,9 @@ void World::Run(int CurStage)
 				SkyboxMod(mat);
 		}
 	}
+}
+
+void World::Run_DoPostScreenEffect()
+{
+	LightMod();
 }
