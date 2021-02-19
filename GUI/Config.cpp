@@ -333,9 +333,9 @@ namespace Config {
 				w->AddProperty(false, 2, "visuals-world-color", "World", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-world-opacity", "World Opacity", "%", 0, 100, 0, 0, 0);
 				//Prop
-				/*w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
+				w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
 				w->AddProperty(false, 2, "visuals-world-prop-color", "Prop", new Color(0, 150, 255));
-				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);*/
+				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);
 				//Skybox
 				w->AddProperty(false, 1, "visuals-world-skybox-enable", "Skybox Changes", false, false);
 				//Skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List

@@ -11,6 +11,8 @@ void World::WorldMod(Material* mat)
 void World::PropMod(Material* mat)
 {
 	//r_DrawSpecificStaticProp - set to 1 to get props working...
+	static auto r_drawspecificstaticprop = I::cvar->FindVar("r_DrawSpecificStaticProp");
+	r_drawspecificstaticprop->SetValue(1);
 	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
 	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
 	
@@ -61,7 +63,7 @@ void World::Run(int CurStage)
 		
 
 		bool UpdateProp = false;
-		/*if (Config::GetBool("visuals-world-prop-enable"))
+		if (Config::GetBool("visuals-world-prop-enable"))
 		{
 			static Color LastColorProp;
 			static int LastAlphaProp;
@@ -72,7 +74,7 @@ void World::Run(int CurStage)
 				LastAlphaProp = (int)Config::GetFloat("visuals-world-prop-opacity");
 				UpdateProp = true;
 			}
-		}*/
+		}
 
 		bool UpdateSkybox = false;
 		if (Config::GetBool("visuals-world-skybox-enable"))
