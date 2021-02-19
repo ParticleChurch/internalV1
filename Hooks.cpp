@@ -568,6 +568,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		// nade visuals
 		miscvisuals->GrenadePrediction();
+		miscvisuals->ChangeViewModel();
 	
 		G::CM_MoveFixStart();
 
