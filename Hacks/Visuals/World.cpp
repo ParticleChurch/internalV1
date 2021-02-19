@@ -11,6 +11,8 @@ void World::WorldMod(Material* mat)
 void World::PropMod(Material* mat)
 {
 	//r_DrawSpecificStaticProp - set to 1 to get props working...
+	static auto r_drawspecificstaticprop = I::cvar->FindVar("r_DrawSpecificStaticProp");
+	r_drawspecificstaticprop->SetValue(1);
 	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
 	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
 	
@@ -34,7 +36,23 @@ void World::SkyboxMod(Material* mat)
 	mat->ColorModulate(Config::GetColor("visuals-world-skybox-color"));
 }
 
-void World::Run(int CurStage)
+void World::LightMod()
+{
+	if (!Config::GetBool("visuals-world-enable"))
+		return;
+
+	static ConVar* red = I::cvar->FindVar("mat_ambient_light_r");
+	static ConVar* green = I::cvar->FindVar("mat_ambient_light_g");
+	static ConVar* blue = I::cvar->FindVar("mat_ambient_light_b");
+
+	Color clr = Config::GetColor("visuals-world-color");
+
+	red->SetValue(clr.r() / 255.f);
+	green->SetValue(clr.g() / 255.f);
+	blue->SetValue(clr.b() / 255.f);
+}
+
+void World::Run_FrameStageNotify(int CurStage)
 {
 	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
 		static int LastState = -1;
@@ -61,7 +79,7 @@ void World::Run(int CurStage)
 		
 
 		bool UpdateProp = false;
-		/*if (Config::GetBool("visuals-world-prop-enable"))
+		if (Config::GetBool("visuals-world-prop-enable"))
 		{
 			static Color LastColorProp;
 			static int LastAlphaProp;
@@ -72,7 +90,7 @@ void World::Run(int CurStage)
 				LastAlphaProp = (int)Config::GetFloat("visuals-world-prop-opacity");
 				UpdateProp = true;
 			}
-		}*/
+		}
 
 		bool UpdateSkybox = false;
 		if (Config::GetBool("visuals-world-skybox-enable"))
@@ -102,4 +120,9 @@ void World::Run(int CurStage)
 				SkyboxMod(mat);
 		}
 	}
+}
+
+void World::Run_DoPostScreenEffect()
+{
+	LightMod();
 }

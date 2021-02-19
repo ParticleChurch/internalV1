@@ -6,8 +6,10 @@ private:
 	void PropMod(Material* mat);
 	void SkyboxLoad(std::string);
 	void SkyboxMod(Material* mat);
+	void LightMod();
 public:
-	void Run(int CurStage);
+	void Run_FrameStageNotify(int CurStage);
+	void Run_DoPostScreenEffect();
 };
 
 extern World* world;

@@ -148,3 +148,24 @@ void MiscVisuals::NoSmoke_FrameStageNotify()
 	static int* smokecount = *(int**)(FindPattern("client.dll", "A3 ? ? ? ? 57 8B CB") + 0x1);
 	if (smokecount) *smokecount = 0;
 }
+
+void MiscVisuals::ChangeViewModel()
+{
+	/*static bool init = false;
+	if (!init)
+	{
+		init = true;
+		I::cvar->FindVar("viewmodel_fov")->onChangeCallbacks.size = 0;
+		I::cvar->FindVar("viewmodel_offset_x")->onChangeCallbacks.size = 0;
+		I::cvar->FindVar("viewmodel_offset_y")->onChangeCallbacks.size = 0;
+		I::cvar->FindVar("viewmodel_offset_z")->onChangeCallbacks.size = 0;
+		I::cvar->FindVar("fov_cs_debug")->onChangeCallbacks.size = 0;
+		
+	}
+
+	I::cvar->FindVar("viewmodel_fov")->SetValue(Config::GetFloat("visuals-fov"));
+	I::cvar->FindVar("fov_cs_debug")->SetValue(Config::GetFloat("visuals-fov"));
+	I::cvar->FindVar("viewmodel_offset_x")->SetValue(Config::GetFloat("visuals-view-x"));
+	I::cvar->FindVar("viewmodel_offset_y")->SetValue(Config::GetFloat("visuals-view-y"));
+	I::cvar->FindVar("viewmodel_offset_z")->SetValue(Config::GetFloat("visuals-view-z"));*/
+}

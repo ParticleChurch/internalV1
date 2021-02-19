@@ -333,9 +333,9 @@ namespace Config {
 				w->AddProperty(false, 2, "visuals-world-color", "World", new Color(0, 150, 255));
 				w->AddProperty(false, 2, "visuals-world-opacity", "World Opacity", "%", 0, 100, 0, 0, 0);
 				//Prop
-				/*w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
+				w->AddProperty(false, 1, "visuals-world-prop-enable", "Prop Changes", false, false);
 				w->AddProperty(false, 2, "visuals-world-prop-color", "Prop", new Color(0, 150, 255));
-				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);*/
+				w->AddProperty(false, 2, "visuals-world-prop-opacity", "Prop Opacity", "%", 0, 100, 0, 0, 0);
 				//Skybox
 				w->AddProperty(false, 1, "visuals-world-skybox-enable", "Skybox Changes", false, false);
 				//Skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List
@@ -343,6 +343,13 @@ namespace Config {
 				w->AddProperty(false, 2, "visuals-world-skybox-color", "Skybox", new Color(0, 150, 255));
 
 			}
+			/*{
+				Widget* w = t->AddWidget("View Model");
+				w->AddProperty(false, 0, "visuals-fov", "FOV", "", 0, 100.f, 2, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-x", "Viewmodel X", "", -20.f, 20.f, 3, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-y", "Viewmodel Y", "", -20.f, 20.f, 3, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-z", "Viewmodel Z", "", -20.f, 20.f, 3, 0, 0);
+			}*/
 			{
 				Widget* w = t->AddWidget("Misc");
 				w->AddProperty(false, 0, "visuals-misc-thirdperson", "Thirdperson", false, false, KeybindOptions(true, true, true));

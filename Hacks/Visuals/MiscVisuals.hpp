@@ -15,6 +15,7 @@ public:
 	void NoFlash(int stage);
 	void NoSmoke_DoPostScreenEffects();
 	void NoSmoke_FrameStageNotify();
+	void ChangeViewModel();
 
 };
 
