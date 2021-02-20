@@ -1157,11 +1157,9 @@ namespace Config2
 				g->Add("theme-tablist-background", "Tab List Background", new CColor(true));
 				g->Add("theme-tablist-text", "Tab List Text", new CColor(true));
 				g->Add("theme-active-tablist-text", "Active Tab List Text", new CColor(true));
-				g->Add("theme-eject-tab-text", "Eject Tab", new CColor(true));
-				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true))->IsVisible = []() {return false; };;
 				
-				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false))->IsVisible = []() {return false; };;
-				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false))->IsVisible = []() {return false; };;
+				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false));
+				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false));
 
 				g->Add("theme-button-text", "Button Text", new CColor(true));
 				g->Add("theme-button-background", "Button Background", new CColor(false));
@@ -1173,7 +1171,7 @@ namespace Config2
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
 
-				g->Add("theme-info", "Info Icon", new CColor(false))->IsVisible = []() {return false; };
+				g->Add("theme-info-icon", "Info Icon", new CColor(false));
 				g->Add("theme-warning", "Warning Icon", new CColor(false))->IsVisible = []() {return false; };;
 				g->Add("theme-error", "Error Icon", new CColor(false))->IsVisible = []() {return false; };;
 			}
@@ -1183,10 +1181,20 @@ namespace Config2
 
 				g->Add("theme-widget-background", "Widget Background", new CColor(true));
 				g->Add("theme-widget-title", "Widget Title", new CColor(true));
-				g->Add("theme-property-name", "Property Name", new CColor(true));
-				g->Add("theme-property-unit", "Slider Unit Text", new CColor(true));
-				g->Add("theme-property-base", "Property Base", new CColor(false));
-				g->Add("theme-property-accent", "Property Accent", new CColor(false));
+				g->Add("theme-property-text", "Setting Text", new CColor(true));
+				g->Add("theme-property-base", "Setting Base", new CColor(false));
+				g->Add("theme-property-accent", "Setting Accent", new CColor(false));
+				g->Add("theme-eject", "Eject", new CColor(true));
+				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));
+				g->Add("theme-legit-rage-switch-label_", "Legit/Rage Switch", new CLabel());
+				g->Add("theme-legit-rage-switch-background", "Background", new CColor(true));
+				g->Add("theme-legit-rage-switch-outline-thickness", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-legit-rage-switch-outline", "Outline", new CColor(true))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-legit-rage-switch-outline-thickness");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
+				g->Add("theme-legit-rage-switch-highlight", "Highlight", new CColor(true));
+				g->Add("theme-legit-rage-switch-text", "Text", new CColor(true));
 			}
 		}
 
