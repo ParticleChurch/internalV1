@@ -844,8 +844,9 @@ namespace Config2
 
 	extern std::map<std::string, Property*> PropertyTable;
 	extern std::vector<Tab*> Tabs;
-	extern Property* SettingKeybindFor;
 
+	// for keybinds
+	extern Property* SettingKeybindFor;
 	enum class PropertyType : int
 	{
 		LABEL,
@@ -865,6 +866,9 @@ namespace Config2
 		HOLDTODISABLE,
 	};
 	extern std::string KeybindTypeNames[];
+
+	// property types
+	struct CState;
 	struct CLabel;
 	struct CBoolean;
 	struct CFloat;
@@ -875,27 +879,29 @@ namespace Config2
 	struct CHorizontalState;
 	struct CEditGroup;
 
-	extern void Init();
-
 	// getters
 	extern Property* GetProperty(std::string Name);
 	extern int GetKeybind(std::string Name);
-	extern bool GetBoolean(std::string Name);
-	extern float GetFloat(std::string Name);
-	extern int GetPaintKit(std::string Name);
-	extern int GetState(std::string Name);
-	extern CColor GetColor(std::string Name);
+	extern CFloat* GetFloat(std::string Name);
+	extern CPaintKit* GetPaintKit(std::string Name);
+	extern CState* GetState(std::string Name);
+	extern CColor* GetColor(std::string Name);
+
+	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
 	extern char* ExportTheme(size_t* nBytesOut);
 	extern char* ExportConfig(size_t* nBytesOut);
 	extern void LoadTheme(const char* Theme, size_t nBytes);
 	extern void LoadConfig(char* Config, size_t nBytes);
 
+	// file openers
 	extern void PromptImportThemeFile();
 	extern void PromptExportThemeFile();
 	extern void PromptImportConfigFile();
 	extern void PromptExportConfigFile();
 
+	// config functionality
+	extern void Init();
 	extern void ProcessKeys();
 	extern void Free();
 };
@@ -924,6 +930,57 @@ namespace UserData
 
 namespace Config2
 {
+	struct CState
+	{
+		// note that this class does not have a type
+		// use the wrappers instead, like CBoolean or CHorizontalState
+	private:
+		int Minimum = 0;
+		int Maximum = 1;
+		int Value = 0;
+		int LastValue = 0;
+		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+
+	public:
+		CState(int min, int max, int val)
+		{
+			this->Minimum = min;
+			this->Maximum = max;
+			this->Value = val;
+		}
+
+		double GetTimeSinceChange()
+		{
+			return Animation::delta(Animation::now(), this->TimeChanged);
+		}
+
+		void Increment()
+		{
+			if (++this->Value > this->Maximum) this->Value = this->Minimum;
+			this->TimeChanged = Animation::now();
+		}
+
+		void Invert()
+		{
+			this->Value = this->Maximum - (this->Value - this->Minimum);
+			this->TimeChanged = Animation::now();
+		}
+
+		int Get()
+		{
+			return this->Value;
+		}
+
+		void Set(int value)
+		{
+			if (value == this->Value) return;
+
+			if (value <= this->Minimum) this->Value = this->Minimum;
+			else if (value >= this->Maximum) this->Value = this->Maximum;
+			else this->Value = value;
+			this->TimeChanged = Animation::now();
+		}
+	};
 	struct CLabel
 	{
 		static const PropertyType Type = PropertyType::LABEL;
@@ -932,27 +989,21 @@ namespace Config2
 	struct CBoolean
 	{
 		static const PropertyType Type = PropertyType::BOOLEAN;
-		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
 
+	public:
+		CState Value = CState(0, 1, 0);
+		bool Bindable = true;
 		int BoundToKey = -1;
 		KeybindMode BindMode = KeybindMode::TOGGLE;
-		bool Bindable = true;
 
 		CBoolean(bool Bindable = true)
 		{
 			this->Bindable = Bindable;
 		}
 
-		bool Value = false;
 		std::string Stringify()
 		{
-			return this->Value ? "true" : "false";
-		}
-
-		void Flip()
-		{
-			this->Value = !this->Value;
-			this->TimeChanged = Animation::now();
+			return this->Value.Get() ? "true" : "false";
 		}
 	};
 	struct CFloat
@@ -979,27 +1030,6 @@ namespace Config2
 			this->Set(Min);
 		}
 
-		float Get()
-		{
-			return this->Value;
-		}
-
-		float GetFactor()
-		{
-			return (this->Value - this->Minimum) / (this->Maximum - this->Minimum);
-		}
-
-		void Set(float v)
-		{
-			v = floorf(v * this->Percision + 0.5f) / (float)this->Percision;
-			this->Value = min(max(this->Minimum, v), this->Maximum);
-		}
-
-		void SetFactor(float v)
-		{
-			this->Set(v * (this->Maximum - this->Minimum) + this->Minimum);
-		}
-
 		std::string Stringify()
 		{
 			std::string s = std::to_string((int64_t)((double)this->Value * (double)this->Percision + 0.5));
@@ -1015,18 +1045,25 @@ namespace Config2
 			return s.substr(0, s.length() - this->Decimals) + "." + s.substr(s.length() - this->Decimals, this->Decimals);
 		}
 
-		bool Parse(std::string v)
+		float GetFactor()
 		{
-			try
-			{
-				float d = std::stof(v);
-				this->Set(d);
-				return true;
-			}
-			catch (...)
-			{
-				return false;
-			}
+			return (this->Value - this->Minimum) / (this->Maximum - this->Minimum);
+		}
+
+		void SetFactor(float v)
+		{
+			this->Set(v * (this->Maximum - this->Minimum) + this->Minimum);
+		}
+
+		float Get()
+		{
+			return this->Value;
+		}
+
+		void Set(float v)
+		{
+			v = floorf(v * this->Percision + 0.5f) / (float)this->Percision;
+			this->Value = min(max(this->Minimum, v), this->Maximum);
 		}
 	};
 	struct CPaintKit
@@ -1091,37 +1128,18 @@ namespace Config2
 	{
 		static const PropertyType Type = PropertyType::HSTATEFUL;
 
-		int LastState = 0;
-		size_t State = 0;
-		std::vector<std::string> States;
-		bool Bindable;
-		bool FitToWidth;
+	public:
+		std::vector<std::string> StateNames;
+		CState Value = CState(0, 0, 0);
+		bool Bindable = true;
+		int BoundToKey = -1;
 
-		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
 
-		CHorizontalState(std::vector<std::string> States, bool Bindable = true, bool FitToWidth = false)
+		CHorizontalState(std::vector<std::string> States, bool Bindable = true)
 		{
-			this->States = States;
+			this->Value = CState(0, (int)States.size() - 1, 0);
+			this->StateNames = States;
 			this->Bindable = Bindable;
-			this->FitToWidth = FitToWidth;
-		}
-
-		void Next()
-		{
-			if (++this->State >= this->States.size()) this->State = 0;
-		}
-
-		bool Set(size_t NewState)
-		{
-			if (NewState >= this->States.size()) NewState = this->States.size() - 1;
-			if (NewState < 0) NewState = 0;
-			if (NewState == this->State) return false;
-
-			this->LastState = this->State;
-			this->State = NewState;
-			this->TimeChanged = Animation::now();
-
-			return true;
 		}
 	};
 	struct CEditGroup
@@ -1185,55 +1203,31 @@ namespace Config2
 	{
 		static const PropertyType Type = PropertyType::COLOR;
 
+	private:
 		unsigned char R = 0;
 		unsigned char G = 0;
 		unsigned char B = 0;
 		unsigned char A = 255; // 255 = opaque, 0 = transparent
-
 		bool HasAlpha = false;
 
+	public:
 		CColor(bool HasAlpha = false)
 		{
 			this->HasAlpha = HasAlpha;
 		}
 
-		bool Parse(std::string Value)
+		__forceinline CColor ModulateAlpha(float f)
 		{
-			Value = TextService::RemoveWhitespace(Value);
-			size_t open = Value.find_first_of("(");
-			size_t close = Value.find_first_of(")");
-			if (open == std::string::npos || close == std::string::npos || close < open)
-				return false;
-
-			try
-			{
-				size_t r_end = Value.find_first_of(",", open + 1);
-				if (r_end == std::string::npos) return false;
-				this->R = (unsigned char)std::stoi(Value.substr(open + 1, r_end - open - 1));
-
-				size_t g_end = Value.find_first_of(",", r_end + 1);
-				if (g_end == std::string::npos) return false;
-				this->G = (unsigned char)std::stoi(Value.substr(r_end + 1, g_end - r_end - 1));
-
-				if (this->HasAlpha)
-				{
-					size_t b_end = Value.find_first_of(",", g_end + 1);
-					if (b_end == std::string::npos) return false;
-					this->B = (unsigned char)std::stoi(Value.substr(g_end + 1, b_end - g_end - 1));
-
-					this->A = (unsigned char)std::stoi(Value.substr(b_end + 1, close - b_end - 1));
-				}
-				else
-				{
-					this->B = (unsigned char)std::stoi(Value.substr(g_end + 1, close - g_end - 1));
-					this->A = 255;
-				}
-				return true;
-			}
-			catch (...)
-			{
-				return false;
-			}
+			auto c = CColor(true);
+			c.SetR(this->GetR());
+			c.SetG(this->GetG());
+			c.SetB(this->GetB());
+			c.SetA((unsigned char)((float)this->GetA() * f + 0.5f));
+			return c;
+		}
+		__forceinline CColor ModulateAlpha(unsigned char f)
+		{
+			return this->ModulateAlpha((float)f / 255.f);
 		}
 
 		std::string Stringify()
@@ -1242,22 +1236,6 @@ namespace Config2
 				return "rgba(" + std::to_string((int)this->R) + ", " + std::to_string((int)this->G) + ", " + std::to_string((int)this->B) + ", " + std::to_string((int)this->A) + ")";
 			else
 				return "rgb(" + std::to_string((int)this->R) + ", " + std::to_string((int)this->G) + ", " + std::to_string((int)this->B) + ")";
-		}
-
-		unsigned char& operator[] (size_t idx)
-		{
-			switch (idx)
-			{
-			default:
-			case 0:
-				return this->R;
-			case 1:
-				return this->G;
-			case 2:
-				return this->B;
-			case 3:
-				return this->A;
-			}
 		}
 
 		operator ImVec4 ()
@@ -1269,6 +1247,16 @@ namespace Config2
 		{
 			return IM_COL32(this->R, this->G, this->B, this->A);
 		}
+
+		unsigned char GetR() { return this->R; }
+		unsigned char GetG() { return this->G; }
+		unsigned char GetB() { return this->B; }
+		unsigned char GetA() { return this->A; }
+		unsigned char GetHasAlpha() { return this->HasAlpha; }
+		void SetR(unsigned char value) { this->R = value; }
+		void SetG(unsigned char value) { this->G = value; }
+		void SetB(unsigned char value) { this->B = value; }
+		void SetA(unsigned char value) { if (this->HasAlpha) this->A = value; }
 	};
 
 	struct Property

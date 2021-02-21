@@ -85,12 +85,12 @@ namespace Keybind
 
     void KeyDown(int key)
     {
-        KeyChangeStack.push_back(KeyLogEntry(key, true, *WantMouseCapture));
+        KeyChangeStack.push_back(KeyLogEntry(key, 1, *WantMouseCapture));
     }
 
     void KeyUp(int key)
     {
-        KeyChangeStack.push_back(KeyLogEntry(key, false, *WantMouseCapture));
+        KeyChangeStack.push_back(KeyLogEntry(key, 0, *WantMouseCapture));
     }
 }
 

@@ -967,6 +967,13 @@ namespace Config {
 	}
 }
 
+#define CONFIG_PROPERTY_TYPE_CHECK(p, t, ret) \
+if (L::OutputMode != L::LogMode::None && p->Type != t){ \
+	L::Log("ERROR: You used the wrong getter for property: ", ""); \
+	L::Log(p->Name.c_str()); \
+	return ret; \
+}
+
 namespace Config2
 {
 	std::map<std::string, Property*> PropertyTable{};
@@ -987,7 +994,7 @@ namespace Config2
 			t = new Tab("Offence");
 			t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
-			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false, true));
+			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
 
 			/*
 				LEGIT PAGE
@@ -1026,7 +1033,7 @@ namespace Config2
 			t = new Tab("Defence");
 			t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
-			Property* OffenceMode = OffenceMeta->Add("defence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false, true));
+			Property* OffenceMode = OffenceMeta->Add("defence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
 
 			/*
 				LEGIT PAGE
@@ -1145,14 +1152,14 @@ namespace Config2
 
 				g->Add("theme-topbar-background", "Topbar Background", new CColor(true));
 				g->Add("theme-topbar-text", "Topbar Text", new CColor(true));
-				g->Add("theme-border-thickness", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
-				g->Add("theme-border-color", "Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-border-thickness");
+				g->Add("theme-border-size", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
+				g->Add("theme-border", "Outline", new CColor(true))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
 
-				g->Add("theme-tab-background-color", "Background Color", new CColor(false));
-				g->Add("theme-tab-background-image", "Background Image", new CLabel())->IsVisible = []() {return false; };
+				g->Add("theme-background", "Background Color", new CColor(false));
+				g->Add("theme-background-image", "Background Image", new CLabel())->IsVisible = []() {return false; };
 
 				g->Add("theme-tablist-background", "Tab List Background", new CColor(true));
 				g->Add("theme-tablist-text", "Tab List Text", new CColor(true));
@@ -1165,9 +1172,9 @@ namespace Config2
 				g->Add("theme-button-background", "Button Background", new CColor(false));
 				g->Add("theme-button-hovered", "Button Hovered", new CColor(false));
 				g->Add("theme-button-active", "Button Pressed", new CColor(false));
-				g->Add("theme-button-border-thickness", "Button Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-button-border-size", "Button Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
 				g->Add("theme-button-border", "Button Outline", new CColor(false))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-button-border-thickness");
+					static Property* p1 = GetProperty("theme-button-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
 
@@ -1188,9 +1195,9 @@ namespace Config2
 				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));
 				g->Add("theme-legit-rage-switch-label_", "Legit/Rage Switch", new CLabel());
 				g->Add("theme-legit-rage-switch-background", "Background", new CColor(true));
-				g->Add("theme-legit-rage-switch-outline-thickness", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-legit-rage-switch-border-size", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
 				g->Add("theme-legit-rage-switch-outline", "Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-legit-rage-switch-outline-thickness");
+					static Property* p1 = GetProperty("theme-legit-rage-switch-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
 				g->Add("theme-legit-rage-switch-highlight", "Highlight", new CColor(true));
@@ -1227,68 +1234,69 @@ namespace Config2
 	{
 		auto p = GetProperty(Name);
 		if (!p) return -1;
-		if (p->Type != PropertyType::BOOLEAN) return -1;
 
-		CBoolean* v = (CBoolean*)p->Value;
-		if (v->BoundToKey >= 0)
-			return Keybind::KeyMap[v->BoundToKey];
+		switch (p->Type)
+		{
+		case PropertyType::BOOLEAN:
+		{
+			CBoolean* v = (CBoolean*)p->Value;
+			if (v->BoundToKey >= 0)
+				return Keybind::KeyMap[v->BoundToKey];
+		} break;
+		case PropertyType::HSTATEFUL:
+		{
+			CHorizontalState* v = (CHorizontalState*)p->Value;
+			if (v->BoundToKey >= 0)
+				return Keybind::KeyMap[v->BoundToKey];
+		} break;
+		}
 
 		return -1;
 	}
 
-	bool GetBoolean(std::string Name)
+	CFloat* GetFloat(std::string Name)
 	{
 		auto p = GetProperty(Name);
-		if (!p) return false;
+		if (!p) return nullptr;
+		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::FLOAT, nullptr);
 
-		#define BRO(x) (((CBoolean*)((x)->Value))->Value)
-
-		if (p->Master && p->Master->Type == PropertyType::BOOLEAN)
-			return BRO(p) && BRO(p->Master);
-		else
-			return BRO(p);
-
-		#undef BRO
+		return (CFloat*)p->Value;
 	}
 
-	float GetFloat(std::string Name)
+	CPaintKit* GetPaintKit(std::string Name)
 	{
 		auto p = GetProperty(Name);
-		if (!p) return false;
+		if (!p) return nullptr;
+		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::PAINTKIT, nullptr);
 
-		return ((CFloat*)p->Value)->Get();
+		return (CPaintKit*)p->Value;
 	}
 
-	int GetPaintKit(std::string Name)
-	{
-		auto p = GetProperty(Name);
-		if (!p) return false;
-
-		return ((CPaintKit*)p->Value)->PaintKit->ID;
-	}
-
-	int GetState(std::string Name)
+	CState* GetState(std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return 0;
 
 		switch (p->Type)
 		{
-		case PropertyType::BOOLEAN: // I write Config::GetBoolean, and you use this? >:(
-			return (int)(((CBoolean*)p->Value)->Value);
+		case PropertyType::BOOLEAN:
+			return &((CBoolean*)p->Value)->Value;
 		case PropertyType::HSTATEFUL:
-			return (int)(((CHorizontalState*)p->Value)->State);
+			return &((CHorizontalState*)p->Value)->Value;
+		default:
+			L::Log("ERROR: You used the wrong getter for property: ", "");
+			L::Log(p->Name.c_str());
+			return nullptr;
 		}
-
-		return 0;
 	}
 
-	CColor GetColor(std::string Name)
+	CColor* GetColor(std::string Name)
 	{
 		auto p = GetProperty(Name);
-		if (!p) return CColor(true);
+		if (!p) return nullptr;
+		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::COLOR, nullptr);
 
-		return *(CColor*)p->Value;
+		return (CColor*)p->Value;
 	}
 
 	bool ExportSingleProperty(Property* p, char** buffer, size_t* bufferSpaceOccupied, size_t* bufferSpaceAllocated)
@@ -1366,7 +1374,7 @@ namespace Config2
 			{
 			case PropertyType::BOOLEAN:
 			{
-				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value ? 0xFF : 0x0;
+				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value.Get();
 			} break;
 			case PropertyType::FLOAT:
 			{
@@ -1376,10 +1384,10 @@ namespace Config2
 			case PropertyType::COLOR:
 			{
 				CColor* c = (CColor*)p->Value;
-				(*buffer)[*bufferSpaceOccupied + 0] = c->R;
-				(*buffer)[*bufferSpaceOccupied + 1] = c->G;
-				(*buffer)[*bufferSpaceOccupied + 2] = c->B;
-				(*buffer)[*bufferSpaceOccupied + 3] = c->HasAlpha ? c->A : 0xFF;
+				(*buffer)[*bufferSpaceOccupied + 0] = c->GetR();
+				(*buffer)[*bufferSpaceOccupied + 1] = c->GetG();
+				(*buffer)[*bufferSpaceOccupied + 2] = c->GetB();
+				(*buffer)[*bufferSpaceOccupied + 3] = c->GetA();
 			} break;
 			}
 			*bufferSpaceOccupied += spaceRequired;
@@ -1515,7 +1523,7 @@ namespace Config2
 			case PropertyType::BOOLEAN:
 			{
 				if (valueLength != 1) goto INVALID_LENGTH;
-				((CBoolean*)p->Value)->Value = *(Theme + i) > 0x7f;
+				((CBoolean*)p->Value)->Value.Set(*(Theme + i) > 0x7f ? 1 : 0);
 			} break;
 			case PropertyType::FLOAT:
 			{
@@ -1526,11 +1534,10 @@ namespace Config2
 			{
 				if (valueLength != sizeof(unsigned char) * 4) goto INVALID_LENGTH;
 				CColor* c = (CColor*)p->Value;
-				c->R = *(Theme + i + 0);
-				c->G = *(Theme + i + 1);
-				c->B = *(Theme + i + 2);
-				if (c->HasAlpha)
-					c->A = *(Theme + i + 3);
+				c->SetR(*(Theme + i + 0));
+				c->SetG(*(Theme + i + 1));
+				c->SetB(*(Theme + i + 2));
+				c->SetA(*(Theme + i + 3));
 			} break;
 			}
 
@@ -1701,7 +1708,7 @@ namespace Config2
 		Keybind::Lock = true;
 		while (Keybind::KeyChangeStack.size() > 0)
 		{
-			auto log = Keybind::KeyChangeStack[0];
+			Keybind::KeyLogEntry log = Keybind::KeyChangeStack[0];
 			bool ismouse = Keybind::KeyMap[log.Key] == VK_LBUTTON;
 			L::Verbose(("ProcessKeys - key " + std::to_string(log.Key) + (log.State ? " down" : " up")).c_str());
 
@@ -1744,15 +1751,15 @@ namespace Config2
 						default:
 						case KeybindMode::TOGGLE:
 							if (log.State)
-								b->Flip();
+								b->Value.Invert();
 							break;
 						case KeybindMode::HOLDTOENABLE:
-							if (b->Value != log.State)
-								b->Flip();
+							if (b->Value.Get() != log.State)
+								b->Value.Invert();
 							break;
 						case KeybindMode::HOLDTODISABLE:
-							if (b->Value == log.State)
-								b->Flip();
+							if (b->Value.Get() == log.State)
+								b->Value.Invert();
 							break;
 						}
 					}

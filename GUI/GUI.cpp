@@ -1938,12 +1938,13 @@ namespace ImGui
 
 	void DrawInfoIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
 	{
+		static Config2::CColor* ColorBase = Config2::GetColor("theme-info-icon");
+		Config2::CColor Color = ColorBase->ModulateAlpha(Opacity);
+		ImU32 Color32 = Color;
+
 		constexpr float AspectRatio = 1.f; // X / Y
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec4 Color = Config2::GetColor("theme-info-icon");
-		Color.w *= (float)Opacity / 255.f;
-		ImU32 col32 = ColorConvertFloat4ToU32(Color);
 
 		float Ratio = Dimensions.x / Dimensions.y;
 		ImVec2 Size = Ratio > AspectRatio ?
@@ -1957,16 +1958,16 @@ namespace ImGui
 		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
 
 		DrawList->PathArcTo(Position + Size / 2.f, Size.x / 2.f, 0, 2.f * IM_PI, Size.x);
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, col32, true, StrokeSize);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, Color32, true, StrokeSize);
 		DrawList->PathClear();
 
 		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.3f), StrokeSize, 0, 2.f * IM_PI, 8);
-		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, col32);
+		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, Color32);
 		DrawList->PathClear();
 
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.4f + StrokeSize));
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.8f));
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, col32, false, StrokeSize*2.f);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, Color32, false, StrokeSize*2.f);
 		DrawList->PathClear();
 	}
 
@@ -2276,11 +2277,19 @@ namespace ImGui
 
 	int DrawBooleanProperty(Config2::Property* p)
 	{
+		static Config2::CColor* PropertyBase = Config2::GetColor("theme-property-base");
+		static Config2::CColor* PropertyAccent = Config2::GetColor("theme-property-accent");
+		static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+		static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+		static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
+		static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
+		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
+		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
+
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 		ImVec2 Pos = GetCursorPos();
 
-		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
 
 		bool MasterLocked = false;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
@@ -2303,9 +2312,9 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_Button, 0);
 				PushStyleColor(ImGuiCol_ButtonHovered, 0);
 				PushStyleColor(ImGuiCol_ButtonActive, 0);
-				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-button-background"));
-				PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-button-border"));
-				PushStyleVar(ImGuiStyleVar_ChildBorderSize, Config2::GetFloat("theme-button-border-thickness"));
+				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
@@ -2314,7 +2323,7 @@ namespace ImGui
 				auto bruh_window = GetCurrentWindow();
 				auto bruh_dl = bruh_window->DrawList;
 				SetCursorPos(ImVec2(ItemWidth * (int)Value->BindMode, 0));
-				bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), Config2::GetColor("theme-button-active"), 0, 0);
+				bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), *ButtonActive, 0, 0);
 				for (int i = 0; i < 3; i++)
 				{
 					SetCursorPos(ImVec2(ItemWidth * i, 0));
@@ -2357,9 +2366,9 @@ namespace ImGui
 				PopFont();
 				x += 5 + PrefixSize.x;
 
-				PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-button-text"));
-				PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-button-border"));
-				PushStyleVar(ImGuiStyleVar_FrameBorderSize, Config2::GetFloat("theme-button-border-thickness"));
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
 				SetCursorPos(Pos + ImVec2(x, 0));
@@ -2397,9 +2406,9 @@ namespace ImGui
 
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
 
-				PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-button-text"));
-				PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-button-border"));
-				PushStyleVar(ImGuiStyleVar_FrameBorderSize, Config2::GetFloat("theme-button-border-thickness"));
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
 				if (Button(("Bind##" + p->Name).c_str(), ImVec2(40, 20)))
@@ -2422,30 +2431,29 @@ namespace ImGui
 		// draw switch
 		if (true) // here only because vs won't let me collapse it otherwise for some reason
 		{
-			auto CBoolValue = (Config2::CBoolean*)p->Value;
 			if (p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN)
 			{
-				bool MasterAllows = ((Config2::CBoolean*)p->Master->Value)->Value;
-				bool ImEnabled = CBoolValue->Value;
+				bool MasterAllows = ((Config2::CBoolean*)p->Master->Value)->Value.Get() != 0;
+				bool ImEnabled = Value->Value.Get() != 0;
 
 				MasterLocked = ImEnabled && !MasterAllows;
 			}
 
 			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
 
-			double TimePassed = Animation::delta(Animation::now(), CBoolValue->TimeChanged);
+			double TimePassed = Value->Value.GetTimeSinceChange();
 			double AnimFactor = Animation::animate(TimePassed, 0.15f);
-			if (!CBoolValue->Value)
+			if (Value->Value.Get() == 0)
 				AnimFactor = 1.f - AnimFactor;
 
-			bool Flipped = DrawBooleanSwitch("##" + p->Name, Config2::GetColor("theme-property-base"), Config2::GetColor("theme-property-accent"), AnimFactor);
+			bool Flipped = DrawBooleanSwitch("##" + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
 			if (Flipped)
 			{
 				GUI2::WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
 				if (!PremiumLocked)
 				{
-					CBoolValue->Flip();
+					Value->Value.Invert();
 					if (Value->BoundToKey >= 0)
 					{
 						if (Value->BindMode == Config2::KeybindMode::HOLDTODISABLE)
@@ -2511,11 +2519,14 @@ namespace ImGui
 
 	int DrawFloatProperty(Config2::Property* p)
 	{
+		static Config2::CColor* PropertyBase = Config2::GetColor("theme-property-base");
+		static Config2::CColor* PropertyAccent = Config2::GetColor("theme-property-accent");
+		Config2::CFloat* Value = (Config2::CFloat*)p->Value;
+
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 		ImVec2 Pos = GetCursorPos();
 
-		Config2::CFloat* Value = (Config2::CFloat*)p->Value;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
 		// draw label 
@@ -2559,7 +2570,7 @@ namespace ImGui
 			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
 
 			float DrawValue = Value->GetFactor();
-			float UserSetValue = DrawInputFloat(p->Name + "##bar", Config2::GetColor("theme-property-base"), Config2::GetColor("theme-property-accent"), DrawValue, ImVec2(BarLength, 16));
+			float UserSetValue = DrawInputFloat(p->Name + "##bar", *PropertyBase, *PropertyAccent, DrawValue, ImVec2(BarLength, 16));
 
 			if (DrawValue != UserSetValue)
 			{
@@ -2591,11 +2602,12 @@ namespace ImGui
 
 	int DrawColorProperty(Config2::Property* p)
 	{
+		Config2::CColor* Value = (Config2::CColor*)p->Value;
+
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 		ImVec2 Pos = GetCursorPos();
 
-		Config2::CColor* Value = (Config2::CColor*)p->Value;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
 		// draw label 
@@ -2637,7 +2649,7 @@ namespace ImGui
 			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
 			ImVec4 ImColor = *Value;
 
-			if (((int)Value->R + (int)Value->G + (int)Value->B) < 127 * 3) // this is a dark color
+			if (((int)Value->GetR() + (int)Value->GetG() + (int)Value->GetB()) < 127 * 3) // this is a dark color
 				PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 127));
 			else // this is a bright color
 				PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 127));
@@ -2654,7 +2666,7 @@ namespace ImGui
 			PopStyleColor(1);
 
 			PushStyleColor(ImGuiCol_Border, IM_COL32(85 / 2, 90 / 2, 95 / 2, 255));
-			SetNextWindowSize(ImVec2(210, Value->HasAlpha ? 235 : 255));
+			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
 			if (BeginPopup(("##color-picker-" + p->Name).c_str()))
 			{
 				PushFont(Arial16);
@@ -2666,7 +2678,7 @@ namespace ImGui
 
 				SetCursorPos(ImVec2(5, 30));
 				SetNextItemWidth(200);
-				if (Value->HasAlpha)
+				if (Value->GetHasAlpha())
 				{
 					ColorPicker4(("##color-editor-" + p->Name).c_str(), &ImColor.x,
 						ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_PickerHueWheel |
@@ -2681,10 +2693,10 @@ namespace ImGui
 					);
 				}
 
-				Value->R = (unsigned char)((int)(ImColor.x * 255.f + 0.5f) % 256);
-				Value->G = (unsigned char)((int)(ImColor.y * 255.f + 0.5f) % 256);
-				Value->B = (unsigned char)((int)(ImColor.z * 255.f + 0.5f) % 256);
-				Value->A = (unsigned char)((int)(ImColor.w * 255.f + 0.5f) % 256);
+				Value->SetR((unsigned char)((int)(ImColor.x * 255.f + 0.5f) % 256));
+				Value->SetG((unsigned char)((int)(ImColor.y * 255.f + 0.5f) % 256));
+				Value->SetB((unsigned char)((int)(ImColor.z * 255.f + 0.5f) % 256));
+				Value->SetA((unsigned char)((int)(ImColor.w * 255.f + 0.5f) % 256));
 
 				EndPopup();
 			}
@@ -2826,6 +2838,14 @@ void GUI2::LoadingScreen()
 
 void GUI2::AuthenticationScreen(float ContentOpacity)
 {
+	static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+	static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
+	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+	static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
+	static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
+	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
+	// TODO: set background color + outline color to config theme
+
 	unsigned char ThisContentOpacity = ContentOpacity * 255;
 
 	ImGuiIO& io = ImGui::GetIO();
@@ -2888,13 +2908,26 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	}
 
 	ImGui::PopStyleColor(3);
+	
+	// button colors
+	if (ContentOpacity < 1.f)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ButtonText->ModulateAlpha(ThisContentOpacity));
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ButtonBase->ModulateAlpha(ThisContentOpacity));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ButtonHovered->ModulateAlpha(ThisContentOpacity));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ButtonActive->ModulateAlpha(ThisContentOpacity));
+		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)ButtonBorder->ModulateAlpha(ThisContentOpacity));
+	}
+	else
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)*ButtonBase);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonHovered);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonActive);
+		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+	}
 
-	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-button-text"));
-	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)Config2::GetColor("theme-button-background"));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)Config2::GetColor("theme-button-hovered"));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)Config2::GetColor("theme-button-active"));
-	ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-button-border"));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, Config2::GetFloat("theme-button-border-thickness"));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 	// buttons
 	{
@@ -3003,15 +3036,16 @@ void GUI2::AuthenticationIntro()
 
 void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 {
+	static Config2::CColor* WidgetBackground = Config2::GetColor("theme-widget-background");
+	static Config2::CColor* WidgetTitleText = Config2::GetColor("theme-widget-title");
+
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
 	int WidgetWidth = Window->ContentRegionRect.GetWidth();
 	int WidgetX = t->HorizontalPadding + ImGui::GetCursorPosX(), WidgetY = t->TopPadding + t->VerticalPadding + ImGui::GetCursorPosY();
 
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-widget-background"));
-
-	ImVec4 WidgetTitleColor = Config2::GetColor("theme-widget-title");
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
 		Config2::Group* Group = t->Groups[g];
@@ -3032,7 +3066,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 		if (Group->ShowTitle)
 		{
 			ImGui::SetCursorPos(ImVec2(5, GroupY));
-			ImGui::PushStyleColor(ImGuiCol_Text, WidgetTitleColor);
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::PushFont(Arial18BoldItalics);
 			ImGui::Text(Group->Title.substr(GroupPrefix.size()).c_str());
 			ImGui::PopFont();
@@ -3091,12 +3125,31 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 
 void GUI2::DrawActiveTab()
 {
+	static Config2::CColor* WidgetBackground = Config2::GetColor("theme-widget-background");
+	static Config2::CColor* WidgetTitleText = Config2::GetColor("theme-widget-title");
+	static Config2::CColor* PropertyText = Config2::GetColor("theme-property-text");
+	static Config2::CColor* LegitRageSwitchBackground = Config2::GetColor("theme-legit-rage-switch-background");
+	static Config2::CColor* LegitRageSwitchHighlight = Config2::GetColor("theme-legit-rage-switch-highlight");
+	static Config2::CColor* LegitRageSwitchOutline = Config2::GetColor("theme-legit-rage-switch-outline");
+	static Config2::CColor* LegitRageSwitchText = Config2::GetColor("theme-legit-rage-switch-text");
+	static Config2::CColor* EjectBase = Config2::GetColor("theme-eject");
+	static Config2::CColor* EjectButtonText = Config2::GetColor("theme-eject-button-text");
+	static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+	static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
+	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+	static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
+	static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat("theme-legit-rage-switch-border-size");
+	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
+
 	if (!ActiveTab) return;
 
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
 
-	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-property-text"));
+	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*PropertyText);
 
 	if (ActiveTab->Name == "Offence" || ActiveTab->Name == "Defence")
 	{
@@ -3117,10 +3170,10 @@ void GUI2::DrawActiveTab()
 			ImGui::PushStyleColor(ImGuiCol_Button, 0);
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-legit-rage-switch-background"));
-			ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-legit-rage-switch-outline"));
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-legit-rage-switch-text"));
-			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, Config2::GetFloat("theme-legit-rage-switch-outline-thickness"));
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*LegitRageSwitchBackground);
+			ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)*LegitRageSwitchOutline);
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*LegitRageSwitchText);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, LegitRageSwitchBorderSize->Get());
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
 			ImGui::PushFont(Arial18BoldItalics);
 
@@ -3130,18 +3183,18 @@ void GUI2::DrawActiveTab()
 			auto bruh_window = ImGui::GetCurrentWindow();
 			auto bruh_dl = bruh_window->DrawList;
 
-			double TimePassed = Animation::delta(Animation::now(), MasterMode->TimeChanged);
+			double TimePassed = MasterMode->Value.GetTimeSinceChange();
 			double AnimFactor = Animation::animate(TimePassed, 0.15f, Animation::Interpolation::easeInOutQuint);
-			if (MasterMode->State == 0) AnimFactor = 1.f - AnimFactor;
+			if (MasterMode->Value.Get() == 0) AnimFactor = 1.f - AnimFactor;
 			float XOffset = Animation::lerp(5.f, Width/2.f, AnimFactor);
-			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width/2 - 5, 35), Config2::GetColor("theme-legit-rage-switch-highlight"), 5.f);
+			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width/2 - 5, 35), *LegitRageSwitchHighlight, 5.f);
 
 			ImGui::SetCursorPos(ImVec2(0, 0));
 			if (ImGui::Button(IsOffencePage ? "Legit##big-switch-offence" : "Legit##big-switch-defence", ImVec2(Width / 2, 40)))
 			{
 				WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
-				MasterMode->Set(0);
+				MasterMode->Value.Set(0);
 			}
 			WantMouse |= ImGui::IsItemHovered();
 
@@ -3150,7 +3203,7 @@ void GUI2::DrawActiveTab()
 			{
 				WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
-				MasterMode->Set(1);
+				MasterMode->Value.Set(1);
 			}
 			WantMouse |= ImGui::IsItemHovered();
 
@@ -3163,12 +3216,12 @@ void GUI2::DrawActiveTab()
 
 		// the rest of the shit
 		ImGui::SetCursorPos(ImVec2(0, 60));
-		DrawNormalTab(ActiveTab, MasterMode->State == 0 ? "legit-" : "rage-");
+		DrawNormalTab(ActiveTab, MasterMode->Value.Get() == 0 ? "legit-" : "rage-");
 	}
 	else if (ActiveTab->Name == "Eject")
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-widget-background"));
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::SetCursorPos(ImVec2(10.f, 10.f));
 		ImGui::BeginChild("##eject-confirm", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 171));
 
@@ -3179,7 +3232,7 @@ void GUI2::DrawActiveTab()
 			const char* Text = "Are you sure you would like to eject?";
 			float TextSize = ImGui::CalcTextSize(Text).x;
 
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-widget-title"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::SetCursorPos(ImVec2(ImGui::GetCurrentWindow()->Size.x / 2.f - TextSize / 2.f, 10));
 			ImGui::TextEx(Text);
 			ImGui::PopStyleColor(1);
@@ -3207,7 +3260,7 @@ void GUI2::DrawActiveTab()
 
 		// confirm button
 		{
-			ImVec4 Color = Config2::GetColor("theme-eject");
+			ImVec4 Color = *EjectBase;
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.f);
 			ImGui::PushStyleColor(ImGuiCol_Button, Color);
@@ -3215,7 +3268,7 @@ void GUI2::DrawActiveTab()
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Color);
 			Color.w *= 0.8f;
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, Color);
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-eject-button-text"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*EjectButtonText);
 
 			ImGui::PushFont(Arial18BoldItalics);
 
@@ -3234,14 +3287,14 @@ void GUI2::DrawActiveTab()
 	}
 	else if (ActiveTab->Name == "Skinchanger")
 	{
-		ImU32 ButtonBackgroundColor = Config2::GetColor("theme-button-background");
-		ImU32 ButtonHoveringColor = Config2::GetColor("theme-button-hovered");
-		ImU32 ButtonSelectedColor = Config2::GetColor("theme-button-active");
-		ImU32 ButtonOutlineColor = Config2::GetColor("theme-button-border");
+		ImU32 ButtonBackgroundColor = *ButtonBase;
+		ImU32 ButtonHoveringColor = *ButtonHovered;
+		ImU32 ButtonSelectedColor = *ButtonActive;
+		ImU32 ButtonOutlineColor = *ButtonBorder;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-widget-background"));
-		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-button-text"));
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
+		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 		int y = 0;
 
 		// knife changer
@@ -3262,7 +3315,7 @@ void GUI2::DrawActiveTab()
 
 			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
 			ImGui::PushFont(Arial18BoldItalics);
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-widget-title"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::Text("Knives");
 			ImGui::PopStyleColor(1);
 			ImGui::PopFont();
@@ -3285,7 +3338,7 @@ void GUI2::DrawActiveTab()
 			auto Widget = ImGui::GetCurrentWindow();
 
 			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-widget-title"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::PushFont(Arial18BoldItalics);
 			ImGui::Text("Guns");
 			ImGui::PopFont();
@@ -3418,7 +3471,7 @@ void GUI2::DrawActiveTab()
 				ImGui::Text(label);
 
 				ImGui::SetCursorPos(ImVec2(202 + labelSize.x + 5, 37));
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-searchbar-background"));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-weapon-current-selection", ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
 				ImGui::PopStyleVar(1);
@@ -3430,9 +3483,7 @@ void GUI2::DrawActiveTab()
 					AnimFactor = 1.f - AnimFactor;
 
 				ImGui::PushFont(Arial16);
-				ImVec4 Color = Config2::GetColor("theme-searchbar-text");
-				Color.w *= Animation::lerp(0.6f, 1.f, AnimFactor);
-				ImGui::PushStyleColor(ImGuiCol_Text, Color);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(Animation::lerp(0.6f, 1.f, AnimFactor)));
 
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
@@ -3484,7 +3535,7 @@ void GUI2::DrawActiveTab()
 			// search bar
 			{ 
 				ImGui::SetCursorPos(ImVec2(202, 37 + 24 + 5));
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-searchbar-background"));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-weapon-searchbar", ImVec2(Widget->Size.x - 202 - 10, 24), false);
 
@@ -3502,7 +3553,7 @@ void GUI2::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(5, 5));
 				ImGui::DrawSearchIcon(200, ImVec2(14, 14));
 
-				ImVec4 Color = Config2::GetColor("theme-searchbar-text");
+				ImVec4 Color = *SearchbarText;
 				ImGui::PushFont(Arial16);
 				ImGui::PushStyleColor(ImGuiCol_Text, Color);
 				ImGui::SetCursorPos(ImVec2(24, 4));
@@ -3629,14 +3680,14 @@ void GUI2::DrawActiveTab()
 	{
 		int WidgetWidth = Window->ContentRegionRect.GetWidth();
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-widget-background"));
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
 		ImGui::SetCursorPos(ImVec2(10, 10));
 		ImGui::BeginChild("##theme-import/export", ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
 		auto InnerWindow = ImGui::GetCurrentWindow();
 
 		ImGui::SetCursorPos(ImVec2(5, 5));
-		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-widget-title"));
+		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 		ImGui::PushFont(Arial18BoldItalics);
 		ImGui::Text("Save / Load");
 		ImGui::SetCursorPos(ImVec2(5, 52));
@@ -3644,9 +3695,9 @@ void GUI2::DrawActiveTab()
 		ImGui::PopFont();
 		ImGui::PopStyleColor(1);
 
-		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-button-text"));
-		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)Config2::GetColor("theme-button-border"));
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, Config2::GetFloat("theme-button-border-thickness"));
+		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 		
 		// icon + import/export buttons
@@ -3751,6 +3802,21 @@ void GUI2::DrawActiveTab()
 void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 {
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
+	static Config2::CColor* TopbarBackground = Config2::GetColor("theme-topbar-background");
+	static Config2::CColor* TopbarText = Config2::GetColor("theme-topbar-text");
+	static Config2::CColor* TablistBackground = Config2::GetColor("theme-tablist-background");
+	static Config2::CColor* TablistText = Config2::GetColor("theme-tablist-text");
+	static Config2::CColor* ActiveTablistText = Config2::GetColor("theme-active-tablist-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+	static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
+	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+	static Config2::CColor* EjectBase = Config2::GetColor("theme-eject");
+	static Config2::CColor* MainBorder = Config2::GetColor("theme-border");
+	static Config2::CColor* MainBackground = Config2::GetColor("theme-background");
+	static Config2::CFloat* MainBorderSize = Config2::GetFloat("theme-border-size");
+
 
 	// Initially center the window w/ default size
 	ImGuiIO& io = ImGui::GetIO();
@@ -3771,19 +3837,19 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(0, 0, 0, 0));
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, (ImVec4)Config2::GetColor("theme-topbar-background")); // IM_COL32(34, 34, 34, 255)
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, (ImVec4)Config2::GetColor("theme-topbar-background")); // IM_COL32(0, 0, 0, 255)
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)Config2::GetColor("theme-tab-background-color")); // IM_COL32(30, 30, 30, 255)
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(30, 30, 30, 0));
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, (ImVec4)*TopbarBackground);
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, (ImVec4)*TopbarBackground);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)*MainBackground);
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(255, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(85, 90, 95, 255));
-	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)Config2::GetColor("theme-button-background"));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)Config2::GetColor("theme-button-hovered"));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)Config2::GetColor("theme-button-active"));
+	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)*ButtonBase);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonHovered);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonActive);
 
 	ImGui::PushFont(Arial14BoldItalics);
-	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-topbar-text")); // IM_COL32(120, 120, 120, 255)
+	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TopbarText);
 	int TitleBarHeight = 24;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
 	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
@@ -3796,14 +3862,14 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 	// draw border because imgui borders are inset which makes me wanna kms
 	{
-		float BorderThickness = Config2::GetFloat("theme-border-thickness");
+		float BorderThickness = MainBorderSize->Get();
 		if (BorderThickness > 0.f)
 		{
 			auto BackgroundDrawList = ImGui::GetBackgroundDrawList();
 			BackgroundDrawList->AddRect(
 				Window->Pos - ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
 				Window->Pos + Window->Size + ImVec2(BorderThickness / 2.f, BorderThickness / 2.f),
-				Config2::GetColor("theme-border-color"),
+				*MainBorder,
 				ImGui::GetStyle().WindowRounding,
 				ImDrawCornerFlags_All,
 				BorderThickness
@@ -3847,7 +3913,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		// draw background because imgui is fuckign retarded and can't clip the bottom corners correctly
 		DrawList->AddRectFilled(
 			Window->Pos + OverlayPosition, Window->Pos + OverlayPosition + OverlaySize,
-			Config2::GetColor("theme-tablist-background"), // IM_COL32(53, 54, 58, 255)
+			*TablistBackground, 
 			5.f, (SearchAnimationFactor > 0.5f) ? ImDrawCornerFlags_Bot : ImDrawCornerFlags_BotLeft
 		);
 
@@ -3859,7 +3925,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		// search bar
 		{
 			ImGui::SetCursorPos(ImVec2(5,5));
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)Config2::GetColor("theme-searchbar-background"));
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 			ImGui::BeginChild("##left-side-searchbar", ImVec2(OverlaySize.x - 10, 24), false, ImGuiWindowFlags_NoSavedSettings);
 
@@ -3873,7 +3939,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::DrawSearchIcon(200, ImVec2(14, 14));
 
 			ImGui::PushFont(Arial16);
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-searchbar-text"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*SearchbarText);
 			ImGui::SetCursorPos(ImVec2(24, 4));
 			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
 			ImGui::InputText(InputLabel, SearchQuery, 256);
@@ -3882,11 +3948,8 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 			if (!IsSearching)
 			{
-				ImVec4 Color = Config2::GetColor("theme-searchbar-text");
-				Color.w = 0.6f;
-
 				ImGui::SetCursorPos(ImVec2(24, 4));
-				ImGui::PushStyleColor(ImGuiCol_Text, Color);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(0.6f));
 				ImGui::Text("Search");
 				ImGui::PopStyleColor(1);
 			}
@@ -3920,7 +3983,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		if (!IsSearching)
 		{
 			ImGui::PushFont(Arial18);
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-tablist-text"));
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TablistText);
 			ImGui::PushStyleColor(ImGuiCol_Button, 0);
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
@@ -3940,9 +4003,9 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 					ImGui::PushFont(Arial18Bold);
 
 					if (isEject)
-						ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-eject"));
+						ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*EjectBase);
 					else
-						ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)Config2::GetColor("theme-active-tablist-text"));
+						ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ActiveTablistText);
 				}
 
 
@@ -4051,7 +4114,7 @@ void GUI2::Main()
 			MainScreen();
 			L::Verbose("GUI2::MainScreen complete");
 
-			/*
+			//*
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");

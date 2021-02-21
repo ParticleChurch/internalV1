@@ -18,10 +18,10 @@ namespace Keybind
 	struct KeyLogEntry
 	{
 		int Key;
-		bool State;
+		int State; // 1 = pressed, 0 = released
 		bool WantCaptureMouse;
 
-		KeyLogEntry(int key, bool state, bool wantmouse)
+		KeyLogEntry(int key, int state, bool wantmouse)
 		{
 			this->Key = key;
 			this->State = state;
