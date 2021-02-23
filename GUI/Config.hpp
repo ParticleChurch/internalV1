@@ -889,10 +889,11 @@ namespace Config2
 
 	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
+	extern bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed);
 	extern char* ExportTheme(size_t* nBytesOut);
 	extern char* ExportConfig(size_t* nBytesOut);
-	extern void LoadTheme(const char* Theme, size_t nBytes);
-	extern void LoadConfig(char* Config, size_t nBytes);
+	extern void ImportTheme(const char* Theme, size_t nBytes);
+	extern void ImportConfig(const char* buffer, size_t nBytes);
 
 	// file openers
 	extern void PromptImportThemeFile();

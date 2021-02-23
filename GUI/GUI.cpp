@@ -3678,12 +3678,127 @@ void GUI2::DrawActiveTab()
 	}
 	else if (ActiveTab->Name == "Theme")
 	{
+	int WidgetWidth = Window->ContentRegionRect.GetWidth();
+
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
+	ImGui::SetCursorPos(ImVec2(10, 10));
+	ImGui::BeginChild("##theme-import/export", ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
+	auto InnerWindow = ImGui::GetCurrentWindow();
+
+	ImGui::SetCursorPos(ImVec2(5, 5));
+	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
+	ImGui::PushFont(Arial18BoldItalics);
+	ImGui::Text("Save / Load");
+	ImGui::SetCursorPos(ImVec2(5, 52));
+	ImGui::Text("Presets");
+	ImGui::PopFont();
+	ImGui::PopStyleColor(1);
+
+	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+	ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+	// icon + import/export buttons
+	{
+		ImVec2 IconSize(14, 14);
+		ImVec2 Pos(0, 5 + 18 + 5);
+		ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+		ImGui::DrawInfoIcon(255, IconSize);
+
+		auto ID = ImGui::GetID("theme-import-export-info-btn");
+		auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
+		ImGui::ItemAdd(BB, ID);
+		if (ImGui::ItemHoverable(BB, ID))
+		{
+			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+			ImGui::ToolTip("Click for more info", IconSize.y);
+			GUI2::WantMouse = true;
+			if (GImGui->IO.MouseClicked[0])
+			{
+				ShellExecute(0, 0, "http://a4g4.com/help/index.php#theme", 0, 0, SW_SHOW);
+			}
+		}
+
+
+		ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
+		if (ImGui::Button("Export##theme", ImVec2(60, 20)))
+		{
+			Config2::PromptExportThemeFile();
+		}
+
+		ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
+		if (ImGui::Button("Import##theme", ImVec2(60, 20)))
+		{
+			Config2::PromptImportThemeFile();
+		}
+
+	}
+
+	// preset buttons
+	{
+		ImVec2 IconSize(14, 14);
+		ImVec2 Pos(0, 52 + 18 + 5);
+		ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+		ImGui::DrawInfoIcon(255, IconSize);
+
+		auto ID = ImGui::GetID("theme-presets-info-btn");
+		auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
+		ImGui::ItemAdd(BB, ID);
+		if (ImGui::ItemHoverable(BB, ID))
+		{
+			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+			ImGui::ToolTip("Click for more info", IconSize.y);
+			GUI2::WantMouse = true;
+			if (GImGui->IO.MouseClicked[0])
+			{
+				ShellExecute(0, 0, "http://a4g4.com/help/index.php#theme", 0, 0, SW_SHOW);
+			}
+		}
+
+		int x = 6 + IconSize.x + 6;
+		ImGui::SetCursorPos(Pos + ImVec2(x, 0));
+		if (ImGui::Button("Dark##themepreset", ImVec2(60, 20)))
+		{
+			Config2::ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
+		}
+		x += 66;
+
+		ImGui::SetCursorPos(Pos + ImVec2(x, 0));
+		if (ImGui::Button("Light##themepreset", ImVec2(60, 20)))
+		{
+			Config2::ImportTheme(ConfigConstants::ThemeLight, ConfigConstants::ThemeLightSize);
+		}
+		x += 66;
+
+		ImGui::SetCursorPos(Pos + ImVec2(x, 0));
+		if (ImGui::Button("Contrast##themepreset", ImVec2(60, 20)))
+		{
+			Config2::ImportTheme(ConfigConstants::ThemeContrast, ConfigConstants::ThemeContrastSize);
+		}
+		x += 66;
+	}
+
+	ImGui::PopStyleColor(2);
+	ImGui::PopStyleVar(2);
+
+	ImGui::EndChild();
+	ImGui::PopStyleColor(1);
+	ImGui::PopStyleVar(1);
+
+	// the rest of the shit
+	ImGui::SetCursorPos(ImVec2(0, 120));
+	DrawNormalTab(ActiveTab);
+	}
+	else if (ActiveTab->Name == "Config")
+	{
 		int WidgetWidth = Window->ContentRegionRect.GetWidth();
 
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
 		ImGui::SetCursorPos(ImVec2(10, 10));
-		ImGui::BeginChild("##theme-import/export", ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild("##config-import/export", ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
 		auto InnerWindow = ImGui::GetCurrentWindow();
 
 		ImGui::SetCursorPos(ImVec2(5, 5));
@@ -3699,7 +3814,7 @@ void GUI2::DrawActiveTab()
 		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-		
+
 		// icon + import/export buttons
 		{
 			ImVec2 IconSize(14, 14);
@@ -3707,7 +3822,7 @@ void GUI2::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID("theme-import-export-info-btn");
+			auto ID = ImGui::GetID("config-import-export-info-btn");
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
@@ -3717,21 +3832,21 @@ void GUI2::DrawActiveTab()
 				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, "http://a4g4.com/help/index.php#theme", 0, 0, SW_SHOW);
+					ShellExecute(0, 0, "http://a4g4.com/help/index.php#config", 0, 0, SW_SHOW);
 				}
 			}
 
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
-			if (ImGui::Button("Export##theme", ImVec2(60, 20)))
+			if (ImGui::Button("Export##config", ImVec2(60, 20)))
 			{
-				Config2::PromptExportThemeFile();
+				Config2::PromptExportConfigFile();
 			}
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
-			if (ImGui::Button("Import##theme", ImVec2(60, 20)))
+			if (ImGui::Button("Import##config", ImVec2(60, 20)))
 			{
-				Config2::PromptImportThemeFile();
+				Config2::PromptImportConfigFile();
 			}
 
 		}
@@ -3743,7 +3858,7 @@ void GUI2::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID("theme-presets-info-btn");
+			auto ID = ImGui::GetID("config-presets-info-btn");
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
@@ -3753,29 +3868,29 @@ void GUI2::DrawActiveTab()
 				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, "http://a4g4.com/help/index.php#theme", 0, 0, SW_SHOW);
+					ShellExecute(0, 0, "http://a4g4.com/help/index.php#config", 0, 0, SW_SHOW);
 				}
 			}
 
 			int x = 6 + IconSize.x + 6;
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button("Dark##themepreset", ImVec2(60, 20)))
+			if (ImGui::Button("Off##configpreset", ImVec2(60, 20)))
 			{
-				Config2::LoadTheme(ConfigConstants::ThemeDefaultDark, ConfigConstants::ThemeDefaultDarkSize);
+				Config2::ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button("Light##themepreset", ImVec2(60, 20)))
+			if (ImGui::Button("Legit##configpreset", ImVec2(60, 20)))
 			{
-				Config2::LoadTheme(ConfigConstants::ThemeDefaultLight, ConfigConstants::ThemeDefaultLightSize);
+				Config2::ImportConfig(ConfigConstants::ConfigLegit, ConfigConstants::ConfigLegitSize);
 			}
 			x += 66;
-			
+
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button("Contrast##themepreset", ImVec2(60, 20)))
+			if (ImGui::Button("Rage##configpreset", ImVec2(60, 20)))
 			{
-				Config2::LoadTheme(ConfigConstants::ThemeDefaultContrast, ConfigConstants::ThemeDefaultContrastSize);
+				Config2::ImportConfig(ConfigConstants::ConfigRage, ConfigConstants::ConfigRageSize);
 			}
 			x += 66;
 		}

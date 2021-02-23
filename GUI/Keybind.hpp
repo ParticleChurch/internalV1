@@ -31,5 +31,6 @@ namespace Keybind
 	extern std::vector<KeyLogEntry> KeyChangeStack; // most recent entry last
 
 	extern void ForceUpdate();
+	extern int ReverseKeyMap(int KeyCode);
 	extern void Init(bool* EjectSignal, bool* ImGuiWantCaptureMouse);
 }

@@ -1215,7 +1215,7 @@ namespace Config2
 			Tab* t = new Tab("Eject");
 		}
 
-		LoadTheme(ConfigConstants::ThemeDefaultDark, ConfigConstants::ThemeDefaultDarkSize);
+		ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
 	}
 
 	Property* GetProperty(std::string Name)
@@ -1299,6 +1299,80 @@ namespace Config2
 		return (CColor*)p->Value;
 	}
 
+	void _KeyStateChanged(int index, bool currentlyPressed)
+	{
+		std::vector<void*> Properties = Keybind::Binds[index];
+		for (size_t i = 0; i < Properties.size(); i++)
+		{
+			Property* p = (Property*)Properties.at(i);
+			switch (p->Type)
+			{
+			case PropertyType::BOOLEAN:
+			{
+				CBoolean* b = (CBoolean*)p->Value;
+				switch (b->BindMode)
+				{
+				default:
+				case KeybindMode::TOGGLE:
+					if (currentlyPressed)
+						b->Value.Invert();
+					break;
+				case KeybindMode::HOLDTOENABLE:
+					if (!!b->Value.Get() != currentlyPressed)
+						b->Value.Invert();
+					break;
+				case KeybindMode::HOLDTODISABLE:
+					if (!!b->Value.Get() == currentlyPressed)
+						b->Value.Invert();
+					break;
+				}
+			} break;
+			default:
+				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
+				return;
+			}
+		}
+	}
+
+	void _BindToKey(Property* p, int index)
+	{
+		if (index >= 0 && Keybind::KeyMap[index] == VK_ESCAPE)
+			index = -1;
+		bool ForceUpdate = index >= 0;
+
+		switch (p->Type)
+		{
+		case PropertyType::BOOLEAN:
+		{
+			// unbind if already bound
+			if (((CBoolean*)p->Value)->BoundToKey >= 0)
+			{
+				std::vector<void*>& vec = Keybind::Binds[((CBoolean*)p->Value)->BoundToKey];
+				for (size_t i = 0; i < vec.size(); i++)
+					if (vec.at(i) == (void*)p)
+						vec.erase(vec.begin() + i--);
+				((CBoolean*)p->Value)->BoundToKey = -1;
+			}
+
+			// bind if wants us to
+			if (index >= 0)
+			{
+				((CBoolean*)p->Value)->BoundToKey = index;
+				Keybind::Binds[index].push_back(p);
+			}
+
+			if (((CBoolean*)p->Value)->BindMode == KeybindMode::TOGGLE)
+				ForceUpdate = false;
+		} break;
+		default:
+			L::Log((XOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
+			return;
+		}
+
+		if (ForceUpdate)
+			_KeyStateChanged(index, GetKeyState(Keybind::KeyMap[index]) < 0);
+	}
+
 	bool ExportSingleProperty(Property* p, char** buffer, size_t* bufferSpaceOccupied, size_t* bufferSpaceAllocated)
 	{
 		if (!p || !buffer || !bufferSpaceOccupied || !bufferSpaceAllocated)
@@ -1318,7 +1392,8 @@ namespace Config2
 		{
 		case PropertyType::BOOLEAN:
 		{
-			valueLength = 1;
+			// boolvalue + bindmode + VK code : boolvalue
+			valueLength = ((CBoolean*)p->Value)->Bindable ? 1 + 1 + 4 : 1;
 			spaceRequired += p->Name.length() + 1;
 			spaceRequired += valueLength;
 		} break;
@@ -1374,7 +1449,24 @@ namespace Config2
 			{
 			case PropertyType::BOOLEAN:
 			{
-				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value.Get();
+				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value.Get() != 0 ? '\xFF' : '\x00';
+				if (((CBoolean*)p->Value)->Bindable)
+				{
+					switch (((CBoolean*)p->Value)->BindMode)
+					{
+					default:
+					case KeybindMode::TOGGLE:
+						(*buffer)[*bufferSpaceOccupied + 1] = '\x00';
+						break;
+					case KeybindMode::HOLDTOENABLE:
+						(*buffer)[*bufferSpaceOccupied + 1] = '\x01';
+						break;
+					case KeybindMode::HOLDTODISABLE:
+						(*buffer)[*bufferSpaceOccupied + 1] = '\x02';
+						break;
+					}
+					*(int*)(*buffer + *bufferSpaceOccupied + 2) = ((CBoolean*)p->Value)->BoundToKey >= 0 ? Keybind::KeyMap[((CBoolean*)p->Value)->BoundToKey] : -1;
+				}
 			} break;
 			case PropertyType::FLOAT:
 			{
@@ -1394,6 +1486,78 @@ namespace Config2
 		}
 
 		L::Verbose("ExportSingleProperty success");
+		return true;
+	}
+
+	bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed)
+	{
+		if (bufferSize < sizeof(size_t)) return false;
+		
+		// read value size
+		size_t valueSize = *(size_t*)buffer;
+		bufferSize -= sizeof(size_t);
+		if (nBytesUsed) *nBytesUsed = sizeof(size_t);
+
+		// read property name & get pointer
+		const char* name = buffer + sizeof(size_t);
+		size_t nameSize = 0;
+		while (bufferSize > 0 && name[nameSize++] != '\0') bufferSize--;
+		if (nBytesUsed) *nBytesUsed += nameSize;
+		if (nameSize < 1) return false;
+		Property* p = GetProperty(name);
+		if (!p) return false;
+
+		// read value
+		if (bufferSize < valueSize) return false;
+		if (nBytesUsed) *nBytesUsed += valueSize;
+		const char* value = buffer + sizeof(size_t) + nameSize;
+		switch (p->Type)
+		{
+		case PropertyType::BOOLEAN:
+		{
+			((CBoolean*)p->Value)->Value.Set(value[0] != 0 ? 1 : 0);
+			if (valueSize == 1)
+				; // uhhh... maybe a switch would be better
+			else if (valueSize == 1 + 1 + 4)
+			{
+				if (((CBoolean*)p->Value)->Bindable)
+				{
+					switch (value[1])
+					{
+					case 0:
+						((CBoolean*)p->Value)->BindMode = KeybindMode::TOGGLE;
+						break;
+					case 1:
+						((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTOENABLE;
+						break;
+					case 2:
+						((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTODISABLE;
+						break;
+					default:
+						L::Verbose(XOR("ImportSingleProperty got a weird bind mode for boolean"));
+						break; // just leave it at whatever it was
+					}
+					_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + 2)));
+				}
+			}
+			else
+				return false;
+		} break;
+		case PropertyType::FLOAT:
+		{
+			if (valueSize != sizeof(float)) return false;
+			((CFloat*)p->Value)->Set(*(float*)(value));
+		} break;
+		case PropertyType::COLOR:
+		{
+			if (valueSize != sizeof(unsigned char) * 4) return false;
+			CColor* c = (CColor*)p->Value;
+			c->SetR((unsigned char)value[0]);
+			c->SetG((unsigned char)value[1]);
+			c->SetB((unsigned char)value[2]);
+			c->SetA((unsigned char)value[3]);
+		} break;
+		}
 		return true;
 	}
 
@@ -1454,7 +1618,50 @@ namespace Config2
 		return buffer;
 	}
 
-	void LoadTheme(const char* Theme, size_t nBytes)
+	char* ExportConfig(size_t* nBytesOut)
+	{
+		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/CONFIG";
+		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/CONFIG") - 1;
+
+		size_t size = 0;
+		size_t capacity = headerSize;
+		char* buffer = (char*)malloc(headerSize);
+		if (!buffer)
+		{
+			L::Log(XOR("Config2::ExportConfig failed - initial malloc failed"));
+			return nullptr;
+		}
+
+		memcpy(buffer, header, headerSize);
+		size += headerSize;
+		
+		for (size_t t = 0; t < Tabs.size(); t++)
+		{
+			Tab* tab = Tabs.at(t);
+			if (tab->Name == "Theme") continue;
+
+			for (size_t g = 0; g < tab->Groups.size(); g++)
+			{
+				Group* group = tab->Groups.at(g);
+				for (size_t i = 0; i < group->Properties.size(); i++)
+				{
+					Property* p = group->Properties.at(i);
+					if (!ExportSingleProperty(p, &buffer, &size, &capacity))
+					{
+						L::Log(XOR("Config2::ExportConfig failed - ExportSingleProperty failed"));
+						free(buffer);
+						return nullptr;
+					}
+				}
+			}
+		}
+		L::Log(XOR("Config2::ExportConfig success"));
+
+		*nBytesOut = size;
+		return buffer;
+	}
+
+	void ImportTheme(const char* buffer, size_t nBytes)
 	{
 		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/THEME";
 		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/THEME") - 1;
@@ -1467,7 +1674,7 @@ namespace Config2
 			return;
 		}
 
-		if (memcmp(header, Theme, headerSize))
+		if (memcmp(header, buffer, headerSize))
 		{
 			L::Log("Tried to load a theme with invalid header");
 			return;
@@ -1476,82 +1683,43 @@ namespace Config2
 		size_t i = headerSize;
 		while (i < nBytes)
 		{
-			size_t remaining = nBytes - i;
-			size_t valueLength = 0;
-			char* name = nullptr;
-			size_t nameSize = 0;
-
-			// +1 because there must be at least 1 more byte for the propertyName
-			if (remaining < sizeof(size_t) + 1) break;
-			valueLength = *(size_t*)(Theme + i);
-			i += sizeof(size_t);
-			remaining -= sizeof(size_t);
-
-			// hhhhhxxxxYYY
-
-			// get name
-			name = (char*)(Theme + i);
-			for (size_t j = 0; j < remaining; j++)
+			size_t bruh = nBytes - i;
+			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				if (name[j] == '\0')
-				{
-					nameSize = j + 1;
-					break;
-				}
+				L::Log(XOR("Failed to import property... This theme is probably fucked"));
 			}
+			i += bruh;
+		}
+	}
 
-			// didn't find a null terminator
-			if (nameSize == 0) break;
-			i += nameSize;
-			remaining -= nameSize;
+	void ImportConfig(const char* buffer, size_t nBytes)
+	{
+		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/CONFIG";
+		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/CONFIG") - 1;
 
-			// make sure there is enough space for the value
-			if (remaining < valueLength) break;
+		L::Verbose("Loading config with ", std::to_string(nBytes).c_str());
+		L::Verbose(" bytes");
+		if (nBytes < headerSize)
+		{
+			L::Log("Tried to load a config that doesn't have enough bytes");
+			return;
+		}
 
-			Property* p = GetProperty(name);
-			if (!p)
+		if (memcmp(header, buffer, headerSize))
+		{
+			L::Log("Tried to load a config with invalid header");
+			return;
+		}
+
+		size_t i = headerSize;
+		while (i < nBytes)
+		{
+			size_t bruh = nBytes - i;
+			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				// this property does not exist, probably an older version of the config editor
-				L::Log(XOR("Theme attempted to load invalid property: "), "");
-				L::Log(name);
-				i += valueLength;
-				continue;
+				L::Log(XOR("Failed to import property... This config is probably fucked"));
 			}
-
-			switch (p->Type)
-			{
-			case PropertyType::BOOLEAN:
-			{
-				if (valueLength != 1) goto INVALID_LENGTH;
-				((CBoolean*)p->Value)->Value.Set(*(Theme + i) > 0x7f ? 1 : 0);
-			} break;
-			case PropertyType::FLOAT:
-			{
-				if (valueLength != sizeof(float)) goto INVALID_LENGTH;
-				((CFloat*)p->Value)->Set(*(float*)(Theme + i));
-			} break;
-			case PropertyType::COLOR:
-			{
-				if (valueLength != sizeof(unsigned char) * 4) goto INVALID_LENGTH;
-				CColor* c = (CColor*)p->Value;
-				c->SetR(*(Theme + i + 0));
-				c->SetG(*(Theme + i + 1));
-				c->SetB(*(Theme + i + 2));
-				c->SetA(*(Theme + i + 3));
-			} break;
-			}
-
-			L::Log(XOR("Loaded theme for property: "), "");
-			L::Log(p->Name.c_str());
-			i += valueLength;
-			continue;
-
-		INVALID_LENGTH:
-			L::Log(XOR("Got unexpected value length for property: "), p->Name.c_str());
-			L::Log(XOR(" with type = "), std::to_string((int)p->Type).c_str());
-			L::Log(XOR(" (got "), std::to_string(valueLength).c_str());
-			L::Log(XOR(" bytes)"));
-			i += valueLength;
+			i += bruh;
 		}
 	}
 
@@ -1683,8 +1851,142 @@ namespace Config2
 		}
 		file.close();
 
-		L::Verbose("_PromptImportThemeFile passing execution to Config2::LoadTheme()");
-		Config2::LoadTheme(buffer, bytes);
+		L::Verbose("_PromptImportThemeFile passing execution to Config2::ImportTheme()");
+		Config2::ImportTheme(buffer, bytes);
+		free(buffer);
+		return 0;
+	}
+
+	DWORD WINAPI _PromptExportConfigFile(void* _)
+	{
+		L::Log("_PromptExportConfigFile executing...");
+
+		// prompt user to save file
+		char filename[MAX_PATH];
+		{
+			ZeroMemory(&filename, MAX_PATH);
+			strcpy(filename, "autoload.pccfg");
+
+			OPENFILENAME ofn{};
+			ZeroMemory(&ofn, sizeof(ofn));
+
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFilter = "Particle Config File (.pccfg)\0*.pccfg\0All Files\0*.*\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrTitle = "Export Config";
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
+
+			L::Verbose("_PromptExportConfigFile initiating user input");
+			if (!GetSaveFileName(&ofn) || filename[0] == '\0')
+			{
+				L::Log("_PromptExportConfigFile failed - user terminated");
+				return 1;
+			}
+			L::Verbose("_PromptExportConfigFile got filepath: ", "");
+			L::Verbose(filename);
+		}
+
+		// open the file
+		L::Verbose("_PromptExportConfigFile opening file");
+		std::ofstream file(filename, std::ios::binary);
+		if (!file.is_open())
+		{
+			L::Log("_PromptExportConfigFile failed - cannot open file");
+			return 2;
+		}
+
+		// export the theme
+		L::Verbose("_PromptExportConfigFile passing execution to Config2::ExportConfig()");
+		size_t nBytesOut = 0;
+		char* data = Config2::ExportConfig(&nBytesOut);
+		if (!data || nBytesOut == 0)
+		{
+			L::Log("_PromptExportConfigFile failed - Config2::ExportConfig failed");
+			file.close();
+			return 3;
+		}
+
+		// write to file
+		L::Verbose("_PromptExportConfigFile writing to file and closing");
+		file.write(data, nBytesOut);
+		file.close();
+		return 0;
+	}
+
+	DWORD WINAPI _PromptImportConfigFile(void* _)
+	{
+		L::Log("_PromptImportConfigFile executing...");
+
+		// prompt user to open file
+		char filename[MAX_PATH];
+		{
+			ZeroMemory(&filename, MAX_PATH);
+
+			OPENFILENAME ofn{};
+			ZeroMemory(&ofn, sizeof(ofn));
+
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFilter = "Particle Config File (.pccfg)\0*.pccfg\0All Files\0*.*\0";
+			ofn.lpstrFile = filename;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrTitle = "Import Config";
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
+
+			L::Verbose("_PromptImportConfigFile initiating user input");
+			if (!GetOpenFileName(&ofn) || filename[0] == '\0')
+			{
+				L::Log("_PromptImportConfigFile failed - user terminated");
+				return 1;
+			}
+			L::Verbose("_PromptImportConfigFile got filepath: ", "");
+			L::Verbose(filename);
+		}
+
+		// open the file
+		L::Verbose("_PromptImportConfigFile opening file");
+		std::ifstream file(filename, std::ios::binary);
+		if (!file.is_open())
+		{
+			L::Log("_PromptImportConfigFile failed - cannot open file");
+			return 2;
+		}
+
+		// calculate its length
+		file.seekg(0, std::ios::end);
+		std::streampos bytes = file.tellg();
+		if (bytes > 100000)
+		{
+			L::Log("_PromptImportConfigFile failed - file too big: ", "");
+			L::Log(std::to_string(bytes).c_str(), " bytes\n");
+			return 3;
+		}
+		file.seekg(0);
+		file.clear();
+		L::Verbose("_PromptImportConfigFile got file length: ", "");
+		L::Verbose(std::to_string(bytes).c_str());
+
+		// read it into memory
+		char* buffer = (char*)malloc(bytes);
+		if (!buffer)
+		{
+			L::Log("_PromptImportConfigFile failed - couldn't malloc file space");
+			return 4;
+		}
+		L::Verbose("_PromptImportConfigFile reading file into memory & closing file handle");
+		if (!file.read(buffer, bytes))
+		{
+			L::Log("_PromptImportConfigFile failed - couldn't read file data");
+			file.close();
+			free(buffer);
+			return 5;
+		}
+		file.close();
+
+		L::Verbose("_PromptImportConfigFile passing execution to Config2::ImportConfig()");
+		Config2::ImportConfig(buffer, bytes);
 		free(buffer);
 		return 0;
 	}
@@ -1698,6 +2000,18 @@ namespace Config2
 	void PromptExportThemeFile()
 	{
 		HANDLE t = CreateThread(NULL, 0, _PromptExportThemeFile, NULL, NULL, NULL);
+		if (t) CloseHandle(t);
+	}
+
+	void PromptImportConfigFile()
+	{
+		HANDLE t = CreateThread(NULL, 0, _PromptImportConfigFile, NULL, NULL, NULL);
+		if (t) CloseHandle(t);
+	}
+
+	void PromptExportConfigFile()
+	{
+		HANDLE t = CreateThread(NULL, 0, _PromptExportConfigFile, NULL, NULL, NULL);
 		if (t) CloseHandle(t);
 	}
 
@@ -1717,58 +2031,12 @@ namespace Config2
 
 			if (SettingKeybindFor && log.State)
 			{
-				switch (SettingKeybindFor->Type)
-				{
-				case PropertyType::BOOLEAN:
-				{
-					if (Keybind::KeyMap[log.Key] == VK_ESCAPE) break;
-
-					CBoolean* b = (CBoolean*)SettingKeybindFor->Value;
-					b->BoundToKey = log.Key;
-					Keybind::Binds[log.Key].push_back(SettingKeybindFor);
-				}
-				break;
-				default:
-					L::Log(("ProcessKeys - idk how to deal with bind on non-boolean property " + SettingKeybindFor->Name).c_str());
-					break;
-				}
-
+				_BindToKey(SettingKeybindFor, log.Key);
 				SettingKeybindFor = nullptr;
 			}
 			else
 			{
-				std::vector<void*> Properties = Keybind::Binds[log.Key];
-				for (size_t i = 0; i < Properties.size(); i++)
-				{
-					Property* p = (Property*)Properties[i];
-					switch (p->Type)
-					{
-					case PropertyType::BOOLEAN:
-					{
-						CBoolean* b = (CBoolean*)p->Value;
-						switch (b->BindMode)
-						{
-						default:
-						case KeybindMode::TOGGLE:
-							if (log.State)
-								b->Value.Invert();
-							break;
-						case KeybindMode::HOLDTOENABLE:
-							if (b->Value.Get() != log.State)
-								b->Value.Invert();
-							break;
-						case KeybindMode::HOLDTODISABLE:
-							if (b->Value.Get() == log.State)
-								b->Value.Invert();
-							break;
-						}
-					}
-					break;
-					default:
-						L::Log(("ProcessKeys - idk how to deal with bind on non-boolean property " + p->Name).c_str());
-						break;
-					}
-				}
+				_KeyStateChanged(log.Key, log.State != 0);
 			}
 
 			CONT:

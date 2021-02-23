@@ -10,12 +10,20 @@ namespace ConfigManager
 
 namespace ConfigConstants
 {
-	extern const char* ThemeDefaultDark;
-	extern size_t ThemeDefaultDarkSize;
+	// themes
+	extern const char* ThemeDark;
+	extern size_t      ThemeDarkSize;
+	extern const char* ThemeLight;
+	extern size_t      ThemeLightSize;
+	extern const char* ThemeContrast;
+	extern size_t      ThemeContrastSize;
 
-	extern const char* ThemeDefaultLight;
-	extern size_t ThemeDefaultLightSize;
-
-	extern const char* ThemeDefaultContrast;
-	extern size_t ThemeDefaultContrastSize;
+	// configs
+	extern const char* ConfigOff;
+	extern size_t      ConfigOffSize;
+	extern const char* ConfigLegit;
+	extern size_t      ConfigLegitSize;
+	extern const char* ConfigRage;
+	extern size_t      ConfigRageSize;
+					   
 }

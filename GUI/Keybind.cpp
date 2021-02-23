@@ -112,6 +112,14 @@ void Keybind::ForceUpdate()
     }
 }
 
+int Keybind::ReverseKeyMap(int KeyCode)
+{
+    for (int i = 0; i < nKeys; i++)
+        if (KeyMap[i] == KeyCode)
+            return i;
+    return -1;
+}
+
 struct ThreadData
 {
     bool* ExitWhenTrue;
@@ -123,11 +131,11 @@ DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
     Keybind::UpdatorRunning = true;
 
     ThreadData* Info = (ThreadData*)pInfo;
+    unsigned char i = 0;
     while (!*Info->ExitWhenTrue)
     {
-        L::Verbose("Keybind::ForceUpdate - begin");
         Keybind::ForceUpdate();
-        L::Verbose("Keybind::ForceUpdate - complete");
+        if (++i == 0) L::Verbose("Keybind::ForceUpdate has ran 256 times");
         Sleep(10);
         while (Keybind::Lock) Sleep(1);
     }
