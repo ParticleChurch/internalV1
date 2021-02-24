@@ -4,7 +4,8 @@
 
 namespace Skins
 {
-	enum class Weapon	{
+	enum class Weapon : int
+	{
 		Glock18 = 0,
 		P2000,
 		USPS,
@@ -65,8 +66,26 @@ namespace Skins
 	// WeaponGroupWeapons[WeaponGroup][Weapon]
 	extern std::vector<std::vector<Weapon>> WeaponGroupWeapons;
 
-	enum class Knife {
-		// todo
+	enum class Knife : int
+	{
+		Nomad = 0,
+		Skeleton,
+		Survival,
+		Paracord,
+		Classic,
+		Bowie,
+		Butterfly,
+		Falchion,
+		Flip,
+		Gut,
+		Huntsman,
+		Karambit,
+		M9Bayonet,
+		Navaja,
+		ShadowDaggers,
+		Stiletto,
+		Talon,
+		Ursus,
 	};
 	extern std::vector<std::string> KnifeNames;
 
