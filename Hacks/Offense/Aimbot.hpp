@@ -37,11 +37,14 @@ private:
 	void SmoothSlowToFast(QAngle& Ang);
 	void SmoothFastToSlow(QAngle& Ang);
 
-	// Rage Functions
+	// Rage Functions/var
+	std::vector<int> PlayersScanned = { };
 	void Rage();
 	bool UpdateRageVal();
 	void GetRageHitboxes(int gun);
+	void GetClosestEntityNotScanned(int& RecordUserID, float& Distance);
 	bool ScanPlayer(int RecordUserID, Vec& Point);
+	bool ScanPlayerMin(int RecordUserID, Vec& Point);
 
 public:
 	// General Public Functions

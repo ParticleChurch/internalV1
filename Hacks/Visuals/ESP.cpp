@@ -45,6 +45,39 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
 
+void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
+{
+	Entity* weap = ent->GetActiveWeapon();
+	if (!weap) return;
+
+	WeaponData* weapData = weap->GetWeaponData();
+	if (!weapData) return;
+
+	char* name = weapData->Name;
+	if (!name) return;
+
+	static DWORD FONT = I::surface->FontCreate();
+	static bool Once = true;
+	if (Once)
+	{
+		Once = false;
+		I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+	}
+
+	std::string TEXT = name;
+	if (TEXT.length() > 13)
+	{
+		TEXT = TEXT.substr(13);
+	}
+	static std::wstring wide_string;
+	wide_string = std::wstring(TEXT.begin(), TEXT.end());
+
+	I::surface->DrawSetTextFont(FONT);
+	I::surface->DrawSetTextColor(Config::GetColor("visuals-esp-enemy-weapon-color"));
+	I::surface->DrawSetTextPos(TL.x, BR.y + 14);
+	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
+}
+
 void ESP::DrawSnapLines(Vec TL, Vec BR)
 {
 	int xSize;
@@ -306,8 +339,8 @@ void ESP::Run_PaintTraverse()
 				wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
 				I::surface->DrawSetTextFont(FONT);
-				I::surface->DrawSetTextColor(Color(255,255,255));
-				I::surface->DrawSetTextPos(BottomRight.x, (TopLeft.y + BottomRight.y) / 2);
+				I::surface->DrawSetTextColor(Config::GetColor("visuals-esp-enemy-resolverflags-color"));
+				I::surface->DrawSetTextPos(BottomRight.x + 8, (TopLeft.y + BottomRight.y) / 2);
 				I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 			}
 			
@@ -336,6 +369,10 @@ void ESP::Run_PaintTraverse()
 			{
 				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-skeleton-color")); //white by defualt
 				DrawSkeleton(Ent);
+			}
+			if (Config::GetBool("visuals-esp-enemy-weapon"))
+			{
+				DrawWeapon(TopLeft, BottomRight, Ent);
 			}
 			
 		}

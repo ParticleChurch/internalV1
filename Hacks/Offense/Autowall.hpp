@@ -13,9 +13,10 @@ public:
 
 	bool IsVisible(Vec Start, Vec End, Entity* Ent);
 	bool IsVisible(Vec End, Entity*); //FROM LOCAL PLAYER HEAD POS
-
-	float GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire, bool& visible);
-
+	// damages in general
+	float GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire);
+	float GetDamageVis(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire);
+	// For getting damages to localplayer
 	float GetDamage(Entity* From, Entity* To, const Vec& Destination);
 };
 

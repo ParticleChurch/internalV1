@@ -92,7 +92,7 @@ bool Autowall::IsVisible(Vec End, Entity* Ent)
     return (Trace.Entity == Ent || Trace.Fraction > 0.97f);
 }
 
-float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire, bool& visible)
+float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire)
 {
     if (!G::LocalPlayer) return 0;
 
@@ -129,10 +129,6 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
             float ArmorRatio = WeaponData->ArmorRatio / 2.0f;
             if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
                 Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
-            if (hitsLeft == 4)
-                visible = true;
-            else
-                visible = false;
             return Damage;
         }
 
@@ -145,8 +141,49 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
         Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, WeaponData->Penetration, Damage);
         hitsLeft--;
     }
-    visible = false;
     return 0;
+}
+
+float Autowall::GetDamageVis(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire)
+{
+    if (!G::LocalPlayer) return 0;
+
+    Entity* weapon = G::LocalPlayer->GetActiveWeapon();
+    if (!weapon) return 0;
+
+    WeaponData* WeaponData = weapon->GetWeaponData();
+    if (!WeaponData) return 0;
+
+    float Damage = WeaponData->Damage;
+
+    Vec Start{ G::LocalPlayer->GetEyePos() };
+    Vec Dest{ Vec(Destination) };
+    Vec Direction{ Start - Dest };
+    Direction /= Direction.VecLength();
+
+    if (Damage < 1.0f)
+        return 0.f;
+
+    trace_t Trace;
+    CTraceFilter Filter(G::LocalPlayer);
+    Ray_t Ray(Start, Destination);
+    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
+
+    if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
+        return 0.f;
+
+    if (Trace.Fraction == 1.0f)
+        return 0.f;
+
+    if (Trace.Entity == Ent && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
+        Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(WeaponData->RangeModifier, Trace.Fraction * WeaponData->Range / 500.0f);
+
+        float ArmorRatio = WeaponData->ArmorRatio / 2.0f;
+        if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
+            Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+        return Damage;
+    }
+    return 0.f;
 }
 
 float Autowall::GetDamage(Entity* From, Entity* To, const Vec& Destination)

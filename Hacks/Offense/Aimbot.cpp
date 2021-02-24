@@ -321,12 +321,13 @@ QAngle Aimbot::GetClosestAng(int RecordUserID, bool& valid)
 		Vec mid = (max + min) / 2;
 
 		// no need to "visible autowall" if not visible
-		bool visible = false;
-		float dam = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, false, visible);
+		bool visible = autowall->IsVisible(mid, G::EntList[RecordUserID].entity);
 
 		// if not visible, continue
 		if (!visible)
 			continue;
+
+		float dam = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, false);
 
 		Vec Angle = aimbot->CalculateAngle(mid);
 		float CrossDist = aimbot->CrosshairDist(Angle);
@@ -427,13 +428,24 @@ void Aimbot::Rage()
 	checking everyone else. Not suuuper efficient, but it will do XD.
 	*/
 
+	/*
+	Another idea is to parse the entites and immediately try and shoot once we find one 
+	that fits the conditions to shoot. Sorting the enemies by distance/FOV would be an
+	effective way of determining who we want to shoot
+	*/
+
 	int RecordID = -1;
 	float Dist = FLT_MAX;
 	GetClosestEntity(RecordID, Dist);
 
+	// Aimpoint
+	Vec AimPoint;
+	// Clear up the playerscanlist
+	PlayersScanned.clear(); 
+	PlayersScanned.resize(0);
+	PlayersScanned.push_back(RecordID);
 	// if the recordID is proper, and the closest player is hittable
 	// under the users standerds (hitchance etc...)
-	Vec AimPoint;
 	if (RecordID != -1 && ScanPlayer(RecordID, AimPoint))
 	{
 		// Get Angle and do recoil
@@ -451,11 +463,44 @@ void Aimbot::Rage()
 
 		if (G::pSendPacket)
 			*G::pSendPacket = true;
+		return;
 	}
-	// Otherwise do a scan of all of the other players
+	// Otherwise do a less detailed scan of all of the other players
 	else
 	{
-		// For now return
+		H::console.clear();
+		H::console.resize(0);
+		int max = 2;
+		for (auto &a : G::EntList)
+		{	
+			if (max <= 0) // only allow 2 additional scans (any more and lots of lag maen
+				return;
+			max--;
+			
+			H::console.push_back(std::to_string(a.first));
+			Dist = FLT_MAX;
+			RecordID = -1;
+			GetClosestEntityNotScanned(RecordID, Dist);
+			if (RecordID != -1 && ScanPlayerMin(RecordID, AimPoint))
+			{
+				// Get Angle and do recoil
+				QAngle Angle = CalculateAngle(AimPoint);
+				Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
+
+				// If not silent aim, adjust angles, otherwise do silent
+				if (!Config::GetBool("rage-aim-silent"))
+					I::engine->SetViewAngles(Angle);
+				G::cmd->viewangles = Angle;
+
+				// If autoshoot.. FIRE!
+				if (Config::GetBool("rage-aim-autoshoot"))
+					G::cmd->buttons |= IN_ATTACK;
+
+				if (G::pSendPacket)
+					*G::pSendPacket = true;
+				return;
+			}
+		}
 		return;
 	}
 }
@@ -611,6 +656,37 @@ void Aimbot::GetRageHitboxes(int gun)
 	}
 }
 
+void Aimbot::GetClosestEntityNotScanned(int& RecordUserID, float& Distance)
+{
+	float CrossEntDist = FLT_MAX;
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	{
+		bool skip = false;
+		for (auto a : PlayersScanned)
+		{
+			if (a == it->first)
+				skip = true;
+		}
+		if (skip) continue;
+		Player player = it->second;
+		if (!ValidPlayer(player)) continue;
+		Vec Angle = aimbot->CalculateAngle(it->second.EyePos);
+		float CrossDist = aimbot->CrosshairDist(Angle);
+		if (CrossDist < CrossEntDist)
+		{
+			Distance = CrossDist;
+			RecordUserID = it->first;
+			CrossEntDist = CrossDist;
+		}
+	}
+}
+
+/*
+In this case we are doing a full scan to try and grab the MOST damage possible. This is quite
+laggy. One GOOD way of doing this would be to return once a value has been found that meets
+the config conditions.
+*/
 bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 {
 	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
@@ -663,17 +739,28 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			continue;
 
 		// no need to "visible autowall" if not visible
-		bool VisLeft = false;
-		bool VisRight = false;
+		bool VisLeft = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
+		bool VisRight = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
 		float DamLeft = 0;
 		float DamRight = 0;
 		
 		// If hitchances are proper
-		if(LeftHitChance >= rage.hitchance)
-			DamLeft = autowall->GetDamage(G::EntList[RecordUserID].entity, left, true, VisLeft);
-		
+		if (LeftHitChance >= rage.hitchance)
+		{
+			// no need to autowall if visible...
+			if (VisLeft)
+				DamLeft = autowall->GetDamageVis(G::EntList[RecordUserID].entity, left, true);
+			else
+				DamLeft = autowall->GetDamage(G::EntList[RecordUserID].entity, left, true);
+		}
 		if (RightHitChance >= rage.hitchance)
-			DamRight = autowall->GetDamage(G::EntList[RecordUserID].entity, right, true, VisRight);
+		{
+			// no need to do serious autowall if already visible
+			if (VisRight)
+				DamLeft = autowall->GetDamageVis(G::EntList[RecordUserID].entity, right, true);
+			else
+				DamRight = autowall->GetDamage(G::EntList[RecordUserID].entity, right, true);
+		}
 
 		// If they are visible left, use the visible min damages
 		if (VisLeft)
@@ -737,6 +824,119 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			else if (rage.FireIfLethal && DamLeft >= G::EntList[RecordUserID].health)
 			{
 				Point = right;
+				return true;
+			}
+		}
+	}
+	return ValidPointFound;
+}
+
+/*
+This function finds the point that matches the conditions, than returns, regardless of whether
+theres a better point to be found. One optimization could be going in order of points that
+typicaly do more damage, to prioritize them. Will ignore for now.
+
+This code is optimized for speed over damage/accuracy
+
+// might be able to do multithreading w/
+https://www.unknowncheats.me/forum/counterstrike-global-offensive/335391-fixing-tls-multithreaded-engine-calls.html
+*/
+
+bool Aimbot::ScanPlayerMin(int RecordUserID, Vec& Point)
+{
+	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
+		return false;
+
+	if (!(G::EntList[RecordUserID].entity)) // entity DOES NOT exist
+		return false;
+
+	if (!(G::EntList[RecordUserID].health > 0)) // entity is NOT alive
+		return false;
+
+	if (G::EntList[RecordUserID].team == G::LocalPlayerTeam) // Entity is on same team
+		return false;
+
+	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
+		return false;
+
+	if (!ValidSimTime(G::EntList[RecordUserID].CurSimTime)) // if not valid simtime
+		return false;
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
+	if (!StudioModel) return false; //if cant get the model
+
+	bool ValidPointFound = false;
+
+	// Hitboxes
+	for (auto HITBOX : rage.hitboxes)
+	{
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+		if (!StudioBox) continue;	//if cant get the hitbox...
+		int HitGroup = GetHitGroup(HITBOX);
+
+		Vec min = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
+
+		// Get mid aimpoint
+		Vec mid = (max + min) / 2;
+		
+		// Check for hitchance before autowalling...
+		QAngle MidAng = CalculateAngle(mid);
+
+		// Attempt for visible damage
+		float Damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, mid, true);
+
+		// If there is visible min damage to be done
+		if (Damage > 0.f)
+		{
+			// Get hitchance
+			float MidHitChance = CalculateHitchance(MidAng, mid, G::EntList[RecordUserID].entity, HITBOX);
+
+			// If hitchances aren't proper
+			if (MidHitChance < rage.hitchance)
+				continue;
+
+			if (Damage >= rage.vis_mindam)
+			{
+				ValidPointFound = true;
+				Point = mid;
+				return true;
+			}
+			// Fire if lethal crap
+			else if (rage.FireIfLethal && Damage >= G::EntList[RecordUserID].health)
+			{
+				Point = mid;
+				return true;
+			}
+		}
+		// Otherwise use the non visible damages
+		else
+		{
+			// Get autowall damage
+			Damage = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, true);
+
+			// no point in calc hitchance if no damage to be done
+			if (Damage <= 0)
+				continue;
+
+			// Get hitchance
+			float MidHitChance = CalculateHitchance(MidAng, mid, G::EntList[RecordUserID].entity, HITBOX);
+
+			// If hitchances aren't proper
+			if (MidHitChance < rage.hitchance)
+				continue;
+
+			// if there is damage to be done, and hitchance is possible...
+			if (Damage >= rage.hid_mindam)
+			{
+				ValidPointFound = true;
+				Point = mid;
+				return true;
+			}
+			// Fire if lethal crap
+			else if (rage.FireIfLethal && Damage >= G::EntList[RecordUserID].health)
+			{
+				Point = mid;
 				return true;
 			}
 		}

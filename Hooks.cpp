@@ -838,7 +838,6 @@ bool fresh_tick()
 {
 	static int old_tick_count;
 
-
 	if (old_tick_count != I::globalvars->m_tickCount)
 	{
 		old_tick_count = I::globalvars->m_tickCount;
