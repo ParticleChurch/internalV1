@@ -280,10 +280,6 @@ void H::Init()
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.25f;
 
-	L::Log("Created New Event listener");
-	H::g_EventListener = new EventListener();
-	if (SleepTime > 0) Sleep(SleepTime);
-
 	L::Log("DLLMAIN HOOKING D3D9 => EndScene");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	if (SleepTime > 0) Sleep(SleepTime);
@@ -292,6 +288,10 @@ void H::Init()
 	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
 	//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
 	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
+	if (SleepTime > 0) Sleep(SleepTime);
+
+	L::Log("Created New Event listener");
+	H::g_EventListener = new EventListener();
 	if (SleepTime > 0) Sleep(SleepTime);
 
 	L::Log("DLLMAIN HOOKING D3D9 => Reset");
@@ -352,7 +352,7 @@ void H::Init()
 
 void H::UnHook()
 {
-	constexpr DWORD SleepTime = 100;
+	constexpr DWORD SleepTime = 0;
 	L::Log("Unhooking...");
 	if (SleepTime > 0) Sleep(SleepTime);
 
