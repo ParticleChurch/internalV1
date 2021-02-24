@@ -44,6 +44,9 @@ void Init()
     L::Log("DLLMain complete. Now waiting for ejection");
     while (!G::KillDLL) Sleep(100);
 
+    L::Log("Unhooking hooks...");
+    while (!H::UnHooked) Sleep(100);
+
     L::Log("Ejected, waiting for keybind thread");
     while (Keybind::UpdatorRunning) Sleep(100);
 

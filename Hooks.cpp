@@ -154,6 +154,8 @@ public:
 
 namespace H
 {
+	bool UnHooked = false;
+
 	VMTManager d3d9VMT;
 	VMTManager clientVMT;
 	VMTManager clientmodeVMT;
@@ -211,41 +213,86 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 
 void H::Init()
 {
+	constexpr DWORD SleepTime = 0;
+
+	L::Log("Initializing Hooks");
+	if (SleepTime > 0) Sleep(SleepTime);
 	WriteUsercmdDeltaToBufferReturn = *(reinterpret_cast<void**>(FindPattern("engine.dll", "84 C0 74 04 B0 01 EB 02 32 C0 8B FE 46 3B F3 7E C9 84 C0 0F 84")));
+	L::Log("Found WriteUsercmdDeltaToBufferReturn");
+	if (SleepTime > 0) Sleep(SleepTime);
 	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
+	L::Log("Found WriteUsercmd");
+	if (SleepTime > 0) Sleep(SleepTime);
 
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
 	D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
-	// TODO: this is definetly not the best way to do this, lmao
+	L::Log("Found pD3d9Device");
+	if (SleepTime > 0) Sleep(SleepTime);
+
+	// TODO: this is definetly not the best way to do this, but its better than a while loop
 	L::Log("WndProc Hook");
-	while (!(CSGOWindow = FindWindowA(NULL, "Counter-Strike: Global Offensive"))) {
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-findwindoww
+	/*
+	HWND FindWindowW(
+	  LPCWSTR lpClassName,
+	  LPCWSTR lpWindowName
+	);
+	*/
+	CSGOWindow = FindWindowW(L"Valve001", nullptr);
+	while (!CSGOWindow)
+	{
+		CSGOWindow = FindWindowW(L"Valve001", nullptr);
 		Sleep(10);
 	}
-	oWndProc = (WNDPROC)GetWindowLongPtr(CSGOWindow, GWL_WNDPROC);
-	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)WndProc);
+	
+
 	GUI2::LoadProgress = 0.2f;
 
 	L::Log("Reading Virtual Method Table");
+	if (SleepTime > 0) Sleep(SleepTime);
 	d3d9VMT.Initialize((DWORD*)D3d9Device);
+	L::Log("Initialized d3d9VMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	clientVMT.Initialize((DWORD*)I::client);
+	L::Log("Initialized clientVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	clientmodeVMT.Initialize((DWORD*)I::clientmode);
+	L::Log("Initialized clientmodeVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	surfaceVMT.Initialize((DWORD*)I::surface);
+	L::Log("Initialized surfaceVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	panelVMT.Initialize((DWORD*)I::panel);
+	L::Log("Initialized panelVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	gameeventmanagerVMT.Initialize((DWORD*)I::gameeventmanager);
+	L::Log("Initialized gameeventmanagerVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	inputVMT.Initialize((DWORD*)I::input);
+	L::Log("Initialized inputVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	modelrenderVMT.Initialize((DWORD*)I::modelrender);
+	L::Log("Initialized modelrenderVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	soundVMT.Initialize((DWORD*)I::sound);
+	L::Log("Initialized soundVMT");
+	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.25f;
 
+	L::Log("Created New Event listener");
 	H::g_EventListener = new EventListener();
-
-	constexpr DWORD SleepTime = 0;
+	if (SleepTime > 0) Sleep(SleepTime);
 
 	L::Log("DLLMAIN HOOKING D3D9 => EndScene");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
+
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
+	//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
+	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
+	if (SleepTime > 0) Sleep(SleepTime);
 
 	L::Log("DLLMAIN HOOKING D3D9 => Reset");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
@@ -305,79 +352,105 @@ void H::Init()
 
 void H::UnHook()
 {
+	constexpr DWORD SleepTime = 100;
+	L::Log("Unhooking...");
+	if (SleepTime > 0) Sleep(SleepTime);
+
+	L::Log("Enabling inputsystem...");
 	I::inputsystem->EnableInput(true);
-
-
-	//L::Log("WndProc...", end = "");
+	if (SleepTime > 0) Sleep(SleepTime);
+	
+	L::Log("WndProc...", "");
 	D3dInit = false; //for wndproc... haven't found better solution
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("modelrenderVMT...", end = "");
+	L::Log("modelrenderVMT...", "");
 	modelrenderVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("inputVMT...", end = "");
+	L::Log("inputVMT...", "");
 	inputVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("gameeventmanagerVMT...", end = "");
+	L::Log("gameeventmanagerVMT...", "");
 	gameeventmanagerVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("surfaceVMT...", end = "");
+	L::Log("surfaceVMT...", "");
 	surfaceVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("panelVMT...", end = "");
+	L::Log("panelVMT...", "");
 	panelVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("d3d9VMT...", end = "");
+	L::Log("d3d9VMT...", "");
 	d3d9VMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("clientmodeVMT...", end = "");
+	L::Log("clientmodeVMT...");
 	if(G::pSendPacket) //make sure it isnt already a nullptr
 		*G::pSendPacket = true;
 	clientmodeVMT.RestoreOriginal();
-	//L::Log("Success!");
+	G::EntList.clear();
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("clientVMT...", end = "");
+	L::Log("clientVMT...", "");
 	clientVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
-	//L::Log("soundVMT...", end = "");
+	L::Log("soundVMT...", "");
 	soundVMT.RestoreOriginal();
-	//L::Log("Success!");
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Success!");
 
+	L::Log("g_EventListener...");
 	delete g_EventListener;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("aimbot...");
 	delete aimbot;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("backtrack...");
 	delete backtrack;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("movement...");
 	delete movement;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("antiaim...");
 	delete antiaim;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("autowall...");
 	delete autowall;
+	if (SleepTime > 0) Sleep(SleepTime);
+	L::Log("Unhooking Done");
 }
 
 void H::Eject()
 {
 	H::UnHook();
+
+	UnHooked = true;
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
-	L::Verbose("H::EndSceneHook - begin");
+	L::Verbose("H::EndSceneHook - begin", "\n", false);
 
-	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
-	if (I::engine->IsInGame())
-	{
-		D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
-		D3d9Device->GetVertexDeclaration(&vertDec);
-		D3d9Device->GetVertexShader(&vertShader);
-	}
+	// do cheeki breeki
+	auto ogOutput = oEndScene(device);
 
 	if (!D3dInit) {
-		L::Verbose("H::EndSceneHook d3d9 init begin");
+		L::Verbose("H::EndSceneHook d3d9 init begin", "\n", false);
 		D3dInit = true;
 
 		ImGui::CreateContext();
@@ -387,10 +460,18 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
-		L::Verbose("H::EndSceneHook d3d9 init complete");
+		L::Verbose("H::EndSceneHook d3d9 init complete", "\n", false);
+	}
+
+	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
+	bool InGame = I::engine->IsInGame();
+	if (InGame && D3dInit && D3d9Device)
+	{
+		D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
+		D3d9Device->GetVertexDeclaration(&vertDec);
+		D3d9Device->GetVertexShader(&vertShader);
 	}
 	
-
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -428,14 +509,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-	if (GUI2::Ejected)
-	{
-		G::KillDLL = true;
-		H::Eject();
-		Config2::Free();
-	}
-
-	if (I::engine->IsInGame())
+	if (InGame && pixel_state && D3d9Device)
 	{
 		pixel_state->Apply();
 		pixel_state->Release();
@@ -443,20 +517,34 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		D3d9Device->SetVertexShader(vertShader);
 	}
 
-	auto ogOutput = oEndScene(device);
-	L::Verbose("H::EndSceneHook - complete");
+	if (GUI2::Ejected)
+	{
+		G::KillDLL = true;
+		H::Eject();
+		Config2::Free();
+	}
+
+	
+
+	
+	L::Verbose("H::EndSceneHook - complete", "\n", false);
 	return ogOutput;
 }
 
 long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
+	L::Verbose("H::ResetHook - begin");
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 	ImGui_ImplDX9_CreateDeviceObjects();
-	return oReset(device, pPresentationParameters);
+	
+	auto ogOutput = oReset(device, pPresentationParameters);
+	L::Verbose("H::ResetHook - complete");
+	return ogOutput;
 }
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	L::Verbose("H::WndProc - begin", "\n", false);
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
 	bool IsMouseInput =
 		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL ||
@@ -465,6 +553,8 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
 		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK;
 
+	L::Verbose(IsKeyboardInput ? "Key":"No-Key", "\n", false);
+	L::Verbose(IsMouseInput ? "Mouse" : "No-Mouse", "\n", false);
 	// keydowns
 	int KeyDown = -1;
 	if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
@@ -477,6 +567,8 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		KeyDown = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
 	else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK)
 		KeyDown = VK_MBUTTON;
+
+	L::Verbose("KeyDown", "\n", false);
 
 	// keyups
 	int KeyUp = -1;
@@ -491,6 +583,8 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	else if (uMsg == WM_MBUTTONUP)
 		KeyUp = VK_MBUTTON;
 
+	L::Verbose("KeyUp", "\n", false);
+
 	/*
 		check keybinds
 	*/
@@ -500,6 +594,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	//     - typing in steam overlay
 	if (GUI::CurrentlyChoosingKeybindFor)
 	{
+		L::Verbose("CurrentlyChoosingKeybindFor", "\n", false);
 		if (KeyDown > 0 && KeyDown != VK_LBUTTON)
 		{
 			Config::Bind(GUI::CurrentlyChoosingKeybindFor, KeyDown);
@@ -512,19 +607,34 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	else if (KeyDown > 0 && !(KeyDown == VK_LBUTTON && GUI::IgnoreLButton))
+	{
+		L::Verbose("KeyPressed", "\n", false);
 		Config::KeyPressed(KeyDown);
+	}
 	else if (KeyUp > 0 && !(KeyUp == VK_LBUTTON && GUI::IgnoreLButton))
+	{
+		L::Verbose("KeyReleased", "\n", false);
 		Config::KeyReleased(KeyUp);
+	}
+		
 
 	// give imgui input
 	if (D3dInit && Config::GetBool("show-menu"))
+	{
+		L::Verbose("ImGui_ImplWin32_WndProcHandler", "\n", false);
 		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-
-	auto io = ImGui::GetIO();
+	}
+		
+	L::Verbose("doing io stuff", "\n", false);
+	ImGuiIO& io = ImGui::GetIO();
+	bool ogOutput = false;
+	L::Verbose("IsMouseInput check", "\n", false);
 	if ((IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard))
-		return false;
+		ogOutput = false;
 	else
-		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+		ogOutput = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	L::Verbose("H::WndProc - complete", "\n", false);
+	return ogOutput;
 }
 
 float RandomVal(float min, float max)
@@ -537,27 +647,37 @@ float RandomVal(float min, float max)
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
 	L::Verbose("H::CreateMoveHook - begin");
-	if (!cmd->command_number)
+	if (!cmd || !cmd->command_number)
+	{
+		L::Verbose("!cmd || !cmd->command_number - true");
 		return true;
+	}
+		
 
+	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
 	{
+		L::Verbose("Assembly");
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 
+		L::Verbose("CM_Start");
 		G::CM_Start(cmd, pSendPacket);
 
 		// Fake lag Calculations
+		L::Verbose("fakelag->Start();");
 		fakelag->Start();
 
 		// Doubletap Stuff
 		/*doubletap->start();*/
 
 		// Update server time
+		L::Verbose("I::globalvars->ServerTime(cmd);");
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		// Movement
+		L::Verbose("movement");
 		movement->BunnyHop();	
 		movement->SlowWalk();
 		movement->FastCrouch();
@@ -567,22 +687,28 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->LegSlide();
 
 		// nade visuals
+		L::Verbose("miscvisuals");
 		miscvisuals->GrenadePrediction();
 		miscvisuals->ChangeViewModel();
 	
+		L::Verbose("CM_MoveFixStart");
 		G::CM_MoveFixStart();
 
 		// Fake Lag
+		L::Verbose("fakelag->End();");
 		*G::pSendPacket = fakelag->End();
 		
 		// AA
+		L::Verbose("antiaim");
 		antiaim->legit();
 		antiaim->rage();
 
 		
 
 		// Clantag
+		L::Verbose("clantag");
 		clantag->run();
+		L::Verbose("RankRevealer");
 		miscvisuals->RankRevealer();
 
 		// bad use (E) and attack (LBUTTON)
@@ -599,6 +725,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			G::cmd->viewangles = G::StartAngle;
 		}
 
+		L::Verbose("aimbot");
 		aimbot->Run();
 
 		if (G::LocalPlayerWeapon && 
@@ -654,9 +781,13 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			aimbot->Rage();
 		*/
 
+		L::Verbose("backtrack");
 		backtrack->run();
+
+		L::Verbose("CM_MoveFixEnd");
 		G::CM_MoveFixEnd();
 
+		L::Verbose("RageAutoStrafe");
 		movement->RageAutoStrafe();
 
 		// bad animation fix (for third person)
@@ -673,6 +804,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 		/*doubletap->end();*/
 
+		L::Verbose("CM_End");
 		G::CM_End();	
 
 		//movement->RageAutoStrafe();
@@ -756,6 +888,10 @@ void LocalAnimFix(Entity* entity)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
+	oFrameStageNotify(curStage);
+	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
+	return;
+	
 
 	resolver->Resolve(curStage);
 
@@ -865,15 +1001,17 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	/*skinchanger->run(curStage);*/
 
 	oFrameStageNotify(curStage);
-	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
+	
 }
 
 void __stdcall H::LockCursorHook()
 {
+	L::Verbose("H::LockCursorHook - begin");
 	if (Config::GetBool("show-menu"))
 		I::surface->UnlockCursor();
 	else
 		oLockCursor(I::surface);
+	L::Verbose("H::LockCursorHook - end");
 }
 
 void __fastcall H::hkCamToFirstPeronHook()
