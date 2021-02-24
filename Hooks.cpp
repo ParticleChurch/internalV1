@@ -888,10 +888,6 @@ void LocalAnimFix(Entity* entity)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
-	oFrameStageNotify(curStage);
-	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
-	return;
-	
 
 	resolver->Resolve(curStage);
 
@@ -1001,7 +997,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	/*skinchanger->run(curStage);*/
 
 	oFrameStageNotify(curStage);
-	
+	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
 }
 
 void __stdcall H::LockCursorHook()
