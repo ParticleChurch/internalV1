@@ -856,8 +856,8 @@ namespace Config2
 		KNIFE,
 		GLOVE,
 		HSTATEFUL,
+		VSTATEFUL,
 		COLOR,
-		EDITGROUP,
 	};
 	enum class KeybindMode
 	{
@@ -877,7 +877,7 @@ namespace Config2
 	struct CGlove;
 	struct CColor;
 	struct CHorizontalState;
-	struct CEditGroup;
+	struct CVerticalState; // lmaoooo i really called a dropdown this
 
 	// getters
 	extern Property* GetProperty(std::string Name);
@@ -1143,61 +1143,23 @@ namespace Config2
 			this->Bindable = Bindable;
 		}
 	};
-	struct CEditGroup
+	struct CVerticalState
 	{
-		static const PropertyType Type = PropertyType::EDITGROUP;
-
-	private:
-		std::vector<std::string> Titles;
-		std::vector<std::vector<Property*>*> Properties;
-		size_t SelectedIndex = 0;
+		static const PropertyType Type = PropertyType::VSTATEFUL;
 
 	public:
-		CEditGroup() {}
-		void Add(std::string Title, Property* Prop)
-		{
-			std::vector<Property*>* List = nullptr;
-			for (size_t i = 0; i < this->Titles.size(); i++)
-			{
-				if (this->Titles.at(i) == Title)
-				{
-					List = this->Properties.at(i);
-					break;
-				}
-			}
+		std::vector<std::string> StateNames;
+		CState Value = CState(0, 0, 0);
+		bool Bindable = true;
+		int BoundToKey = -1;
+		bool HasSearchbar = true;
 
-			if (!List)
-			{
-				List = new std::vector<Property*>{};
-
-				this->Titles.push_back(Title);
-				this->Properties.push_back(List);
-			}
-
-			List->push_back(Prop);
-		}
-		std::vector<Property*>* GetVisibleProperties()
+		CVerticalState(std::vector<std::string> States, bool Bindable = false, bool Searchbar = false)
 		{
-			if (this->SelectedIndex >= this->Properties.size()) return nullptr;
-			return this->Properties.at(this->SelectedIndex);
-		}
-		void SelectIndex(size_t i)
-		{
-			if (this->Properties.size() == 0)
-				this->SelectedIndex = 0;
-			else
-				this->SelectedIndex = max(min(i, this->Properties.size() - 1), 0);
-		}
-		size_t GetSelectedIndex()
-		{
-			return this->SelectedIndex;
-		}
-		~CEditGroup()
-		{
-			for (size_t i = 0; i < this->Properties.size(); i++)
-			{
-				delete this->Properties[i];
-			}
+			this->Value = CState(0, (int)States.size() - 1, 0);
+			this->StateNames = States;
+			this->Bindable = Bindable;
+			this->HasSearchbar = Searchbar;
 		}
 	};
 	struct CColor
@@ -1214,21 +1176,39 @@ namespace Config2
 	public:
 		CColor(bool HasAlpha = false)
 		{
+			this->R = this->G = this->B = 0;
+			this->A = 255;
 			this->HasAlpha = HasAlpha;
+		}
+		CColor(unsigned char R, unsigned char G, unsigned char B)
+		{
+			this->R = R;
+			this->G = G;
+			this->B = B;
+			this->A = 255;
+			this->HasAlpha = false;
+		}
+		CColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A)
+		{
+			this->R = R;
+			this->G = G;
+			this->B = B;
+			this->A = 255;
+			this->HasAlpha = true;
 		}
 
 		__forceinline CColor ModulateAlpha(float f)
 		{
-			auto c = CColor(true);
-			c.SetR(this->GetR());
-			c.SetG(this->GetG());
-			c.SetB(this->GetB());
-			c.SetA((unsigned char)((float)this->GetA() * f + 0.5f));
-			return c;
+			return CColor(this->R, this->G, this->B, (unsigned char)((float)this->GetA() * f + 0.5f));
 		}
 		__forceinline CColor ModulateAlpha(unsigned char f)
 		{
 			return this->ModulateAlpha((float)f / 255.f);
+		}
+
+		float Lightness()
+		{
+			return ((float)this->R + (float)this->G + (float)this->B) / 3.f;
 		}
 
 		std::string Stringify()
@@ -1309,9 +1289,6 @@ namespace Config2
 				break;
 			case PropertyType::FLOAT:
 				delete (CFloat*)this->Value;
-				break;
-			case PropertyType::EDITGROUP:
-				delete (CEditGroup*)this->Value;
 				break;
 			}
 		}

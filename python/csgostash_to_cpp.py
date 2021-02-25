@@ -17,6 +17,6 @@ for id in output:
     sorted_output.append((id, output[id]))
 sorted_output.sort(key=lambda x: x[0])
 
-fstring = ' '* 8 + 'PaintKit(%d, "-", "%s", {%s}),'
+fstring = ' '* 8 + 'PaintKit(%d, XOR("%s"), %s),'
 for (id, weapons) in sorted_output:
-    print(fstring % (id, paintkit_names[id], ', '.join(weapons)))
+    print(fstring % (id, paintkit_names[id], ' | '.join(["(1ull << (uint64_t)%s)" % w for w in weapons])))

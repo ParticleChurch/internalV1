@@ -70,7 +70,7 @@ namespace TextService
 
 #define MAKE_ENCODED_STRING(s) (TextService::StringEncoding::string<sizeof(s) - 1, __COUNTER__>((s), std::make_index_sequence<sizeof(s) - 1>()))
 #define ENCODED(s) (MAKE_ENCODED_STRING(s).runtime_get())
-#define XOR(s) (MAKE_ENCODED_STRING(s).runtime_xor())
-//#define XOR(s) s
+//#define XOR(s) (MAKE_ENCODED_STRING(s).runtime_xor())
+#define XOR(s) s
 
 #undef INLINE

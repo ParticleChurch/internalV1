@@ -1114,6 +1114,12 @@ namespace Config2
 		// VISUALS
 		{
 			Tab* t = new Tab("Visuals");
+
+			{ // chams
+				Group* g = t->Add("Chams");
+
+				g->Add("visuals-chams-test", "Dropdown test", new CVerticalState({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
+			}
 		}
 
 		// SKINCHANGER
