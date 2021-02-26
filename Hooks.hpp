@@ -10,7 +10,7 @@ namespace H
 	typedef long(__stdcall* EndScene)(IDirect3DDevice9* device);
 	typedef long(__stdcall* Reset)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 	typedef LRESULT(CALLBACK* WNDPROC)(HWND, UINT, WPARAM, LPARAM);
-	typedef bool(__thiscall* CreateMove)(void*, float, CUserCmd*);
+	typedef bool(__stdcall* CreateMove)(float, CUserCmd*);
 	typedef void(__thiscall* PaintTraverse)(void*, int, bool, bool);
 	typedef void(__stdcall* FrameStageNotify)(int);
 	typedef void(__thiscall* LockCursor)(void*);

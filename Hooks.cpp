@@ -644,12 +644,14 @@ float RandomVal(float min, float max)
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
 	L::Verbose("H::CreateMoveHook - begin");
-	if (!cmd || !cmd->command_number)
+	bool oFunc = oCreateMove(flInputSampleTime, cmd);
+	
+	if (!oFunc || !cmd || !cmd->command_number)
 	{
-		L::Verbose("!cmd || !cmd->command_number - true");
-		return oCreateMove(I::clientmode, flInputSampleTime, cmd);
-		//return true;
+		L::Verbose("!oFunc || !cmd || !cmd->command_number");
+		return oFunc;
 	}
+       
 		
 	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
@@ -805,7 +807,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		//movement->RageAutoStrafe();
 	}
 
-	oCreateMove(I::clientmode, flInputSampleTime, cmd);
 	L::Verbose("H::CreateMoveHook - complete");
 	return false; //silent aim on false (only for client)
 }
