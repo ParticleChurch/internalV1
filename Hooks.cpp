@@ -524,9 +524,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		Config2::Free();
 	}
 
-	
-
-	
 	L::Verbose("H::EndSceneHook - complete", "\n", false);
 	return ogOutput;
 }
@@ -650,10 +647,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd || !cmd->command_number)
 	{
 		L::Verbose("!cmd || !cmd->command_number - true");
+		/*oCreateMove(I::clientmode, flInputSampleTime, cmd);*/
 		return true;
 	}
 		
-
 	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
 	{
@@ -702,8 +699,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		L::Verbose("antiaim");
 		antiaim->legit();
 		antiaim->rage();
-
-		
 
 		// Clantag
 		L::Verbose("clantag");

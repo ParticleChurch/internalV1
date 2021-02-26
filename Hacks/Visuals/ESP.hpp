@@ -10,6 +10,7 @@ private:
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
 	void GetBounds(Entity* ent, Vec& TL, Vec& BR);
+	void CapsuleOverlay(Entity* pPlayer, Color col, float duration, Matrix3x4* mat);
 
 	struct BulletTracer
 	{
@@ -18,7 +19,7 @@ private:
 		float SimTime;
 	};
 	std::vector<BulletTracer> traces;
-	
+
 public:
 	std::vector<Vec> points;
 	void Run_PaintTraverse();

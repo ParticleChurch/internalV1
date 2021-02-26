@@ -72,6 +72,7 @@ namespace G
 			EntList[UserId].CurSimTime	= ent->GetSimulationTime();
 			EntList[UserId].EyePos		= ent->GetEyePos();
 			EntList[UserId].info		= TempInfo;
+			
 
 			// If it is a Valid SimTime
 			if (ValidSimTime(EntList[UserId].CurSimTime))

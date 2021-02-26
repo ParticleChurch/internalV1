@@ -41,6 +41,7 @@ private:
 	std::vector<int> PlayersScanned = { };
 	void Rage();
 	bool UpdateRageVal();
+	bool TryOnShot();
 	void GetRageHitboxes(int gun);
 	void GetClosestEntityNotScanned(int& RecordUserID, float& Distance);
 	bool ScanPlayer(int RecordUserID, Vec& Point);

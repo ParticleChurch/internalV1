@@ -400,12 +400,13 @@ void Aimbot::SmoothFastToSlow(QAngle& Ang)
 
 void Aimbot::Rage()
 {
-	// Is ragebot enabled
-	if (!Config::GetBool("rage-aim-enable")) return;
-
 	// Make sure it's a different tick
 	static int tickcount = G::cmd->tick_count;
 	if (tickcount == G::cmd->tick_count) return;
+	tickcount = G::cmd->tick_count;
+
+	// Is ragebot enabled
+	if (!Config::GetBool("rage-aim-enable")) return;
 
 	// If the player can shoot a weapon... 
 	if (!G::LocalPlayer->CanShoot()) return;
@@ -415,6 +416,12 @@ void Aimbot::Rage()
 
 	// If we are lagging on peak...
 	if (fakelag->LaggingOnPeak) return;
+
+	// If succeed with our onshot...
+	if (TryOnShot()) return;
+
+	// if force on shot, for testing ill be always doing this
+	
 
 	/*
 	The IDEA is we get the order of entitys in closest to greatest from crosshair.
@@ -553,6 +560,7 @@ bool Aimbot::UpdateRageVal()
 			rage.hitchance = Config::GetFloat("rageaim-scout-hitchance") / 100.f;
 			rage.FireIfLethal = Config::GetBool("rageaim-scout-fireiflethal");
 			GetRageHitboxes(3);
+			return true;
 		}
 		else if (weaponID == 9) //awp
 		{
@@ -561,6 +569,7 @@ bool Aimbot::UpdateRageVal()
 			rage.hitchance = Config::GetFloat("rageaim-awp-hitchance") / 100.f;
 			rage.FireIfLethal = Config::GetBool("rageaim-awp-fireiflethal");
 			GetRageHitboxes(4);
+			return true;
 		}
 		else if (weaponID == 11 || weaponID == 38) //autos
 		{
@@ -569,6 +578,7 @@ bool Aimbot::UpdateRageVal()
 			rage.hitchance = Config::GetFloat("rageaim-auto-hitchance") / 100.f;
 			rage.FireIfLethal = Config::GetBool("rageaim-auto-fireiflethal");
 			GetRageHitboxes(5);
+			return true;
 		}
 		else //rifles
 		{
@@ -577,10 +587,61 @@ bool Aimbot::UpdateRageVal()
 			rage.hitchance = Config::GetFloat("rageaim-rifle-hitchance") / 100.f;
 			rage.FireIfLethal = Config::GetBool("rageaim-rifle-fireiflethal");
 			GetRageHitboxes(6);
+			return true;
 		}
 	}
 	else //grenades tasers and knifes
 		return false;
+}
+
+bool Aimbot::TryOnShot()
+{
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	{
+		if (!ValidPlayer(it->second)) continue;
+		
+		// if within good bt onshot range... 
+		// (should be 200.f but reducing for reliability to 150.f)
+		if (I::globalvars->m_curTime - it->second.LastShotTime < 150.f)
+		{
+			int shot_tick = TimeToTicks(it->second.LastShotTime);
+			// find the matrix
+			
+			for (auto& a : it->second.BacktrackRecords)
+			{
+				// WE HAVE FOUND A GOOD ONE!
+				if (TimeToTicks(a.SimulationTime) == shot_tick)
+				{
+					Vec head = a.Bone(8);
+					// if we can't hit it...
+					if (!autowall->CanScanBacktrack(it->second.entity, head, G::LocalPlayerWeaponData, 1, true, HITGROUP_HEAD))
+						goto SKIP; // go on to another entity
+
+					QAngle Angle = CalculateAngle(head);
+					Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
+
+					// If not silent aim, adjust angles, otherwise do silent
+					if (!Config::GetBool("rage-aim-silent"))
+						I::engine->SetViewAngles(Angle);
+					G::cmd->viewangles = Angle;
+
+					// If autoshoot.. FIRE!
+					if (Config::GetBool("rage-aim-autoshoot"))
+						G::cmd->buttons |= IN_ATTACK;
+
+					if (G::pSendPacket)
+						*G::pSendPacket = true;
+
+					G::cmd->tick_count = shot_tick;
+					return true;
+				}
+			}	
+		}
+		SKIP:
+			continue;
+	}
+	return false;
 }
 
 void Aimbot::GetRageHitboxes(int gun)
@@ -683,9 +744,9 @@ void Aimbot::GetClosestEntityNotScanned(int& RecordUserID, float& Distance)
 }
 
 /*
-In this case we are doing a full scan to try and grab the MOST damage possible. This is quite
-laggy. One GOOD way of doing this would be to return once a value has been found that meets
-the config conditions.
+In this case we are doing a full scan to try and grab the points in which damage possible. This 
+is quite laggy. It return once it has found points that are good. It's like multipoint but only
+for closest entity
 */
 bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 {
@@ -710,8 +771,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
 	if (!StudioModel) return false; //if cant get the model
 
-	bool ValidPointFound = false;
-	float BestDamage = 0.f;
+	float damage = 0.f;
 
 	// Hitboxes
 	for (auto HITBOX : rage.hitboxes)
@@ -725,110 +785,105 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 		Vec mid = (max + min) / 2;
 
 		float radius = StudioBox->m_flRadius * rage.hitchance;
+
+		// Calc Left Point
 		Vec left = G::EntList[RecordUserID].entity->GetLeft(mid, radius, G::LocalPlayer);
-		Vec right = G::EntList[RecordUserID].entity->GetRight(mid, radius, G::LocalPlayer);
 
-		// Check for hitchance before autowalling...
+		// Calc Left Angle
 		QAngle LeftAngle = CalculateAngle(left);
-		QAngle RightAngle = CalculateAngle(right);
+
+		// Calc Left Hitchance
 		float LeftHitChance = CalculateHitchance(LeftAngle, left, G::EntList[RecordUserID].entity, HITBOX);
-		float RightHitChance = CalculateHitchance(RightAngle, right, G::EntList[RecordUserID].entity, HITBOX);
 
-		// If both hitchances for that hitbox are bad... continue
-		if (LeftHitChance < rage.hitchance && RightHitChance < rage.hitchance)
-			continue;
-
-		// no need to "visible autowall" if not visible
-		bool VisLeft = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
-		bool VisRight = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
-		float DamLeft = 0;
-		float DamRight = 0;
-		
-		// If hitchances are proper
+		// If the left hitchance is up to snuff...
 		if (LeftHitChance >= rage.hitchance)
 		{
+			// if the point is visible
+			bool visible = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
+
 			// no need to autowall if visible...
-			if (VisLeft)
-				DamLeft = autowall->GetDamageVis(G::EntList[RecordUserID].entity, left, true);
+			if (visible)
+			{
+				damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, left, true);
+				if (damage >= rage.vis_mindam)
+				{
+					Point = left;
+					return true;
+				}
+				// Fire if lethal crap
+				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+				{
+					Point = left;
+					return true;
+				}
+			}
 			else
-				DamLeft = autowall->GetDamage(G::EntList[RecordUserID].entity, left, true);
+			{
+				damage = autowall->GetDamage(G::EntList[RecordUserID].entity, left, true);
+				if (damage >= rage.hid_mindam)
+				{
+					Point = left;
+					return true;
+				}
+				// Fire if lethal crap
+				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+				{
+					Point = left;
+					return true;
+				}
+			}
 		}
+
+
+		// Calc Right Point
+		Vec right = G::EntList[RecordUserID].entity->GetRight(mid, radius, G::LocalPlayer);
+
+		// Calc Right Angle
+		QAngle RightAngle = CalculateAngle(right);
+
+		// Calc Right Hitchance
+		float RightHitChance = CalculateHitchance(RightAngle, right, G::EntList[RecordUserID].entity, HITBOX);
+
+		// If the left hitchance is up to snuff...
 		if (RightHitChance >= rage.hitchance)
 		{
-			// no need to do serious autowall if already visible
-			if (VisRight)
-				DamLeft = autowall->GetDamageVis(G::EntList[RecordUserID].entity, right, true);
+			// if the point is visible
+			bool visible = autowall->IsVisible(right, G::EntList[RecordUserID].entity);
+
+			// no need to autowall if visible...
+			if (visible)
+			{
+				damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, right, true);
+				if (damage >= rage.vis_mindam)
+				{
+					Point = right;
+					return true;
+				}
+				// Fire if lethal crap
+				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+				{
+					Point = right;
+					return true;
+				}
+			}
 			else
-				DamRight = autowall->GetDamage(G::EntList[RecordUserID].entity, right, true);
-		}
-
-		// If they are visible left, use the visible min damages
-		if (VisLeft)
-		{
-			if (DamLeft >= rage.vis_mindam && DamLeft > BestDamage)
 			{
-				BestDamage = DamLeft;
-				ValidPointFound = true;
-				Point = left;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && DamLeft >= G::EntList[RecordUserID].health)
-			{
-				Point = left;
-				return true;
-			}
-		}
-		// Otherwise use the non visible damages
-		else
-		{
-			if (DamLeft >= rage.hid_mindam && DamLeft > BestDamage)
-			{
-				BestDamage = DamLeft;
-				ValidPointFound = true;
-				Point = left;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && DamLeft >= G::EntList[RecordUserID].health)
-			{
-				Point = left;
-				return true;
-			}
-		}
-
-		// If they are visible right, use the visible min damages
-		if (VisRight)
-		{
-			if (DamRight >= rage.vis_mindam && DamRight > BestDamage)
-			{
-				BestDamage = DamRight;
-				ValidPointFound = true;
-				Point = right;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && DamLeft >= G::EntList[RecordUserID].health)
-			{
-				Point = right;
-				return true;
-			}
-		}
-		// Otherwise use the non visible damages
-		else
-		{
-			if (DamRight >= rage.hid_mindam && DamRight > BestDamage)
-			{
-				BestDamage = DamRight;
-				ValidPointFound = true;
-				Point = right;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && DamLeft >= G::EntList[RecordUserID].health)
-			{
-				Point = right;
-				return true;
+				damage = autowall->GetDamage(G::EntList[RecordUserID].entity, right, true);
+				if (damage >= rage.hid_mindam)
+				{
+					Point = right;
+					return true;
+				}
+				// Fire if lethal crap
+				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+				{
+					Point = right;
+					return true;
+				}
 			}
 		}
 	}
-	return ValidPointFound;
+	return false;
 }
 
 /*
