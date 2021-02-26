@@ -647,8 +647,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 	if (!cmd || !cmd->command_number)
 	{
 		L::Verbose("!cmd || !cmd->command_number - true");
-		/*oCreateMove(I::clientmode, flInputSampleTime, cmd);*/
-		return true;
+		return oCreateMove(I::clientmode, flInputSampleTime, cmd);
+		//return true;
 	}
 		
 	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");

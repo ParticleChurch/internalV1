@@ -4370,11 +4370,11 @@ void GUI2::Main()
 			MainScreen();
 			L::Verbose("GUI2::MainScreen complete");
 
-			/*
+			
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");
-			//*/
+			
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
