@@ -2705,6 +2705,144 @@ namespace ImGui
 
 		return 20;
 	}
+
+	int DrawVerticalStatefulProperty(Config2::Property* p)
+	{
+		static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+		static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+		static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
+		static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
+		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
+		Config2::CVerticalState* Value = (Config2::CVerticalState*)p->Value;
+
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+
+		// draw label 
+		{
+			ImVec2 IconSize(14, 14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			if (PremiumLocked)
+			{
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "Premium users only";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
+			}
+
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		}
+
+		PushFont(Arial14);
+		// draw prompt
+		{
+			const char* popupName = ("##popup-" + p->Name).c_str();
+			int nItems = Value->StateNames.size();
+			std::string CurrentSelection = Value->StateNames.at(Value->Value.Get());
+
+			// button
+			{
+				bool open = false;
+
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				BeginChild(("##button-child-" + p->Name).c_str(), ImVec2(200, 20));
+
+				SetCursorPos(ImVec2(5, 3));
+				Text(CurrentSelection.c_str());
+
+				// dropdown arrow
+				{
+					// button
+					SetCursorPos(ImVec2(200 - 18, 2));
+					PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+					PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 150));
+					PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
+					PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+					if (Button(("##button-arrow-" + p->Name).c_str(), ImVec2(16, 16)))
+					{
+						open = true;
+					}
+					PopStyleColor(3);
+					PopStyleVar(1);
+
+					//SetCursorPos(ImVec2(200 - 18, 2));
+					//Config2::SettingKeybindFor = nullptr;
+					//ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+					//ImGui::DrawXIcon(255, ImVec2(9, 9));
+				}
+
+				// dummy button across whole child
+				{
+
+					SetCursorPos(ImVec2(0, 0));
+					PushStyleColor(ImGuiCol_Button, 0);
+					PushStyleColor(ImGuiCol_ButtonActive, 0);
+					PushStyleColor(ImGuiCol_ButtonHovered, 0);
+					if (Button(("##button-invis-" + p->Name).c_str(), ImVec2(200, 20)))
+					{
+						open = true;
+					}
+					PopStyleColor(3);
+				}
+
+				EndChild();
+				PopStyleColor(2);
+				PopStyleVar(1);
+
+				if (open)
+					OpenPopup(popupName);
+			}
+			//SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+			//if (Button("ayoo", ImVec2(200, 20)))
+			//{
+			//	OpenPopup("kekw");
+			//}
+
+			// dropdown
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
+				SetNextWindowSize(ImVec2(200, min(nItems, 5) * 20));
+				PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0);
+				if (BeginPopup(popupName))
+				{
+					int pad = (20 - GetFontSize()) / 2;
+					SetCursorPos(ImVec2(pad, pad));
+					Text("hey");
+					EndPopup();
+				}
+				PopStyleVar(1);
+			}
+		}
+		PopFont();
+
+		return 20;
+	}
 }
 
 void GUI2::LoadingScreen()
@@ -3097,6 +3235,9 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 					break;
 				case Config2::PropertyType::COLOR:
 					GroupY += ImGui::DrawColorProperty(Property);
+					break;
+				case Config2::PropertyType::VSTATEFUL:
+					GroupY += ImGui::DrawVerticalStatefulProperty(Property);
 					break;
 				default:
 				case Config2::PropertyType::LABEL:
@@ -4229,7 +4370,7 @@ void GUI2::Main()
 			MainScreen();
 			L::Verbose("GUI2::MainScreen complete");
 
-			//*
+			/*
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");

@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "TextService.hpp"
 
 namespace Skins
 {
-	enum class Weapon : int
+	enum class Weapon : uint64_t
 	{
 		Glock18 = 0,
 		P2000,
@@ -86,40 +87,61 @@ namespace Skins
 		Stiletto,
 		Talon,
 		Ursus,
+		_COUNT,
 	};
 	extern std::vector<std::string> KnifeNames;
 
 	enum class Glove {
 		// todo
+		_COUNT
 	};
 	extern std::vector<std::string> GloveNames;
 
 	class PaintKit
 	{
+	private:
+		uint64_t RawWeapons;
+		uint64_t RawKnives;
+		uint64_t RawGloves;
+
 	public:
 		int ID = 0;
-		std::string Name;
 		std::string VisibleName;
 
 		// this paint kit is *supposed* to be applied to:
+		// these vectors should be built at runtime to save dll size
 		std::vector<Weapon> Weapons;
 		std::vector<Knife> Knives;
 		std::vector<Glove> Gloves;
 
 		PaintKit(
 			int ID,
-			std::string Name, std::string VisibleName,
-			std::vector<Weapon> Weapons = {},
-			std::vector<Knife> Knives = {},
-			std::vector<Glove> Gloves = {}
+			std::string VisibleName,
+			uint64_t Weapons = 0,
+			uint64_t Knives = 0,
+			uint64_t Gloves = 0
 		)
 		{
 			this->ID = ID;
-			this->Name = Name;
 			this->VisibleName = VisibleName;
-			this->Weapons = Weapons;
-			this->Knives = Knives;
-			this->Gloves = Gloves;
+
+			this->RawWeapons = Weapons;
+			this->Weapons = {};
+			for (uint64_t i = 0; i < (uint64_t)Weapon::_COUNT; i++)
+				if (this->RawWeapons & (((uint64_t)1) << i))
+					this->Weapons.push_back((Weapon)i);
+
+			this->RawKnives = Knives;
+			this->Knives = {};
+			for (uint64_t i = 0; i < (uint64_t)Knife::_COUNT; i++)
+				if (this->RawKnives & (((uint64_t)1) << i))
+					this->Knives.push_back((Knife)i);
+
+			this->RawGloves = Gloves;
+			this->Gloves = {};
+			for (uint64_t i = 0; i < (uint64_t)Glove::_COUNT; i++)
+				if (this->RawGloves & (((uint64_t)1) << i))
+					this->Gloves.push_back((Glove)i);
 		}
 	};
 	extern std::vector<PaintKit> PaintKits;
