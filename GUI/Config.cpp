@@ -1118,7 +1118,7 @@ namespace Config2
 			{ // chams
 				Group* g = t->Add("Chams");
 
-				g->Add("visuals-chams-test", "Dropdown test", new CVerticalState({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
+				g->Add("visuals-chams-test", "Dropdown test", new CMultiSelect({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
 			}
 		}
 

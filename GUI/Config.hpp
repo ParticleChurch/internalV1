@@ -858,6 +858,7 @@ namespace Config2
 		HSTATEFUL,
 		VSTATEFUL,
 		COLOR,
+		MULTISELECT,
 	};
 	enum class KeybindMode
 	{
@@ -878,6 +879,7 @@ namespace Config2
 	struct CColor;
 	struct CHorizontalState;
 	struct CVerticalState; // lmaoooo i really called a dropdown this
+	struct CMultiSelect;
 
 	// getters
 	extern Property* GetProperty(std::string Name);
@@ -886,6 +888,7 @@ namespace Config2
 	extern CPaintKit* GetPaintKit(std::string Name);
 	extern CState* GetState(std::string Name);
 	extern CColor* GetColor(std::string Name);
+	extern CMultiSelect* GetSelected(std::string Name);
 
 	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
@@ -1238,6 +1241,47 @@ namespace Config2
 		void SetG(unsigned char value) { this->G = value; }
 		void SetB(unsigned char value) { this->B = value; }
 		void SetA(unsigned char value) { if (this->HasAlpha) this->A = value; }
+	};
+	struct CMultiSelect
+	{
+		static const PropertyType Type = PropertyType::MULTISELECT;
+	
+	private:
+		uint64_t mask = 0;
+
+	public:
+		std::vector<std::string> StateNames;
+
+		CMultiSelect(std::vector<std::string> States)
+		{
+			StateNames = States;
+			mask = 0;
+		}
+
+		__forceinline size_t CountSelected()
+		{
+			size_t out = 0;
+			for (size_t i = 0; i < this->StateNames.size(); i++)
+				if (Get(i))
+					out++;
+			return out;
+		}
+
+		__forceinline bool Get(size_t index)
+		{
+			if (index > 63)
+			{
+				L::Log("AYOOO YOU CAN'T SET MORE THAN 64 THINGS");
+				return false;
+			}
+			return this->mask & ((uint64_t)1 << index);
+		}
+
+		__forceinline void Set(size_t index, bool value)
+		{
+			if (Get(index) == value) return;
+			this->mask ^= ((uint64_t)1 << index);
+		}
 	};
 
 	struct Property
