@@ -77,39 +77,6 @@ namespace Keybind
 
     bool KeyState[nKeys] = {};
     std::vector<void*> Binds[nKeys] = {};
-
-    std::vector<KeyLogEntry> KeyChangeStack = {};
-    bool Lock = false;
-    bool UpdatorRunning = false;
-    bool* WantMouseCapture = nullptr;
-
-    void KeyDown(int key)
-    {
-        KeyChangeStack.push_back(KeyLogEntry(key, 1, *WantMouseCapture));
-    }
-
-    void KeyUp(int key)
-    {
-        KeyChangeStack.push_back(KeyLogEntry(key, 0, *WantMouseCapture));
-    }
-}
-
-void Keybind::ForceUpdate()
-{
-    for (int i = 0; i < nKeys; i++)
-    {
-        int VK = KeyMap[i];
-        bool pressed = GetKeyState(VK) < 0;
-
-        if (pressed != KeyState[i])
-        {
-            KeyState[i] = pressed;
-            if (pressed)
-                KeyDown(i);
-            else
-                KeyUp(i);
-        }
-    }
 }
 
 int Keybind::ReverseKeyMap(int KeyCode)
@@ -118,44 +85,4 @@ int Keybind::ReverseKeyMap(int KeyCode)
         if (KeyMap[i] == KeyCode)
             return i;
     return -1;
-}
-
-struct ThreadData
-{
-    bool* ExitWhenTrue;
-};
-
-DWORD WINAPI PeriodicUpdator(LPVOID pInfo)
-{
-    L::Verbose("Keybind PeriodicUpdator init");
-    Keybind::UpdatorRunning = true;
-
-    ThreadData* Info = (ThreadData*)pInfo;
-    unsigned char i = 0;
-    while (!*Info->ExitWhenTrue)
-    {
-        Keybind::ForceUpdate();
-        if (++i == 0) L::Verbose("Keybind::ForceUpdate has ran 256 times");
-        Sleep(10);
-        while (Keybind::Lock) Sleep(1);
-    }
-    free(Info);
-
-    L::Verbose("Keybind PeriodicUpdator return");
-    Keybind::UpdatorRunning = false;
-    return 0;
-}
-
-void Keybind::Init(bool* EjectSignal, bool* ImGuiWantCaptureMouse)
-{
-    ThreadData* Info = (ThreadData*)malloc(sizeof(ThreadData));
-    if (!Info) return;
-
-    Info->ExitWhenTrue = EjectSignal;
-    WantMouseCapture = ImGuiWantCaptureMouse;
-
-    L::Verbose("Creating Keybind PeriodicUpdator thread");
-    CreateThread(NULL, 0, PeriodicUpdator, (void*)Info, 0, 0);
-    Sleep(0);
-    L::Verbose("Keybind::Init complete");
 }

@@ -2719,6 +2719,7 @@ namespace ImGui
 				OpenPopup(("##color-picker-" + p->Name).c_str());
 			else if (IsItemHovered())
 			{
+				GUI2::WantMouse = true;
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 20, 0));
 				ToolTip(Value->Stringify(), 20);
 			}
@@ -2729,6 +2730,7 @@ namespace ImGui
 			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
 			if (BeginPopup(("##color-picker-" + p->Name).c_str()))
 			{
+				GUI2::WantMouse = true;
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
 				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
@@ -2866,6 +2868,7 @@ namespace ImGui
 						open = true;
 					}
 				}
+				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
 
 
 				EndChild();
@@ -2890,6 +2893,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup(popupName))
 				{
+					GUI2::WantMouse = true;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 
@@ -2913,6 +2917,99 @@ namespace ImGui
 		PopFont();
 		PopStyleVar(1);
 
+		// keybind (yoinked from DrawBooleanProperty)
+		if (Value->Bindable)
+		{
+			PushFont(Arial14);
+
+			if (p == Config2::SettingKeybindFor) // this is being set right now
+			{
+				PushFont(Arial12);
+				const char* Prefix = "[PRESS A KEY]";
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 209, (20 - PrefixSize.y) / 2));
+				Text(Prefix);
+				PopFont();
+			}
+			else if (Value->BoundToKey >= 0) // this key is already bound
+			{
+				const char* Prefix = "PRESS";
+				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
+				const char* Suffix = "TO LOOP";
+
+				PushFont(Arial12);
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+				PopFont();
+				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
+
+				int x = GUI2::PropertyColumnPosition + 209;
+				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
+				PushFont(Arial12);
+				Text(Prefix);
+				PopFont();
+				x += 5 + PrefixSize.x;
+
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				SetCursorPos(Pos + ImVec2(x, 0));
+				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+				{
+					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
+					for (size_t i = 0; i < vec.size(); i++)
+						if (vec.at(i) == (void*)p)
+							vec.erase(vec.begin() + i--);
+
+					Value->BoundToKey = -1;
+					Config2::SettingKeybindFor = nullptr;
+					GUI2::WantMouse = true;
+				}
+				else if (IsItemHovered())
+				{
+					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
+					ToolTip("Click To Clear", 20);
+					GUI2::WantMouse = true;
+				}
+
+				PopStyleColor(2);
+				PopStyleVar(2);
+				x += KeyNameSize.x + 10 + 5;
+
+
+				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
+				PushFont(Arial12);
+				Text(Suffix);
+				PopFont();
+
+			}
+			else if (!PremiumLocked) // the key is not bound & we are able to bind it
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 205, 0));
+
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				if (Button(("Bind##" + p->Name).c_str(), ImVec2(40, 20)))
+				{
+					Config2::SettingKeybindFor = p;
+					GUI2::WantMouse = true;
+				}
+				else if (IsItemHovered())
+				{
+					GUI2::WantMouse = true;
+				}
+
+				PopStyleColor(2);
+				PopStyleVar(2);
+			}
+
+			PopFont();
+		}
 		return 20;
 	}
 
@@ -3019,6 +3116,7 @@ namespace ImGui
 						open = true;
 					}
 				}
+				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
 
 
 				EndChild();
@@ -3040,6 +3138,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup(popupName))
 				{
+					GUI2::WantMouse = true;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 						bool selected = Value->Get(i);
@@ -3521,8 +3620,8 @@ void GUI2::DrawActiveTab()
 	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
 	static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
 	static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
-	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
-	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
 	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat("theme-legit-rage-switch-border-size");
 	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
 
@@ -4301,11 +4400,11 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
 	static Config2::CColor* TopbarBackground = Config2::GetColor("theme-topbar-background");
 	static Config2::CColor* TopbarText = Config2::GetColor("theme-topbar-text");
-	static Config2::CColor* TablistBackground = Config2::GetColor("theme-tablist-background");
-	static Config2::CColor* TablistText = Config2::GetColor("theme-tablist-text");
-	static Config2::CColor* ActiveTablistText = Config2::GetColor("theme-active-tablist-text");
-	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
-	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CColor* TablistBackground = Config2::GetColor("theme-overlay-background");
+	static Config2::CColor* TablistText = Config2::GetColor("theme-overlay-text");
+	static Config2::CColor* ActiveTablistText = Config2::GetColor("theme-overlay-active-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
 	static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
 	static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
 	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
@@ -4634,6 +4733,8 @@ void GUI2::Main()
 	L::Verbose("Config2::ProcessKeys running");
 	Config2::ProcessKeys();
 	L::Verbose("Config2::ProcessKeys complete");
+
+
 
 	L::Verbose("GUI2::Main complete");
 }

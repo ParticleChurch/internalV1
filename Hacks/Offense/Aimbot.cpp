@@ -26,9 +26,9 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 
 	while (i < 255)
 	{
-		const auto b = QuickRandom(0.f, 2.0f * M_PI);
+		const auto b = QuickRandom(0.f, 2.0f * 3.1415926535f); // tired of "warning C4305: 'argument': truncation from 'double' to 'float'"
 		const auto c = QuickRandom(0.0f, 1.0f);
-		const auto d = QuickRandom(0.f, 2.0f * M_PI);
+		const auto d = QuickRandom(0.f, 2.0f * 3.1415926535f); // so i swapped M_PI to this, lol
 
 		const auto spread_val = c * spread;
 		const auto inaccuracy_val = c * inaccuracy;

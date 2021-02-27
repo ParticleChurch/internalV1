@@ -37,8 +37,6 @@ void Init()
     H::Init();
     GUI2::LoadProgress = 0.85f;
 
-    L::Log("Initializing keybinds");
-    Keybind::Init(&G::KillDLL, &GUI2::WantMouse);
     GUI2::LoadProgress = 1.f;
 
     L::Log("DLLMain complete. Now waiting for ejection");
@@ -46,9 +44,6 @@ void Init()
 
     L::Log("Unhooking hooks...");
     while (!H::UnHooked) Sleep(100);
-
-    L::Log("Ejected, waiting for keybind thread");
-    while (Keybind::UpdatorRunning) Sleep(100);
 
     L::Log("Freeing DLL");
     L::Free();

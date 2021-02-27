@@ -1155,14 +1155,12 @@ namespace Config2
 		CState Value = CState(0, 0, 0);
 		bool Bindable = true;
 		int BoundToKey = -1;
-		bool HasSearchbar = true;
 
-		CVerticalState(std::vector<std::string> States, bool Bindable = false, bool Searchbar = false)
+		CVerticalState(std::vector<std::string> States, bool Bindable = false)
 		{
 			this->Value = CState(0, (int)States.size() - 1, 0);
 			this->StateNames = States;
 			this->Bindable = Bindable;
-			this->HasSearchbar = Searchbar;
 		}
 	};
 	struct CColor

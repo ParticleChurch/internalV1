@@ -1118,7 +1118,14 @@ namespace Config2
 			{ // chams
 				Group* g = t->Add("Chams");
 
-				g->Add("visuals-chams-test", "Dropdown test", new CMultiSelect({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
+				g->Add("test-switch", "switch", new CBoolean());
+				g->Add("test-color", "clr", new CColor(true));
+
+				g->Add("test-CMultiSelect", "CMultiSelect test", new CMultiSelect({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
+
+				g->Add("test-CHorizontalState", "CHorizontalState test", new CHorizontalState({ "a", "b", "c", "d", "e" }));
+
+				g->Add("test-CVerticalState", "CVerticalState test", new CVerticalState({ "A", "B", "C" }, true));
 			}
 		}
 
@@ -1159,6 +1166,12 @@ namespace Config2
 			{
 				Group* g = t->Add("General");
 
+				g->Add("theme-background", "Background Color", new CColor(false));
+				g->Add("theme-background-image", "Background Image (soon!)", new CLabel());
+
+				g->Add("theme-widget-background", "Widget Background", new CColor(true));
+				g->Add("theme-widget-title", "Widget Title", new CColor(true));
+
 				g->Add("theme-topbar-background", "Topbar Background", new CColor(true));
 				g->Add("theme-topbar-text", "Topbar Text", new CColor(true));
 				g->Add("theme-border-size", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
@@ -1166,16 +1179,23 @@ namespace Config2
 					static Property* p1 = GetProperty("theme-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
+			}
 
-				g->Add("theme-background", "Background Color", new CColor(false));
-				g->Add("theme-background-image", "Background Image", new CLabel())->IsVisible = []() {return false; };
+			{
+				Group* g = t->Add("Properties");
 
-				g->Add("theme-tablist-background", "Tab List Background", new CColor(true));
-				g->Add("theme-tablist-text", "Tab List Text", new CColor(true));
-				g->Add("theme-active-tablist-text", "Active Tab List Text", new CColor(true));
-				
-				g->Add("theme-searchbar-background", "Search Bar Background", new CColor(false));
-				g->Add("theme-searchbar-text", "Search Bar Text", new CColor(false));
+				g->Add("theme-property-example1", "Example Reference 1", new CBoolean());
+				g->Add("theme-property-example2", "Example Reference 2", new CFloat(69.f, 420.f, 2, "UNIT"));
+				g->Add("theme-property-example3", "Example Reference 3", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
+				g->Add("theme-property-example4", "Example Reference 4", new CVerticalState({ "Never", "Gonna", "Let", "You", "Down" }, true));
+
+				g->Add("theme-property-text", "Text", new CColor(true));
+				g->Add("theme-property-base", "Base", new CColor(false));
+				g->Add("theme-property-accent", "Accent", new CColor(false));
+
+				g->Add("theme-info-icon", "Info Icon", new CColor(false));
+				g->Add("theme-warning", "Warning Icon", new CColor(false));
+				g->Add("theme-error", "Error Icon", new CColor(false));
 
 				g->Add("theme-button-text", "Button Text", new CColor(true));
 				g->Add("theme-button-background", "Button Background", new CColor(false));
@@ -1186,31 +1206,47 @@ namespace Config2
 					static Property* p1 = GetProperty("theme-button-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
-
-				g->Add("theme-info-icon", "Info Icon", new CColor(false));
-				g->Add("theme-warning", "Warning Icon", new CColor(false))->IsVisible = []() {return false; };;
-				g->Add("theme-error", "Error Icon", new CColor(false))->IsVisible = []() {return false; };;
 			}
 
 			{
-				Group* g = t->Add("Tabs");
+				Group* g = t->Add("Left Side Overlay");
 
-				g->Add("theme-widget-background", "Widget Background", new CColor(true));
-				g->Add("theme-widget-title", "Widget Title", new CColor(true));
-				g->Add("theme-property-text", "Setting Text", new CColor(true));
-				g->Add("theme-property-base", "Setting Base", new CColor(false));
-				g->Add("theme-property-accent", "Setting Accent", new CColor(false));
-				g->Add("theme-eject", "Eject", new CColor(true));
-				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));
-				g->Add("theme-legit-rage-switch-label_", "Legit/Rage Switch", new CLabel());
+				g->Add("theme-overlay-background", "Background", new CColor(true));
+				g->Add("theme-overlay-text", "Text", new CColor(true));
+				g->Add("theme-overlay-active-text", "Active Tab Text", new CColor(true));
+				g->Add("theme-overlay-active-pointer", "Active Arrow", new CColor(true));
+
+				g->Add("theme-main-searchbar-background", "Search Bar Background", new CColor(true));
+				g->Add("theme-main-searchbar-text", "Search Bar Text", new CColor(true));
+			}
+
+			{
+				Group* g = t->Add("Legit/Rage Switch For Offence & Defence");
+
+				g->Add("theme-legit-rage-switch-text", "Text", new CColor(true));
 				g->Add("theme-legit-rage-switch-background", "Background", new CColor(true));
+				g->Add("theme-legit-rage-switch-highlight", "Highlight", new CColor(true));
 				g->Add("theme-legit-rage-switch-border-size", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
 				g->Add("theme-legit-rage-switch-outline", "Outline", new CColor(true))->IsVisible = []() {
 					static Property* p1 = GetProperty("theme-legit-rage-switch-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
-				g->Add("theme-legit-rage-switch-highlight", "Highlight", new CColor(true));
-				g->Add("theme-legit-rage-switch-text", "Text", new CColor(true));
+			}
+
+			{
+				Group* g = t->Add("Misc");
+
+				g->Add("theme-eject", "Eject Tab", new CColor(true));
+				g->Add("theme-eject-button", "Eject Button", new CColor(true));
+				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));
+
+				g->Add("theme-tooltip-text", "Tooltip Text", new CColor(true));
+				g->Add("theme-tooltip-background", "Tooltip Background", new CColor(false));
+				g->Add("theme-tooltip-border-size", "Tooltip Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-tooltip-outline", "Tooltip Outline", new CColor(true))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-tooltip-border-size");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
 			}
 		}
 
@@ -1310,7 +1346,7 @@ namespace Config2
 
 	void _KeyStateChanged(int index, bool currentlyPressed)
 	{
-		std::vector<void*> Properties = Keybind::Binds[index];
+		std::vector<void*>& Properties = Keybind::Binds[index];
 		for (size_t i = 0; i < Properties.size(); i++)
 		{
 			Property* p = (Property*)Properties.at(i);
@@ -1335,6 +1371,16 @@ namespace Config2
 						b->Value.Invert();
 					break;
 				}
+			} break;
+			case PropertyType::HSTATEFUL:
+			{
+				if (currentlyPressed)
+					((CHorizontalState*)p->Value)->Value.Increment();
+			} break;
+			case PropertyType::VSTATEFUL:
+			{
+				if (currentlyPressed)
+					((CVerticalState*)p->Value)->Value.Increment();
 			} break;
 			default:
 				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
@@ -1373,6 +1419,46 @@ namespace Config2
 			if (((CBoolean*)p->Value)->BindMode == KeybindMode::TOGGLE)
 				ForceUpdate = false;
 		} break;
+		case PropertyType::VSTATEFUL:
+		{
+			// unbind if already bound
+			if (((CVerticalState*)p->Value)->BoundToKey >= 0)
+			{
+				std::vector<void*>& vec = Keybind::Binds[((CBoolean*)p->Value)->BoundToKey];
+				for (size_t i = 0; i < vec.size(); i++)
+					if (vec.at(i) == (void*)p)
+						vec.erase(vec.begin() + i--);
+				((CVerticalState*)p->Value)->BoundToKey = -1;
+			}
+
+			// bind if wants us to
+			if (index >= 0)
+			{
+				((CVerticalState*)p->Value)->BoundToKey = index;
+				Keybind::Binds[index].push_back(p);
+			}
+			ForceUpdate = false;
+		} break;
+		case PropertyType::HSTATEFUL:
+		{
+			// unbind if already bound
+			if (((CHorizontalState*)p->Value)->BoundToKey >= 0)
+			{
+				std::vector<void*>& vec = Keybind::Binds[((CBoolean*)p->Value)->BoundToKey];
+				for (size_t i = 0; i < vec.size(); i++)
+					if (vec.at(i) == (void*)p)
+						vec.erase(vec.begin() + i--);
+				((CHorizontalState*)p->Value)->BoundToKey = -1;
+			}
+
+			// bind if wants us to
+			if (index >= 0)
+			{
+				((CHorizontalState*)p->Value)->BoundToKey = index;
+				Keybind::Binds[index].push_back(p);
+			}
+			ForceUpdate = false;
+		}
 		default:
 			L::Log((XOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
 			return;
@@ -2026,6 +2112,35 @@ namespace Config2
 
 	void ProcessKeys()
 	{
+		// im gonna rely on the compiler to make this more efficient
+		// because i do not want to sacrifice readability
+		for (size_t key = 0; key < Keybind::nKeys; key++)
+		{
+			int VK = Keybind::KeyMap[key];
+			bool LastWasPressed = Keybind::KeyState[key];
+			bool CurrentPressed = GetAsyncKeyState(VK) < 0;
+			Keybind::KeyState[key] = CurrentPressed;
+
+			bool IsMouse = VK == VK_LBUTTON;
+			if (IsMouse && GUI2::WantMouse)
+			{
+				continue;
+			}
+			else if (LastWasPressed != CurrentPressed)
+			{
+				if (SettingKeybindFor && CurrentPressed)
+				{
+					_BindToKey(SettingKeybindFor, key);
+					SettingKeybindFor = nullptr;
+				}
+				else
+				{
+					_KeyStateChanged(key, CurrentPressed);
+				}
+			}
+		}
+
+		/*
 		auto io = ImGui::GetIO();
 
 		Keybind::Lock = true;
@@ -2052,6 +2167,7 @@ namespace Config2
 			Keybind::KeyChangeStack.erase(Keybind::KeyChangeStack.begin());
 		}
 		Keybind::Lock = false;
+		*/
 	}
 
 	void Free()
