@@ -2025,6 +2025,46 @@ namespace ImGui
 		DrawList->AddLine(ImVec2(Position.x, Position.y + Size.y), ImVec2(Position.x + Size.x, Position.y), IM_COL32(255, 255, 255, Opacity), StrokeSize);
 	}
 
+	void DrawUpArrow(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 1.6f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		float StrokeSize = Size.x / 5.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->AddLine(Position + ImVec2(0, Size.y), Position + ImVec2(Size.x/2.f, 0.f), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+		DrawList->AddLine(Position + ImVec2(Size.x / 2.f, 0.f), Position + Size, IM_COL32(255, 255, 255, Opacity), StrokeSize);
+	}
+
+	void DrawDownArrow(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 1.6f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		float StrokeSize = Size.x / 5.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->AddLine(Position, Position + ImVec2(Size.x / 2.f, Size.y), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+		DrawList->AddLine(Position + ImVec2(Size.x / 2.f, Size.y), Position + ImVec2(Size.x, 0.f), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+	}
+
 	void DrawSelectionCursor(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(10.f, 10.f))
 	{
 		constexpr float AspectRatio = 1.f; // X / Y
@@ -2710,6 +2750,7 @@ namespace ImGui
 	{
 		static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
 		static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+		static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
 		static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
 		static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
 		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
@@ -2756,88 +2797,97 @@ namespace ImGui
 		}
 
 		PushFont(Arial14);
-		// draw prompt
+		// draw property
 		{
 			const char* popupName = ("##popup-" + p->Name).c_str();
+			bool alreadyOpen = IsPopupOpen(popupName);
 			int nItems = Value->StateNames.size();
 			std::string CurrentSelection = Value->StateNames.at(Value->Value.Get());
 
-			// button
+			PushStyleColor(ImGuiCol_Button, 0);
+			PushStyleColor(ImGuiCol_ButtonActive, 0);
+			PushStyleColor(ImGuiCol_ButtonHovered, 0);
+			// button/child thing
 			{
 				bool open = false;
 
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
-				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
+				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
 				BeginChild(("##button-child-" + p->Name).c_str(), ImVec2(200, 20));
+
+				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
+				// draw border manually
+				auto retard_Window = GetCurrentWindow();
+				auto retard_DrawList = Window->DrawList;
+				retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, IM_COL32(0,0,0,127), 3.f);
 
 				SetCursorPos(ImVec2(5, 3));
 				Text(CurrentSelection.c_str());
-
+				
 				// dropdown arrow
 				{
-					// button
-					SetCursorPos(ImVec2(200 - 18, 2));
-					PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
-					PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 150));
-					PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
-					PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
-					if (Button(("##button-arrow-" + p->Name).c_str(), ImVec2(16, 16)))
-					{
-						open = true;
-					}
-					PopStyleColor(3);
-					PopStyleVar(1);
-
-					//SetCursorPos(ImVec2(200 - 18, 2));
-					//Config2::SettingKeybindFor = nullptr;
-					//ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
-					//ImGui::DrawXIcon(255, ImVec2(9, 9));
+					SetCursorPos(ImVec2(200 - 15, 5));
+					if (alreadyOpen)
+						DrawUpArrow(255, ImVec2(9, 9));
+					else
+						DrawDownArrow(255, ImVec2(9, 9));
 				}
 
 				// dummy button across whole child
 				{
 
 					SetCursorPos(ImVec2(0, 0));
-					PushStyleColor(ImGuiCol_Button, 0);
-					PushStyleColor(ImGuiCol_ButtonActive, 0);
-					PushStyleColor(ImGuiCol_ButtonHovered, 0);
 					if (Button(("##button-invis-" + p->Name).c_str(), ImVec2(200, 20)))
 					{
 						open = true;
 					}
-					PopStyleColor(3);
 				}
+				
 
 				EndChild();
 				PopStyleColor(2);
-				PopStyleVar(1);
+				PopStyleVar(2);
 
 				if (open)
 					OpenPopup(popupName);
 			}
-			//SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
-			//if (Button("ayoo", ImVec2(200, 20)))
-			//{
-			//	OpenPopup("kekw");
-			//}
+			PopStyleColor(3);
 
-			// dropdown
+			PushStyleColor(ImGuiCol_Button, 0);
+			PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonActive);
+			PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonHovered);
+			// popup
 			{
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
 				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
-				SetNextWindowSize(ImVec2(200, min(nItems, 5) * 20));
-				PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0);
+				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
+				PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 127));
+				PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1.f);
+				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup(popupName))
 				{
-					int pad = (20 - GetFontSize()) / 2;
-					SetCursorPos(ImVec2(pad, pad));
-					Text("hey");
+					for (size_t i = 0; i < Value->StateNames.size(); i++)
+					{
+
+						SetCursorPos(ImVec2(0, i * 20));
+						if (Button(("##li" + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						{
+							Value->Value.Set(i);
+							CloseCurrentPopup();
+						}
+
+						SetCursorPos(ImVec2(5, i*20 + (20-GetFontSize())/2));
+						Text(Value->StateNames.at(i).c_str());
+					}
 					EndPopup();
 				}
-				PopStyleVar(1);
+				PopStyleColor(1);
+				PopStyleVar(2);
 			}
+			PopStyleColor(3);
 		}
 		PopFont();
 
