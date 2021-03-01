@@ -2025,6 +2025,26 @@ namespace ImGui
 		DrawList->AddLine(ImVec2(Position.x, Position.y + Size.y), ImVec2(Position.x + Size.x, Position.y), IM_COL32(255, 255, 255, Opacity), StrokeSize);
 	}
 
+	void DrawCheckmark(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
+	{
+		constexpr float AspectRatio = 4.f/3.f; // X / Y
+		auto Window = ImGui::GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+
+		float Ratio = Dimensions.x / Dimensions.y;
+		ImVec2 Size = Ratio > AspectRatio ?
+			ImVec2(Dimensions.x * AspectRatio / Ratio, Dimensions.y) :
+			ImVec2(Dimensions.x, Dimensions.y * Ratio / AspectRatio); // to wide ? shorten X : shorten Y
+		ImVec2 Position = Window->DC.CursorPos + (Dimensions - Size) / 2;
+
+		float StrokeSize = Size.x / 10.f;
+		Size -= ImVec2(StrokeSize, StrokeSize);
+		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
+
+		DrawList->AddLine(Position + ImVec2(Size.x, 0), Position + ImVec2(Size.x / 3.f, Size.y), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+		DrawList->AddLine(Position + ImVec2(Size.x / 3.f, Size.y), Position + ImVec2(0, Size.y / 2.f), IM_COL32(255, 255, 255, Opacity), StrokeSize);
+	}
+
 	void DrawUpArrow(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(24.f, 24.f))
 	{
 		constexpr float AspectRatio = 1.6f; // X / Y
@@ -2699,6 +2719,7 @@ namespace ImGui
 				OpenPopup(("##color-picker-" + p->Name).c_str());
 			else if (IsItemHovered())
 			{
+				GUI2::WantMouse = true;
 				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 20, 0));
 				ToolTip(Value->Stringify(), 20);
 			}
@@ -2709,6 +2730,7 @@ namespace ImGui
 			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
 			if (BeginPopup(("##color-picker-" + p->Name).c_str()))
 			{
+				GUI2::WantMouse = true;
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
 				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
@@ -2797,6 +2819,7 @@ namespace ImGui
 		}
 
 		PushFont(Arial14);
+		PushStyleVar(ImGuiStyleVar_FrameRounding, 0.f);
 		// draw property
 		{
 			const char* popupName = ("##popup-" + p->Name).c_str();
@@ -2822,11 +2845,11 @@ namespace ImGui
 				// draw border manually
 				auto retard_Window = GetCurrentWindow();
 				auto retard_DrawList = Window->DrawList;
-				retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, IM_COL32(0,0,0,127), 3.f);
+				retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, IM_COL32(0, 0, 0, 127), 3.f);
 
 				SetCursorPos(ImVec2(5, 3));
 				Text(CurrentSelection.c_str());
-				
+
 				// dropdown arrow
 				{
 					SetCursorPos(ImVec2(200 - 15, 5));
@@ -2845,7 +2868,8 @@ namespace ImGui
 						open = true;
 					}
 				}
-				
+				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
+
 
 				EndChild();
 				PopStyleColor(2);
@@ -2869,6 +2893,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup(popupName))
 				{
+					GUI2::WantMouse = true;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 
@@ -2879,7 +2904,7 @@ namespace ImGui
 							CloseCurrentPopup();
 						}
 
-						SetCursorPos(ImVec2(5, i*20 + (20-GetFontSize())/2));
+						SetCursorPos(ImVec2(5, i * 20 + (20 - GetFontSize()) / 2));
 						Text(Value->StateNames.at(i).c_str());
 					}
 					EndPopup();
@@ -2890,6 +2915,268 @@ namespace ImGui
 			PopStyleColor(3);
 		}
 		PopFont();
+		PopStyleVar(1);
+
+		// keybind (yoinked from DrawBooleanProperty)
+		if (Value->Bindable)
+		{
+			PushFont(Arial14);
+
+			if (p == Config2::SettingKeybindFor) // this is being set right now
+			{
+				PushFont(Arial12);
+				const char* Prefix = "[PRESS A KEY]";
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 209, (20 - PrefixSize.y) / 2));
+				Text(Prefix);
+				PopFont();
+			}
+			else if (Value->BoundToKey >= 0) // this key is already bound
+			{
+				const char* Prefix = "PRESS";
+				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
+				const char* Suffix = "TO LOOP";
+
+				PushFont(Arial12);
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+				PopFont();
+				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
+
+				int x = GUI2::PropertyColumnPosition + 209;
+				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
+				PushFont(Arial12);
+				Text(Prefix);
+				PopFont();
+				x += 5 + PrefixSize.x;
+
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				SetCursorPos(Pos + ImVec2(x, 0));
+				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+				{
+					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
+					for (size_t i = 0; i < vec.size(); i++)
+						if (vec.at(i) == (void*)p)
+							vec.erase(vec.begin() + i--);
+
+					Value->BoundToKey = -1;
+					Config2::SettingKeybindFor = nullptr;
+					GUI2::WantMouse = true;
+				}
+				else if (IsItemHovered())
+				{
+					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
+					ToolTip("Click To Clear", 20);
+					GUI2::WantMouse = true;
+				}
+
+				PopStyleColor(2);
+				PopStyleVar(2);
+				x += KeyNameSize.x + 10 + 5;
+
+
+				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
+				PushFont(Arial12);
+				Text(Suffix);
+				PopFont();
+
+			}
+			else if (!PremiumLocked) // the key is not bound & we are able to bind it
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 205, 0));
+
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+				if (Button(("Bind##" + p->Name).c_str(), ImVec2(40, 20)))
+				{
+					Config2::SettingKeybindFor = p;
+					GUI2::WantMouse = true;
+				}
+				else if (IsItemHovered())
+				{
+					GUI2::WantMouse = true;
+				}
+
+				PopStyleColor(2);
+				PopStyleVar(2);
+			}
+
+			PopFont();
+		}
+		return 20;
+	}
+
+	int DrawMultiSelectorProperty(Config2::Property* p)
+	{
+		static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
+		static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
+		static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
+		static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
+		static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
+		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
+		Config2::CMultiSelect* Value = (Config2::CMultiSelect*)p->Value;
+
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+
+		// draw label 
+		{
+			ImVec2 IconSize(14, 14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			if (PremiumLocked)
+			{
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "Premium users only";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
+			}
+
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		}
+
+		PushFont(Arial14);
+		PushStyleVar(ImGuiStyleVar_FrameRounding, 0.f);
+		// draw property
+		{
+			const char* popupName = ("##popup-" + p->Name).c_str();
+			bool alreadyOpen = IsPopupOpen(popupName);
+			int nItems = Value->StateNames.size();
+			int selectedCount = Value->CountSelected();
+			std::string CurrentSelection = "None selected";
+			if (selectedCount > 0)
+				CurrentSelection = std::to_string(selectedCount) + " selected";
+
+			PushStyleColor(ImGuiCol_Button, 0);
+			PushStyleColor(ImGuiCol_ButtonActive, 0);
+			PushStyleColor(ImGuiCol_ButtonHovered, 0);
+			// button/child thing
+			{
+				bool open = false;
+
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
+				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
+				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
+				BeginChild(("##button-child-" + p->Name).c_str(), ImVec2(200, 20));
+
+				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
+				// draw border manually
+				auto retard_Window = GetCurrentWindow();
+				auto retard_DrawList = Window->DrawList;
+				retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, IM_COL32(0, 0, 0, 127), 3.f);
+
+				SetCursorPos(ImVec2(5, 3));
+				Text(CurrentSelection.c_str());
+
+				// dropdown arrow
+				{
+					SetCursorPos(ImVec2(200 - 15, 5));
+					if (alreadyOpen)
+						DrawUpArrow(255, ImVec2(9, 9));
+					else
+						DrawDownArrow(255, ImVec2(9, 9));
+				}
+
+				// dummy button across whole child
+				{
+
+					SetCursorPos(ImVec2(0, 0));
+					if (Button(("##button-invis-" + p->Name).c_str(), ImVec2(200, 20)))
+					{
+						open = true;
+					}
+				}
+				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
+
+
+				EndChild();
+				PopStyleColor(2);
+				PopStyleVar(2);
+
+				if (open)
+					OpenPopup(popupName);
+			}
+			PopStyleColor(3);
+
+			// popup
+			{
+				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
+				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
+				PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 127));
+				PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1.f);
+				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
+				if (BeginPopup(popupName))
+				{
+					GUI2::WantMouse = true;
+					for (size_t i = 0; i < Value->StateNames.size(); i++)
+					{
+						bool selected = Value->Get(i);
+						if (selected)
+						{
+							PushStyleColor(ImGuiCol_Button, (ImVec4)*ButtonActive);
+							PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonActive);
+							PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonHovered);
+						}
+						else
+						{
+							PushStyleColor(ImGuiCol_Button, 0);
+							PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonHovered);
+							PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonActive);
+						}
+
+						SetCursorPos(ImVec2(0, i * 20));
+						if (Button(("##li" + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						{
+							Value->Set(i, !selected);
+						}
+						PopStyleColor(3);
+
+						SetCursorPos(ImVec2(20, i * 20 + 3));
+						Text(Value->StateNames.at(i).c_str());
+
+						SetCursorPos(ImVec2(5, i * 20 + 5));
+						if (selected)
+							DrawCheckmark(255, ImVec2(9, 9));
+					}
+					EndPopup();
+				}
+				PopStyleColor(1);
+				PopStyleVar(2);
+			}
+		}
+		PopFont();
+		PopStyleVar(1);
 
 		return 20;
 	}
@@ -3289,6 +3576,9 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 				case Config2::PropertyType::VSTATEFUL:
 					GroupY += ImGui::DrawVerticalStatefulProperty(Property);
 					break;
+				case Config2::PropertyType::MULTISELECT:
+					GroupY += ImGui::DrawMultiSelectorProperty(Property);
+					break;
 				default:
 				case Config2::PropertyType::LABEL:
 					GroupY += ImGui::DrawTextProperty(Property);
@@ -3330,8 +3620,8 @@ void GUI2::DrawActiveTab()
 	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
 	static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
 	static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
-	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
-	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
 	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat("theme-legit-rage-switch-border-size");
 	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
 
@@ -4110,11 +4400,11 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
 	static Config2::CColor* TopbarBackground = Config2::GetColor("theme-topbar-background");
 	static Config2::CColor* TopbarText = Config2::GetColor("theme-topbar-text");
-	static Config2::CColor* TablistBackground = Config2::GetColor("theme-tablist-background");
-	static Config2::CColor* TablistText = Config2::GetColor("theme-tablist-text");
-	static Config2::CColor* ActiveTablistText = Config2::GetColor("theme-active-tablist-text");
-	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-searchbar-background");
-	static Config2::CColor* SearchbarText = Config2::GetColor("theme-searchbar-text");
+	static Config2::CColor* TablistBackground = Config2::GetColor("theme-overlay-background");
+	static Config2::CColor* TablistText = Config2::GetColor("theme-overlay-text");
+	static Config2::CColor* ActiveTablistText = Config2::GetColor("theme-overlay-active-text");
+	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
+	static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
 	static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
 	static Config2::CColor* ButtonHovered = Config2::GetColor("theme-button-hovered");
 	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
@@ -4443,6 +4733,8 @@ void GUI2::Main()
 	L::Verbose("Config2::ProcessKeys running");
 	Config2::ProcessKeys();
 	L::Verbose("Config2::ProcessKeys complete");
+
+
 
 	L::Verbose("GUI2::Main complete");
 }
