@@ -1123,7 +1123,7 @@ namespace Config2
 
 				g->Add("test-CMultiSelect", "CMultiSelect test", new CMultiSelect({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
 
-				g->Add("test-CHorizontalState", "CHorizontalState test", new CHorizontalState({ "a", "b", "c", "d", "e" }));
+				g->Add("test-CHorizontalState", "CHorizontalState test", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Sniper" }));
 
 				g->Add("test-CVerticalState", "CVerticalState test", new CVerticalState({ "A", "B", "C" }, true));
 			}
@@ -1188,14 +1188,11 @@ namespace Config2
 				g->Add("theme-property-example2", "Example Reference 2", new CFloat(69.f, 420.f, 2, "UNIT"));
 				g->Add("theme-property-example3", "Example Reference 3", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
 				g->Add("theme-property-example4", "Example Reference 4", new CVerticalState({ "Never", "Gonna", "Let", "You", "Down" }, true));
+				g->Add("theme-property-example5", "Example Reference 5", new CHorizontalState({ "Here", "Are", "Some", "Options", "8===D" }));
 
 				g->Add("theme-property-text", "Text", new CColor(true));
 				g->Add("theme-property-base", "Base", new CColor(false));
 				g->Add("theme-property-accent", "Accent", new CColor(false));
-
-				g->Add("theme-info-icon", "Info Icon", new CColor(false));
-				g->Add("theme-warning", "Warning Icon", new CColor(false));
-				g->Add("theme-error", "Error Icon", new CColor(false));
 
 				g->Add("theme-button-text", "Button Text", new CColor(true));
 				g->Add("theme-button-background", "Button Background", new CColor(false));
@@ -1206,6 +1203,14 @@ namespace Config2
 					static Property* p1 = GetProperty("theme-button-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
+
+				g->Add("theme-hstate-background", "Slide-Select Background", new CColor(false));
+				g->Add("theme-hstate-highlight", "Slide-Select Highlight", new CColor(false));
+				g->Add("theme-hstate-text", "Slide-Select Text", new CColor(true));
+
+				g->Add("theme-info-icon", "Info Icon", new CColor(false));
+				g->Add("theme-warning", "Warning Icon", new CColor(false));
+				g->Add("theme-error", "Error Icon", new CColor(false));
 			}
 
 			{

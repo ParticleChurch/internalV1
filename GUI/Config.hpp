@@ -950,6 +950,7 @@ namespace Config2
 			this->Minimum = min;
 			this->Maximum = max;
 			this->Value = val;
+			this->LastValue = val;
 		}
 
 		double GetTimeSinceChange()
@@ -957,14 +958,21 @@ namespace Config2
 			return Animation::delta(Animation::now(), this->TimeChanged);
 		}
 
+		size_t GetLastValue()
+		{
+			return this->LastValue;
+		}
+
 		void Increment()
 		{
+			this->LastValue = this->Value;
 			if (++this->Value > this->Maximum) this->Value = this->Minimum;
 			this->TimeChanged = Animation::now();
 		}
 
 		void Invert()
 		{
+			this->LastValue = this->Value;
 			this->Value = this->Maximum - (this->Value - this->Minimum);
 			this->TimeChanged = Animation::now();
 		}
@@ -978,6 +986,7 @@ namespace Config2
 		{
 			if (value == this->Value) return;
 
+			this->LastValue = this->Value;
 			if (value <= this->Minimum) this->Value = this->Minimum;
 			else if (value >= this->Maximum) this->Value = this->Maximum;
 			else this->Value = value;
@@ -1134,11 +1143,11 @@ namespace Config2
 	public:
 		std::vector<std::string> StateNames;
 		CState Value = CState(0, 0, 0);
-		bool Bindable = true;
+		bool Bindable = false;
 		int BoundToKey = -1;
 
 
-		CHorizontalState(std::vector<std::string> States, bool Bindable = true)
+		CHorizontalState(std::vector<std::string> States, bool Bindable = false)
 		{
 			this->Value = CState(0, (int)States.size() - 1, 0);
 			this->StateNames = States;

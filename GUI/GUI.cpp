@@ -3013,6 +3013,89 @@ namespace ImGui
 		return 20;
 	}
 
+	int DrawHorizontalStatefulProperty(Config2::Property* p)
+	{
+		static Config2::CColor* HStateBackground = Config2::GetColor("theme-hstate-background");
+		static Config2::CColor* HStateHighlight = Config2::GetColor("theme-hstate-highlight");
+		static Config2::CColor* HStateText = Config2::GetColor("theme-hstate-text");
+		Config2::CHorizontalState* Value = (Config2::CHorizontalState*)p->Value;
+
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		// todo: option to draw label and move to the right? maybe?
+		int WidthAvailable = GetContentRegionMaxAbs().x - Window->DC.CursorPos.x;
+		int LRPadding = 6;
+		int Width = WidthAvailable - 2 * LRPadding;
+		ImVec2 BarLocalPos = Pos + ImVec2(LRPadding, 0);
+		SetCursorPos(BarLocalPos);
+		ImVec2 Size(Width, 20);
+		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
+		ImGuiID ID = GetID((p->Name + "-interactable").c_str());
+		
+		// vars
+		size_t nItems = Value->StateNames.size();
+		float pixelsPerItem = (float)(Width - 4) / (float)nItems;
+		int itemsStartX = Window->DC.CursorPos.x + 2;
+		int itemsEndX = Window->DC.CursorPos.x + Width - 2;
+
+		// interaction behavior
+		{
+			ItemAdd(BB, ID);
+			bool hovered = ItemHoverable(BB, ID);
+			bool clicked = (hovered && GImGui->IO.MouseClicked[0]);
+			if (clicked)
+			{
+				SetActiveID(ID, Window);
+			}
+			GUI2::WantMouse |= hovered;
+
+
+			if (GImGui->ActiveId == ID)
+			{
+				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
+				{
+					float MouseX = GImGui->IO.MousePos.x;
+					float DX = MouseX - itemsStartX;
+					if (DX < 0) DX = 0;
+					else if (DX > (Width - 4)) DX = Width - 4;
+
+					size_t ClickedIndex = (size_t)(DX / pixelsPerItem);
+					Value->Value.Set(ClickedIndex);
+				}
+				else
+					ClearActiveID(); // only allow mouse1 activation
+			}
+		}
+
+		// draw
+		{
+			// figure out where highlight should go
+			float GoalX = itemsStartX + Value->Value.Get() * pixelsPerItem;
+			float LastX = itemsStartX + Value->Value.GetLastValue() * pixelsPerItem;
+			float CurrentX = Animation::lerp(LastX, GoalX, Animation::animate(Value->Value.GetTimeSinceChange(), 0.1));
+			ImVec2 Highlight(CurrentX, BB.Min.y + 2);
+
+			// background
+			DrawList->AddRectFilled(BB.Min, BB.Max, *HStateBackground, 10.f);
+			DrawList->AddRectFilled(Highlight, Highlight + ImVec2(pixelsPerItem, 16), *HStateHighlight, 10.f);
+
+			PushStyleColor(ImGuiCol_Text, (ImVec4)*HStateText);
+			PushFont(Arial14);
+			for (size_t i = 0; i < nItems; i++)
+			{
+				ImVec2 tsize = CalcTextSize(Value->StateNames.at(i).c_str());
+				SetCursorPos(BarLocalPos + ImVec2(2.f + pixelsPerItem * i + (pixelsPerItem - tsize.x) / 2.f, (Size.y - tsize.y) / 2.f));
+				TextEx(Value->StateNames.at(i).c_str());
+			}
+			PopFont();
+			PopStyleColor(1);
+		}
+
+		return 20;
+	}
+
 	int DrawMultiSelectorProperty(Config2::Property* p)
 	{
 		static Config2::CColor* ButtonBase = Config2::GetColor("theme-button-background");
@@ -3572,6 +3655,9 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 					break;
 				case Config2::PropertyType::VSTATEFUL:
 					GroupY += ImGui::DrawVerticalStatefulProperty(Property);
+					break;
+				case Config2::PropertyType::HSTATEFUL:
+					GroupY += ImGui::DrawHorizontalStatefulProperty(Property);
 					break;
 				case Config2::PropertyType::MULTISELECT:
 					GroupY += ImGui::DrawMultiSelectorProperty(Property);
