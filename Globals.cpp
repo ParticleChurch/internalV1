@@ -9,6 +9,7 @@ namespace G
 	//General Variables
 	QAngle StartAngle;
 	QAngle EndAngle;
+	bool IsInGame;
 
 	//LocalPlayer
 	Entity* LocalPlayer = new Entity();

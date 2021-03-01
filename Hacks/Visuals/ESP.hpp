@@ -10,7 +10,6 @@ private:
 	void DrawSkeleton(Entity*);
 	void DrawBacktrackingDots();
 	void GetBounds(Entity* ent, Vec& TL, Vec& BR);
-	void CapsuleOverlay(Entity* pPlayer, Color col, float duration, Matrix3x4* mat);
 
 	struct BulletTracer
 	{

@@ -265,6 +265,46 @@ void Movement::LegSlide()
 		G::cmd->buttons ^= IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
 }
 
+void Movement::ActiveCounterStrafe()
+{
+
+	if (!G::LocalPlayer) return;
+	if (!G::LocalPlayerAlive) return;
+
+	if (!Config::GetBool("misc-movement-counterstrafe"))
+		return;
+
+	bool KeyMoving = (fabs(G::cmd->sidemove) > 100 || fabs(G::cmd->forwardmove) > 100);
+	if (KeyMoving)
+		return;
+
+	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
+	if (!weapon) return;
+
+	WeaponData* data = weapon->GetWeaponData();
+	if (!data) return;
+
+	Vec velocity = G::LocalPlayer->GetVecVelocity();
+	QAngle direction = QAngle(0, RAD2DEG(atan2(velocity.y, velocity.x)), 0);
+	float speed = velocity.VecLength2D();
+
+	if (speed < 5.f)
+		return;
+
+	//direction.y now holds delta between current viewangle, and velocity angle
+	direction.y = G::cmd->viewangles.y - direction.y;
+
+	//direction now holds forward/sidemove to achieve velocity angle (mentioned above)
+	float SIN = sinf(DEG2RAD(direction.y)) * 450;
+	float COS = cosf(DEG2RAD(direction.y)) * 450;
+	direction.x = COS;
+	direction.y = SIN;
+
+	Vec negated_direction = direction * -speed;
+	G::cmd->forwardmove = negated_direction.x;
+	G::cmd->sidemove = negated_direction.y;
+}
+
 void Movement::FastStop()
 {
 	if (!G::LocalPlayer) return;

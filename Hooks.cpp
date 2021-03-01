@@ -280,44 +280,46 @@ void H::Init()
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.25f;
 
+	
 	L::Log("DLLMAIN HOOKING D3D9 => EndScene");
 	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.3f;
-
-	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
-	//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
-	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
-	if (SleepTime > 0) Sleep(SleepTime);
-
-	L::Log("Created New Event listener");
-	H::g_EventListener = new EventListener();
-	if (SleepTime > 0) Sleep(SleepTime);
 
 	L::Log("DLLMAIN HOOKING D3D9 => Reset");
 	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.35f;
 
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
+	//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
+	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
+	if (SleepTime > 0) Sleep(SleepTime);
+
+	L::Log("DLLMAIN HOOKING Surface => LockCursor");
+	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
+	if (SleepTime > 0) Sleep(SleepTime);
+	GUI2::LoadProgress = 0.55f;
+
 	L::Log("DLLMAIN HOOKING ClientMode => CreateMove");
 	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.4f;
-
-	L::Log("DLLMAIN HOOKING Panel => PaintTraverse");
-	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.45f;
+	
 
 	L::Log("DLLMAIN HOOKING Client => FrameStageNotify");
 	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.5f;
 
-	L::Log("DLLMAIN HOOKING Surface => LockCursor");
-	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
+	L::Log("Created New Event listener");
+	H::g_EventListener = new EventListener();
 	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.55f;
+
+	L::Log("DLLMAIN HOOKING Panel => PaintTraverse");
+	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
+	if (SleepTime > 0) Sleep(SleepTime);
+	GUI2::LoadProgress = 0.45f;
 
 	L::Log("DLLMAIN HOOKING Client => WriteUsercmdDeltaToBuffer");
 	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
@@ -348,6 +350,7 @@ void H::Init()
 	clantag->reset();
 	if (SleepTime > 0) Sleep(SleepTime);
 	GUI2::LoadProgress = 0.85f;
+	
 }
 
 void H::UnHook()
@@ -651,7 +654,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		L::Verbose("!oFunc || !cmd || !cmd->command_number");
 		return oFunc;
 	}
-       
 		
 	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
@@ -684,6 +686,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
 		movement->LegSlide();
+		movement->ActiveCounterStrafe();
 
 		// nade visuals
 		L::Verbose("miscvisuals");
@@ -779,13 +782,13 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		*/
 
 		L::Verbose("backtrack");
-		backtrack->run();
+		/*backtrack->run();*/
 
 		L::Verbose("CM_MoveFixEnd");
 		G::CM_MoveFixEnd();
 
 		L::Verbose("RageAutoStrafe");
-		movement->RageAutoStrafe();
+		/*movement->RageAutoStrafe();*/
 
 		// bad animation fix (for third person)
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
@@ -883,35 +886,47 @@ void LocalAnimFix(Entity* entity)
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
+	G::IsInGame = I::engine->IsInGame();
 
+	L::Verbose("resolver...", "", false); // no flush to prevent frame lag
 	resolver->Resolve(curStage);
+	L::Verbose("DONE", "\n", false); // no flush to prevent frame lag
 
+	
+	L::Verbose("disablePostProcessing..", "\n", false); // no flush to prevent frame lag
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
 	{
-		*disablePostProcessing = curStage == FRAME_RENDER_START && true;
+		if(disablePostProcessing)
+			*disablePostProcessing = curStage == FRAME_RENDER_START && true;
 	}
 
-	if (curStage == FRAME_NET_UPDATE_END)
+	L::Verbose("G::EntList.clear()..", "\n", false); // no flush to prevent frame lag
+	if (curStage == FRAME_RENDER_START && !G::IsInGame)
 	{
-		// PLAYER ANIM FIX FOR LOCAL PLAYER ONLY
-		static ConVar* r_jiggle_bones = I::cvar->FindVar("r_jiggle_bones");
-		r_jiggle_bones->onChangeCallbacks.size = 0;
-		if (r_jiggle_bones->GetInt() > 0)
-			r_jiggle_bones->SetValue(0);
-
-	}
-	esp->Run_FrameStageNotify(curStage);
-
-	if (curStage == FRAME_RENDER_START && !I::engine->IsInGame())
-	{
-		G::EntList.clear();
+		if(!G::EntList.empty())
+			G::EntList.clear();
 		G::LocalPlayerAlive = false;
 	}
-		
+
+	/*
+	if (curStage == FRAME_NET_UPDATE_END)
+	{
+		// stop retard weapon jiggle - might be what is crashing (was before)
+		static ConVar* r_jiggle_bones = I::cvar->FindVar("r_jiggle_bones");
+		if (r_jiggle_bones && G::IsInGame)
+		{
+			r_jiggle_bones->onChangeCallbacks.size = 0;
+			if (r_jiggle_bones->GetInt() > 0)
+				r_jiggle_bones->SetValue(0);
+		}
+	}
+	*/
 	
+
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
+		L::Verbose("Updating localplayer..", "\n", false); // no flush to prevent frame lag
 		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
 		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 
@@ -921,20 +936,28 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			return oFrameStageNotify(curStage);
 		}
 
+		
+		L::Verbose("LocalAnimFix..", "\n", false); // no flush to prevent frame lag
 		LocalAnimFix(G::LocalPlayer);
 
 		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
 
+		L::Verbose("LocalPlayer NOT Alive..", "\n", false); // no flush to prevent frame lag
 		if (!G::LocalPlayerAlive)
 			return oFrameStageNotify(curStage);
 
+		L::Verbose("LocalPlayer Alive..", "\n", false); // no flush to prevent frame lag
 		G::LocalPlayerTeam = G::LocalPlayer->GetTeam();
 		G::LocalPlayerWeapon = G::LocalPlayer->GetActiveWeapon();
 		if (G::LocalPlayerWeapon)
 			G::LocalPlayerWeaponData = G::LocalPlayerWeapon->GetWeaponData();
+		
 
+		L::Verbose("UpdateEntities..", "\n", false); // no flush to prevent frame lag
 		G::UpdateEntities();
-
+		
+		L::Verbose("Angles bro..", "\n", false); // no flush to prevent frame lag
+		
 		//this is for accurate angles (aa, etc)
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
 		if (offset == 0)
@@ -942,9 +965,9 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 		if (I::input->m_fCameraInThirdPerson)
 			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
-
+		
 		if (G::LocalPlayer && G::LocalPlayerAlive &&  
-			Config::GetBool("visuals-misc-thirdperson") )
+			Config::GetBool("visuals-misc-thirdperson") && false)
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
@@ -972,24 +995,27 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			}
 		}
 
-			//*G::Localplayer->pGetFlashMaxAlpha() = 0;
-		
-
 		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 			Entity* entity = I::entitylist->GetClientEntity(i);
 			if (!entity || i == G::LocalPlayerIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
 			*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
 			*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
 		}
+		
 	}
+	
+	
+	esp->Run_FrameStageNotify(curStage);
 
 	miscvisuals->NoFlash(curStage);
 	miscvisuals->NoSmoke_FrameStageNotify();
 
 	backtrack->update(curStage);
 	world->Run_FrameStageNotify(curStage);
+	
 
 	/*skinchanger->run(curStage);*/
+
 
 	oFrameStageNotify(curStage);
 	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag

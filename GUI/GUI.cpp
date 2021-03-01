@@ -4416,9 +4416,9 @@ void GUI2::Main()
 	{
 		if (Config::GetBool("show-menu"))
 		{
-			L::Verbose("GUI2::MainScreen running");
+			/*L::Verbose("GUI2::MainScreen running");
 			MainScreen();
-			L::Verbose("GUI2::MainScreen complete");
+			L::Verbose("GUI2::MainScreen complete");*/
 
 			
 			L::Verbose("GUI::Main running");
