@@ -3413,16 +3413,13 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		int ButtonSpacing = 12;
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
-		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)) && !IntroAnimation2)
+		// todo: show loading spinner instead of button when UserData::BusyAttemptingLogin 
+		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
 		{
-			Config::UserInfo::Authenticated = true;
-			Config::UserInfo::Premium = true;
-
-			UserData::Initialized = true;
-			UserData::Authenticated = true;
-			UserData::Premium = true;
-
-			IntroAnimation2 = Animation::newAnimation("intro-2", 0);
+			UserData::LoginInformation* info = new UserData::LoginInformation{};
+			info->Email = std::string(Email);
+			info->Password = std::string(Password);
+			CreateThread(NULL, 0, UserData::AttemptLogin, (LPVOID)info, 0, NULL);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 1));

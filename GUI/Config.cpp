@@ -2188,18 +2188,149 @@ namespace Config2
 
 namespace UserData
 {
-	double ClientTimestamp = -1.0;
-	double ServerTimestamp = -1.0;
-
 	bool Initialized = false;
 	bool Authenticated = false;
-	std::string Email = "unauthenticated@a4g4.com";
+	std::string Email = "";
 	uint64_t UserID = (uint64_t)-1;
-	bool Banned = false;
 	bool Premium = false;
-	bool PremiumAutoRenews = false;
-	double AccountRegistrationTimestamp = -1.0;
 
-	double NextBillDueTimestamp = -1.0;
-	double PremiumExpiresTimestamp = -1.0;
+	bool BusyAttemptingLogin = false;
+	size_t LoginAttemptCounter = 0;
+
+	DWORD WINAPI AttemptLogin(LPVOID pInfo)
+	{
+		size_t myAttemptId = ++LoginAttemptCounter;
+		BusyAttemptingLogin = true;
+
+		LoginInformation* info = (LoginInformation*)pInfo;
+
+		// create outgoing JSON string
+		JSONValue* EmailJSON = new JSONValue(std::wstring(info->Email.begin(), info->Email.end()));
+		JSONValue* PasswordJSON = new JSONValue(std::wstring(info->Password.begin(), info->Password.end()));
+		JSONObject InputRoot;
+		InputRoot[L"email"] = EmailJSON;
+		InputRoot[L"password"] = PasswordJSON;
+		JSONValue* InputJSONV = new JSONValue(InputRoot);
+		std::wstring InputW = InputJSONV->Stringify();
+		std::string OutgoingJSONString(InputW.begin(), InputW.end());
+		delete InputJSONV;
+		delete info;
+
+		// send API request
+		DWORD bytesRead = 0;
+		HTTP::contentType = "application/json";
+		byte* result = HTTP::Post("https://www.a4g4.com/API/dll/login.php", OutgoingJSONString, &bytesRead);
+		std::string ServerResponseJSONString = std::string((char*)result, bytesRead);
+		free(result);
+		L::Log(ServerResponseJSONString.c_str());
+		/* Example output:
+		{
+			"session": "559a56ff2bcf669b9413d543ba49d583e04d1c508c8bdc1433f426d626a6556e",
+			"serverTime": 1614573349,
+			"success": true,
+			"id": 4,
+			"accountAge": 93536,
+			"email": "dev@a4g4.com",
+			"subscription": {
+				"exists": true,
+				"id": "sub_J24l9bQSc0wCMh",
+				"status": 1,
+				"active": true,
+				"timeRemainging": 2667348,
+				"grace": false,
+				"nextPaymentDate": "April 1st, 2021, at 1:31 am",
+				"nextPaymentTimestamp": 1617240697
+			}
+		}
+		*/
+
+		// parse output
+		JSONValue* ServerResponse = JSON::Parse(std::wstring(ServerResponseJSONString.begin(), ServerResponseJSONString.end()).c_str());
+
+		// make sure that this thread is still the most recent handler available
+		if (myAttemptId != LoginAttemptCounter)
+		{
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+
+		// json invalid
+		if (!ServerResponse || !ServerResponse->IsObject())
+		{
+			L::Log("Failed to parse JSON response for login attempt");
+			BusyAttemptingLogin = false;
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+		JSONObject root = ServerResponse->AsObject();
+
+		// check success
+		{
+			auto success = root.find(L"success");
+			if (success == root.end() || !success->second->IsBool() || !success->second->AsBool())
+			{
+				auto err = root.find(L"error");
+				if (err != root.end() && err->second->IsString())
+				{
+					L::Log("Login attempt failed w/ err:", "");
+					L::Log(std::string(err->second->AsString().begin(), err->second->AsString().end()).c_str());
+				}
+				else
+				{
+					L::Log("Login attempt failed w/o error description");
+				}
+				BusyAttemptingLogin = false;
+				if (ServerResponse) delete ServerResponse;
+				return 1;
+			}
+		}
+
+		if (myAttemptId != LoginAttemptCounter)
+		{
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+
+		// get user information
+		{
+			auto id = root.find(L"id");
+			auto email = root.find(L"email");
+			auto session = root.find(L"session");
+			auto subscription = root.find(L"subscription");
+
+			if (id == root.end() || !id->second->IsNumber()) goto VALUE_MISSING;
+			if (email == root.end() || !email->second->IsString()) goto VALUE_MISSING;
+			if (session == root.end() || !session->second->IsString()) goto VALUE_MISSING;
+			if (subscription == root.end() || !subscription->second->IsObject()) goto VALUE_MISSING;
+
+			auto subscriptionRoot = subscription->second->AsObject();
+			auto subscriptionExists = subscriptionRoot.find(L"exists");
+			auto premium = subscriptionRoot.find(L"active");
+			if (subscriptionExists == subscriptionRoot.end() || !subscriptionExists->second->IsBool()) goto VALUE_MISSING;
+
+			if (subscriptionExists->second->AsBool())
+			{
+				if (premium == subscriptionRoot.end() || !premium->second->IsBool()) goto VALUE_MISSING;
+			}
+
+			Config::UserInfo::Authenticated = true;
+			Config::UserInfo::Premium = true;
+
+			// set these values in the config
+			UserData::Initialized = true;
+			UserData::Authenticated = true;
+			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
+			UserData::Email = std::string(email->second->AsString().begin(), email->second->AsString().end());
+			UserData::UserID = (uint64_t)id->second->AsNumber();
+		}
+
+		GUI2::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
+		BusyAttemptingLogin = false;
+		return 0;
+
+	VALUE_MISSING:
+		if (ServerResponse) delete ServerResponse;
+		BusyAttemptingLogin = false;
+		return 1;
+	}
 }
