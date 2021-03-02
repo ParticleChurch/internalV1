@@ -1179,6 +1179,9 @@ namespace Config2
 					static Property* p1 = GetProperty("theme-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
+
+				g->Add("theme-scrollbar-background", "Scrollbar Background", new CColor(true));
+				g->Add("theme-scrollbar-grabber", "Scrollbar Grabber", new CColor(true));
 			}
 
 			{
@@ -2190,15 +2193,22 @@ namespace Config2
 
 namespace UserData
 {
+	TIME_POINT LastSuccessfulServerContact = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+	TIME_POINT LastServerContactAttempt = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+
 	bool Initialized = false;
 	bool Authenticated = false;
 	std::string Email = "";
+	std::string SessionID = "";
 	uint64_t UserID = (uint64_t)-1;
 	bool Premium = false;
 
 	bool BusyAttemptingLogin = false;
 	size_t LoginAttemptCounter = 0;
-
+	size_t PingAttemptCounter = 0;
+	std::string LoginError = "";
+	TIME_POINT LoginErrorOriginTime = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+	
 	DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	{
 		size_t myAttemptId = ++LoginAttemptCounter;
@@ -2259,9 +2269,12 @@ namespace UserData
 		// json invalid
 		if (!ServerResponse || !ServerResponse->IsObject())
 		{
+			UserData::LoginError = "Invalid server response - please contact a developer.";
+			UserData::LoginErrorOriginTime = Animation::now();
 			L::Log("Failed to parse JSON response for login attempt");
-			BusyAttemptingLogin = false;
 			if (ServerResponse) delete ServerResponse;
+			Sleep(1000);
+			BusyAttemptingLogin = false;
 			return 1;
 		}
 		JSONObject root = ServerResponse->AsObject();
@@ -2274,15 +2287,19 @@ namespace UserData
 				auto err = root.find(L"error");
 				if (err != root.end() && err->second->IsString())
 				{
+					UserData::LoginError = std::string(err->second->AsString().begin(), err->second->AsString().end());
 					L::Log("Login attempt failed w/ err:", "");
-					L::Log(std::string(err->second->AsString().begin(), err->second->AsString().end()).c_str());
+					L::Log(UserData::LoginError.c_str());
 				}
 				else
 				{
+					UserData::LoginError = "Unknown error - Try again";
 					L::Log("Login attempt failed w/o error description");
 				}
-				BusyAttemptingLogin = false;
+				UserData::LoginErrorOriginTime = Animation::now();
 				if (ServerResponse) delete ServerResponse;
+				Sleep(1000);
+				BusyAttemptingLogin = false;
 				return 1;
 			}
 		}
@@ -2323,16 +2340,136 @@ namespace UserData
 			UserData::Authenticated = true;
 			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
 			UserData::Email = std::string(email->second->AsString().begin(), email->second->AsString().end());
+			UserData::SessionID = std::string(session->second->AsString().begin(), session->second->AsString().end());
 			UserData::UserID = (uint64_t)id->second->AsNumber();
 		}
 
+		LastSuccessfulServerContact = Animation::now();
 		GUI2::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
+		if (ServerResponse) delete ServerResponse;
 		BusyAttemptingLogin = false;
 		return 0;
 
 	VALUE_MISSING:
+		UserData::LoginError = "Invalid server response - please contact a developer.";
+		UserData::LoginErrorOriginTime = Animation::now();
 		if (ServerResponse) delete ServerResponse;
+		Sleep(1000);
 		BusyAttemptingLogin = false;
+		return 1;
+	}
+	
+	DWORD WINAPI PingServer(LPVOID pInfo)
+	{
+		size_t AttemptIndex = ++PingAttemptCounter;
+
+		// create outgoing JSON string
+		JSONValue* SessionJSON = new JSONValue(std::wstring(UserData::SessionID.begin(), UserData::SessionID.end()));
+		JSONObject InputRoot;
+		InputRoot[L"session"] = SessionJSON;
+		JSONValue* InputJSONV = new JSONValue(InputRoot);
+		std::wstring InputW = InputJSONV->Stringify();
+		std::string OutgoingJSONString(InputW.begin(), InputW.end());
+		delete InputJSONV;
+
+		// send API request
+		DWORD bytesRead = 0;
+		HTTP::contentType = "application/json";
+		byte* result = HTTP::Post("https://www.a4g4.com/API/dll/ping.php", OutgoingJSONString, &bytesRead);
+		std::string ServerResponseJSONString = std::string((char*)result, bytesRead);
+		free(result);
+		L::Log(ServerResponseJSONString.c_str());
+		/* Example output:
+		{
+			"session": "559a56ff2bcf669b9413d543ba49d583e04d1c508c8bdc1433f426d626a6556e",
+			"serverTime": 1614573349,
+			"success": true,
+			"id": 4,
+			"accountAge": 93536,
+			"email": "dev@a4g4.com",
+			"subscription": {
+				"exists": true,
+				"id": "sub_J24l9bQSc0wCMh",
+				"status": 1,
+				"active": true,
+				"timeRemainging": 2667348,
+				"grace": false,
+				"nextPaymentDate": "April 1st, 2021, at 1:31 am",
+				"nextPaymentTimestamp": 1617240697
+			}
+		}
+		*/
+
+		// parse output
+		JSONValue* ServerResponse = JSON::Parse(std::wstring(ServerResponseJSONString.begin(), ServerResponseJSONString.end()).c_str());
+
+		// make sure that this thread is still the most recent handler available
+		if (AttemptIndex != PingAttemptCounter)
+		{
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+
+		// json invalid
+		if (!ServerResponse || !ServerResponse->IsObject())
+		{
+			L::Log("Failed to parse JSON response for ping attempt");
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+		JSONObject root = ServerResponse->AsObject();
+
+		// check success
+		{
+			auto success = root.find(L"success");
+			if (success == root.end() || !success->second->IsBool() || !success->second->AsBool())
+			{
+				auto err = root.find(L"error");
+				if (err != root.end() && err->second->IsString())
+				{
+					L::Log("Ping attempt failed w/ err:", "");
+					L::Log(std::string(err->second->AsString().begin(), err->second->AsString().end()).c_str());
+				}
+				else
+				{
+					L::Log("Ping attempt failed w/o error description");
+				}
+				if (ServerResponse) delete ServerResponse;
+				return 1;
+			}
+		}
+
+		if (AttemptIndex != PingAttemptCounter)
+		{
+			if (ServerResponse) delete ServerResponse;
+			return 1;
+		}
+
+		// get user information
+		{
+			auto subscription = root.find(L"subscription");
+			if (subscription == root.end() || !subscription->second->IsObject()) goto VALUE_MISSING;
+
+			auto subscriptionRoot = subscription->second->AsObject();
+			auto subscriptionExists = subscriptionRoot.find(L"exists");
+			auto premium = subscriptionRoot.find(L"active");
+			if (subscriptionExists == subscriptionRoot.end() || !subscriptionExists->second->IsBool()) goto VALUE_MISSING;
+
+			if (subscriptionExists->second->AsBool())
+			{
+				if (premium == subscriptionRoot.end() || !premium->second->IsBool()) goto VALUE_MISSING;
+			}
+
+			// set these values in the config
+			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
+		}
+
+		LastSuccessfulServerContact = Animation::now();
+		if (ServerResponse) delete ServerResponse;
+		return 0;
+
+	VALUE_MISSING:
+		if (ServerResponse) delete ServerResponse;
 		return 1;
 	}
 }

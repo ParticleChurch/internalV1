@@ -914,21 +914,29 @@ namespace Config2
 namespace UserData
 {
 	// ping approx. every 60 seconds
+	extern TIME_POINT LastSuccessfulServerContact;
+	extern TIME_POINT LastServerContactAttempt;
+
 	extern bool Initialized; // this will be true if the main cheat gui should show up
 	extern bool Authenticated; // this will be true only if the user entered a valid email/password combo
 	extern std::string Email;
+	extern std::string SessionID;
 	extern uint64_t UserID;
 	extern bool Premium;
 
 	extern bool BusyAttemptingLogin;
 	extern size_t LoginAttemptCounter;
-
+	extern size_t PingAttemptCounter;
+	extern std::string LoginError;
+	extern TIME_POINT LoginErrorOriginTime;
+	
 	struct LoginInformation
 	{
 		std::string Email;
 		std::string Password;
 	};
 	extern DWORD WINAPI AttemptLogin(LPVOID pInfo);
+	extern DWORD WINAPI PingServer(LPVOID pInfo);
 }
 
 namespace Config2
@@ -1202,13 +1210,13 @@ namespace Config2
 			this->R = R;
 			this->G = G;
 			this->B = B;
-			this->A = 255;
+			this->A = A;
 			this->HasAlpha = true;
 		}
 
 		__forceinline CColor ModulateAlpha(float f)
 		{
-			return CColor(this->R, this->G, this->B, (unsigned char)((float)this->GetA() * f + 0.5f));
+			return CColor(this->R, this->G, this->B, (unsigned char)((float)this->A * f + 0.5f));
 		}
 		__forceinline CColor ModulateAlpha(unsigned char f)
 		{

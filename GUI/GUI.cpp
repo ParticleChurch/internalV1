@@ -2731,6 +2731,7 @@ namespace ImGui
 			if (BeginPopup(("##color-picker-" + p->Name).c_str()))
 			{
 				GUI2::WantMouse = true;
+				Config2::SettingKeybindFor = nullptr;
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
 				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
@@ -2865,6 +2866,8 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button(("##button-invis-" + p->Name).c_str(), ImVec2(200, 20)))
 					{
+						GUI2::WantMouse = true;
+						Config2::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
@@ -2894,6 +2897,7 @@ namespace ImGui
 				if (BeginPopup(popupName))
 				{
 					GUI2::WantMouse = true;
+					Config2::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 
@@ -3056,6 +3060,9 @@ namespace ImGui
 			{
 				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 				{
+					GUI2::WantMouse = true;
+					Config2::SettingKeybindFor = nullptr;
+
 					float MouseX = GImGui->IO.MousePos.x;
 					float DX = MouseX - itemsStartX;
 					if (DX < 0) DX = 0;
@@ -3196,6 +3203,8 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button(("##button-invis-" + p->Name).c_str(), ImVec2(200, 20)))
 					{
+						GUI2::WantMouse = true;
+						Config2::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
@@ -3222,6 +3231,7 @@ namespace ImGui
 				if (BeginPopup(popupName))
 				{
 					GUI2::WantMouse = true;
+					Config2::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 						bool selected = Value->Get(i);
@@ -3328,18 +3338,18 @@ void GUI2::LoadingScreen()
 
 	// draw real background because imgui borders do not have enough segments
 	if (MovementFactor == 0.f)
-		DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 628
+DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 628
 	else
 	{
-		float radius = ImGui::lerp(100, 10, MovementFactor);
-		ImVec2 a = WindowCenter - (FrameSize - ImVec2(10, 10)) / 2 + ImVec2(radius, radius);
-		ImVec2 b = WindowCenter + (FrameSize - ImVec2(10, 10)) / 2 - ImVec2(radius, radius);
-		// tl, tr, br, bl
-		DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
-		DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
-		DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
-		DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI /2 , IM_PI, 16);
-		DrawList->PathFillConvex(BgColor);
+	float radius = ImGui::lerp(100, 10, MovementFactor);
+	ImVec2 a = WindowCenter - (FrameSize - ImVec2(10, 10)) / 2 + ImVec2(radius, radius);
+	ImVec2 b = WindowCenter + (FrameSize - ImVec2(10, 10)) / 2 - ImVec2(radius, radius);
+	// tl, tr, br, bl
+	DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
+	DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
+	DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
+	DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI / 2, IM_PI, 16);
+	DrawList->PathFillConvex(BgColor);
 	}
 
 	// draw progress
@@ -3372,7 +3382,7 @@ void GUI2::LoadingScreen()
 
 	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + "%";
 	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
-	ImGui::SetCursorPos(ImVec2(FrameSize.x/2 - txtSize.x/2, FrameSize.y * 0.8f));
+	ImGui::SetCursorPos(ImVec2(FrameSize.x / 2 - txtSize.x / 2, FrameSize.y * 0.8f));
 	ImGui::TextEx(txt.c_str());
 
 	ImGui::End();
@@ -3420,15 +3430,24 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, ThisContentOpacity));
 	ImGui::PushFont(Arial18Italics);
 
+
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
 	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+
+	// login errors
+	{
+		if (UserData::LoginError != "" && Animation::delta(Animation::now(), UserData::LoginErrorOriginTime) < 10.0)
+		{
+			ImGui::SetCursorPos(ImVec2(FrameSize.x / 2, 0));
+			ImGui::ToolTip(UserData::LoginError, FrameSize.y);
+		}
+	}
+
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
+
 	ImGui::PushFont(Arial18);
-
-	IM_COL32(85 / 2, 90 / 2, 95 / 2, 255),
-
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, 0);
 	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, 0);
@@ -3497,11 +3516,12 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
 		// todo: show loading spinner instead of button when UserData::BusyAttemptingLogin 
-		if (ImGui::Button("Log In", ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
+		if (ImGui::Button(UserData::BusyAttemptingLogin ? "---" : "Log in", ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
 		{
 			UserData::LoginInformation* info = new UserData::LoginInformation{};
 			info->Email = std::string(Email);
 			info->Password = std::string(Password);
+			UserData::LastServerContactAttempt = Animation::now();
 			CreateThread(NULL, 0, UserData::AttemptLogin, (LPVOID)info, 0, NULL);
 		}
 
@@ -3518,8 +3538,9 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 			Config::UserInfo::Premium = true;
 
 			UserData::Initialized = true;
-			UserData::Authenticated = true;
+			UserData::Authenticated = false;
 			UserData::Premium = false;
+			UserData::UserID = (uint64_t)-1;
 
 			IntroAnimation2 = Animation::newAnimation("intro-2", 0);
 		}
@@ -4494,6 +4515,8 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	static Config2::CColor* EjectBase = Config2::GetColor("theme-eject");
 	static Config2::CColor* MainBorder = Config2::GetColor("theme-border");
 	static Config2::CColor* MainBackground = Config2::GetColor("theme-background");
+	static Config2::CColor* ScrollbarBackground = Config2::GetColor("theme-scrollbar-background");
+	static Config2::CColor* ScrollbarGrab = Config2::GetColor("theme-scrollbar-grabber");
 	static Config2::CFloat* MainBorderSize = Config2::GetFloat("theme-border-size");
 
 
@@ -4526,6 +4549,10 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)*ButtonBase);
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)*ButtonHovered);
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)*ButtonActive);
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, (ImVec4)*ScrollbarBackground);
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, (ImVec4)(ScrollbarGrab->ModulateAlpha(0.6f)));
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, (ImVec4)(ScrollbarGrab->ModulateAlpha(0.8f)));
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, (ImVec4)*ScrollbarGrab);
 
 	ImGui::PushFont(Arial14BoldItalics);
 	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TopbarText);
@@ -4737,9 +4764,9 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		else
 		{
 			ImGui::SetCursorPos(ImVec2(5, 5 + 24 + 5));
-			ImGui::Text("lmao good luck finding that ig");
+			ImGui::Text("This feature is not implemented yet.");
 			ImGui::SetCursorPosX(5);
-			ImGui::Text(("you are searching for: " + std::string(SearchQuery)).c_str());
+			ImGui::Text("In the near future, you will be able to search for a setting from here.");
 		}
 
 		ImGui::EndChild();
@@ -4754,7 +4781,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopFont();
 
 	ImGui::PopStyleVar(9);
-	ImGui::PopStyleColor(14);
+	ImGui::PopStyleColor(17);
 }
 
 void GUI2::Init()
@@ -4797,7 +4824,27 @@ void GUI2::Main()
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");
-			
+		}
+
+		if (UserData::Authenticated)
+		{
+			TIME_POINT now = Animation::now();
+			double timeSinceLastAttempt = Animation::delta(now, UserData::LastServerContactAttempt);
+			double timeSinceLastSuccess = Animation::delta(now, UserData::LastSuccessfulServerContact);
+
+			if (timeSinceLastSuccess > 420.0)
+			{
+				L::Log("It's been 7 minutes since last successful ping, time to just give up");
+				Ejected = true;
+			}
+			else if (timeSinceLastSuccess > 300.0 && timeSinceLastAttempt > 10.0) // ping every 5 minutes, and retry every 10 seconds upon failure
+			{
+				L::Log("CreateThread(UserData::PingServer)");
+
+				UserData::LastServerContactAttempt = now;
+				CreateThread(NULL, 0, UserData::PingServer, NULL, 0, NULL);
+				Sleep(0);
+			}
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
@@ -4816,8 +4863,6 @@ void GUI2::Main()
 	L::Verbose("Config2::ProcessKeys running");
 	Config2::ProcessKeys();
 	L::Verbose("Config2::ProcessKeys complete");
-
-
 
 	L::Verbose("GUI2::Main complete");
 }
