@@ -788,7 +788,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		G::CM_MoveFixEnd();
 
 		L::Verbose("RageAutoStrafe");
-		/*movement->RageAutoStrafe();*/
+		movement->RageAutoStrafe();
 
 		// bad animation fix (for third person)
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 

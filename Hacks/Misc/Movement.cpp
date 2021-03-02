@@ -47,11 +47,84 @@ void Movement::FastCrouch()
 	G::cmd->buttons |= IN_BULLRUSH;
 }
 
+
 void Movement::RageAutoStrafe()
 {
-	return;
-	// if (Config::GetState("misc-movement-autostrafe") != 1) return;
-	Config::SetBool("misc-movement-bhop", true);
+	if (Config::GetState("misc-movement-autostrafe") != 1) return;
+
+	if (!G::LocalPlayer) return;
+
+	if (!G::LocalPlayerAlive) return;
+
+	if (G::LocalPlayer->GetFlags() & FL_ONGROUND) return;
+
+	// Direction we are looking
+	float looking = G::StartAngle.y;
+
+	// which direction we want to go
+	Vec DirVec = Vec(G::cmd->sidemove, G::cmd->forwardmove, 0);
+	float Dir = RAD2DEG(atan2(DirVec.x, DirVec.y));
+
+	// which direction we currently are going 
+	Vec Vel = G::LocalPlayer->GetVecVelocity();
+	float VelDir = NormalizeYaw(-RAD2DEG(atan2(Vel.y, Vel.x)));		// Velocity direction
+
+	// Get difference between direction we want to go, and direction we are going...
+	float Delta = NormalizeYaw(Dir - VelDir - looking);
+
+	// TRANSITIONING!
+	if (fabsf(Delta) > 10.f)
+	{
+		// Calculate a step thing
+		float sin_rot = sinf(DEG2RAD(VelDir + looking+1));
+		float cos_rot = cosf(DEG2RAD(VelDir + looking+1));
+		
+		// turning left
+		if (Delta < 0)
+		{
+			G::cmd->forwardmove = sin_rot * 450.f;
+			G::cmd->sidemove = -cos_rot * 450.f;
+		}
+		// turning right
+		else
+		{
+			G::cmd->forwardmove = -sin_rot * 450.f;
+			G::cmd->sidemove = cos_rot * 450.f;
+		}
+	}
+	else
+	{
+		bool flip = G::cmd->command_number % 2;
+		// OMG WE BE STRAFIN BOI!
+		// Calculate a step thing
+		float sin_rot = sinf(DEG2RAD(VelDir + looking));
+		float cos_rot = cosf(DEG2RAD(VelDir + looking));
+
+		// turning left
+		if (flip)
+		{
+			G::cmd->forwardmove = sin_rot * 450.f;
+			G::cmd->sidemove = -cos_rot * 450.f;
+		}
+		// turning right
+		else
+		{
+			G::cmd->forwardmove = -sin_rot * 450.f;
+			G::cmd->sidemove = cos_rot * 450.f;
+		}
+		G::cmd->viewangles.y += flip ? -5 : 5;
+	}
+}
+	
+
+	
+	
+
+/*
+void Movement::RageAutoStrafe()
+{
+
+	if (Config::GetState("misc-movement-autostrafe") != 1) return;
 
 	if (!G::LocalPlayer) return;
 
@@ -103,14 +176,14 @@ void Movement::RageAutoStrafe()
 	
 	//SIN COS - 
 	//ROTATE CW
-	/*G::cmd->forwardmove = SIN;
-	G::cmd->sidemove = COS;*/
+	//G::cmd->forwardmove = SIN;
+	//G::cmd->sidemove = COS;
 
-	/*G::cmd->forwardmove = SIN;
-	G::cmd->sidemove = COS;*/
+	//G::cmd->forwardmove = SIN;
+	//G::cmd->sidemove = COS;
 	
 
-	/*static bool flip = false;
+	static bool flip = false;
 	if (G::pSendPacket && !(*G::pSendPacket) && G::LocalPlayerAlive && !(G::LocalPlayer->GetFlags() & FL_ONGROUND)
 		&& G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER) {
 		bool Left = G::StartSideMove > 300;
@@ -173,12 +246,14 @@ void Movement::RageAutoStrafe()
 		G::cmd->viewangles.y += flip ? -yaw_change : yaw_change;
 
 		G::CM_Clamp(); 
-	}*/
+	}
 }
+
+*/
 
 void Movement::LegitAutoStrafe()
 {
-	if (Config::GetState("misc-movement-autostrafe") != 1)
+	if (Config::GetState("misc-movement-autostrafe") != 2)
 		return;
 
 	if (!G::LocalPlayer) return;

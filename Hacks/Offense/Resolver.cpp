@@ -165,9 +165,7 @@ void Resolver::Resolve(int stage)
 
 			/*AnimationFix(player);*/
 			BruteForce(player, i);
-			L::Verbose("-->BruteForce", "", false); // no flush to prevent frame lag
 			AnimationFix(player);
-			L::Verbose("-->AnimationFix...", "", false); // no flush to prevent frame lag
 		}
 	}
 }
