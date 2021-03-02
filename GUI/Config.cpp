@@ -384,9 +384,12 @@ namespace Config {
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add rage autostrafe
-				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None",/* "Rage",*/ "Legit" });
+				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None", "Rage", "Legit" });
 				w->AddProperty(false, 2, "misc-movement-leg", "Leg Slide", false, false);
 				w->AddProperty(false, 1, "misc-movement-leg-time", "Leg Slide Time", "MS", 0, 2000, 0, 0, 0);
+
+				w->AddProperty(false, 1, "misc-movement-counterstrafe", "Auto Counterstrafe", false, false);
+				
 			}
 			{
 				Widget* w = t->AddWidget("Other");

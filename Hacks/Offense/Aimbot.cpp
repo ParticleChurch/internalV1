@@ -475,16 +475,13 @@ void Aimbot::Rage()
 	// Otherwise do a less detailed scan of all of the other players
 	else
 	{
-		H::console.clear();
-		H::console.resize(0);
+		return;
 		int max = 2;
 		for (auto &a : G::EntList)
 		{	
 			if (max <= 0) // only allow 2 additional scans (any more and lots of lag maen
 				return;
 			max--;
-			
-			H::console.push_back(std::to_string(a.first));
 			Dist = FLT_MAX;
 			RecordID = -1;
 			GetClosestEntityNotScanned(RecordID, Dist);
@@ -596,6 +593,7 @@ bool Aimbot::UpdateRageVal()
 
 bool Aimbot::TryOnShot()
 {
+	float lerp = GetLerp();
 	std::map<int, Player>::iterator it;
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
 	{
@@ -603,15 +601,16 @@ bool Aimbot::TryOnShot()
 		
 		// if within good bt onshot range... 
 		// (should be 200.f but reducing for reliability to 150.f)
-		if (I::globalvars->m_curTime - it->second.LastShotTime < 150.f)
+		if (I::globalvars->m_curTime - it->second.LastShotTime < 180.f)
 		{
-			int shot_tick = TimeToTicks(it->second.LastShotTime);
+			int shot_tick = TimeToTicks(it->second.LastShotTime - lerp);
 			// find the matrix
+			
 			
 			for (auto& a : it->second.BacktrackRecords)
 			{
 				// WE HAVE FOUND A GOOD ONE!
-				if (TimeToTicks(a.SimulationTime) == shot_tick)
+				if (TimeToTicks(a.SimulationTime - lerp) == shot_tick)
 				{
 					Vec head = a.Bone(8);
 					// if we can't hit it...

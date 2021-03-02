@@ -233,44 +233,6 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 	BR = Vec(right, bottom, 0);
 }
 
-void ESP::CapsuleOverlay(Entity* pPlayer, Color col, float duration, Matrix3x4* mat)
-{
-	if (!pPlayer)
-		return;
-
-	studiohdr_t* pStudioModel = I::modelinfo->GetStudioModel(pPlayer->GetModel());
-	if (!pStudioModel)
-		return;
-
-	mstudiohitboxset_t* pHitboxSet = pStudioModel->GetHitboxSet(0);
-	if (!pHitboxSet)
-		return;
-
-	auto VectorTransform2 = [](const Vec in1, Matrix3x4 in2, Vec& out)
-	{
-
-		out.x = DotProduct(in1, Vec(in2[0][0], in2[0][1], in2[0][2])) + in2[0][3];
-		out.y = DotProduct(in1, Vec(in2[1][0], in2[1][1], in2[1][2])) + in2[1][3];
-		out.z = DotProduct(in1, Vec(in2[2][0], in2[2][1], in2[2][2])) + in2[2][3];
-	};
-
-	for (int i = 0; i < pHitboxSet->numhitboxes; i++)
-	{
-		mstudiobbox_t* pHitbox = pHitboxSet->GetHitbox(i);
-		if (!pHitbox)
-			continue;
-
-		Vec vMin, vMax;
-		VectorTransform2(pHitbox->bbmin, mat[pHitbox->bone], vMin); //nullptr???
-		VectorTransform2(pHitbox->bbmax, mat[pHitbox->bone], vMax);
-
-		if (pHitbox->m_flRadius > -1)
-		{
-			I::debugoverlay->AddCapsuleOverlay(vMin, vMax, pHitbox->m_flRadius, col.r(), col.g(), col.b(), 255, duration);
-		}
-	}
-}
-
 void ESP::Run_PaintTraverse()
 {
 	
@@ -422,7 +384,7 @@ void ESP::Run_PaintTraverse()
 
 void ESP::Run_FrameStageNotify(int stage)
 {
-	if (stage == FRAME_RENDER_START)
+	if (stage == FRAME_RENDER_START && I::engine->IsInGame() && G::LocalPlayer)
 	{
 		for (size_t i = 0; i < traces.size(); i++)
 		{

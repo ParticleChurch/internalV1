@@ -71,6 +71,7 @@ namespace G {
 	//General Variables
 	extern QAngle StartAngle;
 	extern QAngle EndAngle;
+	extern bool IsInGame;
 
 	//LocalPlayer
 	extern Entity* LocalPlayer;

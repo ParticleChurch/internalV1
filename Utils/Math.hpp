@@ -319,3 +319,12 @@ inline void vector_angles(const Vec& forward, QAngle& angles)
 	angles.y = yaw;
 	angles.z = 0;
 }
+
+inline float NormalizeYaw(float a)
+{
+	while (a > 180)
+		a -= 360;
+	while (a < -180)
+		a += 360;
+	return a;
+}
