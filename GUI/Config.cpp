@@ -1188,13 +1188,22 @@ namespace Config2
 			}
 
 			{
-				Group* g = t->Add("Properties");
+				Group* g = t->Add("Left Side Overlay");
+
+				g->Add("theme-overlay-background", "Background", new CColor(true));
+				g->Add("theme-overlay-text", "Text", new CColor(true));
+				g->Add("theme-overlay-active-text", "Active Tab Text", new CColor(true));
+				g->Add("theme-overlay-active-pointer", "Active Tab Arrow", new CColor(true));
+
+				g->Add("theme-main-searchbar-background", "Search Bar Background", new CColor(true));
+				g->Add("theme-main-searchbar-text", "Search Bar Text", new CColor(true));
+			}
+
+			{
+				Group* g = t->Add("General Properties");
 
 				g->Add("theme-property-example1", "Example Reference 1", new CBoolean());
 				g->Add("theme-property-example2", "Example Reference 2", new CFloat(69.f, 420.f, 2, "UNIT"));
-				g->Add("theme-property-example3", "Example Reference 3", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
-				g->Add("theme-property-example4", "Example Reference 4", new CVerticalState({ "Never", "Gonna", "Let", "You", "Down" }, true));
-				g->Add("theme-property-example5", "Example Reference 5", new CHorizontalState({ "Here", "Are", "Some", "Options", "8===D" }));
 
 				g->Add("theme-property-text", "Text", new CColor(true));
 				g->Add("theme-property-base", "Base", new CColor(false));
@@ -1210,25 +1219,41 @@ namespace Config2
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
 
-				g->Add("theme-hstate-background", "Slide-Select Background", new CColor(false));
-				g->Add("theme-hstate-highlight", "Slide-Select Highlight", new CColor(false));
-				g->Add("theme-hstate-text", "Slide-Select Text", new CColor(true));
-
 				g->Add("theme-info-icon", "Info Icon", new CColor(false));
 				g->Add("theme-warning", "Warning Icon", new CColor(false));
 				g->Add("theme-error", "Error Icon", new CColor(false));
 			}
 
 			{
-				Group* g = t->Add("Left Side Overlay");
+				Group* g = t->Add("Slide-Select & Dropdowns");
 
-				g->Add("theme-overlay-background", "Background", new CColor(true));
-				g->Add("theme-overlay-text", "Text", new CColor(true));
-				g->Add("theme-overlay-active-text", "Active Tab Text", new CColor(true));
-				g->Add("theme-overlay-active-pointer", "Active Arrow", new CColor(true));
+				g->Add("theme-property-example5", "Slide-Select Reference", new CHorizontalState({ "Here", "Are", "Some", "Options", "8===D" }));
+				g->Add("theme-property-example3", "Dropdown Reference 1", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
+				g->Add("theme-property-example4", "Dropdown Reference 2", new CVerticalState({ "Never", "Gonna", "Let", "You", "Down" }, true));
 
-				g->Add("theme-main-searchbar-background", "Search Bar Background", new CColor(true));
-				g->Add("theme-main-searchbar-text", "Search Bar Text", new CColor(true));
+				g->Add("theme-hstate-background", "Slide-Select Background", new CColor(false));
+				g->Add("theme-hstate-highlight", "Slide-Select Highlight", new CColor(false));
+				g->Add("theme-hstate-text", "Slide-Select Text", new CColor(true));
+
+				g->Add("theme-dropdown-background", "Dropdown Background", new CColor(false));
+				g->Add("theme-dropdown-text", "Dropdown Text", new CColor(true));
+				g->Add("theme-dropdown-border-size", "Dropdown Outline Size", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-dropdown-border", "Dropdown Outline", new CColor(false))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-dropdown-border-size");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
+			}
+
+			{
+				Group* g = t->Add("Color Editor");
+
+				g->Add("theme-color-editor-background", "Background", new CColor(false));
+				g->Add("theme-color-editor-text", "Text", new CColor(true));
+				g->Add("theme-color-editor-border-size", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
+				g->Add("theme-color-editor-border", "Outline", new CColor(true))->IsVisible = []() {
+					static Property* p1 = GetProperty("theme-color-editor-border-size");
+					return ((CFloat*)p1->Value)->Get() > 0.f;
+				};
 			}
 
 			{
@@ -1247,14 +1272,14 @@ namespace Config2
 			{
 				Group* g = t->Add("Misc");
 
-				g->Add("theme-eject", "Eject Tab", new CColor(true));
+				g->Add("theme-eject", "Eject Label", new CColor(true));
 				g->Add("theme-eject-button", "Eject Button", new CColor(true));
 				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));
 
-				g->Add("theme-tooltip-text", "Tooltip Text", new CColor(true));
 				g->Add("theme-tooltip-background", "Tooltip Background", new CColor(false));
+				g->Add("theme-tooltip-text", "Tooltip Text", new CColor(true));
 				g->Add("theme-tooltip-border-size", "Tooltip Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-tooltip-outline", "Tooltip Outline", new CColor(true))->IsVisible = []() {
+				g->Add("theme-tooltip-border", "Tooltip Outline", new CColor(true))->IsVisible = []() {
 					static Property* p1 = GetProperty("theme-tooltip-border-size");
 					return ((CFloat*)p1->Value)->Get() > 0.f;
 				};
@@ -1611,7 +1636,14 @@ namespace Config2
 		if (nBytesUsed) *nBytesUsed += nameSize;
 		if (nameSize < 1) return false;
 		Property* p = GetProperty(name);
-		if (!p) return false;
+		if (!p)
+		{
+			L::Log("Failed to load nonexistent property: ", "\"");
+			L::Log(std::string(name, nameSize).c_str(), "\", ");
+			L::Log("so i'm just gonna try and skip to the next one");
+			if (nBytesUsed) *nBytesUsed += valueSize;
+			return false;
+		}
 
 		// read value
 		if (bufferSize < valueSize) return false;
