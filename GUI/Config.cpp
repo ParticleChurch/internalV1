@@ -991,27 +991,54 @@ namespace Config2
 
 	void Init()
 	{
-		Tab* t;
-		Group* g;
-		Property* p;
+		//Tab* t;
+		//Group* g;
+		//Property* p;
 
 		// OFFENCE
 		{
-			t = new Tab("Offence");
-			t->TopPadding = -10;
+			// IDK WHY EVERYTHING IN OFFENSE DOESN"T WORK!
+			Tab* t = new Tab("Offence");
+			/*t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
-			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
+			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));*/
 
 			/*
 				LEGIT PAGE
 			*/
 			{
-				g = t->Add("legit-Aimbot");
+				Group* g = t->Add("Legit");
 
-				Property* Enable = g->Add("legit-aimbot-enable", "Enable", new CBoolean());
+				g->Add("legit-aim-enable", "Enable", new CBoolean());
 
-				p = g->Add("legit-aimbot-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				p = g->Add("legit-aimbot-smoothing", "Smoothing", new CFloat(0, 100, 1, "%"));
+#define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
+
+				g->Add("legitaim-pistol-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				g->Add("legitaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("legitaim-pistol-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
+				g->Add("legitaim-pistol-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+
+				g->Add("legitaim-smg-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				g->Add("legitaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("legitaim-smg-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
+				g->Add("legitaim-smg-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+
+				g->Add("legitaim-heavy-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				g->Add("legitaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("legitaim-heavy-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
+				g->Add("legitaim-heavy-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+
+				g->Add("legitaim-rifle-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				g->Add("legitaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("legitaim-rifle-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
+				g->Add("legitaim-rifle-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+
+				g->Add("legitaim-sniper-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				g->Add("legitaim-sniper-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("legitaim-sniper-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
+				g->Add("legitaim-sniper-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+
+#undef HITBOXES_CONFIG
 			}
 
 
@@ -1019,116 +1046,210 @@ namespace Config2
 				RAGE PAGE
 			*/
 			{
-				g = t->Add("rage-Aimbot");
+				Group* g = t->Add("Rage");
 
-				Property* Enable = g->Add("rage-aimbot-enable", "Enable", new CBoolean());
+				g->Add("rage-aim-enable", "Enable", new CBoolean());
 
-				p = g->Add("rage-aimbot-silent", "Silent Aim", new CBoolean());
-				p->Master = Enable;
+				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
+				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
 
-				p = g->Add("rage-aimbot-autofire", "Auto Fire", new CBoolean());
-				p->Master = Enable;
 
-				p = g->Add("rage-aimbot-lethal", "Ignore Hitboxes If Lethal", new CBoolean());
-				p->Master = Enable;
+#define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
+
+				g->Add("rageaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-pistol-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-pistol-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-pistol-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-pistol-fireiflethal", "Fire if Lethal", new CBoolean());
+
+				g->Add("rageaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-smg-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-smg-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-smg-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-smg-fireiflethal", "Fire if Lethal", new CBoolean());
+
+				g->Add("rageaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-heavy-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-heavy-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-heavy-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-heavy-fireiflethal", "Fire if Lethal", new CBoolean());
+
+				g->Add("rageaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-rifle-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-rifle-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-rifle-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-rifle-fireiflethal", "Fire if Lethal", new CBoolean());
+
+				g->Add("rageaim-scout-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-scout-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-scout-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-scout-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-scout-fireiflethal", "Fire if Lethal", new CBoolean());
+					
+				g->Add("rageaim-awp-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-awp-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-awp-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-awp-fireiflethal", "Fire if Lethal", new CBoolean());
+
+				g->Add("rageaim-auto-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				g->Add("rageaim-auto-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-auto-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
+				g->Add("rageaim-auto-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
+				g->Add("rageaim-auto-fireiflethal", "Fire if Lethal", new CBoolean());
+
+#undef HITBOXES_CONFIG
 			}
 		}
 
 		// DEFENCE
 		{
-			t = new Tab("Defence");
-			t->TopPadding = -10;
-			Group* OffenceMeta = t->Add("__META__");
-			Property* OffenceMode = OffenceMeta->Add("defence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
-
-			/*
-				LEGIT PAGE
-			*/
-
-			// fakelag
+			Tab* t = new Tab("Defense");
 			{
-				g = t->Add("legit-Fake Lag");
+				Group* g = t->Add("Fake Lag");
 
-				Property* Enable = g->Add("legit-fakelag-enable", "Enable", new CBoolean());
-
-				p = g->Add("legit-fakelag-time", "Max Time", new CFloat(1, 16, 0, "TICKS"));
-				p->Master = Enable;
-				p = g->Add("legit-fakelag-distance", "Max Distance", new CFloat(1, 64, 0, "UNITS"));
-				p->Master = Enable;
-				p = g->Add("legit-fakelag-trigger-time", "Triggered Max Time", new CFloat(1, 16, 0, "TICKS"));
-				p->Master = Enable;
-				p = g->Add("legit-fakelag-trigger-fistance", "Triggered Max Distance", new CFloat(1, 64, 0, "UNITS"));
-				p->Master = Enable;
+				g->Add("antiaim-fakelag-tick", "Amount", new CFloat(0, 16, 1, "TICKS"));
+				g->Add("antiaim-fakelag-distance", "Distance", new CFloat(0, 150, 1, "UNITS")); //4096	
+				
+				g->Add("antiaim-fakelag-trigger-tick", "Trigger Amount", new CFloat(0, 16, 1, "TICKS"));
+				g->Add("antiaim-fakelag-trigger-distance", "Trigger Distance", new CFloat(0, 150, 1, "UNITS")); //4096	
 			}
-
-			// anti aim
 			{
-				g = t->Add("legit-Anti-Aim");
+				Group* g = t->Add("Antiaim");
 
-				Property* Enable = g->Add("legit-antiaim-enable", "Enable", new CBoolean());
-
-				p = g->Add("legit-antiaim-desync", "Desync", new CFloat(1, 100, 1, "%"));
-				p->Master = Enable;
-			}
-
-
-			/*
-				RAGE PAGE
-			*/
-			// fakelag
-			{
-				g = t->Add("rage-Fake Lag");
-
-				Property* Enable = g->Add("rage-fakelag-enable", "Enable", new CBoolean());
-
-				p = g->Add("rage-fakelag-time", "Max Time", new CFloat(1, 16, 0, "TICKS"));
-				p->Master = Enable;
-				p = g->Add("rage-fakelag-distance", "Max Distance", new CFloat(1, 64, 0, "UNITS"));
-				p->Master = Enable;
-				p = g->Add("rage-fakelag-trigger-time", "Triggered Max Time", new CFloat(1, 16, 0, "TICKS"));
-				p->Master = Enable;
-				p = g->Add("rage-fakelag-trigger-fistance", "Triggered Max Distance", new CFloat(1, 64, 0, "UNITS"));
-				p->Master = Enable;
-			}
-
-			// anti aim
-			{
-				g = t->Add("rage-Anti-Aim");
-
-				Property* Enable = g->Add("rage-antiaim-enable", "Enable", new CBoolean());
-
-				p = g->Add("rage-antiaim-real-offset", "Rotate Real", new CFloat(0, 180, 1, "DEG"));
-				p->Master = Enable;
-
-				p = g->Add("rage-antiaim-real-jitter", "Real Rotation Jitter", new CFloat(0, 180, 1, "DEG"));
-				p->Master = Enable;
-
-				p = g->Add("rage-antiaim-fake-offset", "Rotate Fake", new CFloat(0, 100, 1, "%"));
-				p->Master = Enable;
-
-				p = g->Add("rage-antiaim-fake-jitter", "Fake Rotation Jitter", new CFloat(0, 100, 1, "%"));
-				p->Master = Enable;
-
-				p = g->Add("rage-antiaim-invert-on-hit", "Invert Rotation On Hit", new CBoolean());
-				p->Master = Enable;
+				g->Add("antiaim-legit-enable", "Enable", new CBoolean());
+				g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
+				// WHAT I DO FOR CINVERTER
+				//g->Add("antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
+				
+				g->Add("antiaim-rage-enable", "Enable", new CBoolean());
+				g->Add("antiaim-rage-pitch", "Pitch", new CVerticalState({ "Up", "Down", "Trolling" }));
+				g->Add("antiaim-rage-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"));
+				g->Add("antiaim-rage-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"));
+				g->Add("antiaim-rage-fake", "Fake Offset", new CFloat(0, 100, 1, "%"));
+				g->Add("antiaim-rage-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"));
+				// WHAT I DO FOR CINVERTER
+				//g->Add("antiaim-rage-fake-invert", "Invert on Hit", false, false);
 			}
 		}
 
 		// VISUALS
 		{
 			Tab* t = new Tab("Visuals");
-
-			{ // chams
+			{
 				Group* g = t->Add("Chams");
 
-				g->Add("test-switch", "switch", new CBoolean());
-				g->Add("test-color", "clr", new CColor(true));
+#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent", "Glow"
 
-				g->Add("test-CMultiSelect", "CMultiSelect test", new CMultiSelect({ "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes" }));
+				g->Add("chams-mode", "", new CHorizontalState({ "Enemies", "Friends", "Local"}));
 
-				g->Add("test-CHorizontalState", "CHorizontalState test", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Sniper" }));
+				g->Add("chams-enemy-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
+				g->Add("chams-friend-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
+				g->Add("chams-local-visibility", "", new CHorizontalState({ "Fake", "Real" }));
 
-				g->Add("test-CVerticalState", "CVerticalState test", new CVerticalState({ "A", "B", "C" }, true));
+				g->Add("visuals-chams-enemy-visible-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-enemy-visible-color", "Color", new CColor(true));
+				g->Add("visuals-chams-enemy-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+				g->Add("visuals-chams-enemy-hidden-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-enemy-hidden-color", "Color", new CColor(true));
+				g->Add("visuals-chams-enemy-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+				g->Add("visuals-chams-friend-visible-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-friend-visible-color", "Color", new CColor(true));
+				g->Add("visuals-chams-friend-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+				g->Add("visuals-chams-friend-hidden-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-friend-hidden-color", "Color", new CColor(true));
+				g->Add("visuals-chams-friend-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+				g->Add("visuals-chams-localplayer-real-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-localplayer-real-color", "Color", new CColor(true));
+				g->Add("visuals-chams-localplayer-real-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+				g->Add("visuals-chams-localplayer-fake-enable", "Enable", new CBoolean());
+				g->Add("visuals-chams-localplayer-fake-color", "Color", new CColor(true));
+				g->Add("visuals-chams-localplayer-fake-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+
+#undef CHAM_MATERIALS
+			}
+			{
+				Group* g = t->Add("ESP");
+				g->Add("esp-mode", "", new CHorizontalState({ "Enemies", "Friends"}));
+
+				g->Add("visuals-esp-enemy-enable", "Enable", new CBoolean());
+				g->Add("visuals-esp-enemy-bbox", "Bounding Box", new CBoolean());
+				g->Add("visuals-esp-enemy-bbox-color", "Color", new CColor(true));
+				g->Add("visuals-esp-enemy-name", "Name", new CBoolean());
+				g->Add("visuals-esp-enemy-name-color", "Color", new CColor(true));
+				g->Add("visuals-esp-enemy-snapline", "Snaplines", new CBoolean());
+				g->Add("visuals-esp-enemy-snapline-color", "Color", new CColor(true));
+				g->Add("visuals-esp-enemy-skeleton", "Skeleton", new CBoolean());
+				g->Add("visuals-esp-enemy-skeleton-color", "Color", new CColor(true));
+				g->Add("visuals-esp-enemy-health", "Health", new CBoolean());
+				g->Add("visuals-esp-enemy-health-color", "Foreground", new CColor(true));
+				g->Add("visuals-esp-enemy-health-color-background", "Background", new CColor(true));
+				g->Add("visuals-esp-enemy-resolverflags", "Resolver Flags", new CBoolean());
+				g->Add("visuals-esp-enemy-resolverflags-color", "Color", new CColor(true));
+				g->Add("visuals-esp-enemy-weapon", "Weapon", new CBoolean());
+				g->Add("visuals-esp-enemy-weapon-color", "Color", new CColor(true));
+
+				g->Add("visuals-esp-friend-enable", "Enable", new CBoolean());
+				g->Add("visuals-esp-friend-bbox", "Bounding Box", new CBoolean());
+				g->Add("visuals-esp-friend-bbox-color", "Color", new CColor(true));
+				g->Add("visuals-esp-friend-name", "Name", new CBoolean());
+				g->Add("visuals-esp-friend-name-color", "Color", new CColor(true));
+				g->Add("visuals-esp-friend-snapline", "Snaplines", new CBoolean());
+				g->Add("visuals-esp-friend-snapline-color", "Color", new CColor(true));
+				g->Add("visuals-esp-friend-skeleton", "Skeleton", new CBoolean());
+				g->Add("visuals-esp-friend-skeleton-color", "Color", new CColor(true));
+				g->Add("visuals-esp-friend-health", "Health", new CBoolean());
+				g->Add("visuals-esp-friend-health-color", "Foreground", new CColor(true));
+				g->Add("visuals-esp-friend-health-color-background", "Background", new CColor(true));
+				g->Add("visuals-esp-friend-resolverflags", "Resolver Flags", new CBoolean());
+				g->Add("visuals-esp-friend-resolverflags-color", "Color", new CColor(true));
+				g->Add("visuals-esp-friend-weapon", "Weapon", new CBoolean());
+				g->Add("visuals-esp-friend-weapon-color", "Color", new CColor(true));
+				
+			}
+			{
+				Group* g = t->Add("World");
+				//World
+				g->Add("visuals-world-enable", "World Changes", new CBoolean());
+				g->Add("visuals-world-color", "World", new CColor(true));
+				//Prop
+				g->Add("visuals-world-prop-enable", "Prop Changes", new CBoolean());
+				g->Add("visuals-world-prop-color", "Prop", new CColor(true));
+				//Skybox
+				g->Add("visuals-world-skybox-enable", "Skybox Changes", new CBoolean());
+				//Skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List
+				g->Add("visuals-world-skybox-name", "Load Skybox", new CVerticalState({ "cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy", "italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr", "sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust" }));
+				g->Add("visuals-world-skybox-color", "Skybox", new CColor(true));
+
+			}
+			/*{
+				Widget* w = t->AddWidget("View Model");
+				w->AddProperty(false, 0, "visuals-fov", "FOV", "", 0, 100.f, 2, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-x", "Viewmodel X", "", -20.f, 20.f, 3, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-y", "Viewmodel Y", "", -20.f, 20.f, 3, 0, 0);
+				w->AddProperty(false, 0, "visuals-view-z", "Viewmodel Z", "", -20.f, 20.f, 3, 0, 0);
+			}*/
+			{
+				Group* g = t->Add("Misc");
+				g->Add("visuals-misc-thirdperson", "Thirdperson", new CBoolean());
+				g->Add("visuals-misc-thirdperson-distance", "Thirdperson Distance", new CFloat(0, 150, 1, ""));
+				
+				g->Add("visuals-misc-revealranks", "Reveal Ranks", new CBoolean());
+				g->Add("visuals-misc-grenadeprediction", "Grenade Prediction", new CBoolean());
+				g->Add("visuals-misc-noscope", "No Scope", new CBoolean());
+				g->Add("visuals-misc-nosmoke", "No Smoke", new CBoolean());
+				g->Add("visuals-misc-noflash", "No Flash", new CBoolean());
+				g->Add("visuals-misc-tracers", "Bullet Tracers", new CBoolean());
+
+				/*w->AddProperty(false, 2, "visuals-misc-skin", "Skin ID", "", 0, 1000, 0, 0, 0);*/
+				/*w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);
+				w->AddProperty(false, 1, "visuals-misc-spec-list", "Spectator List", false, false);
+				w->AddProperty(false, 1, "visuals-misc-teamdamage-list", "Team-damage List", false, false);*/
 			}
 		}
 
@@ -1151,14 +1272,34 @@ namespace Config2
 			}
 		}
 
-		// MOVEMENT
-		{
-			Tab* t = new Tab("Movement");
-		}
-
 		// MISC
 		{
 			Tab* t = new Tab("Misc");
+			{
+				Group* g = t->Add("Movement");
+				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
+				g->Add("misc-movement-slowwalk", "Slow Walk", new CBoolean());
+				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"));
+				g->Add("misc-movement-fastcrouch", "Fast Crouch", new CBoolean());
+				g->Add("misc-movement-fakeduck", "Fake Duck", new CBoolean());
+				g->Add("misc-movement-autostrafe", "Autostrafe", new CVerticalState({ "None", "Rage", "Legit" }));
+				g->Add("misc-movement-leg", "Leg Slide", new CBoolean());
+				g->Add("misc-movement-leg-time", "Leg Slide Time", new CFloat(0, 2000, 1, "MS"));
+
+			}
+			{
+				Group* g = t->Add("Other");
+				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
+				g->Add("misc-other-killsay", "Kill Say", new CBoolean());
+				//g->Add(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by a4g4.com!");
+				//TODO - add input area for custom killsay insult
+				//w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
+				// w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
+				// TODO - add area to input what they are unboxing
+				/*w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);*/
+				//g->Add(false, 0, "misc-other-clantag-input", "Clantag", 256, "a4g4.com");
+				//TODO - add dropdown to indicate what kind of clan tag animation they are using
+			}
 		}
 
 		// THEME
