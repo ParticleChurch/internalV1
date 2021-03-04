@@ -999,15 +999,15 @@ namespace Config2
 		{
 			// IDK WHY EVERYTHING IN OFFENSE DOESN"T WORK!
 			Tab* t = new Tab("Offence");
-			/*t->TopPadding = -10;
+			t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
-			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));*/
+			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
 
 			/*
 				LEGIT PAGE
 			*/
 			{
-				Group* g = t->Add("Legit");
+				Group* g = t->Add("legit-Aimbot");
 
 				g->Add("legit-aim-enable", "Enable", new CBoolean());
 
@@ -1046,7 +1046,7 @@ namespace Config2
 				RAGE PAGE
 			*/
 			{
-				Group* g = t->Add("Rage");
+				Group* g = t->Add("rage-Aimbot");
 
 				g->Add("rage-aim-enable", "Enable", new CBoolean());
 
@@ -1120,7 +1120,7 @@ namespace Config2
 				g->Add("antiaim-legit-enable", "Enable", new CBoolean());
 				g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
 				// WHAT I DO FOR CINVERTER
-				//g->Add("antiaim-legit-invert", "Invert AA", new CInverter("Left", "Right"));
+				g->Add("antiaim-legit-invert", "Invert AA", new CVerticalState({ "Left", "Right" }, true));
 				
 				g->Add("antiaim-rage-enable", "Enable", new CBoolean());
 				g->Add("antiaim-rage-pitch", "Pitch", new CVerticalState({ "Up", "Down", "Trolling" }));
@@ -1128,8 +1128,7 @@ namespace Config2
 				g->Add("antiaim-rage-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"));
 				g->Add("antiaim-rage-fake", "Fake Offset", new CFloat(0, 100, 1, "%"));
 				g->Add("antiaim-rage-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"));
-				// WHAT I DO FOR CINVERTER
-				//g->Add("antiaim-rage-fake-invert", "Invert on Hit", false, false);
+				g->Add("antiaim-rage-fake-invert", "Invert on Hit", new CBoolean());
 			}
 		}
 
