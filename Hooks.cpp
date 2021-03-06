@@ -516,8 +516,10 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	{
 		pixel_state->Apply();
 		pixel_state->Release();
-		D3d9Device->SetVertexDeclaration(vertDec);
-		D3d9Device->SetVertexShader(vertShader);
+		if(vertDec)
+			D3d9Device->SetVertexDeclaration(vertDec);
+		if(vertShader)
+			D3d9Device->SetVertexShader(vertShader);
 	}
 
 	if (GUI2::Ejected)
