@@ -1504,6 +1504,8 @@ namespace Config2
 			return &((CBoolean*)p->Value)->Value;
 		case PropertyType::HSTATEFUL:
 			return &((CHorizontalState*)p->Value)->Value;
+		case PropertyType::VSTATEFUL:
+			return &((CVerticalState*)p->Value)->Value;
 		default:
 			L::Log("ERROR: You used the wrong getter for property: ", "");
 			L::Log(p->Name.c_str());
