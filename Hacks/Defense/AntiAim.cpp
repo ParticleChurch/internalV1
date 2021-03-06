@@ -24,7 +24,16 @@ bool AntiAim::LBYBreak()
 
 void AntiAim::legit()
 {
-	if (!Config::GetBool("antiaim-legit-enable"))
+
+	// boolean is a cstate with true=1,false=0
+	L::Verbose("LEGIT Enable");
+	static Config2::CState* Enable = Config2::GetState("antiaim-legit-enable");
+	L::Verbose("AADirection");
+	static Config2::CState* AADirection = Config2::GetState("antiaim-legit-invert"); // terrible property name btw
+	L::Verbose("MaxDesync");
+	static Config2::CFloat* MaxDesync = Config2::GetFloat("antiaim-legit-max-angle");
+
+	if (!Enable->Get())
 		return;
 
 	if (!G::LocalPlayer)
@@ -42,11 +51,11 @@ void AntiAim::legit()
 	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND))
 		return;
 	
-	legit_left = Config::GetState("antiaim-legit-invert");
+	legit_left = AADirection->Get();
 	legit_side = legit_left ? 1 : -1;
 
 	bool BreakLBY = LBYBreak();
-	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-legit-max-angle") / 100.f;
+	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * MaxDesync->Get() / 100.f;
 	
 	//side by default = left
 	if (!BreakLBY)
@@ -97,7 +106,25 @@ void AntiAim::legit()
 
 void AntiAim::rage()
 {
-	if (!Config::GetBool("antiaim-rage-enable"))
+
+	// boolean is a cstate with true=1,false=0
+	L::Verbose("RAGE Enable");
+	static Config2::CState* Enable = Config2::GetState("antiaim-rage-enable");
+	L::Verbose("Pitch");
+	static Config2::CState* Pitch = Config2::GetState("antiaim-rage-pitch"); // terrible property name btw
+	L::Verbose("RealOff");
+	static Config2::CFloat* RealOff = Config2::GetFloat("antiaim-rage-real");
+	L::Verbose("RealdJitterOff");
+	static Config2::CFloat* RealdJitterOff = Config2::GetFloat("antiaim-rage-real-jitter");
+	L::Verbose("FakeOff");
+	static Config2::CFloat* FakeOff = Config2::GetFloat("antiaim-rage-fake");
+	L::Verbose("FakeJitterOff");
+	static Config2::CFloat* FakeJitterOff = Config2::GetFloat("antiaim-rage-fake-jitter");
+	L::Verbose("Invert");
+	static Config2::CState* Invert = Config2::GetState("antiaim-rage-fake-invert");
+	
+
+	if (!Enable->Get())
 		return;
 
 	if (!G::LocalPlayer)
@@ -111,7 +138,7 @@ void AntiAim::rage()
 	G::cmd->viewangles.y = AtTargets();
 	G::cmd->viewangles.NormalizeAngle();
 
-	rage_left = Config::GetState("antiaim-rage-invert");
+	rage_left = Invert->Get();
 	rage_side = rage_left ? 1 : -1;
 
 	static bool Switcher = false;
@@ -127,7 +154,7 @@ void AntiAim::rage()
 	}
 	
 
-	switch (Config::GetState("antiaim-rage-pitch"))
+	switch (Pitch->Get())
 	{
 	case 0:
 		G::cmd->viewangles.x = -89; //up
@@ -142,13 +169,13 @@ void AntiAim::rage()
 		break;
 	}
 
-	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real");
-	G::cmd->viewangles.y += Config::GetFloat("antiaim-rage-real-jitter") * (Switcher2 ? -1 : 1) / 2;
+	G::cmd->viewangles.y += RealOff->Get();
+	G::cmd->viewangles.y += RealdJitterOff->Get() * (Switcher2 ? -1 : 1) / 2;
 
 	bool BreakLBY = LBYBreak();
-	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * Config::GetFloat("antiaim-rage-fake") / 100.f;
+	float Delta = G::LocalPlayer->GetMaxDesyncAngle() * FakeOff->Get() / 100.f;
 
-	Delta -= (Delta * (Config::GetFloat("antiaim-rage-fake-jitter") / 100.f) * (Switcher ? 1 : 0));
+	Delta -= (Delta * (FakeJitterOff->Get() / 100.f) * (Switcher ? 1 : 0));
 
 	G::cmd->viewangles.y += rage_left ? -Delta: Delta; //set it to rage style aa
 
