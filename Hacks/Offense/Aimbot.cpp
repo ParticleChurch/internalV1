@@ -136,8 +136,10 @@ void Aimbot::GetClosestEntity(int& RecordUserID, float& Distance)
 
 void Aimbot::Legit()
 {
+	static Config2::CState* Enable = Config2::GetState("legit-aim-enable"); // terrible property name btw
+
 	// Is legitbot enabled
-	if (!Config::GetBool("legit-aim-enable")) return;
+	if (!Enable->Get()) return;
 
 	// Make sure it's a different tick
 	static int tickcount = G::cmd->tick_count;
@@ -186,28 +188,49 @@ bool Aimbot::UpdateLegitVal()
 	int weaponID = (int)weapon->GetWeaponId();
 	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
 
+	static Config2::CFloat* Pistol_FOV			= Config2::GetFloat("legitaim-pistol-fov");
+	static Config2::CState* Pistol_Smooth		= Config2::GetState("legitaim-pistol-smoothing");
+	static Config2::CFloat* Pistol_SmoothAmount = Config2::GetFloat("legitaim-pistol-smoothing-amount");
+
+	static Config2::CFloat* SMG_FOV				= Config2::GetFloat("legitaim-smg-fov");
+	static Config2::CState* SMG_Smooth			= Config2::GetState("legitaim-smg-smoothing");
+	static Config2::CFloat* SMG_SmoothAmount	= Config2::GetFloat("legitaim-smg-smoothing-amount");
+
+	static Config2::CFloat* Heavy_FOV			= Config2::GetFloat("legitaim-heavy-fov");
+	static Config2::CState* Heavy_Smooth		= Config2::GetState("legitaim-heavy-smoothing");
+	static Config2::CFloat* Heavy_SmoothAmount  = Config2::GetFloat("legitaim-heavy-smoothing-amount");
+
+	static Config2::CFloat* Rifle_FOV			= Config2::GetFloat("legitaim-rifle-fov");
+	static Config2::CState* Rifle_Smooth		= Config2::GetState("legitaim-rifle-smoothing");
+	static Config2::CFloat* Rifle_SmoothAmount	= Config2::GetFloat("legitaim-rifle-smoothing-amount");
+
+	static Config2::CFloat* Sniper_FOV			= Config2::GetFloat("legitaim-sniper-fov");
+	static Config2::CState* Sniper_Smooth		= Config2::GetState("legitaim-sniper-smoothing");
+	static Config2::CFloat* Sniper_SmoothAmount = Config2::GetFloat("legitaim-sniper-smoothing-amount");
+
+
 	// I could use a switch case for this meh
 	if (WeaponClass == 35)		//pistol
 	{
-		legit.fov = Config::GetFloat("legitaim-pistol-fov");
-		legit.smoothing = Config::GetState("legitaim-pistol-smoothing");
-		legit.smoothing_amount = Config::GetFloat("legitaim-pistol-smoothing-amount");
+		legit.fov = Pistol_FOV->Get();
+		legit.smoothing = Pistol_Smooth->Get();
+		legit.smoothing_amount = Pistol_SmoothAmount->Get();
 		GetLegitHitboxes(0);
 		return true;
 	}
 	else if (WeaponClass == 37)	//smg
 	{
-		legit.fov = Config::GetFloat("legitaim-smg-fov");
-		legit.smoothing = Config::GetState("legitaim-smg-smoothing");
-		legit.smoothing_amount = Config::GetFloat("legitaim-smg-smoothing-amount");
+		legit.fov = SMG_FOV->Get();
+		legit.smoothing = SMG_Smooth->Get();
+		legit.smoothing_amount = SMG_SmoothAmount->Get();
 		GetLegitHitboxes(1);
 		return true;
 	}
 	else if (WeaponClass == 36)	//heavy
 	{
-		legit.fov = Config::GetFloat("legitaim-heavy-fov");
-		legit.smoothing = Config::GetState("legitaim-heavy-smoothing");
-		legit.smoothing_amount = Config::GetFloat("legitaim-heavy-smoothing-amount");
+		legit.fov = Heavy_FOV->Get();
+		legit.smoothing = Heavy_Smooth->Get();
+		legit.smoothing_amount = Heavy_SmoothAmount->Get();
 		GetLegitHitboxes(2);
 		return true;
 	}
@@ -215,17 +238,17 @@ bool Aimbot::UpdateLegitVal()
 	{
 		if (weaponID == 40 || weaponID == 9 || weaponID == 11 || weaponID == 38) //snipers
 		{
-			legit.fov = Config::GetFloat("legitaim-sniper-fov");
-			legit.smoothing = Config::GetState("legitaim-sniper-smoothing");
-			legit.smoothing_amount = Config::GetFloat("legitaim-sniper-smoothing-amount");
+			legit.fov = Sniper_FOV->Get();
+			legit.smoothing = Sniper_Smooth->Get();
+			legit.smoothing_amount = Sniper_SmoothAmount->Get();
 			GetLegitHitboxes(4);
 			return true;
 		}
 		else //rifles
 		{
-			legit.fov = Config::GetFloat("legitaim-rifle-fov");
-			legit.smoothing = Config::GetState("legitaim-rifle-smoothing");
-			legit.smoothing_amount = Config::GetFloat("legitaim-rifle-smoothing-amount");
+			legit.fov = Rifle_FOV->Get();
+			legit.smoothing = Rifle_Smooth->Get();
+			legit.smoothing_amount = Rifle_SmoothAmount->Get();
 			GetLegitHitboxes(3);
 			return true;
 		}
@@ -239,22 +262,29 @@ void Aimbot::GetLegitHitboxes(int gun)
 	uint16_t selection = 0;
 	legit.hitboxes.clear();
 	legit.hitboxes.resize(0);
+
+	static Config2::CMultiSelect* Pistol_Hitbox = Config2::GetSelected("legitaim-pistol-hitbox");
+	static Config2::CMultiSelect* SMG_Hitbox = Config2::GetSelected("legitaim-smg-hitbox");
+	static Config2::CMultiSelect* Heavy_Hitbox = Config2::GetSelected("legitaim-heavy-hitbox");
+	static Config2::CMultiSelect* Rifle_Hitbox = Config2::GetSelected("legitaim-rifle-hitbox");
+	static Config2::CMultiSelect* Sniper_Hitbox = Config2::GetSelected("legitaim-sniper-hitbox");
+
 	switch (gun)
 	{
 	case 0:
-		selection = Config::GetSelections("legitaim-pistol-hitbox");
+		selection = Pistol_Hitbox->GetMask();
 		break;
 	case 1:
-		selection = Config::GetSelections("legitaim-smg-hitbox");
+		selection = SMG_Hitbox->GetMask();
 		break;
 	case 2:
-		selection = Config::GetSelections("legitaim-heavy-hitbox");
+		selection = Heavy_Hitbox->GetMask();
 		break;
 	case 3:
-		selection = Config::GetSelections("legitaim-rifle-hitbox");
+		selection = Rifle_Hitbox->GetMask();
 		break;
 	case 4:
-		selection = Config::GetSelections("legitaim-sniper-hitbox");
+		selection = Sniper_Hitbox->GetMask();
 		break;
 	default:
 		return;
@@ -400,13 +430,18 @@ void Aimbot::SmoothFastToSlow(QAngle& Ang)
 
 void Aimbot::Rage()
 {
+	static Config2::CState* Enable = Config2::GetState("rage-aim-enable"); 
+	static Config2::CState* Silent = Config2::GetState("rage-aim-silent");
+	static Config2::CState* AutoShoot = Config2::GetState("rage-aim-autoshoot");
+	static Config2::CState* FakeDuck = Config2::GetState("misc-movement-fakeduck");
+
 	// Make sure it's a different tick
 	static int tickcount = G::cmd->tick_count;
 	if (tickcount == G::cmd->tick_count) return;
 	tickcount = G::cmd->tick_count;
 
 	// Is ragebot enabled
-	if (!Config::GetBool("rage-aim-enable")) return;
+	if (!Enable->Get()) return;
 
 	// If the player can shoot a weapon... 
 	if (!G::LocalPlayer->CanShoot()) return;
@@ -460,15 +495,16 @@ void Aimbot::Rage()
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
 		// If not silent aim, adjust angles, otherwise do silent
-		if (!Config::GetBool("rage-aim-silent"))
+		if (!Silent->Get())
 			I::engine->SetViewAngles(Angle);
 		G::cmd->viewangles = Angle;
 
 		// If autoshoot.. FIRE!
-		if (Config::GetBool("rage-aim-autoshoot"))
+		if (AutoShoot->Get())
 			G::cmd->buttons |= IN_ATTACK;
 
-		if (G::pSendPacket)
+		// only force send if not fakeducking... (as that will break fd)
+		if (G::pSendPacket && !FakeDuck->Get())
 			*G::pSendPacket = true;
 		return;
 	}
@@ -492,15 +528,16 @@ void Aimbot::Rage()
 				Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
 				// If not silent aim, adjust angles, otherwise do silent
-				if (!Config::GetBool("rage-aim-silent"))
+				if (!Silent->Get())
 					I::engine->SetViewAngles(Angle);
 				G::cmd->viewangles = Angle;
 
 				// If autoshoot.. FIRE!
-				if (Config::GetBool("rage-aim-autoshoot"))
+				if (AutoShoot->Get())
 					G::cmd->buttons |= IN_ATTACK;
 
-				if (G::pSendPacket)
+				// only force send if not fakeducking... (as that will break fd)
+				if (G::pSendPacket && !FakeDuck->Get())
 					*G::pSendPacket = true;
 				return;
 			}
@@ -520,31 +557,67 @@ bool Aimbot::UpdateRageVal()
 	int weaponID = (int)weapon->GetWeaponId();
 	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
 
+	static Config2::CFloat* Pistol_VisMin		= Config2::GetFloat("rageaim-pistol-mindamage-visible");
+	static Config2::CFloat* Pistol_HidMin		= Config2::GetFloat("rageaim-pistol-mindamage-hidden");
+	static Config2::CFloat* Pistol_HitChance	= Config2::GetFloat("rageaim-pistol-hitchance");
+	static Config2::CState* Pistol_FireIfLethal	= Config2::GetState("rageaim-pistol-fireiflethal");
+
+	static Config2::CFloat* Smg_VisMin			= Config2::GetFloat("rageaim-smg-mindamage-visible");
+	static Config2::CFloat* Smg_HidMin			= Config2::GetFloat("rageaim-smg-mindamage-hidden");
+	static Config2::CFloat* Smg_HitChance		= Config2::GetFloat("rageaim-smg-hitchance");
+	static Config2::CState* Smg_FireIfLethal	= Config2::GetState("rageaim-smg-fireiflethal");
+
+	static Config2::CFloat* Heavy_VisMin		= Config2::GetFloat("rageaim-heavy-mindamage-visible");
+	static Config2::CFloat* Heavy_HidMin		= Config2::GetFloat("rageaim-heavy-mindamage-hidden");
+	static Config2::CFloat* Heavy_HitChance		= Config2::GetFloat("rageaim-heavy-hitchance");
+	static Config2::CState* Heavy_FireIfLethal	= Config2::GetState("rageaim-heavy-fireiflethal");
+
+	static Config2::CFloat* Scout_VisMin		= Config2::GetFloat("rageaim-scout-mindamage-visible");
+	static Config2::CFloat* Scout_HidMin		= Config2::GetFloat("rageaim-scout-mindamage-hidden");
+	static Config2::CFloat* Scout_HitChance		= Config2::GetFloat("rageaim-scout-hitchance");
+	static Config2::CState* Scout_FireIfLethal	= Config2::GetState("rageaim-scout-fireiflethal");
+
+	static Config2::CFloat* AWP_VisMin			= Config2::GetFloat("rageaim-awp-mindamage-visible");
+	static Config2::CFloat* AWP_HidMin			= Config2::GetFloat("rageaim-awp-mindamage-hidden");
+	static Config2::CFloat* AWP_HitChance		= Config2::GetFloat("rageaim-awp-hitchance");
+	static Config2::CState* AWP_FireIfLethal	= Config2::GetState("rageaim-awp-fireiflethal");
+
+	static Config2::CFloat* Auto_VisMin			= Config2::GetFloat("rageaim-auto-mindamage-visible");
+	static Config2::CFloat* Auto_HidMin			= Config2::GetFloat("rageaim-auto-mindamage-hidden");
+	static Config2::CFloat* Auto_HitChance		= Config2::GetFloat("rageaim-auto-hitchance");
+	static Config2::CState* Auto_FireIfLethal	= Config2::GetState("rageaim-auto-fireiflethal");
+
+	static Config2::CFloat* Rifle_VisMin		= Config2::GetFloat("rageaim-rifle-mindamage-visible");
+	static Config2::CFloat* Rifle_HidMin		= Config2::GetFloat("rageaim-rifle-mindamage-hidden");
+	static Config2::CFloat* Rifle_HitChance		= Config2::GetFloat("rageaim-rifle-hitchance");
+	static Config2::CState* Rifle_FireIfLethal	= Config2::GetState("rageaim-rifle-fireiflethal");
+	
+
 	// I could use a switch case for this meh
 	if (WeaponClass == 35)		//pistol
 	{
-		rage.vis_mindam = Config::GetFloat("rageaim-pistol-mindamage-visible");
-		rage.hid_mindam = Config::GetFloat("rageaim-pistol-mindamage-hidden");
-		rage.hitchance = Config::GetFloat("rageaim-pistol-hitchance") / 100.f;
-		rage.FireIfLethal = Config::GetBool("rageaim-pistol-fireiflethal");
+		rage.vis_mindam = Pistol_VisMin->Get();
+		rage.hid_mindam = Pistol_HidMin->Get();
+		rage.hitchance = Pistol_HitChance->Get() / 100.f;
+		rage.FireIfLethal = Pistol_FireIfLethal->Get();
 		GetRageHitboxes(0);
 		return true;
 	}
 	else if (WeaponClass == 37)	//smg
 	{
-		rage.vis_mindam = Config::GetFloat("rageaim-smg-mindamage-visible");
-		rage.hid_mindam = Config::GetFloat("rageaim-smg-mindamage-hidden");
-		rage.hitchance = Config::GetFloat("rageaim-smg-hitchance") / 100.f;
-		rage.FireIfLethal = Config::GetBool("rageaim-smg-fireiflethal");
+		rage.vis_mindam = Smg_VisMin->Get();
+		rage.hid_mindam = Smg_HidMin->Get();
+		rage.hitchance = Smg_HitChance->Get() / 100.f;
+		rage.FireIfLethal = Smg_FireIfLethal->Get();
 		GetRageHitboxes(1);
 		return true;
 	}
 	else if (WeaponClass == 36)	//heavy
 	{
-		rage.vis_mindam = Config::GetFloat("rageaim-heavy-mindamage-visible");
-		rage.hid_mindam = Config::GetFloat("rageaim-heavy-mindamage-hidden");
-		rage.hitchance = Config::GetFloat("rageaim-heavy-hitchance") / 100.f;
-		rage.FireIfLethal = Config::GetBool("rageaim-heavy-fireiflethal");
+		rage.vis_mindam = Heavy_VisMin->Get();
+		rage.hid_mindam = Heavy_HidMin->Get();
+		rage.hitchance = Heavy_HitChance->Get() / 100.f;
+		rage.FireIfLethal = Heavy_FireIfLethal->Get();
 		GetRageHitboxes(2);
 		return true;
 	}
@@ -552,37 +625,37 @@ bool Aimbot::UpdateRageVal()
 	{
 		if (weaponID == 40) //scout
 		{
-			rage.vis_mindam = Config::GetFloat("rageaim-scout-mindamage-visible");
-			rage.hid_mindam = Config::GetFloat("rageaim-scout-mindamage-hidden");
-			rage.hitchance = Config::GetFloat("rageaim-scout-hitchance") / 100.f;
-			rage.FireIfLethal = Config::GetBool("rageaim-scout-fireiflethal");
+			rage.vis_mindam = Scout_VisMin->Get();
+			rage.hid_mindam = Scout_HidMin->Get();
+			rage.hitchance = Scout_HitChance->Get() / 100.f;
+			rage.FireIfLethal = Scout_FireIfLethal->Get();
 			GetRageHitboxes(3);
 			return true;
 		}
 		else if (weaponID == 9) //awp
 		{
-			rage.vis_mindam = Config::GetFloat("rageaim-awp-mindamage-visible");
-			rage.hid_mindam = Config::GetFloat("rageaim-awp-mindamage-hidden");
-			rage.hitchance = Config::GetFloat("rageaim-awp-hitchance") / 100.f;
-			rage.FireIfLethal = Config::GetBool("rageaim-awp-fireiflethal");
+			rage.vis_mindam = AWP_VisMin->Get();
+			rage.hid_mindam = AWP_HidMin->Get();
+			rage.hitchance = AWP_HitChance->Get() / 100.f;
+			rage.FireIfLethal = AWP_FireIfLethal->Get();
 			GetRageHitboxes(4);
 			return true;
 		}
 		else if (weaponID == 11 || weaponID == 38) //autos
 		{
-			rage.vis_mindam = Config::GetFloat("rageaim-auto-mindamage-visible");
-			rage.hid_mindam = Config::GetFloat("rageaim-auto-mindamage-hidden");
-			rage.hitchance = Config::GetFloat("rageaim-auto-hitchance") / 100.f;
-			rage.FireIfLethal = Config::GetBool("rageaim-auto-fireiflethal");
+			rage.vis_mindam = Auto_VisMin->Get();
+			rage.hid_mindam = Auto_VisMin->Get();
+			rage.hitchance = Auto_VisMin->Get() / 100.f;
+			rage.FireIfLethal = Auto_VisMin->Get();
 			GetRageHitboxes(5);
 			return true;
 		}
 		else //rifles
 		{
-			rage.vis_mindam = Config::GetFloat("rageaim-rifle-mindamage-visible");
-			rage.hid_mindam = Config::GetFloat("rageaim-rifle-mindamage-hidden");
-			rage.hitchance = Config::GetFloat("rageaim-rifle-hitchance") / 100.f;
-			rage.FireIfLethal = Config::GetBool("rageaim-rifle-fireiflethal");
+			rage.vis_mindam = Rifle_VisMin->Get();
+			rage.hid_mindam = Rifle_HidMin->Get();
+			rage.hitchance = Rifle_HitChance->Get() / 100.f;
+			rage.FireIfLethal = Rifle_FireIfLethal->Get();
 			GetRageHitboxes(6);
 			return true;
 		}
@@ -593,6 +666,9 @@ bool Aimbot::UpdateRageVal()
 
 bool Aimbot::TryOnShot()
 {
+	static Config2::CState* Silent = Config2::GetState("rage-aim-silent");
+	static Config2::CState* AutoShoot = Config2::GetState("rage-aim-autoshoot");
+
 	float lerp = GetLerp();
 	std::map<int, Player>::iterator it;
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
@@ -621,12 +697,12 @@ bool Aimbot::TryOnShot()
 					Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
 					// If not silent aim, adjust angles, otherwise do silent
-					if (!Config::GetBool("rage-aim-silent"))
+					if (!Silent->Get())
 						I::engine->SetViewAngles(Angle);
 					G::cmd->viewangles = Angle;
 
 					// If autoshoot.. FIRE!
-					if (Config::GetBool("rage-aim-autoshoot"))
+					if (AutoShoot->Get())
 						G::cmd->buttons |= IN_ATTACK;
 
 					if (G::pSendPacket)
@@ -648,28 +724,45 @@ void Aimbot::GetRageHitboxes(int gun)
 	uint16_t selection = 0;
 	rage.hitboxes.clear();
 	rage.hitboxes.resize(0);
+
+	
+	static Config2::CMultiSelect* Pistol_Hitbox_R	= Config2::GetSelected("rageaim-pistol-hitbox");
+	static Config2::CMultiSelect* SMG_Hitbox_R = Config2::GetSelected("rageaim-smg-hitbox");
+	static Config2::CMultiSelect* Heavy_Hitbox_R = Config2::GetSelected("rageaim-heavy-hitbox");
+	static Config2::CMultiSelect* Rifle_Hitbox_R = Config2::GetSelected("rageaim-rifle-hitbox");
+	static Config2::CMultiSelect* Scout_Hitbox_R = Config2::GetSelected("rageaim-scout-hitbox");
+	static Config2::CMultiSelect* AWP_Hitbox_R = Config2::GetSelected("rageaim-awp-hitbox");
+	static Config2::CMultiSelect* Auto_Hitbox_R = Config2::GetSelected("rageaim-auto-hitbox");
+
 	switch (gun)
 	{
 	case 0:
-		selection = Config::GetSelections("rageaim-pistol-hitbox");
+		L::Verbose("pistol");
+		selection = Pistol_Hitbox_R->GetMask();
 		break;
 	case 1:
-		selection = Config::GetSelections("rageaim-smg-hitbox");
+		L::Verbose("smg");
+		selection = SMG_Hitbox_R->GetMask();
 		break;
 	case 2:
-		selection = Config::GetSelections("rageaim-heavy-hitbox");
+		L::Verbose("heavy");
+		selection = Heavy_Hitbox_R->GetMask();
 		break;
 	case 3:
-		selection = Config::GetSelections("rageaim-scout-hitbox");
+		L::Verbose("rifle");
+		selection = Scout_Hitbox_R->GetMask();
 		break;
 	case 4:
-		selection = Config::GetSelections("rageaim-awp-hitbox");
+		L::Verbose("scout");
+		selection = AWP_Hitbox_R->GetMask();
 		break;
 	case 5:
-		selection = Config::GetSelections("rageaim-auto-hitbox");
+		L::Verbose("awp");
+		selection = Auto_Hitbox_R->GetMask();
 		break;
 	case 6:
-		selection = Config::GetSelections("rageaim-rifle-hitbox");
+		L::Verbose("auto");
+		selection = Rifle_Hitbox_R->GetMask();
 		break;
 	default:
 		return;

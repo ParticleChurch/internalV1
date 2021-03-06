@@ -24,13 +24,9 @@ bool AntiAim::LBYBreak()
 
 void AntiAim::legit()
 {
-
 	// boolean is a cstate with true=1,false=0
-	L::Verbose("LEGIT Enable");
 	static Config2::CState* Enable = Config2::GetState("antiaim-legit-enable");
-	L::Verbose("AADirection");
 	static Config2::CState* AADirection = Config2::GetState("antiaim-legit-invert"); // terrible property name btw
-	L::Verbose("MaxDesync");
 	static Config2::CFloat* MaxDesync = Config2::GetFloat("antiaim-legit-max-angle");
 
 	if (!Enable->Get())
@@ -106,21 +102,13 @@ void AntiAim::legit()
 
 void AntiAim::rage()
 {
-
 	// boolean is a cstate with true=1,false=0
-	L::Verbose("RAGE Enable");
 	static Config2::CState* Enable = Config2::GetState("antiaim-rage-enable");
-	L::Verbose("Pitch");
 	static Config2::CState* Pitch = Config2::GetState("antiaim-rage-pitch"); // terrible property name btw
-	L::Verbose("RealOff");
 	static Config2::CFloat* RealOff = Config2::GetFloat("antiaim-rage-real");
-	L::Verbose("RealdJitterOff");
 	static Config2::CFloat* RealdJitterOff = Config2::GetFloat("antiaim-rage-real-jitter");
-	L::Verbose("FakeOff");
 	static Config2::CFloat* FakeOff = Config2::GetFloat("antiaim-rage-fake");
-	L::Verbose("FakeJitterOff");
 	static Config2::CFloat* FakeJitterOff = Config2::GetFloat("antiaim-rage-fake-jitter");
-	L::Verbose("Invert");
 	static Config2::CState* Invert = Config2::GetState("antiaim-rage-fake-invert");
 	
 

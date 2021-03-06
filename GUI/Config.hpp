@@ -1296,6 +1296,11 @@ namespace Config2
 			if (Get(index) == value) return;
 			this->mask ^= ((uint64_t)1 << index);
 		}
+
+		__forceinline uint64_t GetMask() // this would fucking work
+		{
+			return this->mask;
+		}
 	};
 
 	struct Property

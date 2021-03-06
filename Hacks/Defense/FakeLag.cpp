@@ -15,7 +15,7 @@ bool FakeLag::TimeBreaker()
 	// we can't choke more than 62 ticks because of some protection (prev exploits)
 	// which is around 16 packets (a more accurate way would be to count ticks, meh)
 
-	if (I::engine->GetNetChannelInfo()->ChokedPackets > TrigTicks)
+	if (I::engine->GetNetChannelInfo()->ChokedPackets - 1 > TrigTicks)
 		return true;
 	return false;
 }
@@ -70,18 +70,25 @@ void FakeLag::LagOnPeak()
 		ChokeOnce = false;
 	}
 
+	static Config2::CFloat* FakeLagTrigDist = Config2::GetFloat("antiaim-fakelag-trigger-distance");
+	static Config2::CFloat* FakeLagTrigTick = Config2::GetFloat("antiaim-fakelag-trigger-tick");
+
 	// If there we should lag on peak... 
 	if (LaggingOnPeak)
 	{
-		TrigDistance = Config::GetFloat("antiaim-fakelag-trigger-distance");
-		TrigTicks = Config::GetFloat("antiaim-fakelag-trigger-tick");
+		TrigDistance = FakeLagTrigDist->Get();
+		TrigTicks = FakeLagTrigTick->Get(); 
 	}
 }
 
 void FakeLag::Start()
 {
+	static Config2::CState* FakeDuck = Config2::GetState("misc-movement-fakeduck");
+	static Config2::CFloat* FakeLagDist = Config2::GetFloat("antiaim-fakelag-distance");
+	static Config2::CFloat* FakeLagTicks = Config2::GetFloat("antiaim-fakelag-tick");
+
 	// Fake duck exception
-	if (Config::GetBool("misc-movement-fakeduck"))
+	if (FakeDuck->Get())
 	{
 		TrigDistance = 64.f;
 		TrigTicks = 14;
@@ -90,8 +97,8 @@ void FakeLag::Start()
 	}
 
 	// Get Defualt Limits
-	TrigDistance = Config::GetFloat("antiaim-fakelag-distance");
-	TrigTicks = Config::GetFloat("antiaim-fakelag-tick");
+	TrigDistance = FakeLagDist->Get();
+	TrigTicks = FakeLagTicks->Get(); 
 
 	// Update Velocity
 	Vec velocity = G::LocalPlayer->GetVecVelocity();

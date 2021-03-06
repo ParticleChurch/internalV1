@@ -514,6 +514,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 	if (InGame && pixel_state && D3d9Device)
 	{
+		L::Verbose("H::EndSceneHook Restoring pixelstate", "\n", false);
 		pixel_state->Apply();
 		pixel_state->Release();
 		if(vertDec)
@@ -688,7 +689,6 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
 		movement->LegSlide();
-		movement->ActiveCounterStrafe();
 
 		// nade visuals
 		L::Verbose("miscvisuals");
@@ -969,7 +969,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
 		
 		if (G::LocalPlayer && G::LocalPlayerAlive &&  
-			Config::GetBool("visuals-misc-thirdperson") && false)
+			Config::GetBool("visuals-misc-thirdperson") && true)
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
@@ -1062,7 +1062,9 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 void __stdcall H::EmitSoundHook(SoundData data)
 {
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
-	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep") && Config::GetBool("misc-other-autoaccept"))
+	static Config2::CState* Enable = Config2::GetState("misc-other-autoaccept");
+
+	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep") && Enable->Get())
 	{
 		acceptMatch("accept");
 		/*auto window = FindWindowW(L"Valve001", NULL);

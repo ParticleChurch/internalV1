@@ -384,7 +384,7 @@ namespace Config {
 				w->AddProperty(false, 1, "misc-movement-fastcrouch", "Fast Crouch", false, false);
 				w->AddProperty(false, 2, "misc-movement-fakeduck", "Fake Duck", false, false, KeybindOptions(true, true, true));
 				//TODO - add rage autostrafe
-				w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None", "Rage", "Legit" });
+				//w->AddProperty(false, 0, "misc-movement-autostrafe", "Autostrafe", CDropdown{ "None", "Rage", "Legit" });
 				w->AddProperty(false, 2, "misc-movement-leg", "Leg Slide", false, false);
 				w->AddProperty(false, 1, "misc-movement-leg-time", "Leg Slide Time", "MS", 0, 2000, 0, 0, 0);
 
@@ -1108,11 +1108,11 @@ namespace Config2
 			{
 				Group* g = t->Add("Fake Lag");
 
-				g->Add("antiaim-fakelag-tick", "Amount", new CFloat(0, 16, 1, "TICKS"));
-				g->Add("antiaim-fakelag-distance", "Distance", new CFloat(0, 150, 1, "UNITS")); //4096	
+				g->Add("antiaim-fakelag-tick", "Amount", new CFloat(0, 16, 0, "TICKS"));
+				g->Add("antiaim-fakelag-distance", "Distance", new CFloat(0, 64, 1, "UNITS")); //4096	
 				
-				g->Add("antiaim-fakelag-trigger-tick", "Trigger Amount", new CFloat(0, 16, 1, "TICKS"));
-				g->Add("antiaim-fakelag-trigger-distance", "Trigger Distance", new CFloat(0, 150, 1, "UNITS")); //4096	
+				g->Add("antiaim-fakelag-trigger-tick", "Trigger Amount", new CFloat(0, 16, 0, "TICKS"));
+				g->Add("antiaim-fakelag-trigger-distance", "Trigger Distance", new CFloat(0, 64, 1, "UNITS")); //4096	
 			}
 			{
 				Group* g = t->Add("Antiaim");
@@ -1277,6 +1277,7 @@ namespace Config2
 			{
 				Group* g = t->Add("Movement");
 				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
+				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-slowwalk", "Slow Walk", new CBoolean());
 				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-fastcrouch", "Fast Crouch", new CBoolean());
@@ -1520,6 +1521,21 @@ namespace Config2
 		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::COLOR, nullptr);
 
 		return (CColor*)p->Value;
+	}
+
+	CMultiSelect* GetSelected(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return 0;
+
+		if (p->Type != PropertyType::MULTISELECT)
+		{
+			L::Log("ERROR: You used the wrong getter for property: ", "");
+			L::Log(p->Name.c_str());
+			return nullptr;
+		}
+
+		return (CMultiSelect*)p->Value;
 	}
 
 	void _KeyStateChanged(int index, bool currentlyPressed)
