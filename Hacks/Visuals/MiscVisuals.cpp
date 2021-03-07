@@ -38,18 +38,21 @@ float MiscVisuals::GetCameraBoomLength(float distance)
 
 void MiscVisuals::ThirdPerson_hkCamToFirstPeron()
 {
-	if (Config::GetBool("visuals-misc-thirdperson"))
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-thirdperson");
+	if (Enable->Get())
 		return;
 	H::ohkCamToFirstPeron(I::input);
 }
 
 void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 {
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-thirdperson");
+	static Config2::CFloat* Dist = Config2::GetFloat("visuals-misc-thirdperson-distance");
 	if (I::engine->IsInGame() && G::LocalPlayer && G::LocalPlayerAlive) {
-		if (Config::GetBool("visuals-misc-thirdperson"))
+		if (Enable->Get())
 		{
 			I::input->m_fCameraInThirdPerson = true;
-			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, GetCameraBoomLength(Config::GetFloat("visuals-misc-thirdperson-distance")));
+			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, GetCameraBoomLength(Dist->Get()));
 		}
 		else
 		{
@@ -61,7 +64,8 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 
 void MiscVisuals::RankRevealer()
 {
-	if (!Config::GetBool("visuals-misc-revealranks")) return;
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-revealranks");
+	if (!Enable->Get()) return;
 	if (!(G::cmd->buttons & IN_SCORE)) return;
 
 	I::client->dispatchUserMessage(50, 0, 0, nullptr);
@@ -69,18 +73,21 @@ void MiscVisuals::RankRevealer()
 
 void MiscVisuals::GrenadePrediction()
 {
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-grenadeprediction");
 	static ConVar* nadeVar = I::cvar->FindVar("cl_grenadepreview");
 
 	nadeVar->onChangeCallbacks.size = 0;
-	nadeVar->SetValue(Config::GetBool("visuals-misc-grenadeprediction"));
+	nadeVar->SetValue(Enable->Get());
 }
 
 void MiscVisuals::NoScope()
 {
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-noscope");
+
 	if (!G::LocalPlayerAlive)
 		return;
 
-	if (!Config::GetBool("visuals-misc-noscope"))
+	if (!Enable->Get())
 		return;
 
 	if (!G::LocalPlayer->IsScoped())
@@ -96,7 +103,9 @@ void MiscVisuals::NoScope()
 
 void MiscVisuals::NoFlash(int stage)
 {
-	if (!Config::GetBool("visuals-misc-noflash"))
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-noflash");
+
+	if (!Enable->Get())
 		return;
 
 	if (stage != ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
@@ -110,6 +119,8 @@ void MiscVisuals::NoFlash(int stage)
 
 void MiscVisuals::NoSmoke_DoPostScreenEffects()
 {
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-nosmoke");
+
 	if (!G::LocalPlayer)
 		return;
 	if (!G::LocalPlayerAlive)
@@ -127,7 +138,7 @@ void MiscVisuals::NoSmoke_DoPostScreenEffects()
 	for (const auto mat : smoke_materials) {
 		auto material = I::materialsystem->FindMaterial(mat);
 		material->SetMaterialVarFlag(MaterialVarFlag::NO_DRAW, false);
-		if (Config::GetBool("visuals-misc-nosmoke"))
+		if (Enable->Get())
 			material->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, true);
 		else
 			material->SetMaterialVarFlag(MaterialVarFlag::WIREFRAME, false);
@@ -136,7 +147,9 @@ void MiscVisuals::NoSmoke_DoPostScreenEffects()
 
 void MiscVisuals::NoSmoke_FrameStageNotify()
 {
-	if (!Config::GetBool("visuals-misc-nosmoke"))
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-nosmoke");
+
+	if (!Enable->Get())
 		return;
 	if (!G::LocalPlayer)
 		return;
