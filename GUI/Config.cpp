@@ -982,6 +982,7 @@ if (L::OutputMode != L::LogMode::None && p->Type != t){ \
 
 namespace Config2
 {
+	uint64_t GUIFramesRenderedCounter = 0;
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
 	Property* SettingKeybindFor = nullptr;
@@ -993,7 +994,7 @@ namespace Config2
 	{
 		//Tab* t;
 		//Group* g;
-		//Property* p;
+		Property* p;
 
 		// OFFENCE
 		{
@@ -1050,7 +1051,7 @@ namespace Config2
 
 				g->Add("rage-aim-enable", "Enable", new CBoolean());
 
-				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
+				p = g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
 				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
 
 
@@ -1116,11 +1117,15 @@ namespace Config2
 			}
 			{
 				Group* g = t->Add("Antiaim");
+				g->Add("antiaim-mode", "", new CHorizontalState({ "Legit", "Rage" }));
 
-				g->Add("antiaim-legit-enable", "Enable", new CBoolean());
-				g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
-				// WHAT I DO FOR CINVERTER
-				g->Add("antiaim-legit-invert", "Invert AA", new CVerticalState({ "Left", "Right" }, true));
+				p = g->Add("antiaim-legit-enable", "Enable", new CBoolean());
+				p->Visible.State = GetState("antiaim-mode");
+				p->Visible.StateEquals = 0;
+				p = g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
+				p->VisibilityLinked = GetProperty("antiaim-legit-enable");
+				p = g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true));
+				p->VisibilityLinked = GetProperty("antiaim-legit-enable");
 				
 				g->Add("antiaim-rage-enable", "Enable", new CBoolean());
 				g->Add("antiaim-rage-pitch", "Pitch", new CVerticalState({ "Up", "Down", "Trolling" }));
@@ -1138,38 +1143,70 @@ namespace Config2
 			{
 				Group* g = t->Add("Chams");
 
-#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent", "Glow"
-
+				// sliders at the top
 				g->Add("chams-mode", "", new CHorizontalState({ "Enemies", "Friends", "Local"}));
 
-				g->Add("chams-enemy-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
-				g->Add("chams-friend-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
-				g->Add("chams-local-visibility", "", new CHorizontalState({ "Fake", "Real" }));
+				p = g->Add("chams-enemy-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
+				p->Visible.State = GetState("chams-mode");
+				p->Visible.StateEquals = 0;
 
-				g->Add("visuals-chams-enemy-visible-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-enemy-visible-color", "Color", new CColor(true));
-				g->Add("visuals-chams-enemy-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				p = g->Add("chams-friend-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
+				p->Visible.State = GetState("chams-mode");
+				p->Visible.StateEquals = 1;
 
-				g->Add("visuals-chams-enemy-hidden-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-enemy-hidden-color", "Color", new CColor(true));
-				g->Add("visuals-chams-enemy-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				p = g->Add("chams-local-visibility", "", new CHorizontalState({ "Fake", "Real" }));
+				p->Visible.State = GetState("chams-mode");
+				p->Visible.StateEquals = 2;
 
-				g->Add("visuals-chams-friend-visible-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-friend-visible-color", "Color", new CColor(true));
-				g->Add("visuals-chams-friend-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				// properties
+#define CHAM_MATERIALS "Normal", "Flat", "Animated", "Glass", "Crystal", "Chrome", "Pearlescent", "Glow"
+				// Enemies && Visible
+				p = g->Add("visuals-chams-enemy-visible-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-enemy-visibility");
+				p->Visible.State = GetState("chams-enemy-visibility");
+				p->Visible.StateEquals = 0;
+				g->Add("visuals-chams-enemy-visible-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-enemy-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 
-				g->Add("visuals-chams-friend-hidden-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-friend-hidden-color", "Color", new CColor(true));
-				g->Add("visuals-chams-friend-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				// Enemies && Hidden
+				p = g->Add("visuals-chams-enemy-hidden-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-enemy-visibility");
+				p->Visible.State = GetState("chams-enemy-visibility");
+				p->Visible.StateEquals = 1;
+				g->Add("visuals-chams-enemy-hidden-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-enemy-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 
-				g->Add("visuals-chams-localplayer-real-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-localplayer-real-color", "Color", new CColor(true));
-				g->Add("visuals-chams-localplayer-real-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				// Friend && Visible
+				p = g->Add("visuals-chams-friend-visible-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-friend-visibility");
+				p->Visible.State = GetState("chams-friend-visibility");
+				p->Visible.StateEquals = 0;
+				g->Add("visuals-chams-friend-visible-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-friend-visible-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 
-				g->Add("visuals-chams-localplayer-fake-enable", "Enable", new CBoolean());
-				g->Add("visuals-chams-localplayer-fake-color", "Color", new CColor(true));
-				g->Add("visuals-chams-localplayer-fake-material", "Material", new CVerticalState({ CHAM_MATERIALS }));
+				// Friend && Hidden
+				p = g->Add("visuals-chams-friend-hidden-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-friend-visibility");
+				p->Visible.State = GetState("chams-friend-visibility");
+				p->Visible.StateEquals = 1;
+				g->Add("visuals-chams-friend-hidden-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-friend-hidden-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 
+				// Self && Real
+				p = g->Add("visuals-chams-localplayer-real-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-local-visibility");
+				p->Visible.State = GetState("chams-local-visibility");
+				p->Visible.StateEquals = 0;
+				g->Add("visuals-chams-localplayer-real-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-localplayer-real-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
+
+				// Self && Fake
+				p = g->Add("visuals-chams-localplayer-fake-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = GetProperty("chams-local-visibility");
+				p->Visible.State = GetState("chams-local-visibility");
+				p->Visible.StateEquals = 1;
+				g->Add("visuals-chams-localplayer-fake-color", "Color", new CColor(true))->VisibilityLinked = p;
+				g->Add("visuals-chams-localplayer-fake-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 #undef CHAM_MATERIALS
 			}
 			{
@@ -1319,10 +1356,7 @@ namespace Config2
 				g->Add("theme-topbar-background", "Topbar Background", new CColor(true));
 				g->Add("theme-topbar-text", "Topbar Text", new CColor(true));
 				g->Add("theme-border-size", "Outline Thickness", new CFloat(0.f, 5.f, 1, "PX"));
-				g->Add("theme-border", "Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-border", "Outline", new CColor(true));
 
 				g->Add("theme-scrollbar-background", "Scrollbar Background", new CColor(true));
 				g->Add("theme-scrollbar-grabber", "Scrollbar Grabber", new CColor(true));
@@ -1355,10 +1389,7 @@ namespace Config2
 				g->Add("theme-button-hovered", "Button Hovered", new CColor(false));
 				g->Add("theme-button-active", "Button Pressed", new CColor(false));
 				g->Add("theme-button-border-size", "Button Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-button-border", "Button Outline", new CColor(false))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-button-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-button-border", "Button Outline", new CColor(false));
 
 				g->Add("theme-info-icon", "Info Icon", new CColor(false));
 				g->Add("theme-warning", "Warning Icon", new CColor(false));
@@ -1379,10 +1410,7 @@ namespace Config2
 				g->Add("theme-dropdown-background", "Dropdown Background", new CColor(false));
 				g->Add("theme-dropdown-text", "Dropdown Text", new CColor(true));
 				g->Add("theme-dropdown-border-size", "Dropdown Outline Size", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-dropdown-border", "Dropdown Outline", new CColor(false))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-dropdown-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-dropdown-border", "Dropdown Outline", new CColor(false));
 			}
 
 			{
@@ -1391,10 +1419,7 @@ namespace Config2
 				g->Add("theme-color-editor-background", "Background", new CColor(false));
 				g->Add("theme-color-editor-text", "Text", new CColor(true));
 				g->Add("theme-color-editor-border-size", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-color-editor-border", "Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-color-editor-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-color-editor-border", "Outline", new CColor(true));
 			}
 
 			{
@@ -1404,10 +1429,7 @@ namespace Config2
 				g->Add("theme-legit-rage-switch-background", "Background", new CColor(true));
 				g->Add("theme-legit-rage-switch-highlight", "Highlight", new CColor(true));
 				g->Add("theme-legit-rage-switch-border-size", "Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-legit-rage-switch-outline", "Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-legit-rage-switch-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-legit-rage-switch-outline", "Outline", new CColor(true));
 			}
 
 			{
@@ -1420,10 +1442,7 @@ namespace Config2
 				g->Add("theme-tooltip-background", "Tooltip Background", new CColor(false));
 				g->Add("theme-tooltip-text", "Tooltip Text", new CColor(true));
 				g->Add("theme-tooltip-border-size", "Tooltip Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
-				g->Add("theme-tooltip-border", "Tooltip Outline", new CColor(true))->IsVisible = []() {
-					static Property* p1 = GetProperty("theme-tooltip-border-size");
-					return ((CFloat*)p1->Value)->Get() > 0.f;
-				};
+				g->Add("theme-tooltip-border", "Tooltip Outline", new CColor(true));
 			}
 		}
 
@@ -1527,13 +1546,7 @@ namespace Config2
 	{
 		auto p = GetProperty(Name);
 		if (!p) return 0;
-
-		if (p->Type != PropertyType::MULTISELECT)
-		{
-			L::Log("ERROR: You used the wrong getter for property: ", "");
-			L::Log(p->Name.c_str());
-			return nullptr;
-		}
+		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::MULTISELECT, nullptr);
 
 		return (CMultiSelect*)p->Value;
 	}

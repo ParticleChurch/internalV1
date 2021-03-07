@@ -1773,7 +1773,7 @@ namespace GUI2
 	Animation::Anim* SearchAnimation = nullptr;
 
 	ImVec2 DefaultMenuSize = ImVec2(650, 330);
-	ImVec2 MinMenuSize = ImVec2(575, 242);
+	ImVec2 MinMenuSize = ImVec2(575, 222);
 	int PropertyColumnPosition = 200;
 
 	bool IsSearching = false;
@@ -2845,8 +2845,7 @@ namespace ImGui
 		PushStyleColor(ImGuiCol_Text, (ImVec4)*DropdownText);
 		// draw property
 		{
-			const char* popupName = ("##popup-" + p->Name).c_str();
-			bool alreadyOpen = IsPopupOpen(popupName);
+			bool alreadyOpen = IsPopupOpen(("##popup-" + p->Name).c_str());
 			int nItems = Value->StateNames.size();
 			std::string CurrentSelection = Value->StateNames.at(Value->Value.Get());
 
@@ -2899,7 +2898,7 @@ namespace ImGui
 				PopStyleVar(2);
 
 				if (open)
-					OpenPopup(popupName);
+					OpenPopup(("##popup-" + p->Name).c_str());
 			}
 			PopStyleColor(3);
 
@@ -2915,7 +2914,7 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_PopupBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_PopupBorderSize, DropdownBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
-				if (BeginPopup(popupName))
+				if (BeginPopup(("##popup-" + p->Name).c_str()))
 				{
 					GUI2::WantMouse = true;
 					Config2::SettingKeybindFor = nullptr;
@@ -3680,7 +3679,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{
 				auto Property = Group->Properties[p];
-				if (Property->IsVisible && !Property->IsVisible()) continue;
+				if (!Property->IsVisible()) continue;
 
 				if (nDrawnProps > 0)
 					GroupY += Group->Padding;
@@ -4817,7 +4816,8 @@ void GUI2::Init()
 
 void GUI2::Main()
 {
-	L::Verbose("GUI2::Main executed");
+	++Config2::GUIFramesRenderedCounter;
+	L::Verbose(("GUI2::Main executed (frame " + std::to_string(Config2::GUIFramesRenderedCounter)).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
@@ -4840,10 +4840,11 @@ void GUI2::Main()
 			MainScreen();
 			L::Verbose("GUI2::MainScreen complete");
 
-			
+			/*
 			L::Verbose("GUI::Main running");
 			Ejected |= GUI::Main();
 			L::Verbose("GUI::Main complete");
+			//*/
 		}
 
 		if (UserData::Authenticated)
