@@ -4,8 +4,10 @@ World* world = new World();
 
 void World::WorldMod(Material* mat)
 {
-	mat->ColorModulate(Config::GetColor("visuals-world-color"));
-	mat->AlphaModulate(Config::GetFloat("visuals-world-opacity") / 100.f);
+	static Config2::CColor* Clr = Config2::GetColor("visuals-world-color");
+
+	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
+	mat->AlphaModulate(Clr->GetA() / 255.f);
 }
 
 void World::PropMod(Material* mat)
@@ -13,8 +15,10 @@ void World::PropMod(Material* mat)
 	//r_DrawSpecificStaticProp - set to 1 to get props working...
 	static auto r_drawspecificstaticprop = I::cvar->FindVar("r_DrawSpecificStaticProp");
 	r_drawspecificstaticprop->SetValue(1);
-	mat->ColorModulate(Config::GetColor("visuals-world-prop-color"));
-	mat->AlphaModulate(Config::GetFloat("visuals-world-prop-opacity") / 100.f);
+
+	static Config2::CColor* Clr = Config2::GetColor("visuals-world-prop-color");
+	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
+	mat->AlphaModulate(Clr->GetA() / 255.f);
 	
 }
 
@@ -33,72 +37,84 @@ void World::SkyboxLoad(std::string name)
 
 void World::SkyboxMod(Material* mat)
 {
-	mat->ColorModulate(Config::GetColor("visuals-world-skybox-color"));
+	static Config2::CColor* Clr = Config2::GetColor("visuals-world-skybox-color");
+	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
 }
 
 void World::LightMod()
 {
-	if (!Config::GetBool("visuals-world-enable"))
+	static Config2::CColor* clr = Config2::GetColor("visuals-world-color");
+	static Config2::CState* enable = Config2::GetState("visuals-world-enable");
+
+	if (!enable->Get())
 		return;
 
 	static ConVar* red = I::cvar->FindVar("mat_ambient_light_r");
 	static ConVar* green = I::cvar->FindVar("mat_ambient_light_g");
 	static ConVar* blue = I::cvar->FindVar("mat_ambient_light_b");
 
-	Color clr = Config::GetColor("visuals-world-color");
+	
 
-	red->SetValue(clr.r() / 255.f);
-	green->SetValue(clr.g() / 255.f);
-	blue->SetValue(clr.b() / 255.f);
+	red->SetValue(clr->GetR() / 255.f);
+	green->SetValue(clr->GetG() / 255.f);
+	blue->SetValue(clr->GetB() / 255.f);
 }
 
 void World::Run_FrameStageNotify(int CurStage)
 {
+	static Config2::CState* World = Config2::GetState("visuals-world-enable");
+	static Config2::CState* Prop = Config2::GetState("visuals-world-prop-enable");
+	static Config2::CState* Skybox = Config2::GetState("visuals-world-skybox-enable");
+	static Config2::CState* SkyboxState = Config2::GetState("visuals-world-skybox-name");
+	static Config2::CColor* WorldClr = Config2::GetColor("visuals-world-color");
+	static Config2::CColor* PropClr = Config2::GetColor("visuals-world-prop-color");
+	static Config2::CColor* SkyboxClr = Config2::GetColor("visuals-world-skybox-color");
+
 	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
 		static int LastState = -1;
-		if (Config::GetBool("visuals-world-skybox-enable") && Config::GetState("visuals-world-skybox-name") != LastState)
+		if (Skybox->Get() && SkyboxState->Get() != LastState)
 		{
-			LastState = Config::GetState("visuals-world-skybox-name");
+			LastState = SkyboxState->Get();
 			static std::vector<std::string> skyboxes = {"cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy", "italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr", "sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust" };
 			SkyboxLoad(skyboxes[LastState]);
 		}
 
 		bool UpdateWorld = false;
-		if (Config::GetBool("visuals-world-enable"))
+		if (World->Get())
 		{
 			static Color LastColorWorld;
 			static int LastAlphaWorld;
-			if (LastColorWorld != Config::GetColor("visuals-world-color") ||
-				LastAlphaWorld != (int)Config::GetFloat("visuals-world-opacity"))
+			if (LastColorWorld != Color(WorldClr->GetR(), WorldClr->GetG(), WorldClr->GetB()) ||
+				LastAlphaWorld != (int)WorldClr->GetA())
 			{
-				LastColorWorld = Config::GetColor("visuals-world-color");
-				LastAlphaWorld = (int)Config::GetFloat("visuals-world-opacity");
+				LastColorWorld = Color(WorldClr->GetR(), WorldClr->GetG(), WorldClr->GetB());
+				LastAlphaWorld = (int)WorldClr->GetA();
 				UpdateWorld = true;
 			}
 		}
 		
 
 		bool UpdateProp = false;
-		if (Config::GetBool("visuals-world-prop-enable"))
+		if (Prop->Get())
 		{
 			static Color LastColorProp;
 			static int LastAlphaProp;
-			if (LastColorProp != Config::GetColor("visuals-world-prop-color") ||
-				LastAlphaProp != (int)Config::GetFloat("visuals-world-prop-opacity"))
+			if (LastColorProp != Color(PropClr->GetR(), PropClr->GetG(), PropClr->GetB()) ||
+				LastAlphaProp != (int)PropClr->GetA())
 			{
-				LastColorProp = Config::GetColor("visuals-world-prop-color");
-				LastAlphaProp = (int)Config::GetFloat("visuals-world-prop-opacity");
+				LastColorProp = Color(PropClr->GetR(), PropClr->GetG(), PropClr->GetB());
+				LastAlphaProp = (int)PropClr->GetA();
 				UpdateProp = true;
 			}
 		}
 
 		bool UpdateSkybox = false;
-		if (Config::GetBool("visuals-world-skybox-enable"))
+		if (Skybox->Get())
 		{
 			static Color LastColorSky;
-			if (LastColorSky != Config::GetColor("visuals-world-skybox-color"))
+			if (LastColorSky != Color(SkyboxClr->GetR(), SkyboxClr->GetG(), SkyboxClr->GetB()))
 			{
-				LastColorSky = Config::GetColor("visuals-world-skybox-color");
+				LastColorSky = Color(SkyboxClr->GetR(), SkyboxClr->GetG(), SkyboxClr->GetB());
 				UpdateSkybox = true;
 			}
 		}
