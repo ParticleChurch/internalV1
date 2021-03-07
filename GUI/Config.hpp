@@ -838,7 +838,9 @@ namespace Config2
 {
 	constexpr unsigned char VERSION_MAJOR = 1;
 	constexpr unsigned char VERSION_MINOR = 1;
+	extern uint64_t GUIFramesRenderedCounter;
 
+	struct Visibility;
 	struct Property;
 	struct Group;
 	struct Tab;
@@ -966,7 +968,7 @@ namespace Config2
 			return Animation::delta(Animation::now(), this->TimeChanged);
 		}
 
-		size_t GetLastValue()
+		int GetLastValue()
 		{
 			return this->LastValue;
 		}
@@ -1297,17 +1299,45 @@ namespace Config2
 			this->mask ^= ((uint64_t)1 << index);
 		}
 
-		__forceinline uint64_t GetMask() // this would fucking work
+		__forceinline uint64_t GetMask()
 		{
 			return this->mask;
 		}
 	};
 
+	struct Visibility
+	{
+	private:
+		uint64_t LastCalculationFrame = 0;
+		bool LastCalculationValue = true;
+
+	public:
+		bool (*Lambda)() = nullptr;
+		CState* State = nullptr;
+		int StateEquals = 0;
+
+		Visibility(bool (*Lambda)() = nullptr, CState* State = nullptr, int StateEquals = 0) : Lambda{ Lambda }, State{ State }, StateEquals{ StateEquals }{}
+		bool Calculate()
+		{
+			if (this->LastCalculationFrame == GUIFramesRenderedCounter) return this->LastCalculationValue;
+
+			this->LastCalculationFrame = GUIFramesRenderedCounter;
+			if (
+				// state says not visible
+				(this->State && this->State->Get() != this->StateEquals)
+				|| // or lambda says not visible
+				(this->Lambda && !this->Lambda())
+				)
+				return this->LastCalculationValue = false;
+			return this->LastCalculationValue = true;
+		}
+	};
 	struct Property
 	{
 	public:
-		bool (*IsVisible)() = nullptr;
 		Property* Master = nullptr;
+		Visibility Visible;
+		Property* VisibilityLinked = nullptr;
 
 		// meta info
 		bool IsComplex = false;
@@ -1320,7 +1350,7 @@ namespace Config2
 		std::string VisibleName;
 
 		template <typename T>
-		Property(std::string Name, std::string VisibleName, T* Value)
+		Property(std::string Name, std::string VisibleName, T* Value) : Visible{}
 		{
 			this->Name = Name;
 			this->VisibleName = VisibleName;
@@ -1328,6 +1358,14 @@ namespace Config2
 			this->Value = (void*)Value;
 
 			PropertyTable.insert(std::make_pair(this->Name, this));
+		}
+
+		bool IsVisible()
+		{
+			if (this->VisibilityLinked)
+				return this->VisibilityLinked->IsVisible() && this->Visible.Calculate();
+			else
+				return this->Visible.Calculate();
 		}
 
 		std::string Stringify()
@@ -1393,7 +1431,7 @@ namespace Config2
 			for (size_t p = 0; p < this->Properties.size(); p++)
 			{
 				auto Property = this->Properties[p];
-				if (Property->IsVisible && !Property->IsVisible()) continue;
+				if (!Property->IsVisible()) continue;
 				
 				h += this->Padding;
 				switch (Property->Type)
