@@ -47,6 +47,8 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 
 void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 {
+	static Config2::CColor* EnemyWeaponColor = Config2::GetColor("visuals-esp-enemy-weapon-color");
+
 	Entity* weap = ent->GetActiveWeapon();
 	if (!weap) return;
 
@@ -73,7 +75,7 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
 	I::surface->DrawSetTextFont(FONT);
-	I::surface->DrawSetTextColor(Config::GetColor("visuals-esp-enemy-weapon-color"));
+	I::surface->DrawSetTextColor(Color(EnemyWeaponColor->GetR(), EnemyWeaponColor->GetG(), EnemyWeaponColor->GetB(), EnemyWeaponColor->GetA()));
 	I::surface->DrawSetTextPos(TL.x, BR.y + 7);
 	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
@@ -235,7 +237,40 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 
 void ESP::Run_PaintTraverse()
 {
+	static Config2::CState* EnemyEnable			= Config2::GetState("visuals-esp-enemy-enable");
+	static Config2::CState* EnemyBox			= Config2::GetState("visuals-esp-enemy-bbox");
+	static Config2::CColor* EnemyBoxColor		= Config2::GetColor("visuals-esp-enemy-bbox-color");
+	static Config2::CState* EnemyName			= Config2::GetState("visuals-esp-enemy-name");
+	static Config2::CColor* EnemyNameColor		= Config2::GetColor("visuals-esp-enemy-name-color");
+	static Config2::CState* EnemySnaplines		= Config2::GetState("visuals-esp-enemy-snapline");
+	static Config2::CColor* EnemySnaplinesColor = Config2::GetColor("visuals-esp-enemy-snapline-color");
+	static Config2::CState* EnemySkeleton		= Config2::GetState("visuals-esp-enemy-skeleton");
+	static Config2::CColor* EnemySkeletonColor  = Config2::GetColor("visuals-esp-enemy-skeleton-color");
+	static Config2::CState* EnemyHealth			= Config2::GetState("visuals-esp-enemy-health");
+	static Config2::CColor* EnemyHealthFGColor	= Config2::GetColor("visuals-esp-enemy-health-color");
+	static Config2::CColor* EnemyHealthBGColor	= Config2::GetColor("visuals-esp-enemy-health-color-background");
+	static Config2::CState* EnemyResolver		= Config2::GetState("visuals-esp-enemy-resolverflags");
+	static Config2::CColor* EnemyResolverColor  = Config2::GetColor("visuals-esp-enemy-resolverflags-color");
+	static Config2::CState* EnemyWeapon			= Config2::GetState("visuals-esp-enemy-weapon");
 	
+
+	static Config2::CState* FriendEnable			= Config2::GetState("visuals-esp-friend-enable");
+	static Config2::CState* FriendBox				= Config2::GetState("visuals-esp-friend-bbox");
+	static Config2::CColor* FriendBoxColor			= Config2::GetColor("visuals-esp-friend-bbox-color");
+	static Config2::CState* FriendName				= Config2::GetState("visuals-esp-friend-name");
+	static Config2::CColor* FriendNameColor			= Config2::GetColor("visuals-esp-friend-name-color");
+	static Config2::CState* FriendSnaplines			= Config2::GetState("visuals-esp-friend-snapline");
+	static Config2::CColor* FriendSnaplinesColor	= Config2::GetColor("visuals-esp-friend-snapline-color");
+	static Config2::CState* FriendSkeleton			= Config2::GetState("visuals-esp-friend-skeleton");
+	static Config2::CColor* FriendSkeletonColor		= Config2::GetColor("visuals-esp-friend-skeleton-color");
+	static Config2::CState* FriendHealth			= Config2::GetState("visuals-esp-friend-health");
+	static Config2::CColor* FriendHealthFGColor		= Config2::GetColor("visuals-esp-friend-health-color");
+	static Config2::CColor* FriendHealthBGColor		= Config2::GetColor("visuals-esp-friend-health-color-background");
+	static Config2::CState* FriendResolver			= Config2::GetState("visuals-esp-friend-resolverflags");
+	static Config2::CColor* FriendResolverColor		= Config2::GetColor("visuals-esp-friend-resolverflags-color");
+	static Config2::CState* FriendWeapon			= Config2::GetState("visuals-esp-friend-weapon");
+	static Config2::CColor* FriendWeaponCOlor		= Config2::GetColor("visuals-esp-friend-weapon-color");
+
 	antiaim->Visualize();
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
 	/*DrawBacktrackingDots();*/
@@ -288,39 +323,39 @@ void ESP::Run_PaintTraverse()
 		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
 		{
 			//if friend esp not enabled
-			if (!Config::GetBool("visuals-esp-friend-enable"))
+			if (!FriendEnable->Get())
 				continue;
 
-			if (Config::GetBool("visuals-esp-friend-bbox"))
+			if (FriendBox->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-bbox-color"));
+				I::surface->DrawSetColor(Color(FriendBoxColor->GetR(), FriendBoxColor->GetG(), FriendBoxColor->GetB(), FriendBoxColor->GetA()));
 				DrawBoxes(TopLeft, BottomRight);
 			}
-			if (Config::GetBool("visuals-esp-friend-name"))
+			if (FriendName->Get())
 			{
-				DrawName(TopLeft, BottomRight, PlayerInfo.name, Config::GetColor("visuals-esp-friend-name-color"));
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(FriendNameColor->GetR(), FriendNameColor->GetG(), FriendNameColor->GetB(), FriendNameColor->GetA()));
 			}
-			if (Config::GetBool("visuals-esp-friend-snapline"))
+			if (FriendSnaplines->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-snapline-color"));
+				I::surface->DrawSetColor(Color(FriendSnaplinesColor->GetR(), FriendSnaplinesColor->GetG(), FriendSnaplinesColor->GetB(), FriendSnaplinesColor->GetA()));
 				DrawSnapLines(TopLeft, BottomRight);
 			}
-			if (Config::GetBool("visuals-esp-friend-health"))
+			if (FriendHealth->Get())
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(),
-					Config::GetColor("visuals-esp-friend-health-color"),
-					Config::GetColor("visuals-esp-friend-health-color-background"));
+					Color(FriendHealthFGColor->GetR(), FriendHealthFGColor->GetG(), FriendHealthFGColor->GetB(), FriendHealthFGColor->GetA()),
+					Color(FriendHealthBGColor->GetR(), FriendHealthBGColor->GetG(), FriendHealthBGColor->GetB(), FriendHealthBGColor->GetA()));
 			}
-			if (Config::GetBool("visuals-esp-friend-skeleton"))
+			if (FriendSkeleton->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-friend-skeleton-color")); //white by defualt
+				I::surface->DrawSetColor(Color(FriendSkeletonColor->GetR(), FriendSkeletonColor->GetG(), FriendSkeletonColor->GetB(), FriendSkeletonColor->GetA())); //white by defualt
 				DrawSkeleton(Ent);
 			}
 		}
 		else
 		{
 			//if enemy esp not enabled
-			if (!Config::GetBool("visuals-esp-enemy-enable"))
+			if (!EnemyEnable->Get())
 				continue;
 
 			// DO FUCKING RESOLVER FLAGS
@@ -332,7 +367,7 @@ void ESP::Run_PaintTraverse()
 				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 			}
 
-			if (i < 64 and Config::GetBool("visuals-esp-enemy-resolverflags"))
+			if (i < 64 and EnemyResolver->Get())
 			{
 				std::string TEXT = resolver->ResolverFlag[i];
 				TEXT += "\n" + std::to_string(I::globalvars->m_curTime - G::EntList[PlayerInfo.userid].LastShotTime);
@@ -340,38 +375,38 @@ void ESP::Run_PaintTraverse()
 				wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
 				I::surface->DrawSetTextFont(FONT);
-				I::surface->DrawSetTextColor(Config::GetColor("visuals-esp-enemy-resolverflags-color"));
+				I::surface->DrawSetTextColor(Color(EnemyResolverColor->GetR(), EnemyResolverColor->GetG(), EnemyResolverColor->GetB(), EnemyResolverColor->GetA()));
 				I::surface->DrawSetTextPos(BottomRight.x + 8, (TopLeft.y + BottomRight.y) / 2);
 				I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 			}
 			
 
-			if (Config::GetBool("visuals-esp-enemy-bbox"))
+			if (EnemyBox->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-bbox-color"));
+				I::surface->DrawSetColor(Color(EnemyBoxColor->GetR(), EnemyBoxColor->GetG(), EnemyBoxColor->GetB(), EnemyBoxColor->GetA()));
 				DrawBoxes(TopLeft, BottomRight);
 			}
-			if (Config::GetBool("visuals-esp-enemy-name"))
+			if (EnemyName->Get())
 			{
-				DrawName(TopLeft, BottomRight, PlayerInfo.name, Config::GetColor("visuals-esp-enemy-name-color"));
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(FriendNameColor->GetR(), FriendNameColor->GetG(), FriendNameColor->GetB(), FriendNameColor->GetA()));
 			}
-			if (Config::GetBool("visuals-esp-enemy-snapline"))
+			if (EnemySnaplines->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-snapline-color"));
+				I::surface->DrawSetColor(Color(EnemySnaplinesColor->GetR(), EnemySnaplinesColor->GetG(), EnemySnaplinesColor->GetB(), EnemySnaplinesColor->GetA()));
 				DrawSnapLines(TopLeft, BottomRight);
 			}
-			if (Config::GetBool("visuals-esp-enemy-health"))
+			if (EnemyHealth->Get())
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(), 
-					Config::GetColor("visuals-esp-enemy-health-color"), 
-					Config::GetColor("visuals-esp-enemy-health-color-background"));
+					Color(EnemyHealthFGColor->GetR(), EnemyHealthFGColor->GetG(), EnemyHealthFGColor->GetB(), EnemyHealthFGColor->GetA()),
+					Color(EnemyHealthBGColor->GetR(), EnemyHealthBGColor->GetG(), EnemyHealthBGColor->GetB(), EnemyHealthBGColor->GetA()));
 			}
-			if (Config::GetBool("visuals-esp-enemy-skeleton"))
+			if (EnemySkeleton->Get())
 			{
-				I::surface->DrawSetColor(Config::GetColor("visuals-esp-enemy-skeleton-color")); //white by defualt
+				I::surface->DrawSetColor(Color(EnemySkeletonColor->GetR(), EnemySkeletonColor->GetG(), EnemySkeletonColor->GetB(), EnemySkeletonColor->GetA())); //white by defualt
 				DrawSkeleton(Ent);
 			}
-			if (Config::GetBool("visuals-esp-enemy-weapon"))
+			if (EnemyWeapon->Get())
 			{
 				DrawWeapon(TopLeft, BottomRight, Ent);
 			}
@@ -415,6 +450,8 @@ void ESP::Run_FrameStageNotify(int stage)
 
 void ESP::Run_GameEvent(GameEvent* event)
 {
+	static Config2::CState* VisTracers = Config2::GetState("visuals-misc-tracers");
+
 	switch (StrHash::HashRuntime(event->GetName())) {
 	case StrHash::Hash("bullet_impact"): //0
 	{
@@ -435,7 +472,7 @@ void ESP::Run_GameEvent(GameEvent* event)
 
 		if (!G::LocalPlayer) return;
 
-		if (!Config::GetBool("visuals-misc-tracers")) return;
+		if (!VisTracers->Get()) return;
 
 		BulletTracer trace;
 		trace.src = G::LocalPlayer->GetEyePos();
