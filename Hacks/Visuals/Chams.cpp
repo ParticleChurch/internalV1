@@ -59,6 +59,34 @@ void Chams::Init()
 
 void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
+	static Config2::CState* LegitAA = Config2::GetState("antiaim-legit-enable");
+	static Config2::CState* RageAA = Config2::GetState("antiaim-rage-enable");
+	static Config2::CState* ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
+
+	static Config2::CState* EnemyVisEnable = Config2::GetState("visuals-chams-enemy-visible-enable");
+	static Config2::CColor* EnemyVisColor = Config2::GetColor("visuals-chams-enemy-visible-color");
+	static Config2::CState* EnemyVisMaterial = Config2::GetState("visuals-chams-enemy-visible-material");
+
+	static Config2::CState* EnemyHidEnable = Config2::GetState("visuals-chams-enemy-hidden-enable");
+	static Config2::CColor* EnemyHidColor = Config2::GetColor("visuals-chams-enemy-hidden-color");
+	static Config2::CState* EnemyHidMaterial = Config2::GetState("visuals-chams-enemy-hidden-material");
+
+	static Config2::CState* FriendVisEnable = Config2::GetState("visuals-chams-friend-visible-enable");
+	static Config2::CColor* FriendVisColor = Config2::GetColor("visuals-chams-friend-visible-color");
+	static Config2::CState* FriendVisMaterial = Config2::GetState("visuals-chams-friend-visible-material");
+							
+	static Config2::CState* FriendHidEnable = Config2::GetState("visuals-chams-friend-hidden-enable");
+	static Config2::CColor* FriendHidColor = Config2::GetColor("visuals-chams-friend-hidden-color");
+	static Config2::CState* FriendHidMaterial = Config2::GetState("visuals-chams-friend-hidden-material");
+
+	static Config2::CState* LocalPlayerRealEnable = Config2::GetState("visuals-chams-localplayer-real-enable");
+	static Config2::CColor* LocalPlayerRealColor = Config2::GetColor("visuals-chams-localplayer-real-color");
+	static Config2::CState* LocalPlayerRealMaterial = Config2::GetState("visuals-chams-localplayer-real-material");
+
+	static Config2::CState* LocalPlayerFakeEnable = Config2::GetState("visuals-chams-localplayer-fake-enable");
+	static Config2::CColor* LocalPlayerFakeColor = Config2::GetColor("visuals-chams-localplayer-fake-color");
+	static Config2::CState* LocalPlayerFakeMaterial = Config2::GetState("visuals-chams-localplayer-fake-material");
+
 	static int tick_count = I::globalvars->m_tickCount;
 	bool NewTick = false;
 	if (tick_count != I::globalvars->m_tickCount)
@@ -81,41 +109,41 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
 		{	
-			if ((Config::GetBool("antiaim-legit-enable") || Config::GetBool("antiaim-rage-enable"))
-				&& Config::GetBool("visuals-chams-localplayer-fake-enable") 
-				&& Config::GetBool("visuals-misc-thirdperson"))
+			if ((LegitAA->Get() || RageAA->Get())
+				&& LocalPlayerFakeEnable->Get()
+				&& ThirdPerson->Get())
 			{
 				if(NewTick && G::pSendPacket && *G::pSendPacket && !fakelag->LaggingOnPeak)
 					RotateBoneMatrix(Vec(0, (antiaim->fake.y - antiaim->real.y), 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				OverideMat(
 						false,	//viz thru wall?
-						Config::GetState("visuals-chams-localplayer-fake-material"),		// material
-						Config::GetFloat("visuals-chams-localplayer-fake-opacity") / 100.f,	//transparent?
-						Config::GetColor("visuals-chams-localplayer-fake-color"),
+						LocalPlayerFakeMaterial->Get(),		// material
+						LocalPlayerFakeColor->GetA() / 255.f,	//transparent?
+						Color(LocalPlayerFakeColor->GetR(), LocalPlayerFakeColor->GetG(), LocalPlayerFakeColor->GetB()),
 						thisptr, ctx, state, info, antiaim->FakeMatrix);
 				H::oDrawModelExecute(thisptr, ctx, state, info, antiaim->FakeMatrix);
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 
-			if (Config::GetBool("visuals-chams-localplayer-real-enable"))
+			if (LocalPlayerRealEnable->Get())
 			{
 				OverideMat(
 					false,	//viz thru wall?
-					Config::GetState("visuals-chams-localplayer-real-material"),	//wireframe?
-					Config::GetFloat("visuals-chams-localplayer-real-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-localplayer-real-color"),
+					LocalPlayerRealMaterial->Get(),	//wireframe?
+					LocalPlayerRealColor->GetA() / 255.f,	//transparent?
+					Color(LocalPlayerRealColor->GetR(), LocalPlayerRealColor->GetG(), LocalPlayerRealColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 			}
 		}
 		else if (isEnemy)
 		{
-			if (Config::GetBool("visuals-chams-enemy-hidden-enable"))
+			if (EnemyHidEnable->Get())
 			{
 				OverideMat(
 					true,	//viz thru wall?
-					Config::GetState("visuals-chams-enemy-hidden-material"),	//wireframe?
-					Config::GetFloat("visuals-chams-enemy-hidden-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-enemy-hidden-color"),
+					EnemyHidMaterial->Get(),	//wireframe?
+					EnemyHidColor->GetA() / 255.f,	//transparent?
+					Color(EnemyHidColor->GetR(), EnemyHidColor->GetG(), EnemyHidColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 				I::modelrender->ForcedMaterialOverride(nullptr);
@@ -135,37 +163,37 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 			}
 			*/
 
-			if (Config::GetBool("visuals-chams-enemy-visible-enable"))
+			if (EnemyVisEnable->Get())
 			{
 				OverideMat(
 					false,	//viz thru wall?
-					Config::GetState("visuals-chams-enemy-visible-material"),	//wireframe?
-					Config::GetFloat("visuals-chams-enemy-visible-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-enemy-visible-color"),
+					EnemyVisMaterial->Get(),	//wireframe?
+					EnemyVisColor->GetA() / 255.f,	//transparent?
+					Color(EnemyVisColor->GetR(), EnemyVisColor->GetG(), EnemyVisColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 			}
 		}
 		else
 		{
-			if (Config::GetBool("visuals-chams-friend-hidden-enable"))
+			if (FriendHidEnable->Get())
 			{
 				OverideMat(
 					true,	//viz thru wall?
-					Config::GetState("visuals-chams-friend-hidden-material"),	//wireframe?
-					Config::GetFloat("visuals-chams-friend-hidden-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-friend-hidden-color"),
+					FriendHidMaterial->Get(),	//wireframe?
+					FriendHidColor->GetA() / 255.f,	//transparent?
+					Color(FriendHidColor->GetR(), FriendHidColor->GetG(), FriendHidColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 				H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 
-			if (Config::GetBool("visuals-chams-friend-visible-enable"))
+			if (FriendVisEnable->Get())
 			{
 				OverideMat(
 					false,	//viz thru wall?
-					Config::GetState("visuals-chams-friend-visible-material"),	//wireframe?
-					Config::GetFloat("visuals-chams-friend-visible-opacity") / 100.f,	//transparent?
-					Config::GetColor("visuals-chams-friend-visible-color"),
+					FriendVisMaterial->Get(),	//wireframe?
+					FriendVisColor->GetA() / 255.f,	//transparent?
+					Color(FriendVisColor->GetR(), FriendVisColor->GetG(), FriendHidColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 			}
 
