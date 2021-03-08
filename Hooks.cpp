@@ -479,7 +479,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	if (Config::GetBool("show-console"))
+	if (true)
 	{
 		ImGui::Begin("console");
 		for (auto a : console)
@@ -682,6 +682,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		// Movement
 		L::Verbose("movement");
+		movement->AutoStop();
 		movement->BunnyHop();	
 		movement->SlowWalk();
 		movement->FastCrouch();
@@ -689,6 +690,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
 		movement->LegSlide();
+		
 
 		// nade visuals
 		L::Verbose("miscvisuals");

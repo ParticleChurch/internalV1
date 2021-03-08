@@ -10,6 +10,8 @@ public:
 	void FakeDuck();
 	void LegSlide();
 
+	void AutoStop();
+
 	void FastStop();
 };
 

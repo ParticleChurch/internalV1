@@ -416,6 +416,13 @@ public:
 		return *(bool*)((DWORD)this + offset);
 	}
 
+	int ScopeLevel() {
+		static DWORD offset = N::GetOffset("DT_WeaponCSBaseGun", "m_zoomLevel");
+		if (offset == 0)
+			offset = N::GetOffset("DT_WeaponCSBaseGun", "m_zoomLevel");
+		return *(int*)((DWORD)this + offset);
+	}
+
 	float MaxAccurateSpeed() 
 	{ 
 		const WeaponData* WeaponData = this->GetActiveWeapon()->GetWeaponData();

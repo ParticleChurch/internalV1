@@ -18,6 +18,8 @@ public:
 	float GetDamageVis(Entity* Ent, const Vec& Destination, bool AllowFriendlyFire);
 	// For getting damages to localplayer
 	float GetDamage(Entity* From, Entity* To, const Vec& Destination);
+	// For getting damage to a point
+	bool GetDamage(Vec From, const Vec& Destination, Entity* Ent);
 };
 
 extern Autowall* autowall;

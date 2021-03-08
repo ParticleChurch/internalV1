@@ -150,7 +150,7 @@ void Movement::SlowWalk()
 	static Config2::CState* Enabled = Config2::GetState("misc-movement-slowwalk");
 	static Config2::CFloat* Speed = Config2::GetFloat("misc-movement-slowwalk-speed");
 
-	// If FastCrouch is NOT enabled in config...
+	// IF slowwalk isn't enabled
 	if (!Enabled->Get())
 		return;
 
@@ -221,6 +221,127 @@ void Movement::LegSlide()
 
 	if(switcher)
 		G::cmd->buttons ^= IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
+}
+
+void Movement::AutoStop()
+{
+	static Config2::CState* RageAimbot = Config2::GetState("rage-aim-enable");
+	static Config2::CState* AutoScope = Config2::GetState("rage-aim-autoscope");
+	static Config2::CState* AutoStop = Config2::GetState("misc-movement-autostop");
+
+	if (!AutoScope->Get() && !AutoStop->Get())
+		return;
+
+	if (!G::LocalPlayer) return;
+
+	if (!G::LocalPlayerAlive) return;
+
+	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
+
+	// If there is bad weapon
+	if (!G::LocalPlayerWeapon)
+		return;
+
+	if (!G::LocalPlayerWeaponData)
+		return;
+
+	// If attempting bhop or olding jump...
+	if (G::cmd->buttons & IN_JUMP)
+		return;
+
+	// If we can't shoot, why are we bothering stopping?
+	if (!G::LocalPlayer->CanShoot()) return;
+
+	// If not pew pew weapon
+	int weaponID = (int)G::LocalPlayerWeapon->GetWeaponId();
+	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
+	if (WeaponClass == 40 || WeaponClass == 0) // if nade or knife/taser/other
+		return;
+
+
+	// valid - valid time to auto stop
+	bool valid = G::LocalPlayer && G::LocalPlayerAlive && (G::LocalPlayer->GetFlags() & FL_ONGROUND) && G::LocalPlayer->GetMoveType() != MOVETYPE_LADDER;
+	// If not a valid time to auto stop/walk
+	if (!valid)
+		return;
+
+	// Update Velocity 
+	Vec velocity = G::LocalPlayer->GetVecVelocity();
+	velocity *= (I::globalvars->m_intervalPerTick * 2);
+	//velocity now holds our distance to move (doubled for safety)
+
+	// Updating our next position
+	Vec NextPos = G::LocalPlayer->GetEyePos() + velocity;
+
+	bool PossibleDamage = false;
+
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	{
+		if (it->second.index == G::LocalPlayerIndex) // entity is Localplayer
+			continue;
+
+		if (!(it->second.entity)) // entity DOES NOT exist
+			continue;
+
+		if (!(it->second.health > 0)) // entity is NOT alive
+			continue;
+
+		if (it->second.team == G::LocalPlayerTeam) // Entity is on same team
+			continue;
+
+		if (it->second.dormant)	// Entity is dormant
+			continue;
+
+		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
+		if (autowall->GetDamage(NextPos, it->second.EyePos, it->second.entity))
+		{
+			PossibleDamage = true;
+			break;
+		}
+	}
+
+	// If there's no possible way to do damage, return
+	if (!PossibleDamage)
+		return;
+
+	//SLOWWALK Stop
+	float maxSpeed = G::LocalPlayer->MaxAccurateSpeed() / 3.f;
+	maxSpeed -= 5;
+
+	if (AutoStop->Get())
+	{
+		if (G::cmd->forwardmove && G::cmd->sidemove) {
+			const float maxSpeedRoot = maxSpeed * static_cast<float>(M_SQRT1_2);
+			G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+			G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeedRoot : maxSpeedRoot;
+		}
+		else if (G::cmd->forwardmove) {
+			G::cmd->forwardmove = G::cmd->forwardmove < 0.0f ? -maxSpeed : maxSpeed;
+		}
+		else if (G::cmd->sidemove) {
+			G::cmd->sidemove = G::cmd->sidemove < 0.0f ? -maxSpeed : maxSpeed;
+		}
+
+		FastStop();
+	}
+
+	if (!RageAimbot->Get())
+		return;
+
+	if (!AutoScope->Get())
+		return;
+	// AUTOSCOPE
+	// THis shouldn't be here, but it makes sense 
+	// If scoped already
+	if (G::LocalPlayer->IsScoped() || G::LocalPlayerWeapon->ScopeLevel() > 0)
+		return;
+
+	int WeapIndex = GetWeaponIndex((WeaponId)weaponID);
+	// if scoped weapon
+	if (WeapIndex <= 34 && WeapIndex >= 29)
+		G::cmd->buttons |= IN_ATTACK2;
+		
 }
 
 void Movement::FastStop()

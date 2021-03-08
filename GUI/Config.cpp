@@ -1071,6 +1071,7 @@ namespace Config2
 				g->BeginMaster(g->Add("rage-aim-enable", "Enable", new CBoolean()));
 				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
 				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
+				g->Add("rage-aim-autoscope", "Auto Scope", new CBoolean());
 
 				g->Add("rageaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Scout", "AWP", "Auto" }));
 
@@ -1360,6 +1361,7 @@ namespace Config2
 				Group* g = t->Add("Movement");
 				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
+				g->Add("misc-movement-autostop", "AutoStop", new CBoolean());
 				g->Add("misc-movement-slowwalk", "Slow Walk", new CBoolean());
 				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-fastcrouch", "Fast Crouch", new CBoolean());

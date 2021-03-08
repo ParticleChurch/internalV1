@@ -37,6 +37,8 @@ void Init()
     H::Init();
     GUI2::LoadProgress = 0.85f;
 
+    //L::Log(N::DumpTable().c_str());
+
     GUI2::LoadProgress = 1.f;
 
     L::Log("DLLMain complete. Now waiting for ejection");
