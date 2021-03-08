@@ -197,22 +197,6 @@ namespace Config {
 				w->AddProperty(false, 1, "antiaim-rage-invert", "Invert AA", new CInverter("", ""));
 				w->AddProperty(false, 2, "antiaim-rage-fake-invert", "Invert on Hit", false, false);
 			}
-			{
-				/*Widget* w = t->AddWidget("Visuals");
-
-				w->AddText("Fake"); w->BeginIndent();
-				w->AddProperty(false, 0, "antiaim-visual-fake", "Visualize", false, false);
-				w->AddProperty(false, 2, "antiaim-visual-fake-lag", "Visualize Lag", false, false);
-				w->AddProperty(false, 1, "antiaim-visual-fake-color", "Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-fake-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
-				w->EndIndent(); w->AddSeparator();
-
-				w->AddText("Real"); w->BeginIndent();
-				w->AddProperty(false, 1, "antiaim-visual-real", "Visualize", false, false);
-				w->AddProperty(false, 1, "antiaim-visual-real-color", "Color", new Color(0, 150, 255));
-				w->AddProperty(false, 1, "antiaim-visual-real-opacity", "Opacity", "%", 0, 100, 1, 100, 100);
-				w->EndIndent();*/
-			}
 			Tabs.push_back(t);
 		}
 
@@ -1149,18 +1133,18 @@ namespace Config2
 				p = g->Add("antiaim-legit-enable", "Enable", new CBoolean());
 				p->Visible.State = GetState("antiaim-mode");
 				p->Visible.StateEquals = 0;
-				p = g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
-				p->VisibilityLinked = GetProperty("antiaim-legit-enable");
-				p = g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true));
-				p->VisibilityLinked = GetProperty("antiaim-legit-enable");
+				g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true))->VisibilityLinked = p;
 				
-				g->Add("antiaim-rage-enable", "Enable", new CBoolean());
-				g->Add("antiaim-rage-pitch", "Pitch", new CVerticalState({ "Up", "Down", "Trolling" }));
-				g->Add("antiaim-rage-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"));
-				g->Add("antiaim-rage-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"));
-				g->Add("antiaim-rage-fake", "Fake Offset", new CFloat(0, 100, 1, "%"));
-				g->Add("antiaim-rage-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"));
-				g->Add("antiaim-rage-fake-invert", "Invert on Hit", new CBoolean());
+				p = g->Add("antiaim-rage-enable", "Enable", new CBoolean());
+				p->Visible.State = GetState("antiaim-mode");
+				p->Visible.StateEquals = 1;
+				g->Add("antiaim-rage-pitch", "Pitch", new CVerticalState({ "Up", "Down", "Trolling" }))->VisibilityLinked = p;
+				g->Add("antiaim-rage-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"))->VisibilityLinked = p;
+				g->Add("antiaim-rage-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"))->VisibilityLinked = p;
+				g->Add("antiaim-rage-fake", "Fake Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-rage-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-rage-fake-invert", "Invert on Hit", new CBoolean())->VisibilityLinked = p;
 			}
 		}
 

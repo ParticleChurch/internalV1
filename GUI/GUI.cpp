@@ -2520,6 +2520,10 @@ namespace ImGui
 				if (!PremiumLocked)
 				{
 					Value->Value.Invert();
+					if (p->Name == "rage-aim-enable" && Value->Value.Get() == 1)
+						Config2::GetState("legit-aim-enable")->Set(0);
+					else if (p->Name == "legit-aim-enable" && Value->Value.Get() == 1)
+						Config2::GetState("rage-aim-enable")->Set(0);
 					if (Value->BoundToKey >= 0)
 					{
 						if (Value->BindMode == Config2::KeybindMode::HOLDTODISABLE)
