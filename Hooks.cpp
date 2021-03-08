@@ -820,7 +820,9 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	L::Verbose("H::PaintTraverseHook - begin");
 
-	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && Config::GetBool("visuals-misc-noscope"))
+	static Config2::CState* NoScope = Config2::GetState("visuals-misc-noscope");
+
+	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && NoScope->Get())
 		return;
 
 	oPaintTraverse(I::panel, vguiID, force, allowForcing);
