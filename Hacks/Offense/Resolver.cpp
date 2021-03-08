@@ -245,9 +245,11 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (!animstate)
 		return;
 
+	float lby = entity->GetLBY();
+
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() < I::globalvars->m_intervalPerTick)
 	{
-		animstate->m_flAbsRotation() = entity->GetLBY();
+		entity->PGetEyeAngles()->y = entity->GetLBY();
 		ResolverFlag[index] = "Onshot (ish)";
 		return;
 	}
@@ -255,7 +257,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	// If they aint on the ground, then their head is gonna be where the lby is
 	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
-		animstate->m_flAbsRotation() = entity->GetLBY();
+		entity->PGetEyeAngles()->y = entity->GetLBY();
 		ResolverFlag[index] = "Off Ground";
 		return;
 	}
@@ -265,7 +267,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	// If they are on the ground, and are going faster than max accurate speed...
 	if (Velocity > MAS)
 	{
-		animstate->m_flAbsRotation() = entity->GetLBY();
+		entity->PGetEyeAngles()->y = entity->GetLBY();
 		ResolverFlag[index] = "Faster than Max Accurate Speed";
 		return;
 	}
@@ -280,19 +282,19 @@ void Resolver::BruteForce(Entity* entity, int index)
 			ResolverFlag[index] += "0";
 			break;
 		case 1:
-			animstate->m_flAbsRotation() = -35.f;
+			entity->PGetEyeAngles()->y = lby + -35.f;
 			ResolverFlag[index] += "-35";
 			break;
 		case 2:
-			animstate->m_flAbsRotation() = 35.f;
+			entity->PGetEyeAngles()->y = lby + 35.f;
 			ResolverFlag[index] += "35";
 			break;
 		case 3:
-			animstate->m_flAbsRotation() = -12.5f;
+			entity->PGetEyeAngles()->y = lby + -12.5f;
 			ResolverFlag[index] += "-12.5";
 			break;
 		case 4:
-			animstate->m_flAbsRotation() = 12.5f;
+			entity->PGetEyeAngles()->y = lby + 12.5f;
 			ResolverFlag[index] += "12.5";
 			break;
 		}
@@ -310,27 +312,27 @@ void Resolver::BruteForce(Entity* entity, int index)
 			break;
 		case 1:
 			ResolverFlag[index] += "20";
-			animstate->m_flAbsRotation() = 20.f;
+			entity->PGetEyeAngles()->y = lby + 20.f;
 			break;
 		case 2:
 			ResolverFlag[index] += "-20";
-			animstate->m_flAbsRotation() = -20.f;
+			entity->PGetEyeAngles()->y = lby + -20.f;
 			break;
 		case 3:
 			ResolverFlag[index] += "35";
-			animstate->m_flAbsRotation() = 35.f;
+			entity->PGetEyeAngles()->y = lby + 40.f;
 			break;
 		case 4:
 			ResolverFlag[index] += "-35";
-			animstate->m_flAbsRotation() = -35.f;
+			entity->PGetEyeAngles()->y = lby + -40.f;
 			break;
 		case 5:
 			ResolverFlag[index] += "60";
-			animstate->m_flAbsRotation() = 60.f;
+			entity->PGetEyeAngles()->y = lby + 65.f;
 			break;
 		case 6:
 			ResolverFlag[index] += "-60";
-			animstate->m_flAbsRotation() = -60.f;
+			entity->PGetEyeAngles()->y = lby + -65.f;
 			break;
 		}
 		return;

@@ -456,7 +456,6 @@ void Aimbot::Rage()
 	if (TryOnShot()) return;
 
 	// if force on shot, for testing ill be always doing this
-	
 
 	/*
 	The IDEA is we get the order of entitys in closest to greatest from crosshair.
