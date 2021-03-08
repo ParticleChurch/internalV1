@@ -1359,6 +1359,7 @@ namespace Config2
 				Group* g = t->Add("Other");
 				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
 				g->Add("misc-other-killsay", "Kill Say", new CBoolean());
+				CONFIG_VIS(g->Add("misc-other-killsay-input", "Text", new CTextInput()), nullptr, GetState("misc-other-killsay"), 1);
 				//g->Add(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by a4g4.com!");
 				//TODO - add input area for custom killsay insult
 				//w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
@@ -1410,6 +1411,7 @@ namespace Config2
 
 				g->Add("theme-property-example1", "Example Reference 1", new CBoolean());
 				g->Add("theme-property-example2", "Example Reference 2", new CFloat(69.f, 420.f, 2, "UNIT"));
+				g->Add("theme-property-example6", "Example Reference 3", new CTextInput(69));
 
 				g->Add("theme-property-text", "Text", new CColor(true));
 				g->Add("theme-property-base", "Base", new CColor(false));
@@ -1421,6 +1423,9 @@ namespace Config2
 				g->Add("theme-button-active", "Button Pressed", new CColor(false));
 				g->Add("theme-button-border-size", "Button Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
 				g->Add("theme-button-border", "Button Outline", new CColor(false));
+
+				g->Add("theme-text-input-background", "Text Input Background", new CColor(false));
+				g->Add("theme-text-input-text", "Text Input", new CColor(true));
 
 				g->Add("theme-info-icon", "Info Icon", new CColor(false));
 				g->Add("theme-warning", "Warning Icon", new CColor(false));
@@ -1547,7 +1552,7 @@ namespace Config2
 	CState* GetState(std::string Name)
 	{
 		auto p = GetProperty(Name);
-		if (!p) return 0;
+		if (!p) return nullptr;
 
 		switch (p->Type)
 		{
@@ -1576,10 +1581,19 @@ namespace Config2
 	CMultiSelect* GetSelected(std::string Name)
 	{
 		auto p = GetProperty(Name);
-		if (!p) return 0;
+		if (!p) return nullptr;
 		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::MULTISELECT, nullptr);
 
 		return (CMultiSelect*)p->Value;
+	}
+
+	CTextInput* GetText(std::string Name)
+	{
+		auto p = GetProperty(Name);
+		if (!p) return nullptr;
+		CONFIG_PROPERTY_TYPE_CHECK(p, PropertyType::TEXTINPUT, nullptr);
+
+		return (CTextInput*)p->Value;
 	}
 
 	void _KeyStateChanged(int index, bool currentlyPressed)

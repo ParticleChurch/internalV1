@@ -852,6 +852,7 @@ namespace Config2
 	extern Property* SettingKeybindFor;
 	enum class PropertyType : int
 	{
+		TEXTINPUT,
 		LABEL,
 		BOOLEAN,
 		FLOAT,
@@ -873,6 +874,7 @@ namespace Config2
 
 	// property types
 	struct CState;
+	struct CTextInput;
 	struct CLabel;
 	struct CBoolean;
 	struct CFloat;
@@ -892,6 +894,7 @@ namespace Config2
 	extern CState* GetState(std::string Name);
 	extern CColor* GetColor(std::string Name);
 	extern CMultiSelect* GetSelected(std::string Name);
+	extern CTextInput* GetText(std::string Name);
 
 	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
@@ -1001,6 +1004,27 @@ namespace Config2
 			else if (value >= this->Maximum) this->Value = this->Maximum;
 			else this->Value = value;
 			this->TimeChanged = Animation::now();
+		}
+	};
+	struct CTextInput
+	{
+		static const PropertyType Type = PropertyType::TEXTINPUT;
+
+		size_t DataSize = 0;
+		char* Data;
+		CTextInput(size_t NumChars = 256)
+		{
+			this->Data = new char[NumChars];
+			if (this->Data) ZeroMemory(this->Data, this->DataSize = NumChars);
+			else this->DataSize = 0;
+		}
+		~CTextInput()
+		{
+			if (this->Data) delete this->Data;
+		}
+		std::string Get()
+		{
+			return std::string(this->Data, this->DataSize);
 		}
 	};
 	struct CLabel
@@ -1461,6 +1485,8 @@ namespace Config2
 		std::string Name;
 		std::vector<Group*> Groups;
 
+		bool InitialPaint = true;
+		int ScrollHeight = 0;
 		int TopPadding = 0;
 		int VerticalPadding = 10;
 		int HorizontalPadding = 10;

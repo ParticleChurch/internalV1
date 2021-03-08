@@ -2329,7 +2329,7 @@ namespace ImGui
 // Property drawers
 namespace ImGui
 {
-	int DrawTextProperty(Config2::Property* p)
+	int DrawLabelProperty(Config2::Property* p)
 	{
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -2338,6 +2338,151 @@ namespace ImGui
 		ImGui::SetCursorPos(Pos + ImVec2(6, (20 - ImGui::GetFontSize()) / 2));
 		ImGui::Text(p->VisibleName.c_str());
 
+		return 20;
+	}
+
+	int DrawTextInputProperty(Config2::Property* p)
+	{
+		static Config2::CColor* TextInputBackground = Config2::GetColor("theme-text-input-background");
+		static Config2::CColor* TextInputText = Config2::GetColor("theme-text-input-text");
+
+		Config2::CTextInput* Value = (Config2::CTextInput*)p->Value;
+
+		auto Window = GetCurrentWindow();
+		auto DrawList = Window->DrawList;
+		ImVec2 Pos = GetCursorPos();
+
+		// MasterLocked = p->Master is a boolean that is false
+		bool MasterLocked = p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN && ((Config2::CBoolean*)p->Master->Value)->Value.Get() == 0;
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+
+		// draw label 
+		{
+			ImVec2 IconSize(14, 14);
+			std::string ToolTipString = "Click for more info";
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			if (PremiumLocked)
+			{
+				DrawErrorIcon(255, IconSize);
+				ToolTipString = "Premium users only";
+			}
+			else if (MasterLocked)
+			{
+				DrawWarningIcon(255, IconSize);
+				ToolTipString = "This property has no effect because it is controlled by \"" + p->Master->VisibleName + "\"";
+			}
+			else
+			{
+				DrawInfoIcon(255, IconSize);
+			}
+
+			auto ID = GetID((p->Name + "-status-icon-hoverable").c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(ToolTipString, IconSize.y);
+				GUI2::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+				{
+					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+
+			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		}
+
+		// draw input
+		{
+			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
+			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+			BeginChild(("##entry-child-" + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false, ImGuiWindowFlags_NoSavedSettings);
+
+			auto w = ImGui::GetCurrentWindow();
+
+			PushFont(Arial14);
+			bool IsTyping = ImGui::GetActiveID() == w->GetID(("##entry-child-text" + p->Name).c_str()) || (Value->Data && Value->DataSize > 0 && Value->Data[0]);
+			SetCursorPos(ImVec2(5, 3));
+			SetNextItemWidth(w->Size.x - 10);
+			InputText(("##entry-child-text" + p->Name).c_str(), Value->Data, Value->DataSize);
+
+			if (IsTyping)
+			{
+				Config2::SettingKeybindFor = nullptr;
+			}
+			else
+			{
+				SetCursorPos(ImVec2(5, 3));
+				PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
+				Text("Type here...");
+				PopStyleColor(1);
+			}
+			PopFont();
+
+			EndChild();
+			PopStyleColor(1);
+			PopStyleVar(1);
+		}
+
+		// search bar
+		/*
+		{
+			ImGui::SetCursorPos(ImVec2(5, 5));
+
+			const char* InputLabel = "##SearchTextInput";
+			auto InputID = ImGui::GetID(InputLabel);
+
+			IsSearching = ImGui::GetActiveID() == InputID || (SearchQuery && SearchQuery[0]);
+			Animation::changed(SearchAnimation, IsSearching);
+
+			ImGui::SetCursorPos(ImVec2(5, 5));
+			ImGui::DrawSearchIcon(SearchbarText->ModulateAlpha(0.8f), ImVec2(14, 14));
+
+			ImGui::PushFont(Arial16);
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*SearchbarText);
+			ImGui::SetCursorPos(ImVec2(24, 4));
+			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
+			ImGui::InputText(InputLabel, SearchQuery, 256);
+			ImGui::PopStyleColor(1);
+			WantMouse |= ImGui::IsItemHovered();
+
+			if (!IsSearching)
+			{
+				ImGui::SetCursorPos(ImVec2(24, 4));
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(0.6f));
+				ImGui::Text("Search");
+				ImGui::PopStyleColor(1);
+			}
+			else
+			{
+				Config2::SettingKeybindFor = nullptr;
+				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+				ImGui::DrawXIcon(SearchbarText->ModulateAlpha(SearchAnimationFactor * 0.8f), ImVec2(9, 9));
+				// dummy button
+				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)SearchbarText->ModulateAlpha(0.25f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)SearchbarText->ModulateAlpha(0.5f));
+				if (ImGui::Button("##cancel-search-dummy", ImVec2(18, 18)))
+				{
+					ZeroMemory(SearchQuery, 256);
+					if (ImGui::GetActiveID() == InputID)
+						ImGui::ClearActiveID();
+				}
+				WantMouse |= ImGui::IsItemHovered();
+				ImGui::PopStyleColor(3);
+			}
+			ImGui::PopFont();
+
+			ImGui::EndChild();
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(1);
+		}
+		//*/
 		return 20;
 	}
 
@@ -3713,9 +3858,12 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 				case Config2::PropertyType::MULTISELECT:
 					GroupY += ImGui::DrawMultiSelectorProperty(Property);
 					break;
-				default:
+				case Config2::PropertyType::TEXTINPUT:
+					GroupY += ImGui::DrawTextInputProperty(Property);
+					break;
 				case Config2::PropertyType::LABEL:
-					GroupY += ImGui::DrawTextProperty(Property);
+				default:
+					GroupY += ImGui::DrawLabelProperty(Property);
 					break;
 				}
 
@@ -3755,8 +3903,10 @@ void GUI2::DrawActiveTab()
 	static Config2::CColor* ButtonActive = Config2::GetColor("theme-button-active");
 	static Config2::CColor* ButtonBorder = Config2::GetColor("theme-button-border");
 	static Config2::CColor* ButtonText = Config2::GetColor("theme-button-text");
-	static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
-	static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
+	//static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
+	//static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
+	static Config2::CColor* TextInputBackground = Config2::GetColor("theme-text-input-background");
+	static Config2::CColor* TextInputText = Config2::GetColor("theme-text-input-text");
 	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat("theme-legit-rage-switch-border-size");
 	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat("theme-button-border-size");
 
@@ -4084,7 +4234,7 @@ void GUI2::DrawActiveTab()
 				ImGui::Text(label);
 
 				ImGui::SetCursorPos(ImVec2(202 + labelSize.x + 5, 37));
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-weapon-current-selection", ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
 				ImGui::PopStyleVar(1);
@@ -4096,7 +4246,7 @@ void GUI2::DrawActiveTab()
 					AnimFactor = 1.f - AnimFactor;
 
 				ImGui::PushFont(Arial16);
-				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(Animation::lerp(0.6f, 1.f, AnimFactor)));
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(Animation::lerp(0.6f, 1.f, AnimFactor)));
 
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
@@ -4115,11 +4265,11 @@ void GUI2::DrawActiveTab()
 
 
 						ImGui::SetCursorPos(ImVec2(maxX + 7, 7));
-						ImGui::DrawXIcon(SearchbarText->ModulateAlpha(AnimFactor * 0.8f), ImVec2(9, 9));
+						ImGui::DrawXIcon(TextInputText->ModulateAlpha(AnimFactor * 0.8f), ImVec2(9, 9));
 						ImGui::SetCursorPos(ImVec2(maxX + 3, 3));
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)SearchbarText->ModulateAlpha(0.25f));
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)SearchbarText->ModulateAlpha(0.5f));
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
 						if (ImGui::Button("##remove-active-weapon-skin", ImVec2(18, 18)))
 						{
 							CurrentPaintKit->ClearSelection();
@@ -4148,7 +4298,7 @@ void GUI2::DrawActiveTab()
 			// search bar
 			{ 
 				ImGui::SetCursorPos(ImVec2(202, 37 + 24 + 5));
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-weapon-searchbar", ImVec2(Widget->Size.x - 202 - 10, 24), false);
 
@@ -4164,10 +4314,10 @@ void GUI2::DrawActiveTab()
 				Animation::changed(MySearchAnimation, IsSearchingWeapon);
 
 				ImGui::SetCursorPos(ImVec2(5, 5));
-				ImGui::DrawSearchIcon(SearchbarText->ModulateAlpha(0.8f), ImVec2(14, 14));
+				ImGui::DrawSearchIcon(TextInputText->ModulateAlpha(0.8f), ImVec2(14, 14));
 
 				ImGui::PushFont(Arial16);
-				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*SearchbarText);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TextInputText);
 				ImGui::SetCursorPos(ImVec2(24, 4));
 				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearchingWeapon ? 48 : 28));
 				ImGui::InputText(InputLabel, WeaponSearchQuery, 256);
@@ -4176,7 +4326,7 @@ void GUI2::DrawActiveTab()
 				if (!IsSearchingWeapon)
 				{
 					ImGui::SetCursorPos(ImVec2(24, 4));
-					ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(0.6f));
+					ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
 					ImGui::Text("Search Skins");
 					ImGui::PopStyleColor(1);
 				}
@@ -4184,12 +4334,12 @@ void GUI2::DrawActiveTab()
 				{
 					float F = (float)Animation::animate(Animation::age(SearchAnimation), 0.15);
 					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
-					ImGui::DrawXIcon(SearchbarText->ModulateAlpha(F * 0.8f), ImVec2(9, 9));
+					ImGui::DrawXIcon(TextInputText->ModulateAlpha(F * 0.8f), ImVec2(9, 9));
 					// dummy button
 					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)SearchbarText->ModulateAlpha(0.25f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)SearchbarText->ModulateAlpha(0.5f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
 					if (ImGui::Button("##cancel-search-dummy-weapon-skin", ImVec2(18, 18)))
 					{
 						ZeroMemory(WeaponSearchQuery, 256);
@@ -4626,13 +4776,30 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 
 	// right side
 	{
+		ImVec2 ChildPos = Window->Pos + OverlayPosition + ImVec2(OverlaySize.x, 0);
+		ImVec2 ChildSize = Window->Size - OverlayPosition - ImVec2(OverlaySize.x, 0);
+
 		ImGui::SetCursorPos(ImVec2(150, TitleBarHeight));
-		ImGui::BeginChild("##main-right-side");
+		ImGui::BeginChild("##main-right-side", ChildSize);
 
 		auto w = ImGui::GetCurrentWindow();
-		ImGui::PushClipRect(Window->Pos + OverlayPosition + ImVec2(OverlaySize.x, 0), Window->Pos + Window->Size, false);
+		ImGui::PushClipRect(ChildPos, ChildPos + ChildSize, false);
 
+		if (ActiveTab && ActiveTab->InitialPaint)
+		{
+			ActiveTab->InitialPaint = false;
+			ImGui::SetScrollY(ActiveTab->ScrollHeight);
+		}
 		GUI2::DrawActiveTab();
+		if (ActiveTab)
+			ActiveTab->ScrollHeight = ImGui::GetScrollY();
+
+		// blank space at the bottom to fix weird scroll bar
+		ImGui::PushStyleColor(ImGuiCol_Button, 0);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
+		ImGui::Button("##BRO", ImVec2(1, ActiveTab->VerticalPadding));
+		ImGui::PopStyleColor(3);
 
 		ImGui::PopClipRect();
 
@@ -4755,6 +4922,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 				if (ImGui::Button(("##dummy-tab-select-" + t->Name).c_str(), ImVec2(OverlaySize.x - 10, 20)))
 				{
 					ActiveTab = t;
+					ActiveTab->InitialPaint = true;
 					isSelected = true;
 					Config2::SettingKeybindFor = nullptr;
 				}
@@ -4824,7 +4992,7 @@ void GUI2::Init()
 void GUI2::Main()
 {
 	++Config2::GUIFramesRenderedCounter;
-	L::Verbose(("GUI2::Main executed (frame " + std::to_string(Config2::GUIFramesRenderedCounter)).c_str());
+	L::Verbose(("GUI2::Main executed (frame " + std::to_string(Config2::GUIFramesRenderedCounter) + ")").c_str());
 	static bool Init = false;
 	if (!Init)
 	{
