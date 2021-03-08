@@ -973,11 +973,22 @@ namespace Config {
 	}
 }
 
+// config macro utils
 #define CONFIG_PROPERTY_TYPE_CHECK(p, t, ret) \
 if (L::OutputMode != L::LogMode::None && p->Type != t){ \
 	L::Log("ERROR: You used the wrong getter for property: ", ""); \
 	L::Log(p->Name.c_str()); \
 	return ret; \
+}
+#define CONFIG_VIS(p, link, state, statev) \
+{ \
+	Property* _p = (p); \
+	Property* _l = (link); \
+	CState* _s = (state); \
+	int _v = (statev); \
+	_p->VisibilityLinked = _l; \
+	_p->Visible.State = _s; \
+	_p->Visible.StateEquals = _v; \
 }
 
 namespace Config2
@@ -995,6 +1006,7 @@ namespace Config2
 		//Tab* t;
 		//Group* g;
 		Property* p;
+		Property* p1;
 
 		// OFFENCE
 		{
@@ -1010,36 +1022,43 @@ namespace Config2
 			{
 				Group* g = t->Add("legit-Aimbot");
 
-				g->Add("legit-aim-enable", "Enable", new CBoolean());
+				p = g->Add("legit-aim-enable", "Enable", new CBoolean());
+				g->Add("legitaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Sniper" }));
+				g->BeginMaster(p);
 
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
+				p = g->Add("legitaim-pistol-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), 0);
+				g->Add("legitaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
+				g->Add("legitaim-pistol-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
+				g->Add("legitaim-pistol-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 
-				g->Add("legitaim-pistol-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				g->Add("legitaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("legitaim-pistol-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
-				g->Add("legitaim-pistol-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+				p = g->Add("legitaim-smg-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), 1);
+				g->Add("legitaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
+				g->Add("legitaim-smg-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
+				g->Add("legitaim-smg-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 
-				g->Add("legitaim-smg-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				g->Add("legitaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("legitaim-smg-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
-				g->Add("legitaim-smg-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+				p = g->Add("legitaim-heavy-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), 2);
+				g->Add("legitaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
+				g->Add("legitaim-heavy-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
+				g->Add("legitaim-heavy-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 
-				g->Add("legitaim-heavy-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				g->Add("legitaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("legitaim-heavy-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
-				g->Add("legitaim-heavy-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
+				p = g->Add("legitaim-rifle-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), 3);
+				g->Add("legitaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
+				g->Add("legitaim-rifle-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
+				g->Add("legitaim-rifle-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 
-				g->Add("legitaim-rifle-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				g->Add("legitaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("legitaim-rifle-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
-				g->Add("legitaim-rifle-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
-
-				g->Add("legitaim-sniper-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
-				g->Add("legitaim-sniper-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("legitaim-sniper-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }));
-				g->Add("legitaim-sniper-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"));
-
+				p = g->Add("legitaim-sniper-fov", "FOV", new CFloat(0, 180, 1, "DEG"));
+				CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), 4);
+				g->Add("legitaim-sniper-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
+				g->Add("legitaim-sniper-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
+				g->Add("legitaim-sniper-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 #undef HITBOXES_CONFIG
+
+				g->EndMaster();
 			}
 
 
@@ -1049,55 +1068,62 @@ namespace Config2
 			{
 				Group* g = t->Add("rage-Aimbot");
 
-				g->Add("rage-aim-enable", "Enable", new CBoolean());
-
-				p = g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
+				g->BeginMaster(g->Add("rage-aim-enable", "Enable", new CBoolean()));
+				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
 				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
 
+				g->Add("rageaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Scout", "AWP", "Auto" }));
 
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
 
-				g->Add("rageaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-pistol-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-pistol-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-pistol-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-pistol-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 0);
+				g->Add("rageaim-pistol-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-pistol-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-pistol-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-pistol-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
-				g->Add("rageaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-smg-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-smg-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-smg-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-smg-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 1);
+				g->Add("rageaim-smg-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-smg-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-smg-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-smg-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
-				g->Add("rageaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-heavy-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-heavy-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-heavy-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-heavy-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 2);
+				g->Add("rageaim-heavy-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-heavy-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-heavy-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-heavy-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
-				g->Add("rageaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-rifle-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-rifle-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-rifle-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-rifle-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 3);
+				g->Add("rageaim-rifle-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-rifle-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-rifle-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-rifle-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
-				g->Add("rageaim-scout-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-scout-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-scout-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-scout-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-scout-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-scout-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 4);
+				g->Add("rageaim-scout-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-scout-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-scout-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-scout-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 					
-				g->Add("rageaim-awp-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-awp-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-awp-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-awp-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-awp-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 5);
+				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-awp-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-awp-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-awp-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
-				g->Add("rageaim-auto-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
-				g->Add("rageaim-auto-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-auto-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"));
-				g->Add("rageaim-auto-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"));
-				g->Add("rageaim-auto-fireiflethal", "Fire if Lethal", new CBoolean());
+				p = g->Add("rageaim-auto-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
+				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 6);
+				g->Add("rageaim-auto-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-auto-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-auto-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("rageaim-auto-fireiflethal", "Fire if Lethal", new CBoolean())->VisibilityLinked = p;
 
 #undef HITBOXES_CONFIG
 			}
@@ -1213,54 +1239,68 @@ namespace Config2
 				Group* g = t->Add("ESP");
 				g->Add("esp-mode", "", new CHorizontalState({ "Enemies", "Friends"}));
 
-				g->Add("visuals-esp-enemy-enable", "Enable", new CBoolean());
-				g->Add("visuals-esp-enemy-bbox", "Bounding Box", new CBoolean());
-				g->Add("visuals-esp-enemy-bbox-color", "Color", new CColor(true));
-				g->Add("visuals-esp-enemy-name", "Name", new CBoolean());
-				g->Add("visuals-esp-enemy-name-color", "Color", new CColor(true));
-				g->Add("visuals-esp-enemy-snapline", "Snaplines", new CBoolean());
-				g->Add("visuals-esp-enemy-snapline-color", "Color", new CColor(true));
-				g->Add("visuals-esp-enemy-skeleton", "Skeleton", new CBoolean());
-				g->Add("visuals-esp-enemy-skeleton-color", "Color", new CColor(true));
-				g->Add("visuals-esp-enemy-health", "Health", new CBoolean());
-				g->Add("visuals-esp-enemy-health-color", "Foreground", new CColor(true));
-				g->Add("visuals-esp-enemy-health-color-background", "Background", new CColor(true));
-				g->Add("visuals-esp-enemy-resolverflags", "Resolver Flags", new CBoolean());
-				g->Add("visuals-esp-enemy-resolverflags-color", "Color", new CColor(true));
-				g->Add("visuals-esp-enemy-weapon", "Weapon", new CBoolean());
-				g->Add("visuals-esp-enemy-weapon-color", "Color", new CColor(true));
+				p = g->Add("visuals-esp-enemy-enable", "Enable", new CBoolean());
+				p->Visible.State = GetState("esp-mode");
+				p->Visible.StateEquals = 0;
+				g->BeginMaster(p);
+				(p1 = g->Add("visuals-esp-enemy-bbox", "Bounding Box", new CBoolean()))->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-bbox"), 1);
+				g->Add("visuals-esp-enemy-name", "Name", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-name"), 1);
+				g->Add("visuals-esp-enemy-snapline", "Snaplines", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-snapline-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-snapline"), 1);
+				g->Add("visuals-esp-enemy-skeleton", "Skeleton", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-skeleton-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-skeleton"), 1);
+				g->Add("visuals-esp-enemy-health", "Health", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-health-color", "Foreground", new CColor(true)), p, GetState("visuals-esp-enemy-health"), 1);
+				CONFIG_VIS(g->Add("visuals-esp-enemy-health-color-background", "Background", new CColor(true)), p, GetState("visuals-esp-enemy-health"), 1);
+				g->Add("visuals-esp-enemy-resolverflags", "Resolver Flags", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-resolverflags-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-resolverflags"), 1);
+				g->Add("visuals-esp-enemy-weapon", "Weapon", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-weapon-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-weapon"), 1);
+				g->EndMaster();
 
-				g->Add("visuals-esp-friend-enable", "Enable", new CBoolean());
-				g->Add("visuals-esp-friend-bbox", "Bounding Box", new CBoolean());
-				g->Add("visuals-esp-friend-bbox-color", "Color", new CColor(true));
-				g->Add("visuals-esp-friend-name", "Name", new CBoolean());
-				g->Add("visuals-esp-friend-name-color", "Color", new CColor(true));
-				g->Add("visuals-esp-friend-snapline", "Snaplines", new CBoolean());
-				g->Add("visuals-esp-friend-snapline-color", "Color", new CColor(true));
-				g->Add("visuals-esp-friend-skeleton", "Skeleton", new CBoolean());
-				g->Add("visuals-esp-friend-skeleton-color", "Color", new CColor(true));
-				g->Add("visuals-esp-friend-health", "Health", new CBoolean());
-				g->Add("visuals-esp-friend-health-color", "Foreground", new CColor(true));
-				g->Add("visuals-esp-friend-health-color-background", "Background", new CColor(true));
-				g->Add("visuals-esp-friend-resolverflags", "Resolver Flags", new CBoolean());
-				g->Add("visuals-esp-friend-resolverflags-color", "Color", new CColor(true));
-				g->Add("visuals-esp-friend-weapon", "Weapon", new CBoolean());
-				g->Add("visuals-esp-friend-weapon-color", "Color", new CColor(true));
-				
+				p = g->Add("visuals-esp-friend-enable", "Enable", new CBoolean());
+				p->Visible.State = GetState("esp-mode");
+				p->Visible.StateEquals = 1;
+				g->BeginMaster(p);
+				(p1 = g->Add("visuals-esp-friend-bbox", "Bounding Box", new CBoolean()))->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-bbox"), 1);
+				g->Add("visuals-esp-friend-name", "Name", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-name"), 1);
+				g->Add("visuals-esp-friend-snapline", "Snaplines", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-snapline-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-snapline"), 1);
+				g->Add("visuals-esp-friend-skeleton", "Skeleton", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-skeleton-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-skeleton"), 1);
+				g->Add("visuals-esp-friend-health", "Health", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-health-color", "Foreground", new CColor(true)), p, GetState("visuals-esp-friend-health"), 1);
+				CONFIG_VIS(g->Add("visuals-esp-friend-health-color-background", "Background", new CColor(true)), p, GetState("visuals-esp-friend-health"), 1);
+				g->Add("visuals-esp-friend-resolverflags", "Resolver Flags", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-resolverflags-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-resolverflags"), 1);
+				g->Add("visuals-esp-friend-weapon", "Weapon", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-friend-weapon-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-weapon"), 1);
+				g->EndMaster();
 			}
 			{
 				Group* g = t->Add("World");
 				//World
-				g->Add("visuals-world-enable", "World Changes", new CBoolean());
-				g->Add("visuals-world-color", "World", new CColor(true));
+				g->Add("visuals-world-enable", "Ambience Affected", new CBoolean());
+				CONFIG_VIS(g->Add("visuals-world-color", "Color", new CColor(true)), nullptr, GetState("visuals-world-enable"), 1);
 				//Prop
-				g->Add("visuals-world-prop-enable", "Prop Changes", new CBoolean());
-				g->Add("visuals-world-prop-color", "Prop", new CColor(true));
+				g->Add("visuals-world-prop-enable", "Props Affected", new CBoolean());
+				CONFIG_VIS(g->Add("visuals-world-prop-color", "Color", new CColor(true)), nullptr, GetState("visuals-world-prop-enable"), 1);
 				//Skybox
-				g->Add("visuals-world-skybox-enable", "Skybox Changes", new CBoolean());
+				g->Add("visuals-world-skybox-enable", "Skybox Affected", new CBoolean());
 				//Skybox dropdown from https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Sky_List
-				g->Add("visuals-world-skybox-name", "Load Skybox", new CVerticalState({ "cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy", "italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr", "sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust" }));
-				g->Add("visuals-world-skybox-color", "Skybox", new CColor(true));
+				CONFIG_VIS(g->Add("visuals-world-skybox-name", "Skybox", new CVerticalState({
+						"cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy",
+						"italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr",
+						"sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr",
+						"sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02",
+						"sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust"
+					})
+				), nullptr, GetState("visuals-world-skybox-enable"), 1);
+				CONFIG_VIS(g->Add("visuals-world-skybox-color", "Color", new CColor(true)), nullptr, GetState("visuals-world-skybox-enable"), 1);
 
 			}
 			/*{
@@ -1296,8 +1336,7 @@ namespace Config2
 			{ // knives
 				Group* g = t->Add("Knives");
 
-				g->Add("skinchanger-knife-skin", "x", new CPaintKit());
-				g->Add("skinchanger-knife-model", "x", new CKnife());
+				g->Add("skinchanger-knife-bruh", "Coming Soon!", new CLabel());
 			}
 
 			{ // weapons
@@ -1305,6 +1344,12 @@ namespace Config2
 
 				for (int i = 0; i < (int)Skins::Weapon::_COUNT; i++)
 					g->Add("skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[i])), Skins::WeaponNames[i], new CPaintKit());
+			}
+
+			{ // gloves
+				Group* g = t->Add("Gloves");
+
+				g->Add("skinchanger-glove-bruh", "Coming Soon!", new CLabel());
 			}
 		}
 
@@ -1348,7 +1393,7 @@ namespace Config2
 				Group* g = t->Add("General");
 
 				g->Add("theme-background", "Background Color", new CColor(false));
-				g->Add("theme-background-image", "Background Image (soon!)", new CLabel());
+				g->Add("theme-background-image", "Background Image (Coming Soon!)", new CLabel());
 
 				g->Add("theme-widget-background", "Widget Background", new CColor(true));
 				g->Add("theme-widget-title", "Widget Title", new CColor(true));

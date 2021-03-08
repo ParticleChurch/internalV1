@@ -3679,7 +3679,10 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{
 				auto Property = Group->Properties[p];
-				if (!Property->IsVisible()) continue;
+				if (!Property->IsVisible())
+				{
+					continue;
+				}
 
 				if (nDrawnProps > 0)
 					GroupY += Group->Padding;

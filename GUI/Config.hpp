@@ -1398,6 +1398,7 @@ namespace Config2
 	{
 	private:
 		float LastDrawHeight = -1.f;
+		Property* CurrentMaster = nullptr;
 
 	public:
 		int Padding = 5;
@@ -1416,15 +1417,25 @@ namespace Config2
 		Property* Add(std::string Name, std::string VisibleName, T* Value)
 		{
 			Property* x = new Property(Name, VisibleName, Value);
+			if (this->CurrentMaster)
+				x->Master = this->CurrentMaster;
 			this->Properties.push_back(x);
 			return x;
+		}
+
+		void BeginMaster(Property* Master)
+		{
+			this->CurrentMaster = Master;
+		}
+		void EndMaster()
+		{
+			this->CurrentMaster = nullptr;
 		}
 
 		float GetDrawHeight()
 		{
 			// return actual height
-			if (this->LastDrawHeight >= 0.f)
-				return this->LastDrawHeight;
+			//if (this->LastDrawHeight >= 0.f) return this->LastDrawHeight;
 			
 			// try to calculate it
 			float h = this->ShowTitle ? 5.f + 18.f : 0.f;
@@ -1433,16 +1444,7 @@ namespace Config2
 				auto Property = this->Properties[p];
 				if (!Property->IsVisible()) continue;
 				
-				h += this->Padding;
-				switch (Property->Type)
-				{
-				case Config2::PropertyType::BOOLEAN:
-					h += 20;
-					break;
-				default:
-					h += 20;
-					break;
-				}
+				h += this->Padding + 20;
 			}
 			h += this->Padding;
 
