@@ -1115,7 +1115,7 @@ Vec Aimbot::CalculateAngle(Vec Target, Vec Source)
 float Aimbot::CrosshairDist(Vec TargetAngle)
 {
 	static Vec cur;
-	cur = G::cmd->viewangles;
+	cur = G::StartAngle;
 	cur.NormalizeAngle();
 	cur += G::LocalPlayer->GetAimPunchAngle();
 	cur.NormalizeAngle();

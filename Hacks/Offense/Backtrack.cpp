@@ -39,14 +39,16 @@ void Backtrack::GetClosestEntity(int& RecordUserID)
 void Backtrack::GetClosestTick(int RecordUserID, int& BestTickCount)
 {
 	float CrossTickDist = FLT_MAX;
+	TragetTick = G::EntList[RecordUserID].BacktrackRecords.front();
 	for (Player::Tick tick : G::EntList[RecordUserID].BacktrackRecords)
 	{
 		Vec Angle = aimbot->CalculateAngle(tick.Bone(8));
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossTickDist)
 		{
-			BestTickCount = TimeToTicks(tick.SimulationTime - GetLerp());
+			BestTickCount = TimeToTicks(tick.SimulationTime - GetLerp()) + 4;
 			CrossTickDist = CrossDist;
+			TragetTick = tick;
 		}
 	}
 }
@@ -71,13 +73,16 @@ void Backtrack::update(int CurStage)
 			continue;
 		}
 
+		if (!it->second.BacktrackRecords.empty() && it->second.BacktrackRecords.front().SimulationTime == it->second.CurSimTime)
+			continue;
+
 		Player::Tick tick;
-		tick.SimulationTime = it->second.entity->GetSimulationTime();
+		tick.SimulationTime = it->second.CurSimTime;
 		it->second.entity->SetupBones(tick.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);// I::globalvars->m_curTime);
 
 		it->second.BacktrackRecords.push_front(tick);
 
-		unsigned int Ticks = TimeToTicks(Config::GetFloat("backtracking-time") / 1000.f);
+		unsigned int Ticks = TimeToTicks(/*Config::GetFloat("backtracking-time")*/ 200.f / 1000.f);
 		while (it->second.BacktrackRecords.size() > 3 && it->second.BacktrackRecords.size() > Ticks) {
 			it->second.BacktrackRecords.pop_back();
 		}
@@ -132,13 +137,7 @@ static void CapsuleOverlay2(Entity* pPlayer, Color col, float duration, Matrix3x
 void Backtrack::run()
 {
 	// If we are using rage aimbot, don't try to legit aimbot lol
-	if (Config::GetBool("rage-aim-enable")) return;
-
-	if (!(G::cmd->buttons & IN_ATTACK))
-		return;
-
-	if (!G::LocalPlayer->CanShoot())
-		return;
+	/*if (Config::GetBool("rage-aim-enable")) return;*/
 
 	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {
 		return;
@@ -158,7 +157,21 @@ void Backtrack::run()
 	if (BestTickCount == -1)
 		return;
 
+	// If ya can't shoot
+	if (!G::LocalPlayer->CanShoot())
+		return;
+
+	// If you aren't trying to shoot
+	if (!(G::cmd->buttons & IN_ATTACK))
+		return;
+
 	//set command number to proper number
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back("orig tick:	" + std::to_string(G::cmd->tick_count));
+	H::console.push_back("final tick:	" + std::to_string(BestTickCount));
+	H::console.push_back("delta:		" + std::to_string(G::cmd->tick_count - BestTickCount));
+
 	G::cmd->tick_count = BestTickCount;
 }
 

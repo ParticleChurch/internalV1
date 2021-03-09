@@ -388,7 +388,7 @@ void ESP::Run_PaintTraverse()
 			}
 			if (EnemyName->Get())
 			{
-				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(FriendNameColor->GetR(), FriendNameColor->GetG(), FriendNameColor->GetB(), FriendNameColor->GetA()));
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(EnemyNameColor->GetR(), EnemyNameColor->GetG(), EnemyNameColor->GetB(), EnemyNameColor->GetA()));
 			}
 			if (EnemySnaplines->Get())
 			{

@@ -650,7 +650,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		*/
 
 		L::Verbose("backtrack");
-		/*backtrack->run();*/
+		backtrack->run();
 
 		L::Verbose("CM_MoveFixEnd");
 		G::CM_MoveFixEnd();
@@ -903,14 +903,18 @@ void __stdcall H::LockCursorHook()
 
 void __fastcall H::hkCamToFirstPeronHook()
 {
+	L::Verbose("H::hkCamToFirstPeronHook - begin");
 	miscvisuals->ThirdPerson_hkCamToFirstPeron();
+	L::Verbose("H::hkCamToFirstPeronHook - end");
 }
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
+	L::Verbose("H::DoPostScreenEffectsHook - begin");
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
 	miscvisuals->NoSmoke_DoPostScreenEffects();
 	world->Run_DoPostScreenEffect();
+	L::Verbose("H::DoPostScreenEffectsHook - end");
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }

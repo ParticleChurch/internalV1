@@ -36,7 +36,8 @@ public:
 		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_bSpotted");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseEntity", "m_bSpotted");
-		*(BYTE*)((DWORD)this + offset) = val;
+		if((BYTE*)((DWORD)this + offset))
+			*(BYTE*)((DWORD)this + offset) = val;
 	}
 
 	float GetSpread()
@@ -65,7 +66,9 @@ public:
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iItemDefinitionIndex");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iItemDefinitionIndex");
-		return *(WeaponId*)((DWORD)this + offset);
+		if((WeaponId*)((DWORD)this + offset))
+			return *(WeaponId*)((DWORD)this + offset);
+		return (WeaponId )-1;
 	}
 
 	int GetOwner()
@@ -73,7 +76,9 @@ public:
 		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return -1;
 	}
 
 	void* self() {
@@ -85,7 +90,9 @@ public:
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_fFlags");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_fFlags");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return 0;
 	}
 
 	int GetTeam()
@@ -93,21 +100,27 @@ public:
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_iTeamNum");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_iTeamNum");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return -1;
 	}
 
 	Vec GetVecVelocity() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_vecVelocity[0]");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_vecVelocity[0]");
-		return *(Vec*)((DWORD)this + offset);
+		if((Vec*)((DWORD)this + offset))
+			return *(Vec*)((DWORD)this + offset);
+		return Vec();
 	}
 
 	int GetMoveType() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_nRenderMode") + 1;
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_nRenderMode") + 1;
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return -1;
 	}
 
 	bool SetupBones(Matrix3x4* pBoneToWorldOut, int nMaxBones, int boneMask, float currentTime = 0)
@@ -137,14 +150,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_vecOrigin");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_vecOrigin");
-		return *(Vec*)((DWORD)this + offset);
+		if((Vec*)((DWORD)this + offset))
+			return *(Vec*)((DWORD)this + offset);
+		return Vec();
 	}
 
 	Vec GetEyePos() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
-		return (GetVecOrigin() + *(Vec*)((DWORD)this + offset));
+		if((Vec*)((DWORD)this + offset))
+			return (GetVecOrigin() + *(Vec*)((DWORD)this + offset));
+		return Vec();
 	}
 
 	Vec GetEyeHeight()
@@ -152,15 +169,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_vecViewOffset[0]");
-
-		return *(Vec*)((DWORD)this + offset);
+		if((Vec*)((DWORD)this + offset))
+			return *(Vec*)((DWORD)this + offset);
+		return Vec();
 	}
 
 	int GetHealth() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_iHealth");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_iHealth");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return -1;
 	}
 
 	int GetAmmo() {
@@ -168,22 +188,28 @@ public:
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iClip1");
 		if (!this || !this->GetActiveWeapon())
-			return false;
-		return *(int*)(this->GetActiveWeapon() + offset);
+			return 0;
+		if((int*)(this->GetActiveWeapon() + offset))
+			return *(int*)(this->GetActiveWeapon() + offset);
+		return 0;
 	}
 
 	bool GetGunGameImmunity() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_bGunGameImmunity");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_bGunGameImmunity");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return false;
 	}
 
 	int GetLifeState() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_lifeState");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_lifeState");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return 0;
 	}
 
 	
@@ -206,14 +232,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		return ((*(int*)((DWORD)this + offset)) * I::globalvars->m_intervalPerTick);
+		if((int*)((DWORD)this + offset))
+			return ((*(int*)((DWORD)this + offset)) * I::globalvars->m_intervalPerTick);
+		return 0.0f;
 	}
 
 	int GetTickBase() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return 0.f;
 	}
 
 	Entity* GetActiveWeapon() {
@@ -221,15 +251,22 @@ public:
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_hActiveWeapon");
 		static HANDLE weaponHandle;
-		weaponHandle = *(HANDLE*)((DWORD)this + offset);
-		return I::entitylist->GetClientEntityFromHandle(weaponHandle);
+		if ((HANDLE*)((DWORD)this + offset))
+		{
+			weaponHandle = *(HANDLE*)((DWORD)this + offset);
+			return I::entitylist->GetClientEntityFromHandle(weaponHandle);
+		}
+		return nullptr;
+		
 	}
 
-	float& GetLastShotTime() {
+	float GetLastShotTime() {
 		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
 		if (offset == 0)
 			offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
-		return *(float*)((DWORD)this + offset);
+		if((float*)((DWORD)this + offset))
+			return *(float*)((DWORD)this + offset);
+		return 0.f;
 	}
 
 	int* GetViewModelID()
@@ -335,14 +372,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		return *(float*)((DWORD)this + offset);
+		if((float*)((DWORD)this + offset))
+			return *(float*)((DWORD)this + offset);
+		return FLT_MAX;
 	}
 
 	float GetNextPrimaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
-		return *(float*)((DWORD)this + offset);
+		if((float*)((DWORD)this + offset))
+			return *(float*)((DWORD)this + offset);
+		return FLT_MAX;
 	}
 
 	//basically return false if still getting weapon out, otherwise true
@@ -369,14 +410,18 @@ public:
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_aimPunchAngle");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BasePlayer", "m_aimPunchAngle");
-		return *(Vec*)((DWORD)this + offset);
+		if((Vec*)((DWORD)this + offset))
+			return *(Vec*)((DWORD)this + offset);
+		return Vec();
 	}
 
 	int GetShotsFired() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_iShotsFired");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_iShotsFired");
-		return *(int*)((DWORD)this + offset);
+		if((int*)((DWORD)this + offset))
+			return *(int*)((DWORD)this + offset);
+		return 0;
 	}
 
 	float GetFireReadyTime()
@@ -384,7 +429,9 @@ public:
 		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
 		if (offset == 0)
 			offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
-		return *(float*)((DWORD)this + offset);
+		if((float*)((DWORD)this + offset))
+			return *(float*)((DWORD)this + offset);
+		return FLT_MAX;
 	}
 
 	float GetFlashMaxAlpha()
@@ -392,7 +439,9 @@ public:
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
-		return *(float*)((DWORD)this + offset);
+		if((float*)((DWORD)this + offset))
+			return *(float*)((DWORD)this + offset);
+		return 0.0f;
 	}
 
 	bool HasHelmet() {

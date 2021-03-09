@@ -1043,6 +1043,12 @@ namespace Config2
 #undef HITBOXES_CONFIG
 
 				g->EndMaster();
+
+				
+			}
+			{
+				Group* g = t->Add("legit-Backtrack");
+				g->Add("legitaim-backtrack-time", "Backtrack TIme", new CFloat(0, 200, 1, "MS"));
 			}
 
 
