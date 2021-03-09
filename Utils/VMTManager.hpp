@@ -7,40 +7,41 @@ class VMTManager
 	static size_t CountFunctionsInVMT(VMT vmt)
 	{
 		size_t output = 0;
-
-		// while the function at this index is a valid function
-		while (!IsBadCodePtr((FARPROC)vmt[output]))
+		while (!IsBadCodePtr((FARPROC)(vmt[output])))
 			++output;
-
 		return output;
 	}
 
 private:
 	size_t FunctionCount = 0;
+	VMT CustomVMT;
 	VMT OriginalVMT;
-	VMT CurrentVMT;
+	VMT* ActiveVMT;
 
 public:
 	VMTManager(VMT* pVMT)
 	{
-		this->CurrentVMT = *pVMT;
-		this->FunctionCount = CountFunctionsInVMT(this->CurrentVMT);
+		this->ActiveVMT = pVMT;
+		this->OriginalVMT = *this->ActiveVMT;
+		this->FunctionCount = CountFunctionsInVMT(this->OriginalVMT);
 
 		// create a copy
-		this->OriginalVMT = new GenericFunction[this->FunctionCount];
+		this->CustomVMT = new GenericFunction[this->FunctionCount];
 		for (size_t i = 0; i < this->FunctionCount; i++)
-			this->OriginalVMT[i] = this->CurrentVMT[i];
+			this->CustomVMT[i] = this->OriginalVMT[i];
+
+		*this->ActiveVMT = this->CustomVMT;
 	}
 
 	GenericFunction Hook(int Index, GenericFunction NewFunction)
 	{
-		this->CurrentVMT[Index] = NewFunction;
+		this->CustomVMT[Index] = NewFunction;
 		return this->OriginalVMT[Index];
 	}
 
 	void Unhook(int Index)
 	{
-		this->CurrentVMT[Index] = this->OriginalVMT[Index];
+		this->CustomVMT[Index] = this->OriginalVMT[Index];
 	}
 
 	void UnhookAll()
@@ -51,7 +52,7 @@ public:
 	
 	~VMTManager()
 	{
-		this->UnhookAll();
-		delete[] this->OriginalVMT;
+		*this->ActiveVMT = this->OriginalVMT;
+		delete[] this->CustomVMT;
 	}
 };
