@@ -55,6 +55,8 @@ void Backtrack::GetClosestTick(int RecordUserID, int& BestTickCount)
 
 void Backtrack::update(int CurStage)
 {
+	static Config2::CFloat* BacktrackTime = Config2::GetFloat("backtracking-time");
+
 	if (CurStage != FRAME_RENDER_START)
 		return;
 
@@ -136,6 +138,10 @@ static void CapsuleOverlay2(Entity* pPlayer, Color col, float duration, Matrix3x
 
 void Backtrack::run()
 {
+	static Config2::CState* RageAimbot = Config2::GetState("rage-aim-enable");
+
+	if (RageAimbot->Get()) return;
+
 	// If we are using rage aimbot, don't try to legit aimbot lol
 	/*if (Config::GetBool("rage-aim-enable")) return;*/
 
