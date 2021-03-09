@@ -1,92 +1,57 @@
 #pragma once
+
+typedef void* GenericFunction;
+typedef GenericFunction* VMT;
 class VMTManager
 {
-private:
-	DWORD* CustomTable;
-	bool	InitComplete;
-	DWORD* OriginalTable;
-	DWORD* Instance;
-
-	int		MethodCount(DWORD* InstancePointer) 
+	static size_t CountFunctionsInVMT(VMT vmt)
 	{
-		DWORD* VMT = (DWORD*)*InstancePointer;
-		int Index = 0;
-		int Amount = 0;
-		while (!IsBadCodePtr((FARPROC)VMT[Index]))
-		{
-			if (!IsBadCodePtr((FARPROC)VMT[Index]))
-			{
-				Amount++;
-				Index++;
-			}
-		}
+		size_t output = 0;
 
-		return Amount;
+		// while the function at this index is a valid function
+		while (!IsBadCodePtr((FARPROC)vmt[output]))
+			++output;
+
+		return output;
 	}
+
+private:
+	size_t FunctionCount = 0;
+	VMT OriginalVMT;
+	VMT CurrentVMT;
 
 public:
-	bool Initialize(DWORD* InstancePointer) // Pass a &class
+	VMTManager(VMT* pVMT)
 	{
-		// Store the instance pointers and such, and work out how big the table is
-		Instance = InstancePointer;
-		OriginalTable = (DWORD*)*InstancePointer;
-		int VMTSize = MethodCount(InstancePointer);
-		size_t TableBytes = VMTSize * 4;
+		this->CurrentVMT = *pVMT;
+		this->FunctionCount = CountFunctionsInVMT(this->CurrentVMT);
 
-		// Allocate some memory and copy the table
-		CustomTable = (DWORD*)malloc(TableBytes + 8);
-		if (!CustomTable) return false;
-		memcpy((void*)CustomTable, (void*)OriginalTable, VMTSize * 4);
-
-		// Change the pointer
-		*InstancePointer = (DWORD)CustomTable;
-
-		InitComplete = true;
-		return true;
+		// create a copy
+		this->OriginalVMT = new GenericFunction[this->FunctionCount];
+		for (size_t i = 0; i < this->FunctionCount; i++)
+			this->OriginalVMT[i] = this->CurrentVMT[i];
 	}
 
-	DWORD	HookMethod(DWORD NewFunction, int Index)
+	GenericFunction Hook(int Index, GenericFunction NewFunction)
 	{
-		if (InitComplete)
-		{
-			CustomTable[Index] = NewFunction;
-			return OriginalTable[Index];
-		}
-		else
-			return NULL;
-	}
-	void	UnhookMethod(int Index)
-	{
-		if (InitComplete)
-			CustomTable[Index] = OriginalTable[Index];
-		return;
+		this->CurrentVMT[Index] = NewFunction;
+		return this->OriginalVMT[Index];
 	}
 
-	void	RestoreOriginal()
+	void Unhook(int Index)
 	{
-		if (InitComplete)
-		{
-			*Instance = (DWORD)OriginalTable;
-		}
-		return;
-	}
-	void	RestoreCustom()
-	{
-		if (InitComplete)
-		{
-			*Instance = (DWORD)CustomTable;
-		}
-		return;
+		this->CurrentVMT[Index] = this->OriginalVMT[Index];
 	}
 
-	template<typename T>
-	T GetMethod(size_t nIndex)
+	void UnhookAll()
 	{
-		return (T)OriginalTable[nIndex];
+		for (size_t index = 0; index < this->FunctionCount; index++)
+			this->Unhook(index);
 	}
-
-	DWORD	GetOriginalFunction(int Index)
+	
+	~VMTManager()
 	{
-		return OriginalTable[Index];
+		this->UnhookAll();
+		delete[] this->OriginalVMT;
 	}
 };

@@ -113,5 +113,6 @@ namespace G {
 	extern DWORD pD3d9DevicePattern;
 	extern DWORD LoadSkyboxPattern;
 
-	extern void PatternConvarInit();
+	extern void GUIInit();
+	extern void Init();
 };

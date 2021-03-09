@@ -168,9 +168,6 @@
     <ClInclude Include="Include.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\InterfaceTools.hpp">
-      <Filter>Headers\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\Custom\Vec.hpp">
       <Filter>Headers\Valve\Custom</Filter>
     </ClInclude>

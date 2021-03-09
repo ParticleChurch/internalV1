@@ -241,7 +241,6 @@
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\StrHash.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
-    <ClInclude Include="Utils\InterfaceTools.hpp" />
     <ClInclude Include="Utils\Macro.hpp" />
     <ClInclude Include="Utils\PatternScan.hpp" />
     <ClInclude Include="Utils\Utils.hpp" />

@@ -1,7 +1,12 @@
 #include "Include.hpp"
 
 namespace N {
-	std::vector<RecvTable*> Tables = GetTables();
+	std::vector<RecvTable*> Tables;
+
+	void Init()
+	{
+		Tables = GetTables();
+	}
 
 	std::vector<RecvTable*> GetTables()
 	{

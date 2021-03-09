@@ -154,17 +154,15 @@ public:
 
 namespace H
 {
-	bool UnHooked = false;
-
-	VMTManager d3d9VMT;
-	VMTManager clientVMT;
-	VMTManager clientmodeVMT;
-	VMTManager surfaceVMT;
-	VMTManager panelVMT;
-	VMTManager gameeventmanagerVMT;
-	VMTManager inputVMT;
-	VMTManager modelrenderVMT;
-	VMTManager soundVMT;
+	VMTManager* d3d9VMT = nullptr;
+	VMTManager* clientVMT = nullptr;
+	VMTManager* clientmodeVMT = nullptr;
+	VMTManager* surfaceVMT = nullptr;
+	VMTManager* panelVMT = nullptr;
+	VMTManager* gameeventmanagerVMT = nullptr;
+	VMTManager* inputVMT = nullptr;
+	VMTManager* modelrenderVMT = nullptr;
+	VMTManager* soundVMT = nullptr;
 
 	EndScene oEndScene;
 	Reset oReset;
@@ -211,238 +209,106 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 	con_color_msg(color, fmt, args...);
 }
 
-void H::Init()
+void H::GUIInit()
 {
-	constexpr DWORD SleepTime = 0;
-
-	L::Log("Initializing Hooks");
-	if (SleepTime > 0) Sleep(SleepTime);
-	WriteUsercmdDeltaToBufferReturn = *(reinterpret_cast<void**>(FindPattern("engine.dll", "84 C0 74 04 B0 01 EB 02 32 C0 8B FE 46 3B F3 7E C9 84 C0 0F 84")));
-	L::Log("Found WriteUsercmdDeltaToBufferReturn");
-	if (SleepTime > 0) Sleep(SleepTime);
-	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
-	L::Log("Found WriteUsercmd");
-	if (SleepTime > 0) Sleep(SleepTime);
-
 	PDWORD pD3d9Device = *(PDWORD*)(G::pD3d9DevicePattern + 1);
 	D3d9Device = (IDirect3DDevice9*)*pD3d9Device;
 
-	L::Log("Found pD3d9Device");
-	if (SleepTime > 0) Sleep(SleepTime);
+	while (!(CSGOWindow = FindWindowW(L"Valve001", nullptr))) Sleep(10);
 
-	// TODO: this is definetly not the best way to do this, but its better than a while loop
-	L::Log("WndProc Hook");
-	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-findwindoww
-	/*
-	HWND FindWindowW(
-	  LPCWSTR lpClassName,
-	  LPCWSTR lpWindowName
-	);
-	*/
-	CSGOWindow = FindWindowW(L"Valve001", nullptr);
-	while (!CSGOWindow)
-	{
-		CSGOWindow = FindWindowW(L"Valve001", nullptr);
-		Sleep(10);
-	}
-	
+	d3d9VMT = new VMTManager((VMT*)D3d9Device);
+	oEndScene = (EndScene)d3d9VMT->Hook(42, &EndSceneHook);
+}
 
-	GUI2::LoadProgress = 0.2f;
+void H::Init()
+{
+	WriteUsercmdDeltaToBufferReturn = *(reinterpret_cast<void**>(FindPattern("engine.dll", "84 C0 74 04 B0 01 EB 02 32 C0 8B FE 46 3B F3 7E C9 84 C0 0F 84")));
+	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
 
-	L::Log("Reading Virtual Method Table");
-	if (SleepTime > 0) Sleep(SleepTime);
-	d3d9VMT.Initialize((DWORD*)D3d9Device);
-	L::Log("Initialized d3d9VMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	clientVMT.Initialize((DWORD*)I::client);
-	L::Log("Initialized clientVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	clientmodeVMT.Initialize((DWORD*)I::clientmode);
-	L::Log("Initialized clientmodeVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	surfaceVMT.Initialize((DWORD*)I::surface);
-	L::Log("Initialized surfaceVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	panelVMT.Initialize((DWORD*)I::panel);
-	L::Log("Initialized panelVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	gameeventmanagerVMT.Initialize((DWORD*)I::gameeventmanager);
-	L::Log("Initialized gameeventmanagerVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	inputVMT.Initialize((DWORD*)I::input);
-	L::Log("Initialized inputVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	modelrenderVMT.Initialize((DWORD*)I::modelrender);
-	L::Log("Initialized modelrenderVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	soundVMT.Initialize((DWORD*)I::sound);
-	L::Log("Initialized soundVMT");
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.25f;
+	// hooks
+	clientVMT = new VMTManager((VMT*)I::client);
+	GUI2::LoadProgress += 0.01f;
+	clientmodeVMT = new VMTManager((VMT*)I::clientmode);
+	GUI2::LoadProgress += 0.01f;
+	surfaceVMT = new VMTManager((VMT*)I::surface);
+	GUI2::LoadProgress += 0.01f;
+	panelVMT = new VMTManager((VMT*)I::panel);
+	GUI2::LoadProgress += 0.01f;
+	gameeventmanagerVMT = new VMTManager((VMT*)I::gameeventmanager);
+	GUI2::LoadProgress += 0.01f;
+	inputVMT = new VMTManager((VMT*)I::input);
+	GUI2::LoadProgress += 0.01f;
+	modelrenderVMT = new VMTManager((VMT*)I::modelrender);
+	GUI2::LoadProgress += 0.01f;
+	soundVMT = new VMTManager((VMT*)I::sound);
+	GUI2::LoadProgress += 0.01f;
 
-	
-	L::Log("DLLMAIN HOOKING D3D9 => EndScene");
-	oEndScene = (EndScene)d3d9VMT.HookMethod((DWORD)&EndSceneHook, 42);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.3f;
-
-	L::Log("DLLMAIN HOOKING D3D9 => Reset");
-	oReset = (Reset)d3d9VMT.HookMethod((DWORD)&ResetHook, 16);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.35f;
-
-	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
-	//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
-	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
-	if (SleepTime > 0) Sleep(SleepTime);
-
-	L::Log("DLLMAIN HOOKING Surface => LockCursor");
-	oLockCursor = (LockCursor)surfaceVMT.HookMethod((DWORD)&LockCursorHook, 67);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.55f;
-
-	L::Log("DLLMAIN HOOKING ClientMode => CreateMove");
-	oCreateMove = (CreateMove)clientmodeVMT.HookMethod((DWORD)&CreateMoveHook, 24);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.4f;
-	
-
-	L::Log("DLLMAIN HOOKING Client => FrameStageNotify");
-	oFrameStageNotify = (FrameStageNotify)clientVMT.HookMethod((DWORD)&FrameStageNotifyHook, 37);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.5f;
-
-	L::Log("Created New Event listener");
-	H::g_EventListener = new EventListener();
-	if (SleepTime > 0) Sleep(SleepTime);
-
-	L::Log("DLLMAIN HOOKING Panel => PaintTraverse");
-	oPaintTraverse = (PaintTraverse)panelVMT.HookMethod((DWORD)&PaintTraverseHook, 41);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.45f;
-
-	L::Log("DLLMAIN HOOKING Client => WriteUsercmdDeltaToBuffer");
-	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT.HookMethod((DWORD)&WriteUsercmdDeltaToBufferHook, 24);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.6f;
-
-	L::Log("DLLMAIN HOOKING Input => hkCamToFirstPeron");
-	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT.HookMethod((DWORD)&hkCamToFirstPeronHook, 36);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.65f;
-
-	L::Log("DLLMAIN HOOKING ClientMode => DoPostScreenEffects");
-	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT.HookMethod((DWORD)&DoPostScreenEffectsHook, 44);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.70f;
-
-	L::Log("DLLMAIN HOOKING ModelRender => DrawModelExecute");
-	oDrawModelExecute = (DrawModelExecute)modelrenderVMT.HookMethod((DWORD)&DrawModelExecuteHook, 21);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.75f;
-
-	L::Log("DLLMAIN HOOKING Sound => EmitSound");
-	oEmitSound = (EmitSound)soundVMT.HookMethod((DWORD)&EmitSoundHook, 5);
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.8f;
-
-	L::Log("DLLMAIN Clearing clantag");
+	oReset = (Reset)d3d9VMT->Hook(16, &ResetHook);
+	oLockCursor = (LockCursor)surfaceVMT->Hook(67, &LockCursorHook);
+	oCreateMove = (CreateMove)clientmodeVMT->Hook(24, &CreateMoveHook);
+	oFrameStageNotify = (FrameStageNotify)clientVMT->Hook(37, &FrameStageNotifyHook);
+	oPaintTraverse = (PaintTraverse)panelVMT->Hook(41, &PaintTraverseHook);
+	oWriteUsercmdDeltaToBuffer = (WriteUsercmdDeltaToBuffer)clientVMT->Hook(24, &WriteUsercmdDeltaToBufferHook);
+	ohkCamToFirstPeron = (hkCamToFirstPeron)inputVMT->Hook(36, &hkCamToFirstPeronHook);
+	oDoPostScreenEffects = (DoPostScreenEffects)clientmodeVMT->Hook(44, &DoPostScreenEffectsHook);
+	oDrawModelExecute = (DrawModelExecute)modelrenderVMT->Hook(21, &DrawModelExecuteHook);
+	oEmitSound = (EmitSound)soundVMT->Hook(5, &EmitSoundHook);
 	clantag->reset();
-	if (SleepTime > 0) Sleep(SleepTime);
-	GUI2::LoadProgress = 0.85f;
-	
+	GUI2::LoadProgress += 0.05f;
+
+	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
+	g_EventListener = new EventListener();
+	GUI2::LoadProgress += 0.05f;
 }
 
 void H::UnHook()
 {
-	constexpr DWORD SleepTime = 0;
-	L::Log("Unhooking...");
-	if (SleepTime > 0) Sleep(SleepTime);
-
-	L::Log("Enabling inputsystem...");
-	I::inputsystem->EnableInput(true);
-	if (SleepTime > 0) Sleep(SleepTime);
-	
-	L::Log("WndProc...", "");
-	D3dInit = false; //for wndproc... haven't found better solution
+	// make sure to disable fakelag & replace wndproc
+	if (G::pSendPacket) *G::pSendPacket = true;
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
 
-	L::Log("modelrenderVMT...", "");
-	modelrenderVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
+	// unhook vmts
+	if (d3d9VMT 		    ) d3d9VMT 		   	  ->UnhookAll();
+	if (clientVMT 		    ) clientVMT 		  ->UnhookAll();
+	if (clientmodeVMT 	    ) clientmodeVMT 	  ->UnhookAll();
+	if (surfaceVMT 		    ) surfaceVMT 		  ->UnhookAll();
+	if (panelVMT 		    ) panelVMT 		   	  ->UnhookAll();
+	if (gameeventmanagerVMT ) gameeventmanagerVMT ->UnhookAll();
+	if (inputVMT 		    ) inputVMT 		   	  ->UnhookAll();
+	if (modelrenderVMT 	    ) modelrenderVMT 	  ->UnhookAll();
+	if (soundVMT 		    ) soundVMT 		   	  ->UnhookAll();
 
-	L::Log("inputVMT...", "");
-	inputVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("gameeventmanagerVMT...", "");
-	gameeventmanagerVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("surfaceVMT...", "");
-	surfaceVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("panelVMT...", "");
-	panelVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("d3d9VMT...", "");
-	d3d9VMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("clientmodeVMT...");
-	if(G::pSendPacket) //make sure it isnt already a nullptr
-		*G::pSendPacket = true;
-	clientmodeVMT.RestoreOriginal();
-	G::EntList.clear();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("clientVMT...", "");
-	clientVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("soundVMT...", "");
-	soundVMT.RestoreOriginal();
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Success!");
-
-	L::Log("g_EventListener...");
-	delete g_EventListener;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("aimbot...");
-	delete aimbot;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("backtrack...");
-	delete backtrack;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("movement...");
-	delete movement;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("antiaim...");
-	delete antiaim;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("autowall...");
-	delete autowall;
-	if (SleepTime > 0) Sleep(SleepTime);
-	L::Log("Unhooking Done");
 }
 
-void H::Eject()
+void H::Free()
 {
-	H::UnHook();
+	if (d3d9VMT 		    ) delete d3d9VMT 		   	 ;
+	if (clientVMT 		    ) delete clientVMT 			 ;
+	if (clientmodeVMT 	    ) delete clientmodeVMT 		 ;
+	if (surfaceVMT 		    ) delete surfaceVMT 		 ;
+	if (panelVMT 		    ) delete panelVMT 		   	 ;
+	if (gameeventmanagerVMT ) delete gameeventmanagerVMT ;
+	if (inputVMT 		    ) delete inputVMT 		   	 ;
+	if (modelrenderVMT 	    ) delete modelrenderVMT 	 ;
+	if (soundVMT 		    ) delete soundVMT 		   	 ;
 
-	UnHooked = true;
+	// delete hack classes
+	delete g_EventListener;
+	delete skinchanger;
+	delete miscvisuals;
+	delete world;
+	delete chams;
+	delete esp;
+	delete killsay;
+	delete clantag;
+	delete movement;
+	delete antiaim;
+	delete fakelag;
+	delete doubletap;
+	delete resolver;
+	delete aimbot;
+	delete autowall;
+	delete backtrack;
 }
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
@@ -526,8 +392,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	if (GUI2::Ejected)
 	{
 		G::KillDLL = true;
-		H::Eject();
-		Config2::Free();
 	}
 
 	L::Verbose("H::EndSceneHook - complete", "\n", false);

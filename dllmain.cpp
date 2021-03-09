@@ -17,37 +17,32 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 
 void Init()
 {
-    GUI2::LoadProgress = 0.f;
     srand(static_cast <unsigned> (time(0)));
+    GUI2::LoadProgress = 0.f;
 
-    L::Init();
-    L::Log("Entry point executed");
+    L::Init();    L::Log("DLLMain executed");
+    I::GUIInit(); L::Log("I::GUIInit() complete");
+    G::GUIInit(); L::Log("G::GUIInit() complete");
+    H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up
     GUI2::LoadProgress = 0.05f;
 
-    L::Log("Finding convars");
-    G::PatternConvarInit();
-    GUI2::LoadProgress = 0.1f;
-
-    L::Log("Initializing configs");
-    Config::Init();
-    Config2::Init();
-    GUI2::LoadProgress = 0.15f;
-
-    L::Log("Initializing hooks");
-    H::Init();
-    GUI2::LoadProgress = 0.85f;
-
-    //L::Log(N::DumpTable().c_str());
+    I::Init();       L::Log("I::Init() complete");
+    N::Init();       L::Log("N::Init() complete");
+    G::Init();       L::Log("G::Init() complete");
+    Config::Init();  L::Log("Config::Init() complete");
+    Config2::Init(); L::Log("Config2::Init() complete");
+    H::Init();       L::Log("H::Init() complete");
 
     GUI2::LoadProgress = 1.f;
 
     L::Log("DLLMain complete. Now waiting for ejection");
     while (!G::KillDLL) Sleep(100);
+    L::Log("Ejecting...");
 
-    L::Log("Unhooking hooks...");
-    while (!H::UnHooked) Sleep(100);
+    H::UnHook(); L::Log("H::UnHook(); complete");
+    H::Free();   L::Log("H::Free(); complete");
 
-    L::Log("Freeing DLL");
+    L::Log("Freeing logger and FreeLibraryAndExitThread");
     L::Free();
     FreeLibraryAndExitThread(G::DLLModule, 0);
 }

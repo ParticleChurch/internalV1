@@ -1,9 +1,9 @@
 namespace H
 {
-	extern bool UnHooked;
 	extern void Init();
+	extern void GUIInit();
 	extern void UnHook();
-	extern void Eject();
+	extern void Free();
 	extern std::vector < std::string> console;
 
 	//typedef

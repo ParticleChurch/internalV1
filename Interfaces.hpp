@@ -2,9 +2,6 @@ class Sound;
 
 namespace I
 {
-	//tool for creating new interfaces
-	extern InterfaceTools* NewInterface;
-
 	//interfaces
 	extern IBaseClientDLL* client;
 	extern ClientMode* clientmode;
@@ -27,4 +24,14 @@ namespace I
 	extern IVDebugOverlay* debugoverlay;
 	extern ClientState* clientstate;
 	extern IMemAlloc* memalloc;
+
+	typedef void* (*InterfaceCreator)(const char*, int);
+	template <typename T>
+	T* GetInterface(const char* MoudleName, const char* InterfaceName)
+	{
+		InterfaceCreator createInterface = (InterfaceCreator)GetProcAddress(GetModuleHandleA(MoudleName), "CreateInterface");
+		return (T*)createInterface(InterfaceName, 0);
+	}
+	extern void GUIInit();
+	extern void Init();
 }
