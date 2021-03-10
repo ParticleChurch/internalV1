@@ -1266,10 +1266,6 @@ namespace Config2
 				g->Add("visuals-esp-friend-health", "Health", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-friend-health-color", "Foreground", new CColor(true)), p, GetState("visuals-esp-friend-health"), 1);
 				CONFIG_VIS(g->Add("visuals-esp-friend-health-color-background", "Background", new CColor(true)), p, GetState("visuals-esp-friend-health"), 1);
-				g->Add("visuals-esp-friend-resolverflags", "Resolver Flags", new CBoolean())->VisibilityLinked = p;
-				CONFIG_VIS(g->Add("visuals-esp-friend-resolverflags-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-resolverflags"), 1);
-				g->Add("visuals-esp-friend-weapon", "Weapon", new CBoolean())->VisibilityLinked = p;
-				CONFIG_VIS(g->Add("visuals-esp-friend-weapon-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-weapon"), 1);
 				g->EndMaster();
 			}
 			{

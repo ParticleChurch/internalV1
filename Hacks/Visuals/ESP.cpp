@@ -266,10 +266,6 @@ void ESP::Run_PaintTraverse()
 	static Config2::CState* FriendHealth			= Config2::GetState("visuals-esp-friend-health");
 	static Config2::CColor* FriendHealthFGColor		= Config2::GetColor("visuals-esp-friend-health-color");
 	static Config2::CColor* FriendHealthBGColor		= Config2::GetColor("visuals-esp-friend-health-color-background");
-	static Config2::CState* FriendResolver			= Config2::GetState("visuals-esp-friend-resolverflags");
-	static Config2::CColor* FriendResolverColor		= Config2::GetColor("visuals-esp-friend-resolverflags-color");
-	static Config2::CState* FriendWeapon			= Config2::GetState("visuals-esp-friend-weapon");
-	static Config2::CColor* FriendWeaponCOlor		= Config2::GetColor("visuals-esp-friend-weapon-color");
 
 	antiaim->Visualize();
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
