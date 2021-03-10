@@ -14,7 +14,6 @@ public:
 	SkinChanger();
 	void SetVal(int, std::string);
 
-	void Menu();
 	void run(int stage);
 };
 

@@ -1495,9 +1495,9 @@ namespace Config2
 		}
 
 		ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
-		// TODO: ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize)
+		ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
 		_BindToKey(GetProperty("show-menu"), Keybind::ReverseKeyMap(VK_INSERT));
-		GetState("show-menu")->Set(true);
+		GetState("show-menu")->Set(1);
 	}
 
 	Property* GetProperty(std::string Name)
@@ -2099,6 +2099,8 @@ namespace Config2
 				for (size_t i = 0; i < group->Properties.size(); i++)
 				{
 					Property* p = group->Properties.at(i);
+					if (p->Name == "show-menu") continue;
+
 					if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 					{
 						L::Log(XOR("Config2::ExportConfig failed - ExportSingleProperty failed"));

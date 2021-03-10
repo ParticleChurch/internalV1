@@ -345,7 +345,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	if (true)
+	if (false)
 	{
 		ImGui::Begin("console");
 		for (auto a : console)
@@ -369,7 +369,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		}
 		ImGui::End();
 	}
-	/*skinchanger->Menu();*/
 	
 	GUI2::Main();
 	//*/
