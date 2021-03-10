@@ -1031,14 +1031,15 @@ namespace Skins
         case WeaponId_::USPS:          return (int)Weapon::USPS;
         case WeaponId_::CZ75Auto:      return (int)Weapon::CZ75;
         case WeaponId_::R8Revolver:    return (int)Weapon::R8Revolver;
+         // other...
+        case WeaponId_::C4Explosive:           return (int)Weapon::C4;
+        case WeaponId_::IncendiaryGrenade:     return (int)Weapon::Incendiary;
+        case WeaponId_::Molotov:               return (int)Weapon::Molotov;
+        case WeaponId_::DecoyGrenade:          return (int)Weapon::Decoy;
+        case WeaponId_::Flashbang:             return (int)Weapon::Flashbang;
+        case WeaponId_::HighExplosiveGrenade:  return (int)Weapon::HE;
+        case WeaponId_::SmokeGrenade:          return (int)Weapon::Smoke;
         }
-    }
-
-    int LookupWeaponId(WeaponId_ id)
-    {
-        int wp = WeaponFromId(id);
-        if (wp < 0) return -1;
-        return wp;
     }
 };
 

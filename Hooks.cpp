@@ -294,7 +294,6 @@ void H::Free()
 
 	// delete hack classes
 	delete g_EventListener;
-	delete skinchanger;
 	delete miscvisuals;
 	delete world;
 	delete chams;
@@ -884,8 +883,10 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	backtrack->update(curStage);
 	world->Run_FrameStageNotify(curStage);
 	
-
-	skinchanger->run(curStage);
+	if (curStage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && G::LocalPlayer)
+	{
+		SkinChanger::FSNStart();
+	}
 
 
 	oFrameStageNotify(curStage);

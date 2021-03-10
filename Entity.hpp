@@ -71,14 +71,10 @@ public:
 		return (WeaponId )-1;
 	}
 
-	int GetOwner()
+	HANDLE GetOwner()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseEntity", "m_hOwnerEntity");
-		if((int*)((DWORD)this + offset))
-			return *(int*)((DWORD)this + offset);
-		return -1;
+		return *(HANDLE*)((DWORD)this + offset);
 	}
 
 	void* self() {
@@ -282,17 +278,18 @@ public:
 	// When changed, can be used to make a weapon appear as something else, 
 	// most commonly used to change the default knives.
 	int* GetItemDefinitionIndex() {
-		static DWORD offset = N::GetOffset("DT_WeaponBaseItem", "m_iItemDefinitionIndex");
-		if (offset == 0)
-			offset = N::GetOffset("DT_WeaponBaseItem", "m_iItemDefinitionIndex");
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemDefinitionIndex");
 		return (int*)((DWORD)this + offset);
+	}
+
+	char* GetCustomName() {
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_szCustomName");
+		return (char*)((DWORD)this + offset);
 	}
 
 	// When set to a non-zero value, fallback values will be used.
 	int* GetItemIDHigh() {
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemIDHigh");
 		return (int*)((DWORD)this + offset);
 	}
 
@@ -300,8 +297,6 @@ public:
 	// Knives always use quality 3 which makes the star appear.
 	int* GetEntityQuality() {
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iEntityQuality");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_iEntityQuality");
 		return (int*)((DWORD)this + offset);
 	}
 
@@ -309,8 +304,6 @@ public:
 	int* GetOriginalOwnerXuidLow()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidLow");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidLow");
 		return (int*)((DWORD)this + offset);
 	}
 
@@ -318,8 +311,6 @@ public:
 	int* GetOriginalOwnerXuidHigh()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidHigh");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidHigh");
 		return (int*)((DWORD)this + offset);
 	}
 	/*
@@ -331,8 +322,6 @@ public:
 	int* GetFallbackStatTrak()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackStatTrak");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackStatTrak");
 		return (int*)((DWORD)this + offset);
 	}
 
@@ -342,26 +331,20 @@ public:
 	int* GetFallbackPaintKit()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackPaintKit");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackPaintKit");
-		return (int*)((DWORD)this + offset);
-	}
-
-	// Used to randomize the pattern on the weapon for supported paint kits such as Fade, Crimson Web, Case Hardened, etc.
-	int* GetFallbackWear()
-	{
-		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_flFallbackWear");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_flFallbackWear");
 		return (int*)((DWORD)this + offset);
 	}
 
 	// Float value ranging from 0 to 1 used to determine how worn the paint on the weapon is.
+	float* GetFallbackWear()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_flFallbackWear");
+		return (float*)((DWORD)this + offset);
+	}
+
+	// Used to randomize the pattern on the weapon for supported paint kits such as Fade, Crimson Web, Case Hardened, etc.
 	int* GetFallbackSeed()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackSeed");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAttributableItem", "m_nFallbackSeed");
 		return (int*)((DWORD)this + offset);
 	}
 

@@ -1,9 +1,9 @@
 #pragma once
-struct SkinChanger
-{
-	void ForceSkin(Entity* weap, int paintkit);
-	void run(int stage);
-};
 
-extern SkinChanger* skinchanger;
+namespace SkinChanger
+{
+	extern void ClearSkin(Entity* Weapon);
+	extern void ForceSkin(Entity* Weapon, int PaintKit);
+	extern void FSNStart();
+}
 

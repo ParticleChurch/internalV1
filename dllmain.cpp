@@ -32,7 +32,6 @@ void Init()
     N::Init();       L::Log("N::Init() complete");
     G::Init();       L::Log("G::Init() complete");
     H::Init();       L::Log("H::Init() complete");
-
     GUI2::LoadProgress = 1.f;
 
     L::Log("DLLMain complete. Now waiting for ejection");

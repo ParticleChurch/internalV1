@@ -149,6 +149,6 @@ namespace Skins
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
 
-	extern int LookupWeaponId(WeaponId_ id);
+	extern constexpr int WeaponFromId(WeaponId_ id);
 	extern PaintKit* PaintKitFromID(int ID);
 }
