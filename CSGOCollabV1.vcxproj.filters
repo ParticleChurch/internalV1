@@ -82,9 +82,6 @@
     <ClCompile Include="Hacks\Misc\KillSay.cpp">
       <Filter>Source\Hacks\Misc</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\ConfigManager.cpp">
-      <Filter>Source\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\VKeys.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
@@ -356,9 +353,6 @@
     </ClInclude>
     <ClInclude Include="Hacks\Misc\KillSay.hpp">
       <Filter>Headers\Hacks\Misc</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\ConfigManager.hpp">
-      <Filter>Headers\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GUI\VKeys.hpp">
       <Filter>Headers\GUI</Filter>

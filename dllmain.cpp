@@ -21,7 +21,6 @@ void Init()
     GUI2::LoadProgress = 0.f;
 
     L::Init();    L::Log("DLLMain executed");
-    Config::Init();  L::Log("Config::Init() complete");
     Config2::Init(); L::Log("Config2::Init() complete");
     I::GUIInit(); L::Log("I::GUIInit() complete");
     G::GUIInit(); L::Log("G::GUIInit() complete");

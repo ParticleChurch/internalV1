@@ -3,18 +3,7 @@
 #include "animation.hpp"
 #include "SkinConstants.hpp"
 #include "TextService.hpp"
-
-namespace GUI {
-	constexpr int PropertyLabelsWidth = 150;
-	extern bool IgnoreLButton; // ignore mouse1 click (don't toggle switches bound to mouse1)
-	extern Config::Property* CurrentlyChoosingKeybindFor;
-
-	extern void LoadFonts(ImGuiIO& io);
-	extern bool Main();
-	extern bool HackMenu();
-	extern bool LoginMenu();
-	extern void ProcessingLoginMenu();
-}
+#include "Config.hpp"
 
 namespace GUI2
 {
@@ -35,6 +24,8 @@ namespace GUI2
 	extern bool IsSearching;
 	extern char* SearchQuery;
 	extern Config2::Tab* ActiveTab;
+
+	extern void LoadFonts(ImGuiIO& io);
 
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);

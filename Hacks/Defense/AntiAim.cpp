@@ -266,7 +266,7 @@ float AntiAim::AtTargets()
 
 	return BestAng.y + 180.f;
 }
-
+/*
 void AntiAim::rage2()
 {
 	if (!Config::GetBool("antiaim-rage-enable"))
@@ -357,9 +357,7 @@ void AntiAim::rage2()
 	real.NormalizeAngle();
 }
 
-/*
-Random fake, freestanding real
-*/
+//Random fake, freestanding real
 void AntiAim::rage3()
 {
 	if (!Config::GetBool("antiaim-rage-enable"))
@@ -403,7 +401,7 @@ void AntiAim::rage3()
 	float Delta = G::LocalPlayer->GetMaxDesyncAngle();
 	if(*G::pSendPacket && !BreakLBY)
 		Delta *= (rand() % 2 ? -1 : 1) * ((rand() % 100) / 100.f);
-	/*G::cmd->viewangles.y += -Delta;*/
+	//G::cmd->viewangles.y += -Delta;
 
 	//side by default = left
 	if (!BreakLBY)
@@ -443,6 +441,7 @@ void AntiAim::rage3()
 	real.NormalizeAngle();
 
 }
+*/
 
 bool WorldToScreen2(Vec& in, Vec& out)
 {

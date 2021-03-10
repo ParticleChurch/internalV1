@@ -92,10 +92,8 @@ public:
 				I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
 
 			if (userid == localIdx && HitGroup == 1) { //if hitting head
-				bool orig = Config::GetState("antiaim-legit-invert");
-				Config::SetBool("antiaim-legit-invert", !orig);
-				orig = Config::GetState("antiaim-rage-invert");
-				Config::SetBool("antiaim-rage-invert", !orig);
+				static auto LegitInvert = Config2::GetState("antiaim-legit-invert");
+				LegitInvert->Invert();
 			}
 
 			/*Entity* ent = I::entitylist->GetClientEntity(userid);
@@ -324,7 +322,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 
-		GUI::LoadFonts(io);
+		GUI2::LoadFonts(io);
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
@@ -409,9 +407,10 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static auto MenuOpen = Config2::GetState("show-menu");
+	if (!D3dInit) return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	L::Verbose("H::WndProc - begin");
 
-	L::Verbose("H::WndProc - begin", "\n", false);
+	static auto MenuOpen = Config2::GetState("show-menu");
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
 	bool IsMouseInput =
 		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL ||
@@ -420,88 +419,19 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
 		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK;
 
-	L::Verbose(IsKeyboardInput ? "Key":"No-Key", "\n", false);
-	L::Verbose(IsMouseInput ? "Mouse" : "No-Mouse", "\n", false);
-	// keydowns
-	int KeyDown = -1;
-	if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
-		KeyDown = wParam;
-	else if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK)
-		KeyDown = VK_LBUTTON;
-	else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONDBLCLK)
-		KeyDown = VK_RBUTTON;
-	else if (uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK)
-		KeyDown = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
-	else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK)
-		KeyDown = VK_MBUTTON;
-
-	L::Verbose("KeyDown", "\n", false);
-
-	// keyups
-	int KeyUp = -1;
-	if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)
-		KeyUp = wParam;
-	else if (uMsg == WM_LBUTTONUP)
-		KeyUp = VK_LBUTTON;
-	else if (uMsg == WM_RBUTTONUP)
-		KeyUp = VK_RBUTTON;
-	else if (uMsg == WM_XBUTTONUP)
-		KeyUp = GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2;
-	else if (uMsg == WM_MBUTTONUP)
-		KeyUp = VK_MBUTTON;
-
-	L::Verbose("KeyUp", "\n", false);
-
-	/*
-		check keybinds
-	*/
-	// TODO: check if they are:
-	//     - typing in the menu
-	//     - typing in csgo chat
-	//     - typing in steam overlay
-	if (GUI::CurrentlyChoosingKeybindFor)
-	{
-		L::Verbose("CurrentlyChoosingKeybindFor", "\n", false);
-		if (KeyDown > 0 && KeyDown != VK_LBUTTON)
-		{
-			Config::Bind(GUI::CurrentlyChoosingKeybindFor, KeyDown);
-			GUI::CurrentlyChoosingKeybindFor = nullptr;
-		}
-		else if (KeyUp == VK_LBUTTON && !GUI::IgnoreLButton)
-		{
-			Config::Bind(GUI::CurrentlyChoosingKeybindFor, VK_LBUTTON);
-			GUI::CurrentlyChoosingKeybindFor = nullptr;
-		}
-	}
-	else if (KeyDown > 0 && !(KeyDown == VK_LBUTTON && GUI::IgnoreLButton))
-	{
-		L::Verbose("KeyPressed", "\n", false);
-		Config::KeyPressed(KeyDown);
-	}
-	else if (KeyUp > 0 && !(KeyUp == VK_LBUTTON && GUI::IgnoreLButton))
-	{
-		L::Verbose("KeyReleased", "\n", false);
-		Config::KeyReleased(KeyUp);
-	}
-		
-
 	// give imgui input
-	if (D3dInit && MenuOpen->Get())
-	{
-		L::Verbose("ImGui_ImplWin32_WndProcHandler", "\n", false);
+	if (MenuOpen->Get())
 		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-	}
-		
-	L::Verbose("doing io stuff", "\n", false);
+	
+	// determine if csgo should receive this input
 	ImGuiIO& io = ImGui::GetIO();
-	bool ogOutput = false;
-	L::Verbose("IsMouseInput check", "\n", false);
-	if ((IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard))
-		ogOutput = false;
+	bool HideInputFromCSGO = (IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard);
+
+	L::Verbose("H::WndProc - complete");
+	if (HideInputFromCSGO)
+		return false;
 	else
-		ogOutput = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-	L::Verbose("H::WndProc - complete", "\n", false);
-	return ogOutput;
+		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 float RandomVal(float min, float max)
@@ -840,8 +770,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		if (I::input->m_fCameraInThirdPerson)
 			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
 		
-		if (G::LocalPlayer && G::LocalPlayerAlive &&  
-			Config::GetBool("visuals-misc-thirdperson") && true)
+		static auto ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
+		if (G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
