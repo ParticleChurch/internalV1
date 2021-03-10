@@ -4,7 +4,9 @@ KillSay* killsay = new KillSay();
 
 void KillSay::run(GameEvent* event)
 {
-	if (!Config::GetBool("misc-other-killsay"))
+	static Config2::CState* Enable = Config2::GetState("misc-other-killsay");
+	static Config2::CTextInput* Text = Config2::GetText("misc-other-killsay-input");
+	if (!Enable->Get())
 		return;
 
 	if (StrHash::HashRuntime(event->GetName()) == StrHash::Hash("player_death"))
@@ -43,7 +45,7 @@ void KillSay::run(GameEvent* event)
 
 		
 		player_info_t info;
-		std::string line = ("say " + Config::GetText("misc-other-killsay-input"));
+		std::string line = ("say " + Text->Get());
 		if (I::engine->GetPlayerInfo(victim, &info))
 		{
 			// string parse p
