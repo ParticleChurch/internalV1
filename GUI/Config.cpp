@@ -1365,10 +1365,10 @@ namespace Config2
 				Group* g = t->Add("Other");
 				g->Add("show-menu", "Menu Toggle", new CBoolean(true));
 				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
-				g->Add("misc-other-killsay", "Kill Say", new CBoolean());
-				CONFIG_VIS(g->Add("misc-other-killsay-input", "Text", new CTextInput()), nullptr, GetState("misc-other-killsay"), 1);
-				g->Add("misc-other-clantag", "Clantag", new CBoolean());
-				CONFIG_VIS(g->Add("misc-other-clantag-input", "Text", new CTextInput()), nullptr, GetState("misc-other-clantag"), 1);
+				g->Add("misc-other-killsay", "KillSay", new CBoolean());
+				g->Add("misc-other-killsay-input", "KillSay Text", new CTextInput());
+				g->Add("misc-other-clantag", "Clantag Changer", new CBoolean());
+				g->Add("misc-other-clantag-input", "Clantag Text", new CTextInput());
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
 		}
