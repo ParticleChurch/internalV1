@@ -55,7 +55,7 @@ void Backtrack::GetClosestTick(int RecordUserID, int& BestTickCount)
 
 void Backtrack::update(int CurStage)
 {
-	static Config2::CFloat* BacktrackTime = Config2::GetFloat("backtracking-time");
+	static Config2::CFloat* BacktrackTime = Config2::GetFloat("legitaim-backtrack-time");
 
 	if (CurStage != FRAME_RENDER_START)
 		return;

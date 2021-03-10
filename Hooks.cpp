@@ -332,14 +332,14 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		L::Verbose("H::EndSceneHook d3d9 init complete", "\n", false);
 	}
 
-	IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
+	/*IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
 	bool InGame = I::engine->IsInGame();
 	if (InGame && D3dInit && D3d9Device)
 	{
 		D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
 		D3d9Device->GetVertexDeclaration(&vertDec);
 		D3d9Device->GetVertexShader(&vertShader);
-	}
+	}*/
 	
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -378,7 +378,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-	if (InGame && pixel_state && D3d9Device)
+	/*if (InGame && pixel_state && D3d9Device)
 	{
 		L::Verbose("H::EndSceneHook Restoring pixelstate", "\n", false);
 		pixel_state->Apply();
@@ -387,7 +387,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			D3d9Device->SetVertexDeclaration(vertDec);
 		if(vertShader)
 			D3d9Device->SetVertexShader(vertShader);
-	}
+	}*/
 
 	if (GUI2::Ejected)
 	{
