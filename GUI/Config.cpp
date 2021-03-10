@@ -1433,7 +1433,7 @@ namespace Config2
 			{
 				Group* g = t->Add("Slide-Select & Dropdowns");
 
-				g->Add("theme-property-example5", "Slide-Select Reference", new CHorizontalState({ "Here", "Are", "Some", "Options", "8===D" }));
+				g->Add("theme-property-example5", "Slide-Select Reference", new CHorizontalState({ "Here", "Are", "Some", "Options" }));
 				g->Add("theme-property-example3", "Dropdown Reference 1", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
 				g->Add("theme-property-example4", "Dropdown Reference 2", new CVerticalState({ "Never", "Gonna", "Let", "You", "Down" }, true));
 
