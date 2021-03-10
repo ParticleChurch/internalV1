@@ -659,8 +659,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->RageAutoStrafe();
 
 		// bad animation fix (for third person)
+		static Config2::CState* LegitAA = Config2::GetState("antiaim-legit-enable");
+		static Config2::CState* RageAA = Config2::GetState("antiaim-rage-enable");
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
-			(!Config::GetBool("antiaim-legit-enable") && !Config::GetBool("antiaim-rage-enable")))
+			(!LegitAA->Get() && !RageAA->Get()))
 		{
 			antiaim->real = G::cmd->viewangles;
 			antiaim->fake = G::cmd->viewangles;
@@ -721,6 +723,8 @@ void LocalAnimFix(Entity* entity)
 	if (!entity || !entity->GetHealth() || !G::cmd)
 		return;
 
+	float duck = G::LocalPlayer->GetAnimstate()->m_fDuckAmount;
+
 	static float proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
 	
 	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
@@ -747,7 +751,7 @@ void LocalAnimFix(Entity* entity)
 	
 	entity->ClientAnimations() = false;
 	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	entity->GetAnimstate()->m_flUnknownFraction = 0.f;
+	entity->GetAnimstate()->m_flUnknownFraction = duck;// 
 	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
 	entity->m_flPoseParameter() = sent_pose_params;
 	

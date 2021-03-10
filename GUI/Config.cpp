@@ -1213,7 +1213,7 @@ namespace Config2
 				p = g->Add("visuals-chams-localplayer-real-enable", "Enable", new CBoolean());
 				p->VisibilityLinked = GetProperty("chams-local-visibility");
 				p->Visible.State = GetState("chams-local-visibility");
-				p->Visible.StateEquals = 0;
+				p->Visible.StateEquals = 1;
 				g->Add("visuals-chams-localplayer-real-color", "Color", new CColor(true))->VisibilityLinked = p;
 				g->Add("visuals-chams-localplayer-real-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 
@@ -1221,7 +1221,7 @@ namespace Config2
 				p = g->Add("visuals-chams-localplayer-fake-enable", "Enable", new CBoolean());
 				p->VisibilityLinked = GetProperty("chams-local-visibility");
 				p->Visible.State = GetState("chams-local-visibility");
-				p->Visible.StateEquals = 1;
+				p->Visible.StateEquals = 0;
 				g->Add("visuals-chams-localplayer-fake-color", "Color", new CColor(true))->VisibilityLinked = p;
 				g->Add("visuals-chams-localplayer-fake-material", "Material", new CVerticalState({ CHAM_MATERIALS }))->VisibilityLinked = p;
 #undef CHAM_MATERIALS
