@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "TextService.hpp"
+#include "../Valve/Custom/WeaponId.hpp"
 
 namespace Skins
 {
@@ -148,5 +149,6 @@ namespace Skins
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
 
+	extern int LookupWeaponId(WeaponId_ id);
 	extern PaintKit* PaintKitFromID(int ID);
 }

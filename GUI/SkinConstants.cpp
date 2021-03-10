@@ -990,6 +990,56 @@ namespace Skins
             if (PaintKits.at(i).ID == ID) return &PaintKits.at(i);
         return nullptr;
     }
+
+    constexpr int WeaponFromId(WeaponId_ id)
+    {
+        switch (id)
+        {
+        default: return -1;
+        case WeaponId_::DesertEagle:   return (int)Weapon::DesertEagle;
+        case WeaponId_::DualBerettas:  return (int)Weapon::DualBerettas;
+        case WeaponId_::FiveSeveN:     return (int)Weapon::FiveSeven;
+        case WeaponId_::Glock18:       return (int)Weapon::Glock18;
+        case WeaponId_::AK47:          return (int)Weapon::AK47;
+        case WeaponId_::AUG:           return (int)Weapon::AUG;
+        case WeaponId_::AWP:           return (int)Weapon::AWP;
+        case WeaponId_::FAMAS:         return (int)Weapon::FAMAS;
+        case WeaponId_::G3SG1:         return (int)Weapon::G3SG1;
+        case WeaponId_::GalilAR:       return (int)Weapon::Galil;
+        case WeaponId_::M249:          return (int)Weapon::M249;
+        case WeaponId_::M4A4:          return (int)Weapon::M4A4;
+        case WeaponId_::MAC10:         return (int)Weapon::MAC10;
+        case WeaponId_::P90:           return (int)Weapon::P90;
+        case WeaponId_::MP5SD:         return (int)Weapon::MP5;
+        case WeaponId_::UMP45:         return (int)Weapon::UMP45;
+        case WeaponId_::XM1014:        return (int)Weapon::XM1014;
+        case WeaponId_::PPBizon:       return (int)Weapon::PPBizon;
+        case WeaponId_::MAG7:          return (int)Weapon::MAG7;
+        case WeaponId_::Negev:         return (int)Weapon::Negev;
+        case WeaponId_::SawedOff:      return (int)Weapon::SawedOff;
+        case WeaponId_::Tec9:          return (int)Weapon::Tec9;
+        case WeaponId_::Zeusx27:       return (int)Weapon::Zeus;
+        case WeaponId_::P2000:         return (int)Weapon::P2000;
+        case WeaponId_::MP7:           return (int)Weapon::MP7;
+        case WeaponId_::MP9:           return (int)Weapon::MP9;
+        case WeaponId_::Nova:          return (int)Weapon::Nova;
+        case WeaponId_::P250:          return (int)Weapon::P250;
+        case WeaponId_::SCAR20:        return (int)Weapon::SCAR20;
+        case WeaponId_::SG553:         return (int)Weapon::SG553;
+        case WeaponId_::SSG08:         return (int)Weapon::SSG08;
+        case WeaponId_::M4A1S:         return (int)Weapon::M4A1S;
+        case WeaponId_::USPS:          return (int)Weapon::USPS;
+        case WeaponId_::CZ75Auto:      return (int)Weapon::CZ75;
+        case WeaponId_::R8Revolver:    return (int)Weapon::R8Revolver;
+        }
+    }
+
+    int LookupWeaponId(WeaponId_ id)
+    {
+        int wp = WeaponFromId(id);
+        if (wp < 0) return -1;
+        return wp;
+    }
 };
 
 /*

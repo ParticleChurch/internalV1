@@ -885,7 +885,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 	world->Run_FrameStageNotify(curStage);
 	
 
-	/*skinchanger->run(curStage);*/
+	skinchanger->run(curStage);
 
 
 	oFrameStageNotify(curStage);
