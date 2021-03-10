@@ -723,9 +723,7 @@ void LocalAnimFix(Entity* entity)
 	if (!entity || !entity->GetHealth() || !G::cmd)
 		return;
 
-	// no point in doing it if we are in first person retard
-	if (!I::input->m_fCameraInThirdPerson)
-		return;
+	float duck = G::LocalPlayer->GetAnimstate()->m_fDuckAmount;
 
 	static float proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
 	
@@ -753,7 +751,7 @@ void LocalAnimFix(Entity* entity)
 	
 	entity->ClientAnimations() = false;
 	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	entity->GetAnimstate()->m_flUnknownFraction = 0.f;
+	entity->GetAnimstate()->m_flUnknownFraction = duck;// 
 	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
 	entity->m_flPoseParameter() = sent_pose_params;
 	
