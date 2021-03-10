@@ -886,6 +886,10 @@ namespace Config2
 	struct CVerticalState; // lmaoooo i really called a dropdown this
 	struct CMultiSelect;
 
+	// util
+	extern void _KeyStateChanged(int index, bool currentlyPressed);
+	extern void _BindToKey(Property* p, int index);
+
 	// getters
 	extern Property* GetProperty(std::string Name);
 	extern int GetKeybind(std::string Name);

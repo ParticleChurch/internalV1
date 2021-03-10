@@ -1363,6 +1363,7 @@ namespace Config2
 			}
 			{
 				Group* g = t->Add("Other");
+				g->Add("show-menu", "Menu Toggle", new CBoolean(true));
 				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
 				g->Add("misc-other-killsay", "Kill Say", new CBoolean());
 				CONFIG_VIS(g->Add("misc-other-killsay-input", "Text", new CTextInput()), nullptr, GetState("misc-other-killsay"), 1);
@@ -1499,6 +1500,9 @@ namespace Config2
 		}
 
 		ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
+		// TODO: ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize)
+		_BindToKey(GetProperty("show-menu"), Keybind::ReverseKeyMap(VK_INSERT));
+		GetState("show-menu")->Set(true);
 	}
 
 	Property* GetProperty(std::string Name)
@@ -1649,8 +1653,9 @@ namespace Config2
 
 	void _BindToKey(Property* p, int index)
 	{
-		if (index >= 0 && Keybind::KeyMap[index] == VK_ESCAPE)
-			index = -1;
+		if (index < 0 || index >= Keybind::nKeys || Keybind::KeyMap[index] == VK_ESCAPE)
+			index = p->Name == "show-menu" ? Keybind::ReverseKeyMap(VK_INSERT) : -1;
+
 		bool ForceUpdate = index >= 0;
 
 		switch (p->Type)

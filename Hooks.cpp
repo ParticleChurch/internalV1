@@ -411,6 +411,8 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static auto MenuOpen = Config2::GetState("show-menu");
+
 	L::Verbose("H::WndProc - begin", "\n", false);
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
 	bool IsMouseInput =
@@ -486,7 +488,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		
 
 	// give imgui input
-	if (D3dInit && Config::GetBool("show-menu"))
+	if (D3dInit && MenuOpen->Get())
 	{
 		L::Verbose("ImGui_ImplWin32_WndProcHandler", "\n", false);
 		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
@@ -893,8 +895,9 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 void __stdcall H::LockCursorHook()
 {
+	static auto MenuOpen = Config2::GetState("show-menu");
 	L::Verbose("H::LockCursorHook - begin");
-	if (Config::GetBool("show-menu"))
+	if (MenuOpen->Get())
 		I::surface->UnlockCursor();
 	else
 		oLockCursor(I::surface);

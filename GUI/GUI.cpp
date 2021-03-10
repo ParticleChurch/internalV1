@@ -1504,7 +1504,8 @@ Config::Tab* CurrentTab = 0;
 bool HackMenuPageHasScrollbar = false;
 bool GUI::HackMenu()
 {
-	if (!Config::GetBool("show-menu"))
+	static auto MenuOpen = Config2::GetState("show-menu");
+	if (!MenuOpen->Get())
 		return false;
 
 	bool eject = false;
@@ -2512,49 +2513,56 @@ namespace ImGui
 
 			if (p == Config2::SettingKeybindFor) // this is being set right now
 			{
-
 				PushFont(Arial12);
-				const char* Prefix = "MODE:";
-				ImVec2 PrefixSize = CalcTextSize(Prefix);
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
-				Text(Prefix);
-				PopFont();
-
-				PushStyleColor(ImGuiCol_Button, 0);
-				PushStyleColor(ImGuiCol_ButtonHovered, 0);
-				PushStyleColor(ImGuiCol_ButtonActive, 0);
-				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
-				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
-				PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
-				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
-				int ItemWidth = 60;
-				BeginChild(("##bindmode-" + p->Name).c_str(), ImVec2(ItemWidth * 3, 20), true);
-				auto bruh_window = GetCurrentWindow();
-				auto bruh_dl = bruh_window->DrawList;
-				SetCursorPos(ImVec2(ItemWidth * (int)Value->BindMode, 0));
-				bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), *ButtonActive, 0, 0);
-				for (int i = 0; i < 3; i++)
+				if (p->Name != "show-menu")
 				{
-					SetCursorPos(ImVec2(ItemWidth * i, 0));
-					if (Button((Config2::KeybindTypeNames[i] + "##" + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+					const char* Prefix = "MODE:";
+					ImVec2 PrefixSize = CalcTextSize(Prefix);
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
+					Text(Prefix);
+					PopFont();
+
+					PushStyleColor(ImGuiCol_Button, 0);
+					PushStyleColor(ImGuiCol_ButtonHovered, 0);
+					PushStyleColor(ImGuiCol_ButtonActive, 0);
+					PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
+					PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+					PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
+					PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
+					int ItemWidth = 60;
+					BeginChild(("##bindmode-" + p->Name).c_str(), ImVec2(ItemWidth * 3, 20), true);
+					auto bruh_window = GetCurrentWindow();
+					auto bruh_dl = bruh_window->DrawList;
+					SetCursorPos(ImVec2(ItemWidth * (int)Value->BindMode, 0));
+					bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), *ButtonActive, 0, 0);
+					for (int i = 0; i < 3; i++)
 					{
-						Value->BindMode = (Config2::KeybindMode)i;
+						SetCursorPos(ImVec2(ItemWidth * i, 0));
+						if (Button((Config2::KeybindTypeNames[i] + "##" + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+						{
+							Value->BindMode = (Config2::KeybindMode)i;
+						}
+						GUI2::WantMouse |= IsItemHovered();
 					}
-					GUI2::WantMouse |= IsItemHovered();
+					EndChild();
+					PopStyleColor(5);
+					PopStyleVar(2);
+
+					PushFont(Arial12);
+					const char* Suffix = "[PRESS A KEY]";
+					ImVec2 SuffixSize = CalcTextSize(Suffix);
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
+					Text(Suffix);
 				}
-				EndChild();
-				PopStyleColor(5);
-				PopStyleVar(2);
-
-				PushFont(Arial12);
-				const char* Suffix = "[PRESS A KEY]";
-				ImVec2 SuffixSize = CalcTextSize(Suffix);
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
-				Text(Suffix);
+				else
+				{
+					// this is the show menu boolean
+					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - 12) / 2));
+					Text("[PRESS A KEY]");//
+				}
 				PopFont();
-
 			}
 			else if (Value->BoundToKey >= 0) // this key is already bound
 			{
@@ -2585,19 +2593,22 @@ namespace ImGui
 				SetCursorPos(Pos + ImVec2(x, 0));
 				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
-					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
-					for (size_t i = 0; i < vec.size(); i++)
-						if (vec.at(i) == (void*)p)
-							vec.erase(vec.begin() + i--);
-
-					Value->BoundToKey = -1;
-					Config2::SettingKeybindFor = nullptr;
-					GUI2::WantMouse = true;
+					if (p->Name == "show-menu")
+					{
+						Config2::SettingKeybindFor = p;
+						GUI2::WantMouse = true;
+					}
+					else
+					{
+						Config2::_BindToKey(p, -1);
+						Config2::SettingKeybindFor = nullptr;
+						GUI2::WantMouse = true;
+					}
 				}
 				else if (IsItemHovered())
 				{
 					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
-					ToolTip("Click To Clear", 20);
+					ToolTip(p->Name == "show-menu" ? "Click To Edit" : "Click To Clear", 20);
 					GUI2::WantMouse = true;
 				}
 
@@ -4975,7 +4986,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopFont();
 
 	ImGui::PopStyleVar(8);
-	ImGui::PopStyleColor(16);
+	ImGui::PopStyleColor(17);
 }
 
 void GUI2::Init()
@@ -4991,6 +5002,7 @@ void GUI2::Init()
 
 void GUI2::Main()
 {
+	static auto MenuOpen = Config2::GetState("show-menu");
 	++Config2::GUIFramesRenderedCounter;
 	L::Verbose(("GUI2::Main executed (frame " + std::to_string(Config2::GUIFramesRenderedCounter) + ")").c_str());
 	static bool Init = false;
@@ -5009,7 +5021,7 @@ void GUI2::Main()
 	}
 	else if (UserData::Initialized)
 	{
-		if (Config::GetBool("show-menu"))
+		if (MenuOpen->Get())
 		{
 			L::Verbose("GUI2::MainScreen running");
 			MainScreen();

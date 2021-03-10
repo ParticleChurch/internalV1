@@ -21,6 +21,8 @@ void Init()
     GUI2::LoadProgress = 0.f;
 
     L::Init();    L::Log("DLLMain executed");
+    Config::Init();  L::Log("Config::Init() complete");
+    Config2::Init(); L::Log("Config2::Init() complete");
     I::GUIInit(); L::Log("I::GUIInit() complete");
     G::GUIInit(); L::Log("G::GUIInit() complete");
     H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up
@@ -29,8 +31,6 @@ void Init()
     I::Init();       L::Log("I::Init() complete");
     N::Init();       L::Log("N::Init() complete");
     G::Init();       L::Log("G::Init() complete");
-    Config::Init();  L::Log("Config::Init() complete");
-    Config2::Init(); L::Log("Config2::Init() complete");
     H::Init();       L::Log("H::Init() complete");
 
     GUI2::LoadProgress = 1.f;
