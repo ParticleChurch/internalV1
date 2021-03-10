@@ -659,8 +659,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->RageAutoStrafe();
 
 		// bad animation fix (for third person)
+		static Config2::CState* LegitAA = Config2::GetState("antiaim-legit-enable");
+		static Config2::CState* RageAA = Config2::GetState("antiaim-rage-enable");
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
-			(!Config::GetBool("antiaim-legit-enable") && !Config::GetBool("antiaim-rage-enable")))
+			(!LegitAA->Get() && !RageAA->Get()))
 		{
 			antiaim->real = G::cmd->viewangles;
 			antiaim->fake = G::cmd->viewangles;
@@ -719,6 +721,10 @@ bool fresh_tick()
 void LocalAnimFix(Entity* entity)
 {
 	if (!entity || !entity->GetHealth() || !G::cmd)
+		return;
+
+	// no point in doing it if we are in first person retard
+	if (!I::input->m_fCameraInThirdPerson)
 		return;
 
 	static float proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
