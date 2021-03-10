@@ -147,4 +147,6 @@ namespace Skins
 	extern std::vector<PaintKit> PaintKits;
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
+
+	extern PaintKit* PaintKitFromID(int ID);
 }

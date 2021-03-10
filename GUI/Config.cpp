@@ -1743,6 +1743,12 @@ namespace Config2
 		// determine space_needed
 		switch (p->Type)
 		{
+		case PropertyType::TEXTINPUT:
+		{
+			valueLength = ((CTextInput*)p->Value)->DataSize;
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
+		} break;
 		case PropertyType::BOOLEAN:
 		{
 			valueLength = 1;
@@ -1832,6 +1838,10 @@ namespace Config2
 			// value
 			switch (p->Type)
 			{
+			case PropertyType::TEXTINPUT:
+			{
+				memcpy(*buffer + *bufferSpaceOccupied, ((CTextInput*)p->Value)->Data, ((CTextInput*)p->Value)->DataSize);
+			} break;
 			case PropertyType::BOOLEAN:
 			{
 				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value.Get() != 0 ? '\xFF' : '\x00';
@@ -1923,6 +1933,11 @@ namespace Config2
 		const char* value = buffer + sizeof(size_t) + nameSize;
 		switch (p->Type)
 		{
+		case PropertyType::TEXTINPUT:
+		{
+			ZeroMemory(((CTextInput*)p->Value)->Data, ((CTextInput*)p->Value)->DataSize);
+			memcpy(((CTextInput*)p->Value)->Data, value, min(((CTextInput*)p->Value)->DataSize, valueSize));
+		} break;
 		case PropertyType::BOOLEAN:
 		{
 			if (valueSize != 1 && valueSize != 1 + 1 + sizeof(int)) return false;
@@ -1955,8 +1970,12 @@ namespace Config2
 		} break;
 		case PropertyType::PAINTKIT:
 		{
-			if (valueSize != sizeof(float)) return false;
-			((CFloat*)p->Value)->Set(*(float*)(value));
+			if (valueSize != sizeof(int) * 3) return false;
+			Skins::PaintKit* pk = Skins::PaintKitFromID(((int*)value)[0]);
+			if (!pk) return false;
+			((CPaintKit*)p->Value)->PaintKit = pk;
+			((CPaintKit*)p->Value)->Mode = ((int*)value)[1];
+			((CPaintKit*)p->Value)->Version = ((int*)value)[2];
 		} break;
 		case PropertyType::COLOR:
 		{

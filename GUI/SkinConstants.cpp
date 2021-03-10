@@ -983,6 +983,13 @@ namespace Skins
         PaintKit(1033, XOR("Carved Jade"), (1ull << (uint64_t)Weapon::AUG)),
         PaintKit(1034, XOR("Ancient Ritual"), (1ull << (uint64_t)Weapon::G3SG1)),
 	};
+
+    PaintKit* PaintKitFromID(int ID)
+    {
+        for (size_t i = 0; i < PaintKits.size(); i++)
+            if (PaintKits.at(i).ID == ID) return &PaintKits.at(i);
+        return nullptr;
+    }
 };
 
 /*
