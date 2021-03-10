@@ -1290,16 +1290,14 @@ namespace Config2
 	{
 		static const PropertyType Type = PropertyType::MULTISELECT;
 	
-	private:
-		uint64_t mask = 0;
-
 	public:
+		uint64_t Mask = 0;
 		std::vector<std::string> StateNames;
 
 		CMultiSelect(std::vector<std::string> States)
 		{
 			StateNames = States;
-			mask = 0;
+			Mask = 0;
 		}
 
 		__forceinline size_t CountSelected()
@@ -1318,18 +1316,13 @@ namespace Config2
 				L::Log("AYOOO YOU CAN'T SET MORE THAN 64 THINGS");
 				return false;
 			}
-			return this->mask & ((uint64_t)1 << index);
+			return this->Mask & ((uint64_t)1 << index);
 		}
 
 		__forceinline void Set(size_t index, bool value)
 		{
 			if (Get(index) == value) return;
-			this->mask ^= ((uint64_t)1 << index);
-		}
-
-		__forceinline uint64_t GetMask()
-		{
-			return this->mask;
+			this->Mask ^= ((uint64_t)1 << index);
 		}
 	};
 

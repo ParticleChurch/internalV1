@@ -272,19 +272,19 @@ void Aimbot::GetLegitHitboxes(int gun)
 	switch (gun)
 	{
 	case 0:
-		selection = Pistol_Hitbox->GetMask();
+		selection = Pistol_Hitbox->Mask;
 		break;
 	case 1:
-		selection = SMG_Hitbox->GetMask();
+		selection = SMG_Hitbox->Mask;
 		break;
 	case 2:
-		selection = Heavy_Hitbox->GetMask();
+		selection = Heavy_Hitbox->Mask;
 		break;
 	case 3:
-		selection = Rifle_Hitbox->GetMask();
+		selection = Rifle_Hitbox->Mask;
 		break;
 	case 4:
-		selection = Sniper_Hitbox->GetMask();
+		selection = Sniper_Hitbox->Mask;
 		break;
 	default:
 		return;
@@ -737,31 +737,31 @@ void Aimbot::GetRageHitboxes(int gun)
 	{
 	case 0:
 		L::Verbose("pistol");
-		selection = Pistol_Hitbox_R->GetMask();
+		selection = Pistol_Hitbox_R->Mask;
 		break;
 	case 1:
 		L::Verbose("smg");
-		selection = SMG_Hitbox_R->GetMask();
+		selection = SMG_Hitbox_R->Mask;
 		break;
 	case 2:
 		L::Verbose("heavy");
-		selection = Heavy_Hitbox_R->GetMask();
+		selection = Heavy_Hitbox_R->Mask;
 		break;
 	case 3:
 		L::Verbose("rifle");
-		selection = Scout_Hitbox_R->GetMask();
+		selection = Scout_Hitbox_R->Mask;
 		break;
 	case 4:
 		L::Verbose("scout");
-		selection = AWP_Hitbox_R->GetMask();
+		selection = AWP_Hitbox_R->Mask;
 		break;
 	case 5:
 		L::Verbose("awp");
-		selection = Auto_Hitbox_R->GetMask();
+		selection = Auto_Hitbox_R->Mask;
 		break;
 	case 6:
 		L::Verbose("auto");
-		selection = Rifle_Hitbox_R->GetMask();
+		selection = Rifle_Hitbox_R->Mask;
 		break;
 	default:
 		return;

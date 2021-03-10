@@ -1367,13 +1367,8 @@ namespace Config2
 				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
 				g->Add("misc-other-killsay", "Kill Say", new CBoolean());
 				CONFIG_VIS(g->Add("misc-other-killsay-input", "Text", new CTextInput()), nullptr, GetState("misc-other-killsay"), 1);
-				//g->Add(false, 0, "misc-other-killsay-input", "Kill Say Text", 256, "Get pwnd by a4g4.com!");
-				//TODO - add input area for custom killsay insult
-				//w->AddProperty(false, 2, "misc-other-fullautopistol", "Full Auto Pistol", false, false); //aka autopistol
-				// w->AddProperty(false, 2, "misc-other-fakeunbox", "Fake Unbox", false, false);
-				// TODO - add area to input what they are unboxing
-				/*w->AddProperty(false, 0, "misc-other-clantag", "Clantag", false, false);*/
-				//g->Add(false, 0, "misc-other-clantag-input", "Clantag", 256, "a4g4.com");
+				g->Add("misc-other-clantag", "Clantag", new CBoolean());
+				CONFIG_VIS(g->Add("misc-other-clantag-input", "Text", new CTextInput()), nullptr, GetState("misc-other-clantag"), 1);
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
 		}
@@ -1750,8 +1745,10 @@ namespace Config2
 		{
 		case PropertyType::BOOLEAN:
 		{
-			// boolvalue + bindmode + VK code : boolvalue
-			valueLength = ((CBoolean*)p->Value)->Bindable ? 1 + 1 + 4 : 1;
+			valueLength = 1;
+			if (((CBoolean*)p->Value)->Bindable)
+				valueLength += sizeof(int) + 1;
+
 			spaceRequired += p->Name.length() + 1;
 			spaceRequired += valueLength;
 		} break;
@@ -1761,9 +1758,39 @@ namespace Config2
 			spaceRequired += p->Name.length() + 1;
 			spaceRequired += valueLength;
 		} break;
+		case PropertyType::PAINTKIT:
+		{
+			valueLength = sizeof(int) * 3;
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
+		} break;
 		case PropertyType::COLOR:
 		{
 			valueLength = sizeof(unsigned char) * 4;
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
+		} break;
+		case PropertyType::HSTATEFUL:
+		{
+			valueLength = sizeof(int);
+			if (((CHorizontalState*)p->Value)->Bindable)
+				valueLength += sizeof(int);
+
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
+		} break;
+		case PropertyType::VSTATEFUL:
+		{
+			valueLength = sizeof(int);
+			if (((CVerticalState*)p->Value)->Bindable)
+				valueLength += sizeof(int);
+
+			spaceRequired += p->Name.length() + 1;
+			spaceRequired += valueLength;
+		} break;
+		case PropertyType::MULTISELECT:
+		{
+			valueLength = sizeof(uint64_t);
 			spaceRequired += p->Name.length() + 1;
 			spaceRequired += valueLength;
 		} break;
@@ -1810,19 +1837,7 @@ namespace Config2
 				(*buffer)[*bufferSpaceOccupied] = ((CBoolean*)p->Value)->Value.Get() != 0 ? '\xFF' : '\x00';
 				if (((CBoolean*)p->Value)->Bindable)
 				{
-					switch (((CBoolean*)p->Value)->BindMode)
-					{
-					default:
-					case KeybindMode::TOGGLE:
-						(*buffer)[*bufferSpaceOccupied + 1] = '\x00';
-						break;
-					case KeybindMode::HOLDTOENABLE:
-						(*buffer)[*bufferSpaceOccupied + 1] = '\x01';
-						break;
-					case KeybindMode::HOLDTODISABLE:
-						(*buffer)[*bufferSpaceOccupied + 1] = '\x02';
-						break;
-					}
+					(*buffer)[*bufferSpaceOccupied + 1] = (char)((CBoolean*)p->Value)->BindMode;
 					*(int*)(*buffer + *bufferSpaceOccupied + 2) = ((CBoolean*)p->Value)->BoundToKey >= 0 ? Keybind::KeyMap[((CBoolean*)p->Value)->BoundToKey] : -1;
 				}
 			} break;
@@ -1831,6 +1846,13 @@ namespace Config2
 				float v = ((CFloat*)p->Value)->Get();
 				memcpy(*buffer + *bufferSpaceOccupied, (void*)&v, sizeof(float));
 			} break;
+			case PropertyType::PAINTKIT:
+			{
+				int* pos = (int*)(*buffer + *bufferSpaceOccupied);
+				pos[0] = ((CPaintKit*)p->Value)->PaintKit->ID;
+				pos[1] = ((CPaintKit*)p->Value)->Mode;
+				pos[2] = ((CPaintKit*)p->Value)->Version;
+			} break;
 			case PropertyType::COLOR:
 			{
 				CColor* c = (CColor*)p->Value;
@@ -1838,6 +1860,29 @@ namespace Config2
 				(*buffer)[*bufferSpaceOccupied + 1] = c->GetG();
 				(*buffer)[*bufferSpaceOccupied + 2] = c->GetB();
 				(*buffer)[*bufferSpaceOccupied + 3] = c->GetA();
+			} break;
+			case PropertyType::HSTATEFUL:
+			{
+				char* pos = *buffer + *bufferSpaceOccupied;
+				*(size_t*)pos = ((CHorizontalState*)p->Value)->Value.Get();
+				if (((CHorizontalState*)p->Value)->Bindable)
+				{
+					*(int*)(pos + sizeof(size_t) + sizeof(char)) = ((CHorizontalState*)p->Value)->BoundToKey >= 0 ? Keybind::KeyMap[((CHorizontalState*)p->Value)->BoundToKey] : -1;
+				}
+			} break;
+			case PropertyType::VSTATEFUL:
+			{
+				char* pos = *buffer + *bufferSpaceOccupied;
+				*(size_t*)pos = ((CVerticalState*)p->Value)->Value.Get();
+				if (((CVerticalState*)p->Value)->Bindable)
+				{
+					*(int*)(pos + sizeof(size_t) + sizeof(char)) = ((CVerticalState*)p->Value)->BoundToKey >= 0 ? Keybind::KeyMap[((CVerticalState*)p->Value)->BoundToKey] : -1;
+				}
+			} break;
+			case PropertyType::MULTISELECT:
+			{
+				char* pos = *buffer + *bufferSpaceOccupied;
+				*(uint64_t*)pos = ((CMultiSelect*)p->Value)->Mask;
 			} break;
 			}
 			*bufferSpaceOccupied += spaceRequired;
@@ -1880,35 +1925,35 @@ namespace Config2
 		{
 		case PropertyType::BOOLEAN:
 		{
-			((CBoolean*)p->Value)->Value.Set(value[0] != 0 ? 1 : 0);
-			if (valueSize == 1)
-				; // uhhh... maybe a switch would be better
-			else if (valueSize == 1 + 1 + 4)
+			if (valueSize != 1 && valueSize != 1 + 1 + sizeof(int)) return false;
+
+			((CBoolean*)p->Value)->Value.Set(value[0] == 0 ? false : true);
+			if (valueSize > 1 && ((CBoolean*)p->Value)->Bindable)
 			{
-				if (((CBoolean*)p->Value)->Bindable)
+				switch (value[1])
 				{
-					switch (value[1])
-					{
-					case 0:
-						((CBoolean*)p->Value)->BindMode = KeybindMode::TOGGLE;
-						break;
-					case 1:
-						((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTOENABLE;
-						break;
-					case 2:
-						((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTODISABLE;
-						break;
-					default:
-						L::Verbose(XOR("ImportSingleProperty got a weird bind mode for boolean"));
-						break; // just leave it at whatever it was
-					}
-					_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + 2)));
+				case 0:
+					((CBoolean*)p->Value)->BindMode = KeybindMode::TOGGLE;
+					break;
+				case 1:
+					((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTOENABLE;
+					break;
+				case 2:
+					((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTODISABLE;
+					break;
+				default:
+					L::Verbose(XOR("ImportSingleProperty got a weird bind mode for boolean"));
+					break; // just leave it at whatever it was
 				}
+				_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + 2)));
 			}
-			else
-				return false;
 		} break;
 		case PropertyType::FLOAT:
+		{
+			if (valueSize != sizeof(float)) return false;
+			((CFloat*)p->Value)->Set(*(float*)(value));
+		} break;
+		case PropertyType::PAINTKIT:
 		{
 			if (valueSize != sizeof(float)) return false;
 			((CFloat*)p->Value)->Set(*(float*)(value));
@@ -1922,6 +1967,30 @@ namespace Config2
 			c->SetB((unsigned char)value[2]);
 			c->SetA((unsigned char)value[3]);
 		} break;
+		case PropertyType::HSTATEFUL:
+		{
+			if (valueSize != sizeof(size_t) && valueSize != sizeof(size_t) + sizeof(int)) return false;
+
+			((CHorizontalState*)p->Value)->Value.Set(*(size_t*)(value + 0));
+			if (valueSize > sizeof(size_t) && ((CHorizontalState*)p->Value)->Bindable)
+				_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + sizeof(size_t))));
+		} break;
+		case PropertyType::VSTATEFUL:
+		{
+			if (valueSize != sizeof(size_t) && valueSize != sizeof(size_t) + sizeof(int)) return false;
+
+			((CVerticalState*)p->Value)->Value.Set(*(size_t*)(value + 0));
+			if (valueSize > sizeof(size_t) && ((CVerticalState*)p->Value)->Bindable)
+				_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + sizeof(size_t))));
+		} break;
+		case PropertyType::MULTISELECT:
+		{
+			if (valueSize != sizeof(uint64_t)) return false;
+			((CMultiSelect*)p->Value)->Mask = *(uint64_t*)value;
+		} break;
+		default:
+			L::Log((XOR("ImportSingleProperty - Warning, idk how to import this property type: ") + std::to_string((int)p->Type)).c_str());
+			return false;
 		}
 		return true;
 	}
