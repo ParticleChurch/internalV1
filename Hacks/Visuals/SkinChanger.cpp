@@ -4,24 +4,31 @@ void Update()
 {
     static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
     ForceUpdate();
+    // the same problems occur when using delta tick instead
+    // I::clientstate->m_delta_tick = -1;
 }
 
 void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit)
 {
+
     bool NeedsUpdate =
         *Weapon->GetItemIDHigh() == 0 ||
         *Weapon->GetFallbackPaintKit() != PaintKit ||
         *Weapon->GetFallbackWear() > 0.001f ||
         *Weapon->GetFallbackStatTrak() >= 0 ||
+        *Weapon->GetFallbackOriginalOwnerXuidLow() != 0 ||
+        *Weapon->GetFallbackOriginalOwnerXuidHigh() != 0 ||
         strcmp(Weapon->GetCustomName(), "www.a4g4.com");
+    if (!NeedsUpdate) return;
 
-    *Weapon->GetItemIDHigh() = 1;
     *Weapon->GetFallbackStatTrak() = -1;
     *Weapon->GetFallbackPaintKit() = PaintKit;
+    *Weapon->GetFallbackOriginalOwnerXuidLow() = 0;
+    *Weapon->GetFallbackOriginalOwnerXuidHigh() = 0;
     *Weapon->GetFallbackWear() = 0.0001f;
     memcpy(Weapon->GetCustomName(), "www.a4g4.com", sizeof("www.a4g4.com"));
-
-    if (NeedsUpdate) Update();
+    *Weapon->GetItemIDHigh() = -1;
+    Update();
 }
 
 void SkinChanger::ClearSkin(Entity* Weapon)

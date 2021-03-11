@@ -277,6 +277,14 @@ public:
 	//SKINCHANGER VALUES ______________________________________________________________________________
 	// When changed, can be used to make a weapon appear as something else, 
 	// most commonly used to change the default knives.
+
+	// an array
+	unsigned int* GetWeapons()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_hMyWeapons");
+		return (unsigned int*)((DWORD)this + offset);
+	}
+
 	int* GetItemDefinitionIndex() {
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemDefinitionIndex");
 		return (int*)((DWORD)this + offset);
@@ -325,7 +333,17 @@ public:
 		return (int*)((DWORD)this + offset);
 	}
 
-	//WILL DO CUSTOM NAMES FOR WEAPONS LATER
+	int* GetFallbackOriginalOwnerXuidLow()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidLow");
+		return (int*)((DWORD)this + offset);
+	}
+
+	int* GetFallbackOriginalOwnerXuidHigh()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_OriginalOwnerXuidHigh");
+		return (int*)((DWORD)this + offset);
+	}
 
 	// The ID of the paint kit to apply. All valid IDs can be found in the csgo/scripts/items/items_game.txt file.
 	int* GetFallbackPaintKit()
