@@ -310,13 +310,11 @@ void H::Free()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
-	L::Verbose("H::EndSceneHook - begin", "\n", false);
+	L::Verbose("H::EndSceneHook - begin");
 
-	// do cheeki breeki
-	auto ogOutput = oEndScene(device);
-
+	// init imgui
 	if (!D3dInit) {
-		L::Verbose("H::EndSceneHook d3d9 init begin", "\n", false);
+		L::Verbose("H::EndSceneHook d3d9 init begin");
 		D3dInit = true;
 
 		ImGui::CreateContext();
@@ -326,34 +324,33 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
-		L::Verbose("H::EndSceneHook d3d9 init complete", "\n", false);
+		L::Verbose("H::EndSceneHook d3d9 init complete");
 	}
 
-	/*IDirect3DStateBlock9* pixel_state = NULL; IDirect3DVertexDeclaration9* vertDec = nullptr; IDirect3DVertexShader9* vertShader = nullptr;
-	bool InGame = I::engine->IsInGame();
-	if (InGame && D3dInit && D3d9Device)
-	{
-		D3d9Device->CreateStateBlock(D3DSBT_PIXELSTATE, &pixel_state);
-		D3d9Device->GetVertexDeclaration(&vertDec);
-		D3d9Device->GetVertexShader(&vertShader);
-	}*/
+	//* store pixelstate
+	IDirect3DStateBlock9* PixelState; IDirect3DVertexDeclaration9* VertexDeclare; IDirect3DVertexShader9* VertexShader;
+	device->CreateStateBlock(D3DSBT_PIXELSTATE, &PixelState);
+	device->GetVertexDeclaration(&VertexDeclare);
+	device->GetVertexShader(&VertexShader);
+	//*/
 	
-	ImGui_ImplDX9_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	if (false)
+	// draw imgui 
 	{
+		ImGui_ImplDX9_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		/* debugger console
 		ImGui::Begin("console");
-		for (auto a : console)
-			ImGui::Text(a.c_str());
-		if (ImGui::Button("Clear Console"))
-		{
-			H::console.clear();
-			H::console.resize(0);
-		}
-		/*ImGui::Text("Edge Amount");
-		ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);*/
+			for (auto a : console)
+				ImGui::Text(a.c_str());
+			if (ImGui::Button("Clear Console"))
+			{
+				H::console.clear();
+				H::console.resize(0);
+			}
+			//ImGui::Text("Edge Amount");
+			//ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (int i = 0; i < 64; i++)
@@ -365,33 +362,26 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 				resolver->ShotsMissed[i] = rand() % 10;
 		}
 		ImGui::End();
+		//*/
+
+		GUI2::Main();
+		G::KillDLL |= GUI2::Ejected;
+
+		ImGui::EndFrame();
+		ImGui::Render();
+
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 	}
 	
-	GUI2::Main();
+	//* restore pixelstate
+	PixelState->Apply();
+	PixelState->Release();
+	device->SetVertexDeclaration(VertexDeclare);
+	device->SetVertexShader(VertexShader);
 	//*/
-	ImGui::EndFrame();
-	ImGui::Render();
 
-	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
-	/*if (InGame && pixel_state && D3d9Device)
-	{
-		L::Verbose("H::EndSceneHook Restoring pixelstate", "\n", false);
-		pixel_state->Apply();
-		pixel_state->Release();
-		if(vertDec)
-			D3d9Device->SetVertexDeclaration(vertDec);
-		if(vertShader)
-			D3d9Device->SetVertexShader(vertShader);
-	}*/
-
-	if (GUI2::Ejected)
-	{
-		G::KillDLL = true;
-	}
-
-	L::Verbose("H::EndSceneHook - complete", "\n", false);
-	return ogOutput;
+	L::Verbose("H::EndSceneHook - complete");
+	return oEndScene(device);
 }
 
 long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters)
