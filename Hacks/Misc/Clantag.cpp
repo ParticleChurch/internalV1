@@ -21,17 +21,11 @@ void Clantag::run()
 	std::rotate(clantag.begin(), clantag.begin() + brugh, clantag.end());*/
 
 	static std::add_pointer_t<void __fastcall(const char*, const char*)> setClanTag = reinterpret_cast<decltype(setClanTag)>(FindPattern("engine.dll", "53 56 57 8B DA 8B F9 FF 15"));
-	
-	if (UserData::Premium)
-	{
-		if(Enable->Get())
-			setClanTag(Text->Get().c_str(), Text->Get().c_str());
-		else
-			setClanTag("", "");
-	}	
-		
+
+	if (Enable->Get())
+		setClanTag(Text->Get().c_str(), Text->Get().c_str());
 	else
-		setClanTag("| a4g4.com |", "| a4g4.com |");
+		setClanTag("", "");
 }
 
 void Clantag::reset()

@@ -407,7 +407,7 @@ namespace Config2
 				g->Add("misc-other-killsay", "KillSay", new CBoolean());
 				g->Add("misc-other-killsay-input", "KillSay Text", new CTextInput());
 				g->Add("misc-other-clantag", "Clantag Changer", new CBoolean());
-				g->Add("misc-other-clantag-input", "Clantag Text", new CTextInput());
+				g->Add("misc-other-clantag-input", "Clantag Text", new CTextInput(16));
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
 			}
 		}

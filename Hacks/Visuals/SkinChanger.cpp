@@ -3,9 +3,9 @@
 void Update()
 {
     static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
-    ForceUpdate();
+    //ForceUpdate();
     // the same problems occur when using delta tick instead
-    // I::clientstate->m_delta_tick = -1;
+    I::clientstate->m_delta_tick = -1;
 }
 
 void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit)

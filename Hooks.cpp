@@ -375,9 +375,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	
 	//* restore pixelstate
 	PixelState->Apply();
-	PixelState->Release();
 	device->SetVertexDeclaration(VertexDeclare);
 	device->SetVertexShader(VertexShader);
+	PixelState->Release();
 	//*/
 
 	L::Verbose("H::EndSceneHook - complete");
