@@ -25,9 +25,102 @@ static void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 	con_color_msg(color, fmt, args...);
 }
 
+void Resolver::LogWeaponFire(GameEvent* event)
+{
+	// Get UserID
+	int UserID = event->GetInt("userid");
+	// If it's the localplayer, return
+	if (I::engine->GetPlayerForUserID(UserID) != G::LocalPlayerIndex)
+		return;
+
+	// If it isnt in the list... add it!
+	if (OldShotsMissed.find(UserID) == OldShotsMissed.end()) {
+		// not found
+		OldShotsMissed.insert(std::pair(UserID, 0));
+		return;
+	}
+
+	// Otherwise it's already in the list, update everything!
+	for (auto& a : ShotsMissed)
+	{
+		OldShotsMissed[a.first] = a.second;
+	}
+}
+
+void Resolver::LogBulletImpact(GameEvent* event)
+{
+	int UserID = event->GetInt("userid");
+
+	if (I::engine->GetPlayerForUserID(UserID) != G::LocalPlayerIndex)
+		return;
+
+	Vec Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
+
+	trace_t tr;
+	Ray_t ray(G::LocalPlayer->GetEyePos(), Loc);
+	CTraceFilter traceFilter(G::LocalPlayer);
+	I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
+	Entity* ShouldHitEntity = tr.Entity;
+
+	// No point in doing anything if we shouldn't have hit anything for now
+	if (!ShouldHitEntity)
+		return;
+
+	// Keep track of the entity we supossedly missed due to resolver
+	player_info_t info;
+	if (I::engine->GetPlayerInfo(tr.Entity->Index(), &info))
+		ImpactEndUserID = info.userid;
+	else
+		ImpactEndUserID = -1;
+
+	// If it isn't found in newshots, ADD IT!
+	if (ShotsMissed.find(info.userid) == ShotsMissed.end())
+	{
+		ShotsMissed.insert(std::pair(info.userid, 1));
+		return;
+	}
+
+	// Otherwise...
+	// If it isn't found in oldshots, return... as waiting for weaponfire is better
+	if (OldShotsMissed.find(info.userid) == OldShotsMissed.end())
+	{
+		return;
+	}
+
+	// No need to increase if already increased once...
+	if (ShotsMissed[info.userid] > OldShotsMissed[info.userid])
+		return;
+
+	// Log the shot up by 1
+	ShotsMissed[info.userid]++;
+}
+
+void Resolver::LogPlayerHurt(GameEvent* event)
+{
+	int UserID = event->GetInt("userid");
+	int iAttacker = event->GetInt("attacker");
+
+	// if the localplayer gets hurt, return
+	if (I::engine->GetPlayerForUserID(UserID) == G::LocalPlayerIndex)
+		return;
+
+	// if the localplayer isn't shootin, return
+	if (I::engine->GetPlayerForUserID(iAttacker) != G::LocalPlayerIndex)
+		return;
+
+	player_info_t info;
+	I::engine->GetPlayerInfo(I::engine->GetPlayerForUserID(UserID), &info);
+
+	// if they are the same indexes --> HIT!
+	if (ImpactEndUserID == UserID)
+	{
+		// No shots were missed, revert back to normal
+		ShotsMissed[ImpactEndUserID]--;
+	}
+}
+
 void Resolver::LogShots(GameEvent* event)
 {
-	static int ImpactEntIndex;
 	switch (StrHash::HashRuntime(event->GetName())) {
 		// Called before bullet impact
 	case StrHash::Hash("weapon_fire"): //0
@@ -42,13 +135,7 @@ void Resolver::LogShots(GameEvent* event)
 		string	weapon	weapon name used
 		bool	silenced	is weapon silenced
 		*/
-
-		int iUser = event->GetInt("userid");
-		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
-			return;
-
-		for (int i = 0; i < 64; i++)
-			OldShotsMissed[i] = ShotsMissed[i];
+		LogWeaponFire(event);
 	}
 	break;
 	case StrHash::Hash("bullet_impact"): //0
@@ -64,41 +151,7 @@ void Resolver::LogShots(GameEvent* event)
 		float	y	
 		float	z	
 		*/
-		int iUser = event->GetInt("userid");
-
-		if (I::engine->GetPlayerForUserID(iUser) != G::LocalPlayerIndex)
-			return;
-
-		Vec Loc = Vec(event->GetFloat("x"), event->GetFloat("y"), event->GetFloat("z"));
-
-		trace_t tr;
-		Ray_t ray(G::LocalPlayer->GetEyePos(), Loc);
-		CTraceFilter traceFilter(G::LocalPlayer);
-		I::enginetrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
-		Entity* ShouldHitEntity = tr.Entity;
-
-		// No point in doing anything if we shouldn't have hit anything for now
-		if (!ShouldHitEntity)
-		{
-			return;
-		}
-			
-
-		int index = ShouldHitEntity->Index();
-
-		// Not player entity
-		if (index > 64)
-			return;
-
-		// Keep track of the entity we supossedly missed due to resolver
-		ImpactEntIndex = index;
-
-		// No need to increase if already increased once...
-		if (ShotsMissed[index] > OldShotsMissed[index])
-			return;
-
-		// Log the shot up by 1
-		ShotsMissed[index]++;
+		LogBulletImpact(event);
 	}
 	break;
 	case StrHash::Hash("player_hurt"): //1
@@ -116,22 +169,7 @@ void Resolver::LogShots(GameEvent* event)
 		byte	dmg_armor	damage done to armor
 		byte	hitgroup	hitgroup that was damaged
 		*/
-		int iUser = event->GetInt("userid");
-		int iAttacker = event->GetInt("attacker");
-
-		if (I::engine->GetPlayerForUserID(iUser) == G::LocalPlayerIndex)
-			return;
-
-		if (I::engine->GetPlayerForUserID(iAttacker) != G::LocalPlayerIndex)
-			return;
-
-		// if they are the same indexes --> HIT!
-		if (ImpactEntIndex == I::engine->GetPlayerForUserID(iUser))
-		{
-			// No shots were missed, revert back to normal
-			ShotsMissed[ImpactEntIndex]--;
-				
-		}
+		LogPlayerHurt(event);
 	}
 	break;
 	default:
@@ -247,9 +285,10 @@ void Resolver::BruteForce(Entity* entity, int index)
 
 	float lby = entity->GetLBY();
 
-	if (I::globalvars->m_curTime - entity->GetLastShotTime() < I::globalvars->m_intervalPerTick)
+	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick)
 	{
 		entity->PGetEyeAngles()->y = entity->GetLBY();
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Onshot (ish)";
 		return;
 	}
@@ -258,6 +297,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
 		entity->PGetEyeAngles()->y = entity->GetLBY();
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Off Ground";
 		return;
 	}
@@ -268,33 +308,47 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (Velocity > MAS)
 	{
 		entity->PGetEyeAngles()->y = entity->GetLBY();
+		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Faster than Max Accurate Speed";
 		return;
 	}
+
+	// If we can't get stuff, something is wrong with player,
+	// should have been fix by now but still adding the check
+	player_info_t info;
+	if (!I::engine->GetPlayerInfo(index, &info))
+		return;
+
+	int UserID = info.userid;
+	
 
 	// If they are not standing still, but are slow-walking...
 	if (Velocity < MAS && Velocity > 5.f)
 	{
 		ResolverFlag[index] = "Slow-walking: ";
-		switch (ShotsMissed[index] % 5) {
+		switch (ShotsMissed[UserID] % 5) {
 		case 0:
 			// do fucking nothing
 			ResolverFlag[index] += "0";
 			break;
 		case 1:
 			entity->PGetEyeAngles()->y = lby + -35.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + -35.f;
 			ResolverFlag[index] += "-35";
 			break;
 		case 2:
 			entity->PGetEyeAngles()->y = lby + 35.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + 35.f;
 			ResolverFlag[index] += "35";
 			break;
 		case 3:
 			entity->PGetEyeAngles()->y = lby + -12.5f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + -12.5f;
 			ResolverFlag[index] += "-12.5";
 			break;
 		case 4:
 			entity->PGetEyeAngles()->y = lby + 12.5f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + 12.5f;
 			ResolverFlag[index] += "12.5";
 			break;
 		}
@@ -305,7 +359,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (Velocity < 5.f)
 	{
 		ResolverFlag[index] = "Standing: ";
-		switch (ShotsMissed[index] % 7) {
+		switch (ShotsMissed[UserID] % 7) {
 		case 0:
 			// do fucking nothing
 			ResolverFlag[index] += "0";
@@ -313,29 +367,37 @@ void Resolver::BruteForce(Entity* entity, int index)
 		case 1:
 			ResolverFlag[index] += "20";
 			entity->PGetEyeAngles()->y = lby + 20.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + 20.f;
 			break;
 		case 2:
 			ResolverFlag[index] += "-20";
 			entity->PGetEyeAngles()->y = lby + -20.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + -20.f;
 			break;
 		case 3:
 			ResolverFlag[index] += "35";
 			entity->PGetEyeAngles()->y = lby + 40.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + 40.f;
 			break;
 		case 4:
 			ResolverFlag[index] += "-35";
 			entity->PGetEyeAngles()->y = lby + -40.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + -40.f;
 			break;
 		case 5:
-			ResolverFlag[index] += "60";
+			ResolverFlag[index] += "65";
 			entity->PGetEyeAngles()->y = lby + 65.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + 65.f;
 			break;
 		case 6:
-			ResolverFlag[index] += "-60";
+			ResolverFlag[index] += "-65";
 			entity->PGetEyeAngles()->y = lby + -65.f;
+			entity->GetAnimstate()->m_flAbsRotation() = lby + -65.f;
 			break;
 		}
 		return;
 	}
+
+
 
 }

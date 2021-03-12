@@ -2,6 +2,7 @@
 
 AntiAim* antiaim = new AntiAim();
 
+/*
 bool AntiAim::LBYBreak()
 {
 	static float NextUpdate = 0;
@@ -19,6 +20,28 @@ bool AntiAim::LBYBreak()
 		return true;
 	}
 
+	return false;
+}
+*/
+
+bool AntiAim::LBYBreak()
+{
+	static int NextUpdate = 0;
+	float velocity = G::LocalPlayer->GetVecVelocity().VecLength2D();
+	float time = I::globalvars->m_tickCount;
+	if (!(G::LocalPlayer->GetFlags() & 1) || (!(G::LocalPlayer->IsAlive()))) {
+		NextUpdate = 0;
+		return false;
+	}
+
+	if (velocity > 0.1f) {
+		NextUpdate = time + TimeToTicks(0.22f);
+	}
+	if (NextUpdate <= time)
+	{
+		NextUpdate = time + TimeToTicks(1.1f);
+		return true;
+	}
 	return false;
 }
 

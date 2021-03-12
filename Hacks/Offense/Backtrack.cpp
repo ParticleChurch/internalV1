@@ -172,11 +172,11 @@ void Backtrack::run()
 		return;
 
 	//set command number to proper number
-	H::console.clear();
+	/*H::console.clear();
 	H::console.resize(0);
 	H::console.push_back("orig tick:	" + std::to_string(G::cmd->tick_count));
 	H::console.push_back("final tick:	" + std::to_string(BestTickCount));
-	H::console.push_back("delta:		" + std::to_string(G::cmd->tick_count - BestTickCount));
+	H::console.push_back("delta:		" + std::to_string(G::cmd->tick_count - BestTickCount));*/
 
 	G::cmd->tick_count = BestTickCount;
 }

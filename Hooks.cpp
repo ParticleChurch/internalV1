@@ -340,7 +340,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		/* debugger console
+		//debugger console
 		ImGui::Begin("console");
 			for (auto a : console)
 				ImGui::Text(a.c_str());
@@ -353,16 +353,16 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			//ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);
 		if (ImGui::Button("Reset Resolver"))
 		{
-			for (int i = 0; i < 64; i++)
-				resolver->ShotsMissed[i] = 0;
+			for (auto& a : resolver->ShotsMissed)
+				a.second = 0;
 		}
 		if (ImGui::Button("Randomize Resolver"))
 		{
-			for (int i = 0; i < 64; i++)
-				resolver->ShotsMissed[i] = rand() % 10;
+			for (auto& a : resolver->ShotsMissed)
+				a.second = rand() % 10;
 		}
 		ImGui::End();
-		//*/
+		
 
 		GUI2::Main();
 		G::KillDLL |= GUI2::Ejected;
@@ -681,11 +681,6 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 {
 	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
 	G::IsInGame = I::engine->IsInGame();
-
-	L::Verbose("resolver...", "", false); // no flush to prevent frame lag
-	resolver->Resolve(curStage);
-	L::Verbose("DONE", "\n", false); // no flush to prevent frame lag
-
 	
 	L::Verbose("disablePostProcessing..", "\n", false); // no flush to prevent frame lag
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
@@ -798,13 +793,17 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		
 	}
 	
+	L::Verbose("resolver...", "", false); // no flush to prevent frame lag
+	resolver->Resolve(curStage);
+	L::Verbose("DONE", "\n", true); // no flush to prevent frame lag
 	
 	esp->Run_FrameStageNotify(curStage);
-
+	L::Verbose("backtrack...", "", false); // no flush to prevent frame lag
+	backtrack->update(curStage);
 	miscvisuals->NoFlash(curStage);
 	miscvisuals->NoSmoke_FrameStageNotify();
 
-	backtrack->update(curStage);
+	
 	world->Run_FrameStageNotify(curStage);
 	
 	if (curStage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && G::LocalPlayer)

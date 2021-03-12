@@ -670,6 +670,7 @@ bool Aimbot::TryOnShot()
 
 	float lerp = GetLerp();
 	std::map<int, Player>::iterator it;
+	static Matrix3x4 OsMatrix[128];
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
 	{
 		if (!ValidPlayer(it->second)) continue;
@@ -687,6 +688,7 @@ bool Aimbot::TryOnShot()
 				// WE HAVE FOUND A GOOD ONE!
 				if (TimeToTicks(a.SimulationTime - lerp) == shot_tick)
 				{
+
 					Vec head = a.Bone(8);
 					// if we can't hit it...
 					if (!autowall->CanScanBacktrack(it->second.entity, head, G::LocalPlayerWeaponData, 1, true, HITGROUP_HEAD))

@@ -10,7 +10,22 @@ public:
 class Entity
 {
 public:
-	//VIRTUAL_METHOD(const matrix3x4&, toWorldTransform, 32, (), (this + sizeof(uintptr_t)))
+	// Thirdperson crap
+	int* GetObserverTarget()
+	{
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_hObserverTarget");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BasePlayer", "m_hObserverTarget");
+		return (int*)((DWORD)this + offset);
+	}
+
+	int* GetObserverMode()
+	{
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_iObserverMode");
+		if (offset == 0)
+			offset = N::GetOffset("DT_BasePlayer", "m_iObserverMode");
+		return (int*)((DWORD)this + offset);
+	}
 
 	const Matrix3x4& GetTransform()
 	{
