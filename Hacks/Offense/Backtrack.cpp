@@ -81,6 +81,7 @@ void Backtrack::update(int CurStage)
 		Player::Tick tick;
 		tick.SimulationTime = it->second.CurSimTime;
 		it->second.entity->SetupBones(tick.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);// I::globalvars->m_curTime);
+		tick.priority = resolver->GetPriority(it->first);
 
 		it->second.BacktrackRecords.push_front(tick);
 
@@ -170,13 +171,6 @@ void Backtrack::run()
 	// If you aren't trying to shoot
 	if (!(G::cmd->buttons & IN_ATTACK))
 		return;
-
-	//set command number to proper number
-	/*H::console.clear();
-	H::console.resize(0);
-	H::console.push_back("orig tick:	" + std::to_string(G::cmd->tick_count));
-	H::console.push_back("final tick:	" + std::to_string(BestTickCount));
-	H::console.push_back("delta:		" + std::to_string(G::cmd->tick_count - BestTickCount));*/
 
 	G::cmd->tick_count = BestTickCount;
 }

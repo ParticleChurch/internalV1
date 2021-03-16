@@ -261,6 +261,10 @@ void H::Init()
 
 void H::UnHook()
 {
+	// deal with dev conslole
+	H::console.clear();
+	H::console.resize(0);
+
 	// make sure to disable fakelag & replace wndproc
 	if (G::pSendPacket) *G::pSendPacket = true;
 	SetWindowLongPtr(CSGOWindow, GWL_WNDPROC, (LONG_PTR)oWndProc);
@@ -342,15 +346,13 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		//debugger console
 		ImGui::Begin("console");
-			for (auto a : console)
-				ImGui::Text(a.c_str());
-			if (ImGui::Button("Clear Console"))
-			{
-				H::console.clear();
-				H::console.resize(0);
-			}
-			//ImGui::Text("Edge Amount");
-			//ImGui::SliderFloat("###headedge", &antiaim->HEADEDGE, 0, 100);
+		if (ImGui::Button("Clear Console"))
+		{
+			H::console.clear();
+			H::console.resize(0);
+		}
+		ImGui::Text("DT");
+		ImGui::SliderInt("###dtamount", &doubletap->shift_ticks, 0, 16);
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (auto& a : resolver->ShotsMissed)
@@ -361,6 +363,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			for (auto& a : resolver->ShotsMissed)
 				a.second = rand() % 10;
 		}
+		
+		for (auto a : console)
+			ImGui::Text(a.c_str());
 		ImGui::End();
 		
 
@@ -397,8 +402,10 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (!D3dInit) return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 	L::Verbose("H::WndProc - begin");
+
+	if (!D3dInit) return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	L::Verbose("H::WndProc - inside");
 
 	static auto MenuOpen = Config2::GetState("show-menu");
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
@@ -417,11 +424,11 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	ImGuiIO& io = ImGui::GetIO();
 	bool HideInputFromCSGO = (IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard);
 
+	bool og = false;
+	if (!HideInputFromCSGO)
+		og = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 	L::Verbose("H::WndProc - complete");
-	if (HideInputFromCSGO)
-		return false;
-	else
-		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	return og;
 }
 
 float RandomVal(float min, float max)
@@ -458,7 +465,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		fakelag->Start();
 
 		// Doubletap Stuff
-		/*doubletap->start();*/
+		doubletap->start();
 
 		// Update server time
 		L::Verbose("I::globalvars->ServerTime(cmd);");
@@ -473,13 +480,14 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->AAMoveFix();
 		movement->FakeDuck();
 		movement->LegitAutoStrafe();
+		movement->RageAutoStrafe();
 		movement->LegSlide();
 		
 
 		// nade visuals
 		L::Verbose("miscvisuals");
 		miscvisuals->GrenadePrediction();
-		miscvisuals->ChangeViewModel();
+		//miscvisuals->ChangeViewModel();
 	
 		L::Verbose("CM_MoveFixStart");
 		G::CM_MoveFixStart();
@@ -507,7 +515,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		}
 		else if ((G::cmd->buttons & IN_ATTACK) && G::LocalPlayer->CanShoot()
 			&& G::LocalPlayerWeapon
-			&& GetWeaponClass(G::LocalPlayerWeapon->GetWeaponId()) != 40)
+			&& GetWeaponClass(G::LocalPlayerWeapon->GetWeaponId()) != 40) // grenade
 		{
 			*G::pSendPacket = true;
 			G::cmd->viewangles = G::StartAngle;
@@ -575,10 +583,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		L::Verbose("CM_MoveFixEnd");
 		G::CM_MoveFixEnd();
 
-		L::Verbose("RageAutoStrafe");
-		movement->RageAutoStrafe();
+		
 
 		// bad animation fix (for third person)
+
 		static Config2::CState* LegitAA = Config2::GetState("antiaim-legit-enable");
 		static Config2::CState* RageAA = Config2::GetState("antiaim-rage-enable");
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
@@ -592,7 +600,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			
 		}
 		
-		/*doubletap->end();*/
+		doubletap->end();
 
 		L::Verbose("CM_End");
 		G::CM_End();	
@@ -643,35 +651,47 @@ void LocalAnimFix(Entity* entity)
 	if (!entity || !entity->GetHealth() || !G::cmd)
 		return;
 
-	float duck = G::LocalPlayer->GetAnimstate()->m_fDuckAmount;
+	AnimState* anim = G::LocalPlayer->GetAnimstate();
+	if (!anim)
+		return;
 
-	static float proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
+	bool* ClientAnims = entity->ClientAnimations();
+	if (!ClientAnims)
+		return;
+
+	float duck = anim->m_fDuckAmount;
+
+	static float proper_abs = anim->m_flGoalFeetYaw;
 	
 	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
 	static AnimationLayer backup_layers[15];
 	
 	if (fresh_tick())
 	{
-		std::memcpy(backup_layers, entity->GetAnimOverlays(), (sizeof(AnimationLayer) * 15));
-		entity->ClientAnimations() = true;
-		entity->UpdateAnimationState(entity->GetAnimstate(), antiaim->real); //
+		AnimationLayer* OldLayerPtr = entity->GetAnimOverlays();
+		if (!OldLayerPtr)
+			return;
 
-		if (entity->GetAnimstate())
-			entity->GetAnimstate()->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
+		std::memcpy(backup_layers, OldLayerPtr, (sizeof(AnimationLayer) * 15));
+		*ClientAnims = true;
+		entity->UpdateAnimationState(anim, antiaim->real); // idek
+
+		if (anim)
+			anim->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
 		
 		entity->UpdateClientSideAnimation();
 		
 		if (G::pSendPacket && *G::pSendPacket)
 		{
-			proper_abs = entity->GetAnimstate()->m_flGoalFeetYaw;
+			proper_abs = anim->m_flGoalFeetYaw;
 			sent_pose_params = entity->m_flPoseParameter();
 		}
 		
 	}
 	
-	entity->ClientAnimations() = false;
+	*ClientAnims = false;
 	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	entity->GetAnimstate()->m_flUnknownFraction = duck;// 
+	anim->m_flUnknownFraction = duck;// 
 	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
 	entity->m_flPoseParameter() = sent_pose_params;
 	
@@ -679,7 +699,7 @@ void LocalAnimFix(Entity* entity)
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-	L::Verbose("H::FrameStageNotifyHook - begin", "\n", false); // no flush to prevent frame lag
+	L::Verbose("H::FrameStageNotifyHook - begin", "\n", true); // no flush to prevent frame lag -- set to false for no frame lag
 	G::IsInGame = I::engine->IsInGame();
 	
 	L::Verbose("disablePostProcessing..", "\n", false); // no flush to prevent frame lag
@@ -725,15 +745,15 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			return oFrameStageNotify(curStage);
 		}
 
-		
-		L::Verbose("LocalAnimFix..", "\n", false); // no flush to prevent frame lag
-		LocalAnimFix(G::LocalPlayer);
-
+	
 		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
 
 		L::Verbose("LocalPlayer NOT Alive..", "\n", false); // no flush to prevent frame lag
 		if (!G::LocalPlayerAlive)
 			return oFrameStageNotify(curStage);
+
+		L::Verbose("LocalAnimFix..", "\n", false); // no flush to prevent frame lag
+		LocalAnimFix(G::LocalPlayer);
 
 		L::Verbose("LocalPlayer Alive..", "\n", false); // no flush to prevent frame lag
 		G::LocalPlayerTeam = G::LocalPlayer->GetTeam();
@@ -752,11 +772,11 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		if (offset == 0)
 			offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-		if (I::input->m_fCameraInThirdPerson)
-			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
-		
 		static auto ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
-		if (G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())
+		if ((Vec*)((DWORD)G::LocalPlayer + offset + 4) && ThirdPerson->Get())
+			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
+
+		if (false && G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
@@ -784,18 +804,25 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			}
 		}
 
+		// accurate bones out of view
 		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 			Entity* entity = I::entitylist->GetClientEntity(i);
 			if (!entity || i == G::LocalPlayerIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
-			*reinterpret_cast<int*>(entity + 0xA28) = 1;							//visible???
-			*reinterpret_cast<int*>(entity + 0xA30) = I::globalvars->m_frameCount; //sim time?
+
+			int* check1 = (int*)(entity + 0xA30);
+			if(check1)
+				*check1 = I::globalvars->m_frameCount; //skip occlusion check
+
+			int* check2 = (int*)(entity + 0xA28);
+			if (check2)
+				*check2 = 0; ///clear occlusion flags --> should be zero ig (normally set to 1 in my code ig? idk am retar)
 		}
 		
 	}
 	
 	L::Verbose("resolver...", "", false); // no flush to prevent frame lag
 	resolver->Resolve(curStage);
-	L::Verbose("DONE", "\n", true); // no flush to prevent frame lag
+	L::Verbose("DONE", "\n", false); // no flush to prevent frame lag
 	
 	esp->Run_FrameStageNotify(curStage);
 	L::Verbose("backtrack...", "", false); // no flush to prevent frame lag
@@ -813,7 +840,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 
 	oFrameStageNotify(curStage);
-	L::Verbose("H::FrameStageNotifyHook - complete", "\n", false); // no flush to prevent frame lag
+	L::Verbose("H::FrameStageNotifyHook - complete", "\n", true); // no flush to prevent frame lag - set to false for no frame lag
 }
 
 void __stdcall H::LockCursorHook()
@@ -859,6 +886,7 @@ void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void*
 
 void __stdcall H::EmitSoundHook(SoundData data)
 {
+	L::Verbose("H::EmitSoundHook - begin");
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
 	static Config2::CState* Enable = Config2::GetState("misc-other-autoaccept");
 
@@ -872,7 +900,9 @@ void __stdcall H::EmitSoundHook(SoundData data)
 
 	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
 	}
-	return oEmitSound(I::sound, data);
+	oEmitSound(I::sound, data);
+
+	L::Verbose("H::EmitSoundHook - complete");
 }
 
 static void CWriteUsercmd(void* buf, CUserCmd* Cin, CUserCmd* Cout)
@@ -894,7 +924,7 @@ bool __fastcall H::WriteUsercmdDeltaToBufferHook(void* ecx, void* edx, int slot,
 	//return oWriteUsercmdDeltaToBuffer(ecx, slot, buf, from, to, isnewcommand);
 	static auto ofunct = oWriteUsercmdDeltaToBuffer;
 
-	if (doubletap->m_tick_to_shift <= 0 || I::clientstate->m_choked_commands > 3)
+	if (doubletap->m_tick_to_shift <= 0)
 		return ofunct(ecx, slot, buf, from, to, isnewcommand);
 
 	if (from != -1)

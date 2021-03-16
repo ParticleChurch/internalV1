@@ -32,6 +32,7 @@ struct Player
 	{
 		float SimulationTime;
 		Matrix3x4 Matrix[256];
+		int priority;
 
 		Tick() {};
 		Tick(float SimulationTime, Matrix3x4 Matrix[128]) {

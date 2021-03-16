@@ -71,6 +71,9 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	{
 		TEXT = TEXT.substr(13);
 	}
+	else // if potentially bad text, lets just return
+		return;
+
 	static std::wstring wide_string;
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
@@ -365,6 +368,7 @@ void ESP::Run_PaintTraverse()
 
 			if (i < 64 and EnemyResolver->Get())
 			{
+				// ADD CHECK HERE
 				std::string TEXT = resolver->ResolverFlag[i];
 				//TEXT += "\n" + std::to_string(I::globalvars->m_curTime - G::EntList[PlayerInfo.userid].LastShotTime);
 				static std::wstring wide_string;

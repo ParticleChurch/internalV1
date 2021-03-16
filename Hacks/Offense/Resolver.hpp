@@ -21,6 +21,12 @@ public:
 
 	// userid, aimbot priority/reliability
 	std::map<int, int> Priority;
+	int GetPriority(int UserID)
+	{
+		if (Priority.find(UserID) == Priority.end())
+			return 0;
+		return Priority[UserID];
+	}
 
 	//crappy resolver flags
 	std::string ResolverFlag[64];

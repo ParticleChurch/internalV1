@@ -214,6 +214,10 @@ void Resolver::AnimationFix(Entity* entity)
 	if (!anim)
 		return;
 
+	bool* ClientAnims = entity->ClientAnimations();
+	if (!ClientAnims)
+		return;
+
 	float m_flRealtime = I::globalvars->m_realTime;
 	float m_flCurtime = I::globalvars->m_curTime;
 	float m_flFrametime = I::globalvars->m_frameTime;
@@ -236,7 +240,8 @@ void Resolver::AnimationFix(Entity* entity)
 	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
 		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
-	entity->ClientAnimations() = true;
+
+	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
 
 
@@ -261,7 +266,7 @@ void Resolver::AnimationFix(Entity* entity)
 	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
 		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
-	entity->ClientAnimations() = true;
+	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
 
 
@@ -278,15 +283,25 @@ void Resolver::AnimationFix(Entity* entity)
 void Resolver::BruteForce(Entity* entity, int index)
 {
 	ResolverFlag[index] = "";
-	// Deal with OnShot (ish)
 	AnimState* animstate = entity->GetAnimstate();
 	if (!animstate)
 		return;
 
 	float lby = entity->GetLBY();
 
+	// If we can't get stuff, something is wrong with player,
+	// should have been fix by now but still adding the check
+	player_info_t info;
+	if (!I::engine->GetPlayerInfo(index, &info))
+		return;
+
+	int UserID = info.userid;
+	Priority[UserID] = 0;
+
+	// Deal with OnShot (ish)
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick)
 	{
+		Priority[UserID] = 4; // always try for os for now
 		entity->PGetEyeAngles()->y = entity->GetLBY();
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Onshot (ish)";
@@ -296,6 +311,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	// If they aint on the ground, then their head is gonna be where the lby is
 	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
+		Priority[UserID] = 3;
 		entity->PGetEyeAngles()->y = entity->GetLBY();
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Off Ground";
@@ -307,24 +323,17 @@ void Resolver::BruteForce(Entity* entity, int index)
 	// If they are on the ground, and are going faster than max accurate speed...
 	if (Velocity > MAS)
 	{
+		Priority[UserID] = 2;
 		entity->PGetEyeAngles()->y = entity->GetLBY();
 		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Faster than Max Accurate Speed";
 		return;
 	}
 
-	// If we can't get stuff, something is wrong with player,
-	// should have been fix by now but still adding the check
-	player_info_t info;
-	if (!I::engine->GetPlayerInfo(index, &info))
-		return;
-
-	int UserID = info.userid;
-	
-
 	// If they are not standing still, but are slow-walking...
 	if (Velocity < MAS && Velocity > 5.f)
 	{
+		Priority[UserID] = 1;
 		ResolverFlag[index] = "Slow-walking: ";
 		switch (ShotsMissed[UserID] % 5) {
 		case 0:

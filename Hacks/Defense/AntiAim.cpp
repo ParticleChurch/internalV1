@@ -52,6 +52,12 @@ void AntiAim::legit()
 	static Config2::CState* AADirection = Config2::GetState("antiaim-legit-invert"); // terrible property name btw
 	static Config2::CFloat* MaxDesync = Config2::GetFloat("antiaim-legit-max-angle");
 
+	// make it so it only updates on a new tick :D
+	static int tick_count = G::cmd->tick_count;
+	if (tick_count == G::cmd->tick_count)
+		return;
+	tick_count = G::cmd->tick_count;
+
 	if (!Enable->Get())
 		return;
 
@@ -63,13 +69,13 @@ void AntiAim::legit()
 
 	fake = G::cmd->viewangles;
 	real = G::cmd->viewangles;
-		
+
 	if (G::LocalPlayer->GetMoveType() == MOVETYPE_LADDER)
 		return;
 
 	if (!(G::LocalPlayer->GetFlags() & FL_ONGROUND))
 		return;
-	
+
 	legit_left = AADirection->Get();
 	legit_side = legit_left ? 1 : -1;
 
@@ -134,6 +140,11 @@ void AntiAim::rage()
 	static Config2::CFloat* FakeJitterOff = Config2::GetFloat("antiaim-rage-fake-jitter");
 	static Config2::CState* Invert = Config2::GetState("antiaim-rage-fake-invert");
 	
+	// make it so it only updates on a new tick :D
+	static int tick_count = G::cmd->tick_count;
+	if (tick_count == G::cmd->tick_count)
+		return;
+	tick_count = G::cmd->tick_count;
 
 	if (!Enable->Get())
 		return;
@@ -147,7 +158,7 @@ void AntiAim::rage()
 	//set up rage style anyway
 	/*G::cmd->viewangles.y += 180;*/
 	G::cmd->viewangles.y = AtTargets();
-	G::cmd->viewangles.NormalizeAngle();
+	G::cmd->viewangles.NormalizeAngle();	
 
 	rage_left = Invert->Get();
 	rage_side = rage_left ? 1 : -1;
@@ -178,6 +189,16 @@ void AntiAim::rage()
 		break;
 	default:
 		break;
+	}
+
+	static bool LastSendPacket = (G::pSendPacket && *G::pSendPacket);
+
+	// 2 correct send packets in a row... --> stay at targets :D
+	if (LastSendPacket == true && (G::pSendPacket && *G::pSendPacket))
+	{
+		fake = G::cmd->viewangles;
+		real = G::cmd->viewangles;
+		return;
 	}
 
 	G::cmd->viewangles.y += RealOff->Get();
@@ -238,6 +259,8 @@ void AntiAim::rage()
 
 	fake.NormalizeAngle();
 	real.NormalizeAngle();
+
+	LastSendPacket = (G::pSendPacket && *G::pSendPacket);
 }
 
 float AntiAim::AtTargets()

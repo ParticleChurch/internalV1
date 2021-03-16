@@ -191,7 +191,7 @@ public:
 			offset = N::GetOffset("DT_BasePlayer", "m_iHealth");
 		if((int*)((DWORD)this + offset))
 			return *(int*)((DWORD)this + offset);
-		return -1;
+		return 0;
 	}
 
 	int GetAmmo() {
@@ -596,12 +596,12 @@ public:
 		return nullptr;
 	}
 
-	bool& ClientAnimations()
+	bool* ClientAnimations()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
 		if (offset == 0)
 			offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
-		return *reinterpret_cast<bool*>(uintptr_t(this) + offset);
+		return (bool*)(DWORD(this) + offset);
 	}
 
 	void UpdateAnimationState(AnimState* state, Vec angle)

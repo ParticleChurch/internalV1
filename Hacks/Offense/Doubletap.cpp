@@ -61,6 +61,7 @@ void Doubletap::DoubleTap()
 					Entity* weap = G::LocalPlayer->GetActiveWeapon();
 					if ((!(G::cmd->buttons & IN_ATTACK)) && reset
 						&& fabsf(weap->GetLastShotTime() - TicksToTime(G::LocalPlayer->GetTickBase())) > 0.5f) {
+						*G::pSendPacket = true;
 						m_charged = false;
 						m_tick_to_recharge = shift_ticks + 5;
 						reset = false;
@@ -70,13 +71,6 @@ void Doubletap::DoubleTap()
 		}
 		did_shift_before = prev_shift_ticks != 0;
 	}
-
-	if (did_shift_before)
-		H::console.push_back("did_shift_before");
-	H::console.push_back("double_tapped: " + std::to_string(double_tapped));
-	H::console.push_back("prev_shift_ticks: " + std::to_string(prev_shift_ticks));
-	if (reset)
-		H::console.push_back("reset");
 }
 
 bool Doubletap::CanFireWeapon(float curtime)
@@ -106,8 +100,7 @@ bool Doubletap::CanFireWithExploit(int m_iShiftedTick)
 
 bool Doubletap::CanDT()
 {
-	return (I::clientstate->m_choked_commands <= 1)
-		&& G::LocalPlayerAlive;
+	return G::LocalPlayerAlive;
 }
 
 void Doubletap::start()
@@ -123,27 +116,20 @@ void Doubletap::start()
 			m_charged = true;
 		}
 		G::cmd->tick_count = INT_MAX;
+		
 		*G::pSendPacket = true;
 		fakelag->PredictedVal = true;
 	}
 
-	if (m_tick_to_shift > 0)
+	/*if (m_tick_to_shift > 0)
 	{
 		*G::pSendPacket = true;
 		fakelag->PredictedVal = true;
-	}
+	}*/
 }
 
 void Doubletap::end()
 {
-	H::console.clear();
-	H::console.resize(0);
-	H::console.push_back("m_tick_to_recharge: " + std::to_string(m_tick_to_recharge));
-	if(m_charged)
-		H::console.push_back("m_charged: true");
-	else
-		H::console.push_back("m_charged: false");
-	H::console.push_back("m_tick_to_shift: " + std::to_string(m_tick_to_shift));
 
 	DoubleTap();
 }

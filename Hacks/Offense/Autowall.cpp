@@ -123,6 +123,10 @@ float Autowall::GetDamage(Entity* Ent, const Vec& Destination, bool AllowFriendl
         if (Trace.Fraction == 1.0f)
             break;
 
+        bool PossibleDam = GetDamageMultiplier(HITGROUP_HEAD) * Damage * powf(WeaponData->RangeModifier, Trace.Fraction * WeaponData->Range / 500.0f) >= 1;
+        if (!PossibleDam) // if we can't do damage anyway, why bother xD
+            return 0;
+
         if (Trace.Entity == Ent && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(WeaponData->RangeModifier, Trace.Fraction * WeaponData->Range / 500.0f);
 

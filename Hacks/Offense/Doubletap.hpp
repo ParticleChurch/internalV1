@@ -3,7 +3,7 @@
 class Doubletap
 {
 public:
-	int shift_ticks = 15; //add slider maybe in gui
+	int shift_ticks = 0; //add slider maybe in gui
 	int				 m_tick_to_shift;
 	int				 m_tick_to_recharge;
 	bool			 m_charged;
