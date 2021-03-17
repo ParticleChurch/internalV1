@@ -20,6 +20,7 @@ if (L::OutputMode != L::LogMode::None && p->Type != t){ \
 
 namespace Config2
 {
+	std::vector<CPaintKit*> WeaponPaintKits = {};
 	uint64_t GUIFramesRenderedCounter = 0;
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
@@ -373,7 +374,7 @@ namespace Config2
 				Group* g = t->Add("Guns");
 
 				for (int i = 0; i < (int)Skins::Weapon::_COUNT; i++)
-					g->Add("skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[i])), Skins::WeaponNames[i], new CPaintKit());
+					WeaponPaintKits.push_back((CPaintKit*)g->Add("skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[i])), Skins::WeaponNames[i], new CPaintKit())->Value);
 			}
 
 			{ // gloves

@@ -2,15 +2,14 @@
 
 void Update()
 {
-    static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
+    //static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
     //ForceUpdate();
-    // the same problems occur when using delta tick instead
     I::clientstate->m_delta_tick = -1;
 }
 
 void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit)
 {
-
+    // only update if something has changed
     bool NeedsUpdate =
         *Weapon->GetItemIDHigh() == 0 ||
         *Weapon->GetFallbackPaintKit() != PaintKit ||
@@ -55,8 +54,7 @@ void SkinChanger::FSNStart()
         int WeaponIndex = Skins::WeaponFromId(WeaponId);
         if (WeaponIndex < 0) continue; // this is not a weapon
 
-        std::string ConfigName = "skinchanger-weapon-" + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[WeaponIndex]));
-        Skins::PaintKit* PaintKit = Config2::GetPaintKit(ConfigName)->PaintKit;
+        Skins::PaintKit* PaintKit = Config2::WeaponPaintKits.at(WeaponIndex)->PaintKit;
         if (PaintKit && PaintKit->ID != 0)
             ForceSkin(Weapon, PaintKit->ID);
         else
