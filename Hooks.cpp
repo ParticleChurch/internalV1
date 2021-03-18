@@ -418,7 +418,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static auto MenuOpen = Config2::GetState("show-menu");
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
 	bool IsMouseInput =
-		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL ||
+		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL || uMsg == WM_INPUT || // wm_input is not always mouse but usually will be
 		uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK ||
 		uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONDBLCLK ||
 		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
