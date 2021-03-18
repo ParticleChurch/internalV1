@@ -179,32 +179,34 @@ void Resolver::LogShots(GameEvent* event)
 
 void Resolver::Resolve(int stage)
 {
+	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+		return;
+
 	if (!I::engine->IsInGame()) return;
 
 	Entity* localplayer = (Entity*)I::entitylist->GetClientEntity(I::engine->GetLocalPlayer());
 	if (!localplayer) return;
 
+	if (localplayer->GetLifeState() != LIFE_ALIVE) return;
+
 	if (!(localplayer->GetHealth() > 0)) return;
 
 	int team = localplayer->GetTeam();
 
-	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
-		for (int i = 1; i < I::engine->GetMaxClients(); ++i)
-		{
-			Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
+		Entity* player = (Entity*)I::entitylist->GetClientEntity(i);
 
-			if (!player
-				|| player == localplayer
-				|| player->IsDormant()
-				|| !(player->GetHealth() > 0)
-				|| team == player->GetTeam())
-				continue;
+		if (!player
+			|| player == localplayer
+			|| player->IsDormant()
+			|| !(player->GetHealth() > 0)
+			|| team == player->GetTeam())
+			continue;
 
-			/*AnimationFix(player);*/
-			BruteForce(player, i);
-			AnimationFix(player);
-		}
+		/*AnimationFix(player);*/
+		BruteForce(player, i);
+		AnimationFix(player);
 	}
 }
 
