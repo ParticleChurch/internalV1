@@ -28,6 +28,7 @@ namespace I
 	void GUIInit()
 	{
 		engine = GetInterface<IVEngineClient      >("engine.dll", "VEngineClient014");
+		surface = GetInterface<Surface             >("vguimatsurface.dll", "VGUI_Surface031");
 	}
 
 	void Init()
@@ -38,7 +39,6 @@ namespace I
 		globalvars           = **(GlobalVars***)((*(uintptr_t**)(client))[11] + 10);
 		input                = *(CInput**)((*(DWORD**)client)[16] + 0x1);
 		entitylist           = GetInterface<IClientEntityList   >("client.dll",         "VClientEntityList003");
-		surface              = GetInterface<Surface             >("vguimatsurface.dll", "VGUI_Surface031");
 		panel                = GetInterface<Panel               >("vgui2.dll",          "VGUI_Panel009");
 		modelinfo            = GetInterface<IVModelInfo         >("engine.dll",         "VModelInfoClient004");
 		enginetrace          = GetInterface<IEngineTrace        >("engine.dll",         "EngineTraceClient004");

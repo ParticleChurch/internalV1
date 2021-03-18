@@ -215,7 +215,13 @@ void H::GUIInit()
 	while (!(CSGOWindow = FindWindowW(L"Valve001", nullptr))) Sleep(10);
 
 	d3d9VMT = new VMTManager((VMT*)D3d9Device);
+	surfaceVMT = new VMTManager((VMT*)I::surface);
+	
+	oReset = (Reset)d3d9VMT->Hook(16, &ResetHook);
+	oLockCursor = (LockCursor)surfaceVMT->Hook(67, &LockCursorHook);
 	oEndScene = (EndScene)d3d9VMT->Hook(42, &EndSceneHook);
+
+	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
 }
 
 void H::Init()
@@ -228,8 +234,6 @@ void H::Init()
 	GUI2::LoadProgress += 0.01f;
 	clientmodeVMT = new VMTManager((VMT*)I::clientmode);
 	GUI2::LoadProgress += 0.01f;
-	surfaceVMT = new VMTManager((VMT*)I::surface);
-	GUI2::LoadProgress += 0.01f;
 	panelVMT = new VMTManager((VMT*)I::panel);
 	GUI2::LoadProgress += 0.01f;
 	gameeventmanagerVMT = new VMTManager((VMT*)I::gameeventmanager);
@@ -241,8 +245,6 @@ void H::Init()
 	soundVMT = new VMTManager((VMT*)I::sound);
 	GUI2::LoadProgress += 0.01f;
 
-	oReset = (Reset)d3d9VMT->Hook(16, &ResetHook);
-	oLockCursor = (LockCursor)surfaceVMT->Hook(67, &LockCursorHook);
 	oCreateMove = (CreateMove)clientmodeVMT->Hook(24, &CreateMoveHook);
 	oFrameStageNotify = (FrameStageNotify)clientVMT->Hook(37, &FrameStageNotifyHook);
 	oPaintTraverse = (PaintTraverse)panelVMT->Hook(41, &PaintTraverseHook);
@@ -254,7 +256,6 @@ void H::Init()
 	clantag->reset();
 	GUI2::LoadProgress += 0.05f;
 
-	oWndProc = WNDPROC(SetWindowLongPtrW(CSGOWindow, GWLP_WNDPROC, LONG_PTR(WndProc)));
 	g_EventListener = new EventListener();
 	GUI2::LoadProgress += 0.05f;
 }
@@ -402,10 +403,17 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	L::Verbose("H::WndProc - begin");
+	L::Verbose("H::WndProc - begin (", "");
+	L::Verbose(std::to_string((DWORD)hWnd).c_str(), ", ");
+	L::Verbose(std::to_string(uMsg).c_str(), ", ");
+	L::Verbose(std::to_string(wParam).c_str(), ", ");
+	L::Verbose(std::to_string(lParam).c_str(), ")\n");
 
-	if (!D3dInit) return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-	L::Verbose("H::WndProc - inside");
+	if (!D3dInit)
+	{
+		L::Verbose("H::WndProc - not initalized so calling original");
+		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	}
 
 	static auto MenuOpen = Config2::GetState("show-menu");
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
@@ -416,18 +424,25 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
 		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK;
 
+	L::Verbose(IsKeyboardInput ? "H::WndProc - keyboard input" : (IsMouseInput ? "H::WndProc - mouse input" : "H::WndProc - unknown input"));
+	
 	// give imgui input
 	if (MenuOpen->Get())
-		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+	{
+		bool im = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+		L::Verbose("H::WndProc - imgui returned ", im ? "true\n" : "false\n");
+	}
 	
 	// determine if csgo should receive this input
 	ImGuiIO& io = ImGui::GetIO();
 	bool HideInputFromCSGO = (IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard);
+	if (HideInputFromCSGO)
+		L::Verbose("H::WndProc - CS:GO will not receive this input");
 
 	bool og = false;
 	if (!HideInputFromCSGO)
 		og = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-	L::Verbose("H::WndProc - complete");
+	L::Verbose("H::WndProc - complete (returning ", og ? "true)\n" : "false)\n");
 	return og;
 }
 
