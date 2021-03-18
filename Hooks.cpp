@@ -714,10 +714,10 @@ void LocalAnimFix(Entity* entity)
 
 void __stdcall H::FrameStageNotifyHook(int curStage)
 {
-	L::Verbose("H::FrameStageNotifyHook - begin", "\n", true); // no flush to prevent frame lag -- set to false for no frame lag
+	L::Verbose("H::FrameStageNotifyHook - begin");
 	G::IsInGame = I::engine->IsInGame();
 	
-	L::Verbose("disablePostProcessing..", "\n", false); // no flush to prevent frame lag
+	L::Verbose("FSN - disablePostProcessing..");
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
 	{
@@ -725,7 +725,7 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 			*disablePostProcessing = curStage == FRAME_RENDER_START && true;
 	}
 
-	L::Verbose("G::EntList.clear()..", "\n", false); // no flush to prevent frame lag
+	L::Verbose("FSN - G::EntList.clear()..");
 	if (curStage == FRAME_RENDER_START && !G::IsInGame)
 	{
 		if(!G::EntList.empty())
@@ -750,37 +750,38 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
 	{
-		L::Verbose("Updating localplayer..", "\n", false); // no flush to prevent frame lag
+		L::Verbose("FSN - Updating localplayer..");
 		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
 		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 
 		if (!G::LocalPlayer)
 		{
 			G::LocalPlayerAlive = false;
+			L::Verbose("FSN - return early cuz no localplayer..");
 			return oFrameStageNotify(curStage);
 		}
 
 	
 		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
-
-		L::Verbose("LocalPlayer NOT Alive..", "\n", false); // no flush to prevent frame lag
 		if (!G::LocalPlayerAlive)
+		{
+			L::Verbose("FSN - return early cuz localplayer dead..");
 			return oFrameStageNotify(curStage);
+		}
 
-		L::Verbose("LocalAnimFix..", "\n", false); // no flush to prevent frame lag
+		L::Verbose("FSN - LocalAnimFix..");
 		LocalAnimFix(G::LocalPlayer);
 
-		L::Verbose("LocalPlayer Alive..", "\n", false); // no flush to prevent frame lag
 		G::LocalPlayerTeam = G::LocalPlayer->GetTeam();
 		G::LocalPlayerWeapon = G::LocalPlayer->GetActiveWeapon();
 		if (G::LocalPlayerWeapon)
 			G::LocalPlayerWeaponData = G::LocalPlayerWeapon->GetWeaponData();
 		
 
-		L::Verbose("UpdateEntities..", "\n", false); // no flush to prevent frame lag
+		L::Verbose("FSN - UpdateEntities..");
 		G::UpdateEntities();
 		
-		L::Verbose("Angles bro..", "\n", false); // no flush to prevent frame lag
+		L::Verbose("FSN - Angles bro..");
 		
 		//this is for accurate angles (aa, etc)
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
@@ -835,27 +836,31 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		
 	}
 	
-	L::Verbose("resolver...", "", false); // no flush to prevent frame lag
+	L::Verbose("FSN - resolver...");
 	resolver->Resolve(curStage);
-	L::Verbose("DONE", "\n", false); // no flush to prevent frame lag
-	
+
+	L::Verbose("FSN - ESP...");
 	esp->Run_FrameStageNotify(curStage);
-	L::Verbose("backtrack...", "", false); // no flush to prevent frame lag
+
+	L::Verbose("FSN - backtrack...");
 	backtrack->update(curStage);
+
+	L::Verbose("FSN - noflash/nosmoke");
 	miscvisuals->NoFlash(curStage);
 	miscvisuals->NoSmoke_FrameStageNotify();
 
-	
+	L::Verbose("FSN - world...");
 	world->Run_FrameStageNotify(curStage);
 	
 	if (curStage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && G::LocalPlayer)
 	{
+		L::Verbose("FSN - skinchanger...");
 		SkinChanger::FSNStart();
 	}
 
 
 	oFrameStageNotify(curStage);
-	L::Verbose("H::FrameStageNotifyHook - complete", "\n", true); // no flush to prevent frame lag - set to false for no frame lag
+	L::Verbose("H::FrameStageNotifyHook - complete");
 }
 
 void __stdcall H::LockCursorHook()
