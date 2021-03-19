@@ -101,20 +101,12 @@ void MiscVisuals::NoScope()
 	I::surface->DrawLine(0, ySize / 2, xSize, ySize / 2); //Left - Right
 }
 
-void MiscVisuals::NoFlash(int stage)
+void MiscVisuals::NoFlash()
 {
 	static Config2::CState* Enable = Config2::GetState("visuals-misc-noflash");
 
-	if (!Enable->Get())
-		return;
-
-	if (stage != ClientFrameStage_t::FRAME_NET_UPDATE_POSTDATAUPDATE_START)
-		return;
-
-	if (!G::LocalPlayer || G::LocalPlayer->GetFlashMaxAlpha() < 0.1)
-		return;
-
-	*G::LocalPlayer->pGetFlashMaxAlpha() = 0;
+	if (Enable->Get())
+		*(G::LocalPlayer->pGetFlashMaxAlpha()) = 0.f;
 }
 
 void MiscVisuals::NoSmoke_DoPostScreenEffects()
@@ -145,21 +137,12 @@ void MiscVisuals::NoSmoke_DoPostScreenEffects()
 	}
 }
 
-void MiscVisuals::NoSmoke_FrameStageNotify()
+void MiscVisuals::NoSmokeFSN()
 {
+	static int* smokecount = *(int**)(FindPattern("client.dll", "A3 ? ? ? ? 57 8B CB") + 0x1);
 	static Config2::CState* Enable = Config2::GetState("visuals-misc-nosmoke");
 
-	if (!Enable->Get())
-		return;
-	if (!G::LocalPlayer)
-		return;
-	if (!G::LocalPlayerAlive)
-		return;
-	if (!I::engine->IsInGame())
-		return;
-
-	static int* smokecount = *(int**)(FindPattern("client.dll", "A3 ? ? ? ? 57 8B CB") + 0x1);
-	if (smokecount) *smokecount = 0;
+	if (Enable->Get()) *smokecount = 0;
 }
 
 void MiscVisuals::ChangeViewModel()

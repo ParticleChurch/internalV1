@@ -417,34 +417,38 @@ void ESP::Run_PaintTraverse()
 	//DrawBacktrackingDots();
 }
 
-void ESP::Run_FrameStageNotify(int stage)
+void ESP::RunFSN()
 {
-	if (stage == FRAME_RENDER_START && I::engine->IsInGame() && G::LocalPlayer)
+	// draw bullet tracers (traces = newer bullets at end of list)
+	// only show most recent 8 tracers
+	while (traces.size() > 8)
+		traces.erase(traces.begin());
+	for (int i = (int)traces.size() - 1; i >= 0; --i)
 	{
-		for (size_t i = 0; i < traces.size(); i++)
+		BulletTracer& bt = traces.at(i);
+
+		// delete if older than 5 seconds
+		if (I::globalvars->m_curTime - bt.SimTime > 5.f)
 		{
-			auto cur = traces[i];
-			//draw a line from local player's head position to the hit point
-			I::debugoverlay->AddLineOverlay(cur.src, cur.end, 125, 125, 1, true, -1);
-			//draw a box at the hit point
-			I::debugoverlay->AddBoxOverlay(cur.end, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 255, 0, 0, 127, -1.f);
-
-			//if the item is older than 5 seconds, delete it
-			if (fabs(I::globalvars->m_curTime - cur.SimTime) > 5.f)
-				traces.erase(traces.begin() + i);
+			traces.erase(traces.begin() + i);
+			continue;
 		}
-		while (traces.size() > 8)
-			traces.erase(traces.begin());
 
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			auto cur = points[i];
-			//draw a box at the hit point
-			I::debugoverlay->AddBoxOverlay(cur, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 0, 255, 255, 127, -1.f);
+		// draw bullet tracer
+		I::debugoverlay->AddLineOverlay(bt.src, bt.end, 125, 125, 1, true, -1);
+		// draw penetration as cube
+		I::debugoverlay->AddBoxOverlay(bt.end, Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 255, 0, 0, 127, -1.f);
 
-		}
-		while (points.size() > 10)
-			points.erase(points.begin());
+	}
+
+	// draw bullet penetrations
+	// only most recent 10
+	while (points.size() > 10)
+		points.erase(points.begin());
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		// cube at the position
+		I::debugoverlay->AddBoxOverlay(points.at(i), Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 0, 255, 255, 127, -1.f);
 	}
 }
 

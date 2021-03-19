@@ -53,20 +53,18 @@ void Backtrack::GetClosestTick(int RecordUserID, int& BestTickCount)
 	}
 }
 
-void Backtrack::update(int CurStage)
+void Backtrack::ClearRecords()
+{
+	std::map<int, Player>::iterator it;
+	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+		it->second.BacktrackRecords.clear();
+}
+
+void Backtrack::RunFSN()
 {
 	static Config2::CFloat* BacktrackTime = Config2::GetFloat("legitaim-backtrack-time");
 
-	if (CurStage != FRAME_RENDER_START)
-		return;
-
 	std::map<int, Player>::iterator it;
-	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {
-		for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-			it->second.BacktrackRecords.clear();
-		return;
-	}
-
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
 	{
 		if (!ValidPlayer(it->second))
@@ -90,7 +88,7 @@ void Backtrack::update(int CurStage)
 			it->second.BacktrackRecords.pop_back();
 		}
 
-		for (unsigned int j = 0; j < it->second.BacktrackRecords.size(); j++)
+		for (size_t j = 0; j < it->second.BacktrackRecords.size(); j++)
 		{
 			if (!ValidSimTime(it->second.BacktrackRecords[j].SimulationTime))
 				it->second.BacktrackRecords.erase(it->second.BacktrackRecords.begin() + j);

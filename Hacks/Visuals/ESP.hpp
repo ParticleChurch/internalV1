@@ -22,7 +22,7 @@ private:
 public:
 	std::vector<Vec> points;
 	void Run_PaintTraverse();
-	void Run_FrameStageNotify(int stage);
+	void RunFSN();
 	void Run_GameEvent(GameEvent* event);
 
 	

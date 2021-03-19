@@ -24,7 +24,6 @@ void Movement::AAMoveFix()
 void Movement::BunnyHop()
 {
 	static Config2::CState* Enabled = Config2::GetState("misc-movement-bhop");
-
 	// If bhop is NOT enabled in config...
 	if (!Enabled->Get())
 		return;

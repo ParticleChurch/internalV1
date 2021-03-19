@@ -8,7 +8,7 @@ private:
 	void SkyboxMod(Material* mat);
 	void LightMod();
 public:
-	void Run_FrameStageNotify(int CurStage);
+	void RunFSN();
 	void Run_DoPostScreenEffect();
 };
 

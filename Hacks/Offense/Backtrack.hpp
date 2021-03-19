@@ -7,7 +7,8 @@ private:
     void GetClosestTick(int RecordUserID, int& BestTickCount);
 public:
     Player::Tick TragetTick;
-    void update(int CurStage);
+    void ClearRecords();
+    void RunFSN();
     void run();
 };
 

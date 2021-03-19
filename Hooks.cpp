@@ -712,25 +712,45 @@ void LocalAnimFix(Entity* entity)
 	
 }
 
-void __stdcall H::FrameStageNotifyHook(int curStage)
+void __stdcall H::FrameStageNotifyHook(int stage)
 {
-	L::Verbose("H::FrameStageNotifyHook - begin");
-	G::IsInGame = I::engine->IsInGame();
-	
-	L::Verbose("FSN - disablePostProcessing..");
-	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
-	if (curStage == FRAME_RENDER_START || curStage == FRAME_RENDER_END)
-	{
-		if(disablePostProcessing)
-			*disablePostProcessing = curStage == FRAME_RENDER_START && true;
-	}
+	oFrameStageNotify(stage);
 
-	L::Verbose("FSN - G::EntList.clear()..");
-	if (curStage == FRAME_RENDER_START && !G::IsInGame)
+	L::Verbose("H::FrameStageNotifyHook - begin stage ", "");  L::Verbose(std::to_string(stage).c_str());
+
+	// post processing
+	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
+	if (stage == FRAME_RENDER_START || stage == FRAME_RENDER_END)
+		*disablePostProcessing = stage == FRAME_RENDER_START;
+
+	// update globals
+	G::IsInGame = I::engine->IsInGame();
+	if (G::IsInGame)
 	{
-		if(!G::EntList.empty())
-			G::EntList.clear();
+		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
+		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
+		G::LocalPlayerAlive = G::LocalPlayer ? G::LocalPlayer->GetHealth() > 0 && G::LocalPlayer->GetLifeState() == LIFE_ALIVE: false;
+		G::LocalPlayerTeam = G::LocalPlayer ? G::LocalPlayer->GetTeam() : 0;
+		G::LocalPlayerWeapon = G::LocalPlayer ? G::LocalPlayer->GetActiveWeapon() : nullptr;
+		G::LocalPlayerWeaponData = G::LocalPlayerWeapon ? G::LocalPlayerWeapon->GetWeaponData() : nullptr;
+
+		if (!G::LocalPlayer || !G::LocalPlayerAlive)
+			backtrack->ClearRecords();
+
+		if (G::LocalPlayer)
+			LocalAnimFix(G::LocalPlayer);
+		else
+			return;
+	}
+	else
+	{
+		G::EntList.clear();
 		G::LocalPlayerAlive = false;
+		G::LocalPlayer = nullptr;
+		G::LocalPlayerIndex = 0;
+		G::LocalPlayerTeam = 0;
+		G::LocalPlayerWeapon = nullptr;
+		return;
 	}
 
 	/*
@@ -746,53 +766,45 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 		}
 	}
 	*/
-	
 
-	if (curStage == FRAME_RENDER_START && I::engine->IsInGame())
+	static int deadflagOffset = N::GetOffset("DT_CSPlayer", "deadflag");
+	static auto ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
+
+	switch (stage)
 	{
-		L::Verbose("FSN - Updating localplayer..");
-		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
-		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
-
-		if (!G::LocalPlayer)
-		{
-			G::LocalPlayerAlive = false;
-			L::Verbose("FSN - return early cuz no localplayer..");
-			return oFrameStageNotify(curStage);
-		}
-
-	
-		G::LocalPlayerAlive = G::LocalPlayer->GetHealth() > 0;
-		if (!G::LocalPlayerAlive)
-		{
-			L::Verbose("FSN - return early cuz localplayer dead..");
-			return oFrameStageNotify(curStage);
-		}
-
-		L::Verbose("FSN - LocalAnimFix..");
-		LocalAnimFix(G::LocalPlayer);
-
-		G::LocalPlayerTeam = G::LocalPlayer->GetTeam();
-		G::LocalPlayerWeapon = G::LocalPlayer->GetActiveWeapon();
-		if (G::LocalPlayerWeapon)
-			G::LocalPlayerWeaponData = G::LocalPlayerWeapon->GetWeaponData();
-		
-
-		L::Verbose("FSN - UpdateEntities..");
+	case FRAME_RENDER_START:
+	{
+		// update our local entlist
 		G::UpdateEntities();
-		
-		L::Verbose("FSN - Angles bro..");
-		
-		//this is for accurate angles (aa, etc)
-		static DWORD offset = N::GetOffset("DT_CSPlayer", "deadflag");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "deadflag");
 
-		static auto ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
-		if ((Vec*)((DWORD)G::LocalPlayer + offset + 4) && ThirdPerson->Get())
-			*(Vec*)((DWORD)G::LocalPlayer + offset + 4) = antiaim->real;
+		// third person
+		if (ThirdPerson->Get()) *(Vec*)((DWORD)G::LocalPlayer + deadflagOffset + 4) = antiaim->real;
 
-		if (false && G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())
+		// bones out of view
+		Entity* entity;
+		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
+			if (i == G::LocalPlayerIndex || !(entity = I::entitylist->GetClientEntity(i)) || entity->IsDormant() || entity->GetHealth() <= 0) continue;
+
+			*(int*)(entity + 0xA30) = I::globalvars->m_frameCount; //skip occlusion check
+			*(int*)(entity + 0xA28) = 0; ///clear occlusion flags --> should be zero ig (normally set to 1 in my code ig? idk am retar)
+		}
+
+		esp->RunFSN();
+		backtrack->RunFSN();
+		world->RunFSN();
+	} break;
+	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
+	{
+		resolver->Resolve();
+		miscvisuals->NoFlash();
+		miscvisuals->NoSmokeFSN();
+		SkinChanger::RunFSN();
+	} break;
+	}
+
+	/*
+	
+		if (stage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())
 		{
 			static auto util_playerbyindex = FindPattern("server.dll", "85 C9 7E 2A A1");
 			static auto draw_server_hitboxes = FindPattern("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
@@ -819,48 +831,8 @@ void __stdcall H::FrameStageNotifyHook(int curStage)
 
 			}
 		}
-
-		// accurate bones out of view
-		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
-			Entity* entity = I::entitylist->GetClientEntity(i);
-			if (!entity || i == G::LocalPlayerIndex || entity->IsDormant() || !(entity->GetHealth() > 0)) continue;
-
-			int* check1 = (int*)(entity + 0xA30);
-			if(check1)
-				*check1 = I::globalvars->m_frameCount; //skip occlusion check
-
-			int* check2 = (int*)(entity + 0xA28);
-			if (check2)
-				*check2 = 0; ///clear occlusion flags --> should be zero ig (normally set to 1 in my code ig? idk am retar)
-		}
-		
-	}
-	
-	L::Verbose("FSN - resolver...");
-	resolver->Resolve(curStage);
-
-	L::Verbose("FSN - ESP...");
-	esp->Run_FrameStageNotify(curStage);
-
-	L::Verbose("FSN - backtrack...");
-	backtrack->update(curStage);
-
-	L::Verbose("FSN - noflash/nosmoke");
-	miscvisuals->NoFlash(curStage);
-	miscvisuals->NoSmoke_FrameStageNotify();
-
-	L::Verbose("FSN - world...");
-	world->Run_FrameStageNotify(curStage);
-	
-	if (curStage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && G::LocalPlayer)
-	{
-		L::Verbose("FSN - skinchanger...");
-		SkinChanger::FSNStart();
-	}
-
-
-	oFrameStageNotify(curStage);
-	L::Verbose("H::FrameStageNotifyHook - complete");
+	*/
+	L::Verbose("H::FrameStageNotifyHook - completed stage ", "");  L::Verbose(std::to_string(stage).c_str());
 }
 
 void __stdcall H::LockCursorHook()

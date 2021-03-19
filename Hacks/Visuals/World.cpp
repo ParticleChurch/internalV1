@@ -60,81 +60,71 @@ void World::LightMod()
 	blue->SetValue(clr->GetB() / 255.f);
 }
 
-void World::Run_FrameStageNotify(int CurStage)
+void World::RunFSN()
 {
 	static Config2::CState* World = Config2::GetState("visuals-world-enable");
 	static Config2::CState* Prop = Config2::GetState("visuals-world-prop-enable");
-	static Config2::CState* Skybox = Config2::GetState("visuals-world-skybox-enable");
+	static Config2::CState* SkyboxEnabled = Config2::GetState("visuals-world-skybox-enable");
 	static Config2::CState* SkyboxState = Config2::GetState("visuals-world-skybox-name");
 	static Config2::CColor* WorldClr = Config2::GetColor("visuals-world-color");
 	static Config2::CColor* PropClr = Config2::GetColor("visuals-world-prop-color");
 	static Config2::CColor* SkyboxClr = Config2::GetColor("visuals-world-skybox-color");
 
-	if (CurStage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && I::engine->IsInGame()) {
-		static int LastState = -1;
-		if (Skybox->Get() && SkyboxState->Get() != LastState)
-		{
-			LastState = SkyboxState->Get();
-			static std::vector<std::string> skyboxes = {"cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy", "italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr", "sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust" };
-			SkyboxLoad(skyboxes[LastState]);
-		}
-
-		bool UpdateWorld = false;
-		if (World->Get())
-		{
-			static Color LastColorWorld;
-			static int LastAlphaWorld;
-			if (LastColorWorld != Color(WorldClr->GetR(), WorldClr->GetG(), WorldClr->GetB()) ||
-				LastAlphaWorld != (int)WorldClr->GetA())
-			{
-				LastColorWorld = Color(WorldClr->GetR(), WorldClr->GetG(), WorldClr->GetB());
-				LastAlphaWorld = (int)WorldClr->GetA();
-				UpdateWorld = true;
-			}
-		}
+	bool UpdateWorld = false;
+	if (World->Get())
+	{
+		static uint32_t LastColor = WorldClr->As32Bit() ^ 1;
+		uint32_t DesiredColor = WorldClr->As32Bit();
+		UpdateWorld = LastColor != DesiredColor;
+		LastColor = DesiredColor;
+	}
 		
 
-		bool UpdateProp = false;
-		if (Prop->Get())
-		{
-			static Color LastColorProp;
-			static int LastAlphaProp;
-			if (LastColorProp != Color(PropClr->GetR(), PropClr->GetG(), PropClr->GetB()) ||
-				LastAlphaProp != (int)PropClr->GetA())
-			{
-				LastColorProp = Color(PropClr->GetR(), PropClr->GetG(), PropClr->GetB());
-				LastAlphaProp = (int)PropClr->GetA();
-				UpdateProp = true;
-			}
-		}
+	bool UpdateProp = false;
+	if (Prop->Get())
+	{
+		static uint32_t LastColor = PropClr->As32Bit() ^ 1;
+		uint32_t DesiredColor = PropClr->As32Bit();
+		UpdateProp = LastColor != DesiredColor;
+		LastColor = DesiredColor;
+	}
 
-		bool UpdateSkybox = false;
-		if (Skybox->Get())
-		{
-			static Color LastColorSky;
-			if (LastColorSky != Color(SkyboxClr->GetR(), SkyboxClr->GetG(), SkyboxClr->GetB()))
-			{
-				LastColorSky = Color(SkyboxClr->GetR(), SkyboxClr->GetG(), SkyboxClr->GetB());
-				UpdateSkybox = true;
-			}
-		}
-		
+	bool UpdateSkybox = false;
+	if (SkyboxEnabled->Get())
+	{
+		static int LastSkybox = SkyboxState->Get() ^ 1;
+		static uint32_t LastColor = PropClr->As32Bit() ^ 1;
 
-		for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
-		{
-			auto mat = I::materialsystem->GetMaterial(i);
-			if (!mat)
-				continue;
+		int DesiredSkybox = SkyboxState->Get();
+		uint32_t DesiredColor = PropClr->As32Bit();
+		UpdateSkybox = LastColor != DesiredColor || LastSkybox != DesiredSkybox;
+		LastSkybox = DesiredSkybox;
+		LastColor = DesiredColor;
+	}
 
-			auto tex_name = mat->GetTextureGroupName();
+	if (!(UpdateSkybox || UpdateProp || UpdateWorld))
+		return; // everything already up to date
+
+	if (UpdateSkybox)
+	{
+		static std::vector<std::string> skyboxes = { "cs_baggage_skybox_", "cs_tibet", "vietnam", "sky_lunacy", "embassy", "italy", "jungle", "office", "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr", "sky_day02_05", "nukeblank", "dustblank", "sky_venice", "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr", "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b", "vertigo", "vertigoblue_hdr", "sky_dust" };
+		SkyboxLoad(skyboxes[SkyboxState->Get()]);
+	}
+
+	for (auto i = I::materialsystem->FirstMaterial(); i != I::materialsystem->InvalidMaterial(); i = I::materialsystem->NextMaterial(i))
+	{
+		auto mat = I::materialsystem->GetMaterial(i);
+		if (!mat)
+			continue;
+
+		auto tex_name = mat->GetTextureGroupName();
 			
-			if(strstr(tex_name, "World") && UpdateWorld)
-				WorldMod(mat);
-			if (strstr(tex_name, "StaticProp") && UpdateProp)
-				PropMod(mat);
-			if (strstr(tex_name, "SkyBox") && UpdateSkybox)
-				SkyboxMod(mat);
-		}
+		if(UpdateWorld && strstr(tex_name, "World"))
+			WorldMod(mat);
+		else if (UpdateProp && strstr(tex_name, "StaticProp"))
+			PropMod(mat);
+		else if (UpdateSkybox && strstr(tex_name, "SkyBox"))
+			SkyboxMod(mat);
 	}
 }
 

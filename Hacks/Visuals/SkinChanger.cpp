@@ -42,7 +42,7 @@ void SkinChanger::ClearSkin(Entity* Weapon)
     Update();
 }
 
-void SkinChanger::FSNStart()
+void SkinChanger::RunFSN()
 {
     for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
     {

@@ -214,16 +214,10 @@ public:
 		return false;
 	}
 
-	int GetLifeState() {
-		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_lifeState");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_lifeState");
-		if((int*)((DWORD)this + offset))
-			return *(int*)((DWORD)this + offset);
-		return 0;
+	char GetLifeState() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_lifeState");
+		return *(char*)((DWORD)this + offset);
 	}
-
-	
 
 	float GetNextSecondaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextSecondaryAttack");

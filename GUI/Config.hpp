@@ -446,6 +446,11 @@ namespace Config2
 				return "rgb(" + std::to_string((int)this->R) + ", " + std::to_string((int)this->G) + ", " + std::to_string((int)this->B) + ")";
 		}
 
+		__forceinline uint32_t As32Bit()
+		{
+			return (uint32_t)this->R << 0 | (uint32_t)this->G << 8 | (uint32_t)this->G << 16 | (uint32_t)this->A << 24;
+		}
+
 		operator ImVec4 ()
 		{
 			return ImVec4((float)this->R / 255.f, (float)this->G / 255.f, (float)this->B / 255.f, (float)this->A / 255.f);
@@ -453,7 +458,7 @@ namespace Config2
 
 		operator ImU32 ()
 		{
-			return IM_COL32(this->R, this->G, this->B, this->A);
+			return this->As32Bit();
 		}
 
 		unsigned char GetR() { return this->R; }
