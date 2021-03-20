@@ -2,3 +2,4 @@ Debug/
 Release/
 .vs/
 python/__*
+python/metamorph/__*
