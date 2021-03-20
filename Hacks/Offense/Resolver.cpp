@@ -181,9 +181,11 @@ void Resolver::Resolve()
 {
 	if (!G::LocalPlayerAlive) return;
 
+	L::Verbose("Resolver::Resolve - begin");
 	Entity* ent;
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
+		L::Verbose("Resolver::Resolve - ent ", "");  L::Verbose(std::to_string(i).c_str());
 		if (!(ent = I::entitylist->GetClientEntity(i))
 			|| ent == G::LocalPlayer
 			|| ent->GetTeam() == G::LocalPlayerTeam
@@ -192,9 +194,12 @@ void Resolver::Resolve()
 		)
 			continue;
 
+		L::Verbose("Resolver::Resolve - BF");
 		BruteForce(ent, i);
+		L::Verbose("Resolver::Resolve - AF");
 		AnimationFix(ent);
 	}
+	L::Verbose("Resolver::Resolve - done");
 }
 
 void Resolver::AnimationFix(Entity* entity)
@@ -276,17 +281,21 @@ void Resolver::BruteForce(Entity* entity, int index)
 	if (!animstate)
 		return;
 
+	L::Verbose("Resolver::BruteForce - GetLBY");
 	float lby = entity->GetLBY();
 
 	// If we can't get stuff, something is wrong with player,
 	// should have been fix by now but still adding the check
+	L::Verbose("Resolver::BruteForce - GetPlayerInfo");
 	player_info_t info;
 	if (!I::engine->GetPlayerInfo(index, &info))
 		return;
 
+	L::Verbose("Resolver::BruteForce - Priority");
 	int UserID = info.userid;
 	Priority[UserID] = 0;
 
+	L::Verbose("Resolver::BruteForce - OnShot");
 	// Deal with OnShot (ish)
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick)
 	{
@@ -296,7 +305,8 @@ void Resolver::BruteForce(Entity* entity, int index)
 		ResolverFlag[index] = "Onshot (ish)";
 		return;
 	}
-	
+
+	L::Verbose("Resolver::BruteForce - FL_ONGROUND");
 	// If they aint on the ground, then their head is gonna be where the lby is
 	if (!(entity->GetFlags() & FL_ONGROUND))
 	{
@@ -307,6 +317,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 		return;
 	}
 
+	L::Verbose("Resolver::BruteForce - Velocity");
 	float Velocity = entity->GetVecVelocity().VecLength2D();
 	float MAS = entity->MaxAccurateSpeed() / 3.f; // max accurate speed
 	// If they are on the ground, and are going faster than max accurate speed...
@@ -319,6 +330,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 		return;
 	}
 
+	L::Verbose("Resolver::BruteForce - Slow-walking");
 	// If they are not standing still, but are slow-walking...
 	if (Velocity < MAS && Velocity > 5.f)
 	{
@@ -353,6 +365,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 		return;
 	}
 
+	L::Verbose("Resolver::BruteForce - standing still");
 	// If they are standing still...
 	if (Velocity < 5.f)
 	{

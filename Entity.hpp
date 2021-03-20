@@ -228,57 +228,31 @@ public:
 
 	float GetGrenadeThrowTime() {
 		static DWORD offset = N::GetOffset("DT_BaseCSGrenade", "m_fThrowTime");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCSGrenade", "m_fThrowTime");
 		return *(float*)((DWORD)this + offset);
 	}
 
 	float GetServerTime() {
-		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		if((int*)((DWORD)this + offset))
-			return ((*(int*)((DWORD)this + offset)) * I::globalvars->m_intervalPerTick);
-		return 0.0f;
+		return GetTickBase() * I::globalvars->m_intervalPerTick;
 	}
 
 	int GetTickBase() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BasePlayer", "m_nTickBase");
-		if((int*)((DWORD)this + offset))
-			return *(int*)((DWORD)this + offset);
-		return 0.f;
+		return *(int*)((DWORD)this + offset);
 	}
 
 	Entity* GetActiveWeapon() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_hActiveWeapon");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BasePlayer", "m_hActiveWeapon");
-		static HANDLE weaponHandle;
-		if ((HANDLE*)((DWORD)this + offset))
-		{
-			weaponHandle = *(HANDLE*)((DWORD)this + offset);
-			return I::entitylist->GetClientEntityFromHandle(weaponHandle);
-		}
-		return nullptr;
-		
+		return I::entitylist->GetClientEntityFromHandle(*(HANDLE*)((DWORD)this + offset));
 	}
 
 	float GetLastShotTime() {
 		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
-		if (offset == 0)
-			offset = N::GetOffset("DT_WeaponCSBase", "m_fLastShotTime");
-		if((float*)((DWORD)this + offset))
-			return *(float*)((DWORD)this + offset);
-		return 0.f;
+		return *(float*)((DWORD)this + offset);
 	}
 
 	int* GetViewModelID()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iViewModelIndex");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatWeapon", "m_iViewModelIndex");
 		return (int*)((DWORD)this + offset);
 	}
 	
@@ -380,105 +354,68 @@ public:
 	float GetNextAttack()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatCharacter", "m_flNextAttack");
-		if((float*)((DWORD)this + offset))
-			return *(float*)((DWORD)this + offset);
-		return FLT_MAX;
+		return *(float*)((DWORD)this + offset);
 	}
 
 	float GetNextPrimaryAttack() {
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseCombatWeapon", "m_flNextPrimaryAttack");
-		if((float*)((DWORD)this + offset))
-			return *(float*)((DWORD)this + offset);
-		return FLT_MAX;
+		return *(float*)((DWORD)this + offset);
 	}
 
 	//basically return false if still getting weapon out, otherwise true
 	bool CanShoot2() {
-		Entity* weap = this->GetActiveWeapon();
-		if (!this || !weap)
+		if (!this->GetActiveWeapon())
 			return false;
-		float ServerTime = GetServerTime();
-		float NextAttack = this->GetNextAttack();
-		return NextAttack <= GetServerTime();
+		return this->GetNextAttack() <= GetServerTime();
 	}
 
 	bool CanShoot() {
 		Entity* weap = this->GetActiveWeapon();
-		if (!this || !weap)
+		if (!weap)
 			return false;
-		float ServerTime = GetServerTime();
-		float NextAttack = this->GetNextAttack();
-		float NextPrimary = weap->GetNextPrimaryAttack();
-		return NextPrimary <= GetServerTime() && NextAttack <= GetServerTime();
+		float ServerTime = this->GetServerTime();
+		return this->GetNextAttack() <= ServerTime && weap->GetNextPrimaryAttack() <= ServerTime;
 	}
 
 	Vec GetAimPunchAngle() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_aimPunchAngle");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BasePlayer", "m_aimPunchAngle");
-		if((Vec*)((DWORD)this + offset))
-			return *(Vec*)((DWORD)this + offset);
-		return Vec();
+		return *(Vec*)((DWORD)this + offset);
 	}
 
 	int GetShotsFired() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_iShotsFired");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_iShotsFired");
-		if((int*)((DWORD)this + offset))
-			return *(int*)((DWORD)this + offset);
-		return 0;
+		return *(int*)((DWORD)this + offset);
 	}
 
 	float GetFireReadyTime()
 	{
 		static DWORD offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
-		if (offset == 0)
-			offset = N::GetOffset("DT_WeaponCSBase", "m_flPostponeFireReadyTime");
-		if((float*)((DWORD)this + offset))
-			return *(float*)((DWORD)this + offset);
-		return FLT_MAX;
+		return *(float*)((DWORD)this + offset);
 	}
 
 	float GetFlashMaxAlpha()
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_flFlashMaxAlpha");
-		if((float*)((DWORD)this + offset))
-			return *(float*)((DWORD)this + offset);
-		return 0.0f;
+		return *(float*)((DWORD)this + offset);
 	}
 
 	bool HasHelmet() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_bHasHelmet");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_bHasHelmet");
 		return *(float*)((DWORD)this + offset);
 	}
 
 	int ArmorVal() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_ArmorValue");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_ArmorValue");
 		return *(int*)((DWORD)this + offset);
 	}
 
 	bool IsScoped() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_bIsScoped");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_bIsScoped");
 		return *(bool*)((DWORD)this + offset);
 	}
 
 	int ScopeLevel() {
 		static DWORD offset = N::GetOffset("DT_WeaponCSBaseGun", "m_zoomLevel");
-		if (offset == 0)
-			offset = N::GetOffset("DT_WeaponCSBaseGun", "m_zoomLevel");
 		return *(int*)((DWORD)this + offset);
 	}
 
@@ -491,16 +428,12 @@ public:
 	float GetLBY() //LowerBodyYawTarget
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flLowerBodyYawTarget");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_flLowerBodyYawTarget");
 		return *(float*)((DWORD)this + offset);
 	}
 
 	Vec GetEyeAngles() //GetEyeAngles
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
 		Vec a = *(Vec*)((DWORD)this + offset);
 		if (a.x > 89)
 			a.x = 360 - a.x;
@@ -510,8 +443,6 @@ public:
 	Vec* PGetEyeAngles() //GetEyeAngles
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
 		Vec* a = (Vec*)((DWORD)this + offset);
 		if (a->x > 89)
 			a->x = 360 - a->x;
@@ -521,26 +452,19 @@ public:
 	void SetEyeAngles(QAngle angle)
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
-		if (offset == 0)
-			offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
 		*(QAngle*)((DWORD)this + offset) = angle;
 	}
 
 	Vec& GetAbsAngles()
 	{
-		Vec a;
-		if (!this)
-			return a;
-
 		typedef Vec& (__thiscall* OriginalFn)(void*);
-		return GetVFunc<OriginalFn>(this, 11)(this);
+		static OriginalFn f = GetVFunc<OriginalFn>(this, 11);
+		return f(this);
 	}
 
 	float GetSimulationTime() 
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime");
 		return *(float*)((DWORD)this + offset);
 	}
 
@@ -556,7 +480,6 @@ public:
 
 	float GetMaxDesyncAngle() noexcept
 	{
-		
 		const auto animState = GetAnimstate2();
 
 		if (!animState)
@@ -573,8 +496,6 @@ public:
 	std::array< float, 24 >& m_flPoseParameter()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
 		return *reinterpret_cast<std::array<float, 24>*>(reinterpret_cast<uintptr_t>(this) + offset);
 	}
 
@@ -593,8 +514,6 @@ public:
 	bool* ClientAnimations()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
-		if (offset == 0)
-			offset = N::GetOffset("DT_BaseAnimating", "m_bClientSideAnimation");
 		return (bool*)(DWORD(this) + offset);
 	}
 
@@ -634,35 +553,17 @@ public:
 		SetAbsAngles(this, angle);
 	}
 
-
-
-	bool LBYUpdated()
-	{
-		static int LastLBY = -1;
-		int CurLBY = (int)GetLBY();
-		if (CurLBY != LastLBY)
-		{
-			LastLBY = CurLBY;
-			return true;
-		}
-		return false;
-	}
-
 	bool IsAlive()
 	{
 		typedef bool(__thiscall* oAlive)(void*);
 		return GetVFunc<oAlive>(this, 155)(this);
 	}
 
-	
-
 	bool IsPlayer()
 	{
 		typedef bool(__thiscall* oPlayer)(void*);
 		return GetVFunc<oPlayer>(this, 157)(this);
 	}
-
-	
 
 	ClientClass* GetClientClass()
 	{
@@ -693,7 +594,7 @@ public:
 		if (StudioModel)
 			return StudioModel->GetHitboxSet(0)->GetHitbox(Hitbox);
 		else
-			return NULL;
+			return nullptr;
 	}
 
 	//big old cube formed by a1, b1, c1, d1, a2, b2, c2, d2...
@@ -782,5 +683,4 @@ public:
 
 		return Vec(C.x - radius * cosf(gamma - beta), C.y - radius * sinf(gamma - beta), C.z);
 	}
-
 };

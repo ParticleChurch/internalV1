@@ -719,14 +719,18 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	L::Verbose("H::FrameStageNotifyHook - begin stage ", "");  L::Verbose(std::to_string(stage).c_str());
 
 	// post processing
+	L::Verbose("H::FrameStageNotifyHook - disablePostProcessing");
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (stage == FRAME_RENDER_START || stage == FRAME_RENDER_END)
 		*disablePostProcessing = stage == FRAME_RENDER_START;
 
 	// update globals
+	L::Verbose("H::FrameStageNotifyHook - IsInGame (", "");
 	G::IsInGame = I::engine->IsInGame();
+	L::Verbose(G::IsInGame ? "true)" : "false)");
 	if (G::IsInGame)
 	{
+		L::Verbose("H::FrameStageNotifyHook - update globals");
 		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
 		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 		G::LocalPlayerAlive = G::LocalPlayer ? G::LocalPlayer->GetHealth() > 0 && G::LocalPlayer->GetLifeState() == LIFE_ALIVE: false;
@@ -735,15 +739,15 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		G::LocalPlayerWeaponData = G::LocalPlayerWeapon ? G::LocalPlayerWeapon->GetWeaponData() : nullptr;
 
 		if (!G::LocalPlayer || !G::LocalPlayerAlive)
+		{
+			L::Verbose("H::FrameStageNotifyHook - ClearRecords");
 			backtrack->ClearRecords();
-
-		if (G::LocalPlayer)
-			LocalAnimFix(G::LocalPlayer);
-		else
 			return;
+		}
 	}
 	else
 	{
+		L::Verbose("H::FrameStageNotifyHook - G::EntList.clear()");
 		G::EntList.clear();
 		G::LocalPlayerAlive = false;
 		G::LocalPlayer = nullptr;
@@ -774,6 +778,10 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	{
 	case FRAME_RENDER_START:
 	{
+		L::Verbose("H::FrameStageNotifyHook - LocalAnimFix");
+		LocalAnimFix(G::LocalPlayer);
+
+		L::Verbose("H::FrameStageNotifyHook - UpdateEntities");
 		// update our local entlist
 		G::UpdateEntities();
 
@@ -795,9 +803,13 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
 	{
+		L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
 		resolver->Resolve();
+		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoFlash");
 		miscvisuals->NoFlash();
+		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoSmokeFSN");
 		miscvisuals->NoSmokeFSN();
+		L::Verbose("H::FrameStageNotifyHook - SkinChanger::RunFSN");
 		SkinChanger::RunFSN();
 	} break;
 	}

@@ -448,7 +448,7 @@ namespace Config2
 
 		__forceinline uint32_t As32Bit()
 		{
-			return (uint32_t)this->R << 0 | (uint32_t)this->G << 8 | (uint32_t)this->G << 16 | (uint32_t)this->A << 24;
+			return (uint32_t)this->R << 0 | (uint32_t)this->G << 8 | (uint32_t)this->B << 16 | (uint32_t)this->A << 24;
 		}
 
 		operator ImVec4 ()
