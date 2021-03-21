@@ -83,7 +83,7 @@ void Backtrack::RunFSN()
 
 		it->second.BacktrackRecords.push_front(tick);
 
-		unsigned int Ticks = TimeToTicks(/*Config::GetFloat("backtracking-time")*/ 200.f / 1000.f);
+		unsigned int Ticks = TimeToTicks(BacktrackTime->Get() / 1000.f);
 		while (it->second.BacktrackRecords.size() > 3 && it->second.BacktrackRecords.size() > Ticks) {
 			it->second.BacktrackRecords.pop_back();
 		}
