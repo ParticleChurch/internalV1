@@ -5,6 +5,8 @@ namespace G
 	//for closing console
 	HMODULE DLLModule = NULL;
 	bool KillDLL = false;
+	std::string CSGODirectory = "";
+	std::string CSGOExePath = "";
 
 	//General Variables
 	QAngle StartAngle;
@@ -234,6 +236,17 @@ namespace G
 	void GUIInit()
 	{
 		while (!(pD3d9DevicePattern = FindPattern("shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C")));
+
+		// parse G::CSGOExePath and G::CSGODirectory
+		char exePath[MAX_PATH];
+		GetModuleFileNameA(NULL, exePath, MAX_PATH);
+		CSGOExePath = std::string(exePath);
+		size_t slash = CSGOExePath.rfind("\\");
+		if (slash >= CSGOExePath.length())
+			CSGODirectory = "C:\\";
+		else
+			CSGODirectory = G::CSGOExePath.substr(0, slash);
+		UserData::CredentialsFile = CSGODirectory + "\\credentials.pclogin";
 	}
 
 	void Init()

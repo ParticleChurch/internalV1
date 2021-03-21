@@ -324,6 +324,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
+		io.IniFilename = nullptr;
 
 		GUI2::LoadFonts(io);
 

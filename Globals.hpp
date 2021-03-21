@@ -68,6 +68,8 @@ namespace G {
 	// The injected DLL's module
 	extern HMODULE DLLModule;
 	extern bool KillDLL;
+	extern std::string CSGODirectory;
+	extern std::string CSGOExePath;
 
 	//General Variables
 	extern QAngle StartAngle;

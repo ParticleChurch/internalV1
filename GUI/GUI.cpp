@@ -722,7 +722,7 @@ namespace ImGui
 			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
 			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-			BeginChild(("##entry-child-" + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false, ImGuiWindowFlags_NoSavedSettings);
+			BeginChild(("##entry-child-" + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
 
 			auto w = ImGui::GetCurrentWindow();
 
@@ -1830,7 +1830,7 @@ void GUI2::LoadingScreen()
 
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
-	ImGui::Begin("##LMAOBRUUHHHHHHHH", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+	ImGui::Begin("##LMAOBRUUHHHHHHHH", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove);
 
 	auto DrawList = ImGui::GetWindowDrawList();
 
@@ -1937,7 +1937,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
-	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+	ImGui::Begin("##Authentication", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 
 	// login errors
 	{
@@ -1986,6 +1986,34 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		ImGui::InputTextWithPlaceholder("AccountPassword", "Password", Password, 512);
 
 		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
+	}
+
+	// fill Email and Password with UserData::CredentialsFile
+	static bool EmailPassInit = false;
+	if (!EmailPassInit)
+	{
+		EmailPassInit = true;
+		ZeroMemory(Email, 512);
+		ZeroMemory(Password, 512);
+
+		auto f = std::ifstream(UserData::CredentialsFile, std::ios::binary);
+		if (f.is_open()) // otherwise the file does not exist, oh well
+		{
+			char file[1025]; // 1 byte for xor key, up to 512 for email, up to 512 for pass
+			ZeroMemory(file, 1025);
+
+			f.read(file, 1025);
+
+			char k = file[0];
+			for (size_t i = 1; i < 1025; i++)
+				file[i] ^= k;
+
+			size_t EmailLen = strnlen_s(file + 1, 511) + 1;
+			size_t PassLen = strnlen_s(file + 1 + EmailLen, 511) + 1;
+
+			memcpy(Email, file + 1, EmailLen);
+			memcpy(Password, file + 1 + EmailLen, PassLen);
+		}
 	}
 
 	ImGui::PopStyleColor(3);
@@ -2093,7 +2121,7 @@ void GUI2::AuthenticationIntro()
 
 		ImGui::SetNextWindowSize(Size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-		ImGui::Begin("##intro-2", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
+		ImGui::Begin("##intro-2", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
 		ImGui::End();
 
 		ImGui::PopStyleColor(2);
@@ -3063,7 +3091,11 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TopbarText);
 	int TitleBarHeight = 24;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
-	ImGui::Begin((std::string("A4G4 - ") + (UserData::Premium ? "FULL VERSION" : "TRIAL VERSION")).c_str(), 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
+	std::string MainTitle =
+		std::string("A4G4 - ") +
+		std::string((UserData::Premium ? "FULL VERSION " : "TRIAL VERSION ")) +
+		std::string((UserData::Authenticated ? "(USER " + std::to_string(UserData::UserID) + ")": "(UNAUTHENTICATED)"));
+	ImGui::Begin(MainTitle.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
 	ImGui::PopStyleColor(1);
 	ImGui::PopStyleVar(1);
 
@@ -3148,14 +3180,14 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0,0,0,0));
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
 		ImGui::SetCursorPos(OverlayPosition);
-		ImGui::BeginChild("##left-side", OverlaySize, false, ImGuiWindowFlags_NoSavedSettings);
+		ImGui::BeginChild("##left-side", OverlaySize, false);
 
 		// search bar
 		{
 			ImGui::SetCursorPos(ImVec2(5,5));
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-			ImGui::BeginChild("##left-side-searchbar", ImVec2(OverlaySize.x - 10, 24), false, ImGuiWindowFlags_NoSavedSettings);
+			ImGui::BeginChild("##left-side-searchbar", ImVec2(OverlaySize.x - 10, 24), false);
 
 			const char* InputLabel = "##SearchTextInput";
 			auto InputID = ImGui::GetID(InputLabel);

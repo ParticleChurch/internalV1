@@ -1601,16 +1601,20 @@ namespace UserData
 	std::string LoginError = "";
 	TIME_POINT LoginErrorOriginTime = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
 	
+	std::string CredentialsFile = "";
 	DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	{
 		size_t myAttemptId = ++LoginAttemptCounter;
 		BusyAttemptingLogin = true;
 
 		LoginInformation* info = (LoginInformation*)pInfo;
+		std::string InputEmail(info->Email.c_str());
+		std::string InputPassword(info->Password.c_str());
+		delete info;
 
 		// create outgoing JSON string
-		JSONValue* EmailJSON = new JSONValue(std::wstring(info->Email.begin(), info->Email.end()));
-		JSONValue* PasswordJSON = new JSONValue(std::wstring(info->Password.begin(), info->Password.end()));
+		JSONValue* EmailJSON = new JSONValue(std::wstring(InputEmail.begin(), InputEmail.end()));
+		JSONValue* PasswordJSON = new JSONValue(std::wstring(InputPassword.begin(), InputPassword.end()));
 		JSONObject InputRoot;
 		InputRoot[L"email"] = EmailJSON;
 		InputRoot[L"password"] = PasswordJSON;
@@ -1618,7 +1622,6 @@ namespace UserData
 		std::wstring InputW = InputJSONV->Stringify();
 		std::string OutgoingJSONString(InputW.begin(), InputW.end());
 		delete InputJSONV;
-		delete info;
 
 		// send API request
 		DWORD bytesRead = 0;
@@ -1725,18 +1728,63 @@ namespace UserData
 			}
 
 			// set these values in the config
+			LastSuccessfulServerContact = Animation::now();
 			UserData::Initialized = true;
 			UserData::Authenticated = true;
 			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
 			UserData::Email = std::string(email->second->AsString().begin(), email->second->AsString().end());
 			UserData::SessionID = std::string(session->second->AsString().begin(), session->second->AsString().end());
 			UserData::UserID = (uint64_t)id->second->AsNumber();
+			GUI2::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
+			if (ServerResponse) delete ServerResponse;
+			BusyAttemptingLogin = false;
+
+			// save this login to file
+			try
+			{
+				L::Log("Saving credentials to file");
+				auto f = std::ofstream(UserData::CredentialsFile, std::ios::binary);
+				if (f.is_open()) // if fails, whatever, they'll have to type password again
+				{
+					size_t usedSize = 0;
+					char data[1025]; // 1 for xor key, 512 for email, 512 for password
+					ZeroMemory(data, 1025);
+
+					// xor key
+					char k = (char)(rand() % 256);
+					data[0] = k;
+					usedSize = 1;
+
+					// email
+					size_t EmailLen = InputEmail.length();
+					memcpy(data + usedSize, InputEmail.c_str(), EmailLen);
+					usedSize += EmailLen;
+					if (EmailLen < 512)
+						usedSize += 1; // add a null terminator
+
+					// pass
+					size_t PassLen = InputPassword.length();
+					memcpy(data + usedSize, InputPassword.c_str(), PassLen);
+					usedSize += PassLen;
+					if (PassLen < 512)
+						usedSize += 1; // add a null terminator
+
+					// "encrypt"
+					for (size_t i = 1; i < usedSize; i++)
+						data[i] ^= k;
+
+					f.write(data, usedSize);
+					f.close();
+					L::Log("Success!");
+				}
+			}
+			catch (const std::exception& e)
+			{
+				L::Log("Failed to save user credentials w/ error: ", "");
+				L::Log(e.what());
+			}
 		}
 
-		LastSuccessfulServerContact = Animation::now();
-		GUI2::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
-		if (ServerResponse) delete ServerResponse;
-		BusyAttemptingLogin = false;
 		return 0;
 
 	VALUE_MISSING:

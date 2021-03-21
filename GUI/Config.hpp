@@ -119,6 +119,7 @@ namespace UserData
 	extern std::string LoginError;
 	extern TIME_POINT LoginErrorOriginTime;
 	
+	extern std::string CredentialsFile;
 	struct LoginInformation
 	{
 		std::string Email;
