@@ -231,8 +231,8 @@ void Resolver::AnimationFix(Entity* entity)
 	I::globalvars->m_interpAmount = 0.f;
 
 
-	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
-		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
+	if (anim->last_client_side_animation_update_framecount >= m_iNextSimulationTick)
+		anim->last_client_side_animation_update_framecount = m_iNextSimulationTick - 1;
 
 
 	*ClientAnims = true;
@@ -257,8 +257,8 @@ void Resolver::AnimationFix(Entity* entity)
 
 
 
-	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
-		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
+	if (anim->last_client_side_animation_update_framecount >= m_iNextSimulationTick)
+		anim->last_client_side_animation_update_framecount = m_iNextSimulationTick - 1;
 
 	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
@@ -276,100 +276,81 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::BruteForce(Entity* entity, int index)
 {
+	L::Verbose("Resolver::BruteForce - begin");
 	ResolverFlag[index] = "";
-	AnimState* animstate = entity->GetAnimstate();
-	if (!animstate)
-		return;
 
-	L::Verbose("Resolver::BruteForce - GetLBY");
-	float lby = entity->GetLBY();
-
-	// If we can't get stuff, something is wrong with player,
-	// should have been fix by now but still adding the check
 	L::Verbose("Resolver::BruteForce - GetPlayerInfo");
 	player_info_t info;
 	if (!I::engine->GetPlayerInfo(index, &info))
 		return;
-
-	L::Verbose("Resolver::BruteForce - Priority");
 	int UserID = info.userid;
-	Priority[UserID] = 0;
 
-	L::Verbose("Resolver::BruteForce - OnShot");
-	// Deal with OnShot (ish)
-	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick)
-	{
-		Priority[UserID] = 4; // always try for os for now
-		entity->PGetEyeAngles()->y = entity->GetLBY();
-		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
-		ResolverFlag[index] = "Onshot (ish)";
+	L::Verbose("Resolver::BruteForce - GetAnimstate");
+	AnimState* animstate = entity->GetAnimstate();
+	if (!animstate)
 		return;
-	}
 
-	L::Verbose("Resolver::BruteForce - FL_ONGROUND");
-	// If they aint on the ground, then their head is gonna be where the lby is
-	if (!(entity->GetFlags() & FL_ONGROUND))
+	L::Verbose("Resolver::BruteForce - PGetEyeAngles");
+	Vec* EyeAngles = entity->PGetEyeAngles();
+	L::Verbose("Resolver::BruteForce - GetLBY");
+	float lby = entity->GetLBY();
+	L::Verbose("Resolver::BruteForce - GetVecVelocity");
+	float velocity = entity->GetVecVelocity().VecLength2D();
+	L::Verbose("Resolver::BruteForce - MaxAccurateSpeed");
+	float maxAccurateSpeed = entity->MaxAccurateSpeed() / 3.f;
+	L::Verbose("Resolver::BruteForce - EyeAngles->y");
+	EyeAngles->y = lby;
+	L::Verbose("Resolver::BruteForce - animstate->goal_feet_yaw");
+	animstate->goal_feet_yaw = lby;
+
+	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick) // if they shot within the last tick
+	{
+		Priority[UserID] = 4;
+		ResolverFlag[index] = "Onshot";
+	}
+	else if (!(entity->GetFlags() & FL_ONGROUND)) 
 	{
 		Priority[UserID] = 3;
-		entity->PGetEyeAngles()->y = entity->GetLBY();
-		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
 		ResolverFlag[index] = "Off Ground";
-		return;
 	}
-
-	L::Verbose("Resolver::BruteForce - Velocity");
-	float Velocity = entity->GetVecVelocity().VecLength2D();
-	float MAS = entity->MaxAccurateSpeed() / 3.f; // max accurate speed
-	// If they are on the ground, and are going faster than max accurate speed...
-	if (Velocity > MAS)
+	else if (velocity > maxAccurateSpeed)
 	{
 		Priority[UserID] = 2;
-		entity->PGetEyeAngles()->y = entity->GetLBY();
-		entity->GetAnimstate()->m_flAbsRotation() = entity->GetLBY();
-		ResolverFlag[index] = "Faster than Max Accurate Speed";
-		return;
+		ResolverFlag[index] = "Inaccurate Aim";
 	}
-
-	L::Verbose("Resolver::BruteForce - Slow-walking");
-	// If they are not standing still, but are slow-walking...
-	if (Velocity < MAS && Velocity > 5.f)
+	else if (velocity < maxAccurateSpeed && velocity >= 3.f)
 	{
 		Priority[UserID] = 1;
-		ResolverFlag[index] = "Slow-walking: ";
+		ResolverFlag[index] = "Resolved Slow-Walk: ";
 		switch (ShotsMissed[UserID] % 5) {
 		case 0:
-			// do fucking nothing
 			ResolverFlag[index] += "0";
 			break;
 		case 1:
-			entity->PGetEyeAngles()->y = lby + -35.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + -35.f;
+			EyeAngles->y += -35.f;
+			animstate->goal_feet_yaw += -35.f;
 			ResolverFlag[index] += "-35";
 			break;
 		case 2:
-			entity->PGetEyeAngles()->y = lby + 35.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + 35.f;
+			EyeAngles->y += 35.f;
+			animstate->goal_feet_yaw += 35.f;
 			ResolverFlag[index] += "35";
 			break;
 		case 3:
-			entity->PGetEyeAngles()->y = lby + -12.5f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + -12.5f;
+			EyeAngles->y = lby + -12.5f;
+			animstate->goal_feet_yaw += -12.5f;
 			ResolverFlag[index] += "-12.5";
 			break;
 		case 4:
-			entity->PGetEyeAngles()->y = lby + 12.5f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + 12.5f;
+			EyeAngles->y = lby + 12.5f;
+			animstate->goal_feet_yaw += 12.5f;
 			ResolverFlag[index] += "12.5";
 			break;
 		}
-		return;
 	}
-
-	L::Verbose("Resolver::BruteForce - standing still");
-	// If they are standing still...
-	if (Velocity < 5.f)
+	else // not shooting, on ground, not moving
 	{
-		ResolverFlag[index] = "Standing: ";
+		ResolverFlag[index] = "Resolved Stand-Still: ";
 		switch (ShotsMissed[UserID] % 7) {
 		case 0:
 			// do fucking nothing
@@ -377,38 +358,34 @@ void Resolver::BruteForce(Entity* entity, int index)
 			break;
 		case 1:
 			ResolverFlag[index] += "20";
-			entity->PGetEyeAngles()->y = lby + 20.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + 20.f;
+			EyeAngles->y += 20.f;
+			animstate->goal_feet_yaw += 20.f;
 			break;
 		case 2:
 			ResolverFlag[index] += "-20";
-			entity->PGetEyeAngles()->y = lby + -20.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + -20.f;
+			EyeAngles->y = lby + -20.f;
+			animstate->goal_feet_yaw += -20.f;
 			break;
 		case 3:
 			ResolverFlag[index] += "35";
-			entity->PGetEyeAngles()->y = lby + 40.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + 40.f;
+			EyeAngles->y = lby + 40.f;
+			animstate->goal_feet_yaw += 40.f;
 			break;
 		case 4:
 			ResolverFlag[index] += "-35";
-			entity->PGetEyeAngles()->y = lby + -40.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + -40.f;
+			EyeAngles->y = lby + -40.f;
+			animstate->goal_feet_yaw += -40.f;
 			break;
 		case 5:
 			ResolverFlag[index] += "65";
-			entity->PGetEyeAngles()->y = lby + 65.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + 65.f;
+			EyeAngles->y += 65.f;
+			animstate->goal_feet_yaw += 65.f;
 			break;
 		case 6:
 			ResolverFlag[index] += "-65";
-			entity->PGetEyeAngles()->y = lby + -65.f;
-			entity->GetAnimstate()->m_flAbsRotation() = lby + -65.f;
+			EyeAngles->y = lby + -65.f;
+			animstate->goal_feet_yaw += -65.f;
 			break;
 		}
-		return;
 	}
-
-
-
 }

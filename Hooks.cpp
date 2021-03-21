@@ -674,9 +674,9 @@ void LocalAnimFix(Entity* entity)
 	if (!ClientAnims)
 		return;
 
-	float duck = anim->m_fDuckAmount;
+	float duck = anim->duck_amount;
 
-	static float proper_abs = anim->m_flGoalFeetYaw;
+	static float proper_abs = anim->goal_feet_yaw;
 	
 	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
 	static AnimationLayer backup_layers[15];
@@ -692,13 +692,13 @@ void LocalAnimFix(Entity* entity)
 		entity->UpdateAnimationState(anim, antiaim->real); // idek
 
 		if (anim)
-			anim->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
+			anim->last_client_side_animation_update_framecount = I::globalvars->m_frameCount - 1;
 		
 		entity->UpdateClientSideAnimation();
 		
 		if (G::pSendPacket && *G::pSendPacket)
 		{
-			proper_abs = anim->m_flGoalFeetYaw;
+			proper_abs = anim->goal_feet_yaw;
 			sent_pose_params = entity->m_flPoseParameter();
 		}
 		
@@ -706,7 +706,7 @@ void LocalAnimFix(Entity* entity)
 	
 	*ClientAnims = false;
 	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	anim->m_flUnknownFraction = duck;// 
+	anim->unknown_fraction = duck;// 
 	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
 	entity->m_flPoseParameter() = sent_pose_params;
 	

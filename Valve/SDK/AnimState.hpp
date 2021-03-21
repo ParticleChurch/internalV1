@@ -1,67 +1,115 @@
 #pragma once
-class AnimState
+struct AnimState
 {
-public:
-	char pad[4];
-	char bUnknown; //0x4
-	char pad2[91];
-	void* pBaseEntity; //0x60
-	void* pActiveWeapon; //0x64
-	void* pLastActiveWeapon; //0x68
-	float m_flLastClientSideAnimationUpdateTime; //0x6C
-	int m_iLastClientSideAnimationUpdateFramecount; //0x70
-	float m_flEyePitch; //0x74
-	float m_flEyeYaw; //0x78
-	float m_flPitch; //0x7C
-	float m_flGoalFeetYaw; //0x80
-	float& m_flAbsRotation() {
-		return *(float*)((uintptr_t)this + 0x80);
-	}
-	float m_flCurrentFeetYaw; //0x84
-	float m_flCurrentTorsoYaw; //0x88
-	float m_flUnknownVelocityLean; //0x8C //changes when moving/jumping/hitting ground
-	float m_flLeanAmount; //0x90
-	char pad4[4]; //NaN
-	float m_flFeetCycle; //0x98 0 to 1
-	float m_flFeetYawRate; //0x9C 0 to 1
-	float m_fUnknown2;
-	float m_fDuckAmount; //0xA4
-	float m_fLandingDuckAdditiveSomething; //0xA8
-	float m_fUnknown3; //0xAC
-	Vec m_vOrigin; //0xB0, 0xB4, 0xB8
-	Vec m_vLastOrigin; //0xBC, 0xC0, 0xC4
-	float m_vVelocityX; //0xC8
-	float m_vVelocityY; //0xCC
-	char pad5[4];
-	float& m_flMagicFraction() {
-		return *(float*)((uintptr_t)this + 0x124);
-	}
-	float m_flUnknownFloat1; //0xD4 Affected by movement and direction
-	char pad6[8];
-	float m_flUnknownFloat2; //0xE0 //from -1 to 1 when moving and affected by direction
-	float m_flUnknownFloat3; //0xE4 //from -1 to 1 when moving and affected by direction
-	float m_unknown; //0xE8
-	float speed_2d; //0xEC
-	float flUpVelocity; //0xF0
-	float& m_flTimeSinceInAir() {
-		return *(float*)((uintptr_t)this + 0x110);
-	}
-	float m_flSpeedNormalized; //0xF4 //from 0 to 1
-	float m_flFeetSpeedForwardsOrSideWays; //0xF8 //from 0 to 2. something  is 1 when walking, 2.something when running, 0.653 when crouch walking
-	float m_flFeetSpeedUnknownForwardOrSideways; //0xFC //from 0 to 3. something
-	float m_flTimeSinceStartedMoving; //0x100
-	float m_flTimeSinceStoppedMoving; //0x104
-	unsigned char m_bOnGround; //0x108
-	unsigned char m_bInHitGroundAnimation; //0x109
-	char pad7[10];
-	float m_flLastOriginZ; //0x114
-	float m_flHeadHeightOrOffsetFromHittingGroundAnimation; //0x118 from 0 to 1, is 1 when standing
-	float m_flStopToFullRunningFraction; //0x11C from 0 to 1, doesnt change when walking or crouching, only running
-	char pad8[4]; //NaN
-	float m_flUnknownFraction; //0x124 affected while jumping and running, or when just jumping, 0 to 1
-	char pad9[4]; //NaN
-	float m_flUnknown3;
-	char pad10[528];
+	char pad_0x0000[0x18]; //0x0000
+	float anim_update_timer; //0x0018 
+	char pad_0x001C[0xC]; //0x001C
+	float started_moving_time; //0x0028 
+	float last_move_time; //0x002C 
+	char pad_0x0030[0x10]; //0x0030
+	float last_lby_time; //0x0040 
+	char pad_0x0044[0x8]; //0x0044
+	float run_amount; //0x004C 
+	char pad_0x0050[0x10]; //0x0050
+	void* entity; //0x0060 
+	int active_weapon; //0x0064 
+	int last_active_weapon; //0x0068 
+	float last_client_side_animation_update_time; //0x006C 
+	int last_client_side_animation_update_framecount; //0x0070 
+	float eye_timer; //0x0074 
+	float eye_angles_y; //0x0078 
+	float eye_angles_x; //0x007C 
+	float goal_feet_yaw; //0x0080 
+	float current_feet_yaw; //0x0084 
+	float torso_yaw; //0x0088 
+	float last_move_yaw; //0x008C 
+	float lean_amount; //0x0090 
+	char pad_0x0094[0x4]; //0x0094
+	float feet_cycle; //0x0098 
+	float feet_yaw_rate; //0x009C 
+	char pad_0x00A0[0x4]; //0x00A0
+	float duck_amount; //0x00A4 
+	float landing_duck_amount; //0x00A8 
+	char pad_0x00AC[0x4]; //0x00AC
+	Vec current_origin;
+	Vec last_origin;
+	float velocity_x; //0x00C8 
+	float velocity_y; //0x00CC 
+	char pad_0x00D0[0x10]; //0x00D0
+	float move_direction_1; //0x00E0 
+	float move_direction_2; //0x00E4 
+	char pad_0x00E8[0x4]; //0x00E8
+	float m_velocity; //0x00EC 
+	float jump_fall_velocity; //0x00F0 
+	float clamped_velocity; //0x00F4 
+	float feet_speed_forwards_or_sideways; //0x00F8 
+	float feet_speed_unknown_forwards_or_sideways; //0x00FC 
+	float last_time_started_moving; //0x0100 
+	float last_time_stopped_moving; //0x0104 
+	bool on_ground; //0x0108 
+	bool hit_in_ground_animation; //0x010C 
+	char pad_0x0110[0x4]; //0x0110
+	float last_origin_z; //0x0114 
+	float head_from_ground_distance_standing; //0x0118 
+	float stop_to_full_running_fraction; //0x011C 
+	char pad_0x0120[0x4]; //0x0120
+	float unknown_fraction; //0x124
+	char pad_0x0128[0xC]; //0x0128
+	int is_not_moving; //0x0134 
+	char pad_0x0138[0x20]; //0x0138
+	float last_anim_update_time; //0x0158 
+	Vec moving_direction; //0x015C 
+	char pad_0x0168[0x44]; //0x0168
+	int started_moving; //0x01AC 
+	char pad_0x01B0[0x8]; //0x01B0
+	float lean_yaw; //0x01B8 
+	char pad_0x01BC[0x8]; //0x01BC
+	float poses_speed; //0x01C4 
+	char pad_0x01C8[0x8]; //0x01C8
+	float ladder_speed; //0x01D0 
+	char pad_0x01D4[0x8]; //0x01D4
+	float ladder_yaw; //0x01DC 
+	char pad_0x01E0[0x8]; //0x01E0
+	float some_pose; //0x01E8 
+	char pad_0x01EC[0x14]; //0x01EC
+	float body_yaw; //0x0200 
+	char pad_0x0204[0x8]; //0x0204
+	float body_pitch; //0x020C 
+	char pad_0x0210[0x8]; //0x0210
+	float death_yaw; //0x0218 
+	char pad_0x021C[0x8]; //0x021C
+	float stand; //0x0224 
+	char pad_0x0228[0x8]; //0x0228
+	float jump_fall; //0x0230 
+	char pad_0x0234[0x8]; //0x0234
+	float aim_blend_stand_idle; //0x023C 
+	char pad_0x0240[0x8]; //0x0240
+	float aim_blend_crouch_idle; //0x0248 
+	char pad_0x024C[0x8]; //0x024C
+	float strafe_yaw; //0x0254 
+	char pad_0x0258[0x8]; //0x0258
+	float aim_blend_stand_walk; //0x0260 
+	char pad_0x0264[0x8]; //0x0264
+	float aim_blend_stand_run; //0x026C 
+	char pad_0x0270[0x8]; //0x0270
+	float aim_blend_crouch_walk; //0x0278 
+	char pad_0x027C[0x8]; //0x027C
+	float move_blend_walk; //0x0284 
+	char pad_0x0288[0x8]; //0x0288
+	float move_blend_run; //0x0290 
+	char pad_0x0294[0x8]; //0x0294
+	float move_blend_crouch; //0x029C 
+	char pad_0x02A0[0x4]; //0x02A0
+	float speed; //0x02A4 
+	int moving_in_any_direction; //0x02A8 
+	float acceleration; //0x02AC 
+	char pad_0x02B0[0x74]; //0x02B0
+	float crouch_height; //0x0324 
+	int is_full_crouched; //0x0328 
+	char pad_0x032C[0x4]; //0x032C
+	Vec velocity_subtract; //0x0330 
+	float standing_head_height; //0x033C 
+	char pad_0x0340[0x4]; //0x0340
 };
 
 struct AnimState2 {
