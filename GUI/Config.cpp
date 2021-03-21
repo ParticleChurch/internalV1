@@ -1218,6 +1218,11 @@ namespace Config2
 		}
 	}
 
+	void _ResetCWD()
+	{
+		_wchdir(std::wstring(G::CSGODirectory.begin(), G::CSGODirectory.end()).c_str()); // not sure why I can't use _chdir
+	}
+
 	DWORD WINAPI _PromptExportThemeFile(void* _)
 	{
 		L::Log("_PromptExportThemeFile executing...");
@@ -1240,7 +1245,9 @@ namespace Config2
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
 
 			L::Verbose("_PromptExportThemeFile initiating user input");
-			if (!GetSaveFileName(&ofn) || filename[0] == '\0')
+			bool UserTerminated = !GetSaveFileName(&ofn);
+			_ResetCWD();
+			if (UserTerminated || filename[0] == '\0')
 			{
 				L::Log("_PromptExportThemeFile failed - user terminated");
 				return 1;
@@ -1297,7 +1304,9 @@ namespace Config2
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
 
 			L::Verbose("_PromptImportThemeFile initiating user input");
-			if (!GetOpenFileName(&ofn) || filename[0] == '\0')
+			bool UserTerminated = !GetOpenFileName(&ofn);
+			_ResetCWD();
+			if (UserTerminated || filename[0] == '\0')
 			{
 				L::Log("_PromptImportThemeFile failed - user terminated");
 				return 1;
@@ -1374,7 +1383,9 @@ namespace Config2
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
 
 			L::Verbose("_PromptExportConfigFile initiating user input");
-			if (!GetSaveFileName(&ofn) || filename[0] == '\0')
+			bool UserTerminated = !GetSaveFileName(&ofn);
+			_ResetCWD();
+			if (UserTerminated || filename[0] == '\0')
 			{
 				L::Log("_PromptExportConfigFile failed - user terminated");
 				return 1;
@@ -1431,7 +1442,9 @@ namespace Config2
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
 
 			L::Verbose("_PromptImportConfigFile initiating user input");
-			if (!GetOpenFileName(&ofn) || filename[0] == '\0')
+			bool UserTerminated = !GetOpenFileName(&ofn);
+			_ResetCWD();
+			if (UserTerminated || filename[0] == '\0')
 			{
 				L::Log("_PromptImportConfigFile failed - user terminated");
 				return 1;
