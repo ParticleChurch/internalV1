@@ -179,7 +179,11 @@ void Resolver::LogShots(GameEvent* event)
 
 void Resolver::Resolve()
 {
+	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
+	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
+
 	if (!G::LocalPlayerAlive) return;
+	if (!RageEnable->Get() && !LegitEnable->Get()) return;
 
 	L::Verbose("Resolver::Resolve - begin");
 	Entity* ent;
@@ -231,8 +235,8 @@ void Resolver::AnimationFix(Entity* entity)
 	I::globalvars->m_interpAmount = 0.f;
 
 
-	if (anim->last_client_side_animation_update_framecount >= m_iNextSimulationTick)
-		anim->last_client_side_animation_update_framecount = m_iNextSimulationTick - 1;
+	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
+		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
 
 	*ClientAnims = true;
@@ -257,8 +261,8 @@ void Resolver::AnimationFix(Entity* entity)
 
 
 
-	if (anim->last_client_side_animation_update_framecount >= m_iNextSimulationTick)
-		anim->last_client_side_animation_update_framecount = m_iNextSimulationTick - 1;
+	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
+		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
 	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
@@ -301,7 +305,7 @@ void Resolver::BruteForce(Entity* entity, int index)
 	L::Verbose("Resolver::BruteForce - EyeAngles->y");
 	EyeAngles->y = lby;
 	L::Verbose("Resolver::BruteForce - animstate->goal_feet_yaw");
-	animstate->goal_feet_yaw = lby;
+	animstate->m_flGoalFeetYaw = lby;
 
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick) // if they shot within the last tick
 	{
@@ -328,22 +332,22 @@ void Resolver::BruteForce(Entity* entity, int index)
 			break;
 		case 1:
 			EyeAngles->y += -35.f;
-			animstate->goal_feet_yaw += -35.f;
+			animstate->m_flGoalFeetYaw += -35.f;
 			ResolverFlag[index] += "-35";
 			break;
 		case 2:
 			EyeAngles->y += 35.f;
-			animstate->goal_feet_yaw += 35.f;
+			animstate->m_flGoalFeetYaw += 35.f;
 			ResolverFlag[index] += "35";
 			break;
 		case 3:
 			EyeAngles->y = lby + -12.5f;
-			animstate->goal_feet_yaw += -12.5f;
+			animstate->m_flGoalFeetYaw += -12.5f;
 			ResolverFlag[index] += "-12.5";
 			break;
 		case 4:
 			EyeAngles->y = lby + 12.5f;
-			animstate->goal_feet_yaw += 12.5f;
+			animstate->m_flGoalFeetYaw += 12.5f;
 			ResolverFlag[index] += "12.5";
 			break;
 		}
@@ -359,32 +363,32 @@ void Resolver::BruteForce(Entity* entity, int index)
 		case 1:
 			ResolverFlag[index] += "20";
 			EyeAngles->y += 20.f;
-			animstate->goal_feet_yaw += 20.f;
+			animstate->m_flGoalFeetYaw += 20.f;
 			break;
 		case 2:
 			ResolverFlag[index] += "-20";
 			EyeAngles->y = lby + -20.f;
-			animstate->goal_feet_yaw += -20.f;
+			animstate->m_flGoalFeetYaw += -20.f;
 			break;
 		case 3:
 			ResolverFlag[index] += "35";
 			EyeAngles->y = lby + 40.f;
-			animstate->goal_feet_yaw += 40.f;
+			animstate->m_flGoalFeetYaw += 40.f;
 			break;
 		case 4:
 			ResolverFlag[index] += "-35";
 			EyeAngles->y = lby + -40.f;
-			animstate->goal_feet_yaw += -40.f;
+			animstate->m_flGoalFeetYaw += -40.f;
 			break;
 		case 5:
 			ResolverFlag[index] += "65";
 			EyeAngles->y += 65.f;
-			animstate->goal_feet_yaw += 65.f;
+			animstate->m_flGoalFeetYaw += 65.f;
 			break;
 		case 6:
 			ResolverFlag[index] += "-65";
 			EyeAngles->y = lby + -65.f;
-			animstate->goal_feet_yaw += -65.f;
+			animstate->m_flGoalFeetYaw += -65.f;
 			break;
 		}
 	}

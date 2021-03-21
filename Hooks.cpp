@@ -674,9 +674,9 @@ void LocalAnimFix(Entity* entity)
 	if (!ClientAnims)
 		return;
 
-	float duck = anim->duck_amount;
+	float duck = anim->m_flDuckAmount;
 
-	static float proper_abs = anim->goal_feet_yaw;
+	static float proper_abs = anim->m_flGoalFeetYaw;
 	
 	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
 	static AnimationLayer backup_layers[15];
@@ -692,13 +692,13 @@ void LocalAnimFix(Entity* entity)
 		entity->UpdateAnimationState(anim, antiaim->real); // idek
 
 		if (anim)
-			anim->last_client_side_animation_update_framecount = I::globalvars->m_frameCount - 1;
+			anim->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
 		
 		entity->UpdateClientSideAnimation();
 		
 		if (G::pSendPacket && *G::pSendPacket)
 		{
-			proper_abs = anim->goal_feet_yaw;
+			proper_abs = anim->m_flGoalFeetYaw;
 			sent_pose_params = entity->m_flPoseParameter();
 		}
 		
@@ -706,7 +706,7 @@ void LocalAnimFix(Entity* entity)
 	
 	*ClientAnims = false;
 	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	anim->unknown_fraction = duck;// 
+	anim->m_flUnknownFraction = duck;// 
 	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
 	entity->m_flPoseParameter() = sent_pose_params;
 	
@@ -714,8 +714,6 @@ void LocalAnimFix(Entity* entity)
 
 void __stdcall H::FrameStageNotifyHook(int stage)
 {
-	oFrameStageNotify(stage);
-
 	L::Verbose("H::FrameStageNotifyHook - begin stage ", "");  L::Verbose(std::to_string(stage).c_str());
 
 	// post processing
@@ -742,7 +740,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		{
 			L::Verbose("H::FrameStageNotifyHook - ClearRecords");
 			backtrack->ClearRecords();
-			return;
+			return oFrameStageNotify(stage);
 		}
 	}
 	else
@@ -754,7 +752,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		G::LocalPlayerIndex = 0;
 		G::LocalPlayerTeam = 0;
 		G::LocalPlayerWeapon = nullptr;
-		return;
+		return oFrameStageNotify(stage);
 	}
 
 	/*
@@ -844,6 +842,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 			}
 		}
 	*/
+	oFrameStageNotify(stage);
 	L::Verbose("H::FrameStageNotifyHook - completed stage ", "");  L::Verbose(std::to_string(stage).c_str());
 }
 

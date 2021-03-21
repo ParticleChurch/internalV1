@@ -484,7 +484,8 @@ public:
 	void UpdateClientSideAnimation()
 	{
 		typedef void(__thiscall* oUpdateClientSideAnimation)(void*);
-		return GetVFunc<oUpdateClientSideAnimation>(this, 223)(this);
+		static auto func = GetVFunc<oUpdateClientSideAnimation>(this, 223);
+		func(this);
 	}
 
 	void SetAbsAngles(Vec angle)
