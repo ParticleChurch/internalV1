@@ -1220,7 +1220,8 @@ namespace Config2
 
 	void _ResetCWD()
 	{
-		_wchdir(std::wstring(G::CSGODirectory.begin(), G::CSGODirectory.end()).c_str()); // not sure why I can't use _chdir
+		// not sure why I can't use _chdir
+		_wchdir(std::wstring(G::CSGODirectory.begin(), G::CSGODirectory.end()).c_str());
 	}
 
 	DWORD WINAPI _PromptExportThemeFile(void* _)
@@ -1534,6 +1535,9 @@ namespace Config2
 			bool CurrentPressed = GetAsyncKeyState(VK) < 0;
 			Keybind::KeyState[key] = CurrentPressed;
 
+			if (!UserData::Initialized)
+				continue;
+
 			bool IsMouse = VK == VK_LBUTTON;
 			if (IsMouse && GUI2::WantMouse)
 			{
@@ -1552,35 +1556,6 @@ namespace Config2
 				}
 			}
 		}
-
-		/*
-		auto io = ImGui::GetIO();
-
-		Keybind::Lock = true;
-		while (Keybind::KeyChangeStack.size() > 0)
-		{
-			Keybind::KeyLogEntry log = Keybind::KeyChangeStack[0];
-			bool ismouse = Keybind::KeyMap[log.Key] == VK_LBUTTON;
-			L::Verbose(("ProcessKeys - key " + std::to_string(log.Key) + (log.State ? " down" : " up")).c_str());
-
-			if (ismouse && log.WantCaptureMouse)
-				goto CONT;
-
-			if (SettingKeybindFor && log.State)
-			{
-				_BindToKey(SettingKeybindFor, log.Key);
-				SettingKeybindFor = nullptr;
-			}
-			else
-			{
-				_KeyStateChanged(log.Key, log.State != 0);
-			}
-
-			CONT:
-			Keybind::KeyChangeStack.erase(Keybind::KeyChangeStack.begin());
-		}
-		Keybind::Lock = false;
-		*/
 	}
 
 	void Free()
