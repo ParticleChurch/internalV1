@@ -353,7 +353,9 @@ public:
 
 	bool IsScoped() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_bIsScoped");
-		return *(bool*)((DWORD)this + offset);
+		if((bool*)((DWORD)this + offset))
+			return *(bool*)((DWORD)this + offset);
+		return false;
 	}
 
 	int ScopeLevel() {
@@ -363,7 +365,9 @@ public:
 
 	float MaxAccurateSpeed() 
 	{ 
-		const WeaponData* WeaponData = this->GetActiveWeapon()->GetWeaponData();
+		Entity* weap = this->GetActiveWeapon();
+		if (!weap) return 0.f;
+		const WeaponData* WeaponData = weap->GetWeaponData();
 		return (this->IsScoped() ? WeaponData->MaxSpeedAlt : WeaponData->MaxSpeed); //alt and regular might be flipped lol
 	}
 

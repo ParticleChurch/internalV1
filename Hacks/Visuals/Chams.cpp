@@ -106,6 +106,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 
 	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && ValidInfo)
 	{
+		L::Verbose("H::DrawModelExecuteHook - drawing a player differently");
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
 		{	
@@ -203,6 +204,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	}
 	
 	H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-	I::modelrender->ForcedMaterialOverride(nullptr);
+	if(ValidInfo)
+		I::modelrender->ForcedMaterialOverride(nullptr);
 	
 }

@@ -14,7 +14,7 @@ private:
 
 	struct rage
 	{
-		std::vector<Hitboxes> hitboxes;
+		std::deque<Hitboxes> hitboxes;
 		int hid_mindam; // hidden min damage
 		int vis_mindam; // visible min damage
 		float hitchance;

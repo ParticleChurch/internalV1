@@ -774,13 +774,13 @@ void Aimbot::GetRageHitboxes(int gun)
 	if (selection & (1 << 1))			// neck
 		rage.hitboxes.push_back(HITBOX_NECK);
 	if (selection & (1 << 2))			// upper chest
-		rage.hitboxes.push_back(HITBOX_UPPER_CHEST);
+		rage.hitboxes.push_front(HITBOX_UPPER_CHEST); // PRIORITY SECOND TO UPER CHEST
 	if (selection & (1 << 3))			// lower chest
 		rage.hitboxes.push_back(HITBOX_LOWER_CHEST);
 	if (selection & (1 << 4))			// stomach
 		rage.hitboxes.push_back(HITBOX_STOMACH);
 	if (selection & (1 << 5))			// pelvis
-		rage.hitboxes.push_back(HITBOX_PELVIS);
+		rage.hitboxes.push_front(HITBOX_PELVIS); // PRIORITY FIRST TO PELVIS
 	if (selection & (1 << 6))			// Upper arms
 	{
 		rage.hitboxes.push_back(HITBOX_RIGHT_UPPER_ARM);
@@ -876,6 +876,56 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 		Vec min = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
+
+		// Dont do multipoint for arms, legs, or feet :D (reduce lag!)
+		if (HITBOX != HITBOX_UPPER_CHEST && HITBOX != HITBOX_HEAD && HITBOX != HITBOX_PELVIS)
+		{
+			// Calc Mid Angle
+			QAngle MidAngle = CalculateAngle(mid);
+
+			// Calc Left Hitchance
+			float MidHitchance = CalculateHitchance(MidAngle, mid, G::EntList[RecordUserID].entity, HITBOX);
+
+			// If the left hitchance is up to snuff...
+			if (MidHitchance >= rage.hitchance)
+			{
+				// if the point is visible
+				bool visible = autowall->IsVisible(mid, G::EntList[RecordUserID].entity);
+
+				// no need to autowall if visible...
+				if (visible)
+				{
+					damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, mid, true);
+					if (damage >= rage.vis_mindam)
+					{
+						Point = mid;
+						return true;
+					}
+					// Fire if lethal crap
+					else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+					{
+						Point = mid;
+						return true;
+					}
+				}
+				else
+				{
+					damage = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, true);
+					if (damage >= rage.hid_mindam)
+					{
+						Point = mid;
+						return true;
+					}
+					// Fire if lethal crap
+					else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
+					{
+						Point = mid;
+						return true;
+					}
+				}
+			}
+			continue;
+		}
 
 		float radius = StudioBox->m_flRadius * rage.hitchance;
 

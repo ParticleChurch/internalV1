@@ -47,6 +47,8 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 
 void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 {
+	if (!ent) return;
+
 	static Config2::CColor* EnemyWeaponColor = Config2::GetColor("visuals-esp-enemy-weapon-color");
 
 	Entity* weap = ent->GetActiveWeapon();
@@ -236,6 +238,10 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 
 	TL = Vec(left, top, 0);
 	BR = Vec(right, bottom, 0);
+}
+
+void ESP::DrawIndicators(Entity* ent)
+{
 }
 
 void ESP::Run_PaintTraverse()

@@ -11,6 +11,8 @@ private:
 	void DrawBacktrackingDots();
 	void GetBounds(Entity* ent, Vec& TL, Vec& BR);
 
+	void DrawIndicators(Entity* ent);
+
 	struct BulletTracer
 	{
 		Vec src;
