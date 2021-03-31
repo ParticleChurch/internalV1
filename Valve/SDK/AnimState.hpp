@@ -1,60 +1,57 @@
 #pragma once
 struct AnimState
 {
-	char pad_0x0000[0x18]; //0x0000
-	float m_flAnimUpdateTimer; //0x0018 
-	char pad_0x001C[0xC]; //0x001C
-	float m_flStartedMovingTime; //0x0028 
-	float m_flLastMoveTime; //0x002C 
-	char pad_0x0030[0x10]; //0x0030
-	float m_flLastLBYTime; //0x0040 
-	char pad_0x0044[0x8]; //0x0044
-	float m_flRunAmount; //0x004C 
-	char pad_0x0050[0x10]; //0x0050
-	Entity* pEntity; //0x0060 
-	Entity* pActiveWeapon; //0x0064 
-	Entity* pLastActiveWeapon; //0x0068 
-	float m_flLastClientSideAnimationUpdateTime; //0x006C 
-	int m_iLastClientSideAnimationUpdateFramecount; //0x0070 
-	float m_flEyeTimer; //0x0074 
-	float m_flEyeYaw; //0x0078 
-	float m_flEyePitch; //0x007C 
-	float m_flGoalFeetYaw; //0x0080 
-	float m_flCurrentFeetYaw; //0x0084 
-	float m_flCurrentTorsoYaw; //0x0088 
-	float m_flVelocityLean; //0x008C 
-	float m_flLeanAmount; //0x0090 
-	char pad_0x0094[0x4]; //0x0094
-	float m_flFeetCycle; //0x0098 
-	float m_flFeetYawRate; //0x009C 
-	char pad_0x00A0[0x4]; //0x00A0
-	float m_flDuckAmount; //0x00A4 
-	float m_flLandingDuckAmount; //0x00A8 
-	char pad_0x00AC[0x4]; //0x00AC
-	Vec m_vOrigin; //0x00B0 
-	Vec m_vLastOrigin; //0x00BC
-	float m_flVelocityX; //0x00C8 
-	float m_flVelocityY; //0x00CC 
-	char pad_0x00D0[0x10]; //0x00D0
-	float m_flMoveDirection1; //0x00E0 
-	float m_flMoveDirection2; //0x00E4 
-	char pad_0x00E8[0x4]; //0x00E8
-	float m_flVelocity2D; //0x00EC 
-	float m_flVerticalVelocity; //0x00F0 
-	float m_flVelocityNormalized; //0x00F4 
-	float m_flFeetSpeedForwardsOrSideWays; //0x00F8 
-	float m_flFeetSpeedUnknownForwardOrSideways; //0x00FC 
-	float m_flTimeSinceStartedMoving; //0x0100 
-	float m_flTimeSinceStoppedMoving; //0x0104 
-	bool m_bOnGround; //0x0108 
-	bool m_bInHitGroundAnimation; //0x0109 
-	char pad_0x010A[0xA]; //0x010A
-	float m_flLastOriginZ; //0x0114 
-	float m_flStandingFraction; //0x0118 
-	float m_flRunningFraction; //0x011C 
-	char pad_0x0120[0x4]; //0x0120
-	float m_flUnknownFraction; //0x124
-	char pad_0x0128[0x218]; //0x0128
+	char pad[4];
+	char bUnknown; //0x4
+	char pad2[91];
+	void* pBaseEntity; //0x60
+	void* pActiveWeapon; //0x64
+	void* pLastActiveWeapon; //0x68
+	float m_flLastClientSideAnimationUpdateTime; //0x6C
+	int m_iLastClientSideAnimationUpdateFramecount; //0x70
+	float m_flEyePitch; //0x74
+	float m_flEyeYaw; //0x78
+	float m_flPitch; //0x7C
+	float m_flGoalFeetYaw; //0x80
+	float m_flCurrentFeetYaw; //0x84
+	float m_flCurrentTorsoYaw; //0x88
+	float m_flUnknownVelocityLean; //0x8C //changes when moving/jumping/hitting ground
+	float m_flLeanAmount; //0x90
+	char pad4[4]; //NaN
+	float m_flFeetCycle; //0x98 0 to 1
+	float m_flFeetYawRate; //0x9C 0 to 1
+	float m_fUnknown2;
+	float m_fDuckAmount; //0xA4
+	float m_fLandingDuckAdditiveSomething; //0xA8
+	float m_fUnknown3; //0xAC
+	Vec m_vOrigin; //0xB0, 0xB4, 0xB8
+	Vec m_vLastOrigin; //0xBC, 0xC0, 0xC4
+	float m_vVelocityX; //0xC8
+	float m_vVelocityY; //0xCC
+	char pad5[4];
+	float m_flUnknownFloat1; //0xD4 Affected by movement and direction
+	char pad6[8];
+	float m_flUnknownFloat2; //0xE0 //from -1 to 1 when moving and affected by direction
+	float m_flUnknownFloat3; //0xE4 //from -1 to 1 when moving and affected by direction
+	float m_unknown; //0xE8
+	float speed_2d; //0xEC
+	float flUpVelocity; //0xF0
+	float m_flSpeedNormalized; //0xF4 //from 0 to 1
+	float m_flFeetSpeedForwardsOrSideWays; //0xF8 //from 0 to 2. something  is 1 when walking, 2.something when running, 0.653 when crouch walking
+	float m_flFeetSpeedUnknownForwardOrSideways; //0xFC //from 0 to 3. something
+	float m_flTimeSinceStartedMoving; //0x100
+	float m_flTimeSinceStoppedMoving; //0x104
+	unsigned char m_bOnGround; //0x108
+	unsigned char m_bInHitGroundAnimation; //0x109
+	char pad7[10];
+	float m_flLastOriginZ; //0x114
+	float m_flHeadHeightOrOffsetFromHittingGroundAnimation; //0x118 from 0 to 1, is 1 when standing
+	float m_flStopToFullRunningFraction; //0x11C from 0 to 1, doesnt change when walking or crouching, only running
+	char pad8[4]; //NaN
+	float m_flUnknownFraction; //0x124 affected while jumping and running, or when just jumping, 0 to 1
+	char pad9[4]; //NaN
+	float m_flUnknown3;
+	char pad10[528];
 	// sizeof: 0x340 = 832
 };
 

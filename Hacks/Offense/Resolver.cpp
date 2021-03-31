@@ -198,8 +198,11 @@ void Resolver::Resolve()
 		)
 			continue;
 
+		//L::Verbose("Resolver::Resolve - BF");
+		//BruteForce(ent, i);
+
 		L::Verbose("Resolver::Resolve - BF");
-		BruteForce(ent, i);
+		//Example(ent, i);
 		L::Verbose("Resolver::Resolve - AF");
 		AnimationFix(ent);
 	}
@@ -303,9 +306,9 @@ void Resolver::BruteForce(Entity* entity, int index)
 	L::Verbose("Resolver::BruteForce - MaxAccurateSpeed");
 	float maxAccurateSpeed = entity->MaxAccurateSpeed() / 3.f;
 	L::Verbose("Resolver::BruteForce - EyeAngles->y");
-	EyeAngles->y = lby;
-	L::Verbose("Resolver::BruteForce - animstate->goal_feet_yaw");
-	animstate->m_flGoalFeetYaw = lby;
+	//EyeAngles->y = lby;
+	//L::Verbose("Resolver::BruteForce - animstate->goal_feet_yaw");
+	//animstate->m_flGoalFeetYaw = lby;
 
 	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick) // if they shot within the last tick
 	{
@@ -393,3 +396,126 @@ void Resolver::BruteForce(Entity* entity, int index)
 		}
 	}
 }
+
+void Resolver::PreResolver(int stage)
+{
+	//FRAME_NET_UPDATE_POSTDATAUPDATE_START - 2
+	//FRAME_RENDER_START - 5
+
+	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+		return;
+
+	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
+	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
+
+	if (!G::LocalPlayerAlive) return;
+	if (!RageEnable->Get() && !LegitEnable->Get()) return;
+
+	L::Verbose("Resolver::PreResolver - begin");
+	Entity* ent;
+	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
+	{
+		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
+		if (!(ent = I::entitylist->GetClientEntity(i))
+			|| ent == G::LocalPlayer
+			|| ent->GetTeam() == G::LocalPlayerTeam
+			|| ent->IsDormant()
+			|| ent->GetHealth() <= 0
+			)
+			continue;
+
+		AnimationFix(ent);
+
+		player_info_t info;
+		if (!I::engine->GetPlayerInfo(i, &info))
+			return;
+		int UserID = info.userid;
+
+		L::Verbose("Resolver::PreResolver - GetAnimstate");
+		AnimState* animstate = ent->GetAnimstate();
+		if (!animstate)
+			return;
+
+		float yaw = animstate->m_flGoalFeetYaw;
+
+		// If it isn't found in OrigYaw, ADD IT!
+		// Backing up old yaw
+		if (OrigYaw.find(UserID) == OrigYaw.end())
+			OrigYaw.insert(std::pair(UserID, yaw));
+		else
+			OrigYaw[UserID] = yaw;
+
+
+		// Resolving
+		int missedshots = ShotsMissed[UserID];
+		ResolverFlag[i] = std::to_string(missedshots) + "|";
+
+		float EyeDelta = ent->GetEyeAngles().y - animstate->m_flGoalFeetYaw;
+		bool LowDelta = EyeDelta <= 30.f;
+		int Side = (EyeDelta > 0.f) ? -1 : 1;
+		float desync_delta = LowDelta ? ent->GetMaxDesyncAngle() / 2 : ent->GetMaxDesyncAngle();
+
+		switch (missedshots % 3)
+		{
+		case 0: 
+			ResolverFlag[i] += std::to_string(desync_delta * Side);
+			animstate->m_flGoalFeetYaw = ent->GetEyeAngles().y + desync_delta * Side; 
+			break;
+		case 1: 
+			ResolverFlag[i] += std::to_string(desync_delta * -Side);
+			animstate->m_flGoalFeetYaw = ent->GetEyeAngles().y + desync_delta * -Side; 
+			break;
+		case 2: 
+			ResolverFlag[i] += "0";
+			break;// animstate->m_flGoalFeetYaw = 0;
+		}
+
+	}
+	L::Verbose("Resolver::Resolve - done");
+}
+
+void Resolver::PostResolver(int stage)
+{
+	//FRAME_RENDER_START
+	
+	if (stage != FRAME_NET_UPDATE_START)
+		return;
+
+	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
+	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
+
+	if (!G::LocalPlayerAlive) return;
+	if (!RageEnable->Get() && !LegitEnable->Get()) return;
+
+	L::Verbose("Resolver::PostResolver - begin");
+	Entity* ent;
+	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
+	{
+		L::Verbose("Resolver::PostResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
+		if (!(ent = I::entitylist->GetClientEntity(i))
+			|| ent == G::LocalPlayer
+			|| ent->GetTeam() == G::LocalPlayerTeam
+			|| ent->IsDormant()
+			|| ent->GetHealth() <= 0
+			)
+			continue;
+
+		player_info_t info;
+		if (!I::engine->GetPlayerInfo(i, &info))
+			return;
+		int UserID = info.userid;
+
+		L::Verbose("Resolver::PostResolver - GetAnimstate");
+		AnimState* animstate = ent->GetAnimstate();
+		if (!animstate)
+			return;
+
+		// If it isn't found in OrigYaw, return
+		if (OrigYaw.find(UserID) == OrigYaw.end())
+			return;
+		else
+			animstate->m_flGoalFeetYaw = OrigYaw[UserID];
+	}
+	L::Verbose("Resolver::Resolve - done");
+}
+

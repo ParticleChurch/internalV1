@@ -153,6 +153,12 @@ public:
 		return GetVFunc< oDrawOutlinedCircle >(this, 103)(this, x, y, r, seg);
 	}
 
+	void DrawPolygon(int n, Vertex* vertice, bool clip_vertices = true)
+	{
+		typedef void(__thiscall* oDrawPolygon)(PVOID, int, Vertex*, bool);
+		return GetVFunc< oDrawPolygon >(this, 106)(this, n, vertice, clip_vertices);
+	}
+
 	/*
 	void SurfaceGetCursorPos(int& x, int& y)
 	{
@@ -171,5 +177,18 @@ public:
 	{
 		typedef void(__thiscall* olockCursor)(PVOID);
 		return GetVFunc< olockCursor>(this, 67)(this);
+	}
+
+	void add_textured_polygon(int n, Vertex* vertice, int r, int g, int b, int a) {
+		static int texture_id = CreateNewTextureID(true);
+		static unsigned char buf[4] = { 255, 255, 255, 255 };
+		DrawSetColor(r, g, b, a);
+		DrawSetTexture(texture_id);
+		DrawPolygon(n, vertice);
+	}
+
+	void draw_filled_triangle(std::array< Vec2, 3 >points, Color colour) {
+		std::array< Vertex, 3 >vertices{ Vertex(points.at(0)), Vertex(points.at(1)), Vertex(points.at(2)) };
+		add_textured_polygon(3, vertices.data(), colour.r(), colour.g(), colour.b(), colour.a());
 	}
 };

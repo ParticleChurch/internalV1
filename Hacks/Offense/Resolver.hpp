@@ -19,6 +19,9 @@ public:
 	std::map<int, int> OldShotsMissed;
 	std::map<int, int> ShotsMissed;
 
+	// userid, originalyaw
+	std::map<int, float> OrigYaw;
+
 	// userid, aimbot priority/reliability
 	std::map<int, int> Priority;
 	int GetPriority(int UserID)
@@ -35,8 +38,10 @@ public:
 	void LogShots(GameEvent* event);
 	void Resolve();
 	void AnimationFix(Entity* entity);
-
 	void BruteForce(Entity* entity, int index);
+	
+	void PreResolver(int stage);
+	void PostResolver(int stage);
 
 };
 

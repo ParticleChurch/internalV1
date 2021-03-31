@@ -282,8 +282,8 @@ namespace Config2
 				CONFIG_VIS(g->Add("visuals-esp-enemy-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-bbox"), 1);
 				g->Add("visuals-esp-enemy-name", "Name", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-enemy-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-name"), 1);
-				g->Add("visuals-esp-enemy-snapline", "Snaplines", new CBoolean())->VisibilityLinked = p;
-				CONFIG_VIS(g->Add("visuals-esp-enemy-snapline-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-snapline"), 1);
+				g->Add("visuals-esp-enemy-indicator", "Indicators", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(g->Add("visuals-esp-enemy-indicator-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-indicator"), 1);
 				g->Add("visuals-esp-enemy-skeleton", "Skeleton", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-enemy-skeleton-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-skeleton"), 1);
 				g->Add("visuals-esp-enemy-health", "Health", new CBoolean())->VisibilityLinked = p;
@@ -303,8 +303,6 @@ namespace Config2
 				CONFIG_VIS(g->Add("visuals-esp-friend-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-bbox"), 1);
 				g->Add("visuals-esp-friend-name", "Name", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-friend-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-name"), 1);
-				g->Add("visuals-esp-friend-snapline", "Snaplines", new CBoolean())->VisibilityLinked = p;
-				CONFIG_VIS(g->Add("visuals-esp-friend-snapline-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-snapline"), 1);
 				g->Add("visuals-esp-friend-skeleton", "Skeleton", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-friend-skeleton-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-skeleton"), 1);
 				g->Add("visuals-esp-friend-health", "Health", new CBoolean())->VisibilityLinked = p;

@@ -435,7 +435,7 @@ public:
 		if (animState->duckAmount > 0.0f)
 			yawModifier += (animState->duckAmount * std::clamp(animState->footSpeed2, 0.0f, 1.0f) * (0.5f - yawModifier));
 
-		return animState->velocitySubtractY * yawModifier;
+		return fabsf(animState->velocitySubtractY * yawModifier);
 	}
 
 	std::array< float, 24 >& m_flPoseParameter()

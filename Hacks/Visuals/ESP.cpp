@@ -85,14 +85,6 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
 
-void ESP::DrawSnapLines(Vec TL, Vec BR)
-{
-	int xSize;
-	int ySize;
-	I::engine->GetScreenSize(xSize, ySize);
-	I::surface->DrawLine(xSize / 2, ySize, ((BR.x - TL.x) / 2) + TL.x, BR.y);
-}
-
 void ESP::DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg)
 {
 	int Height = BR.y - TL.y;
@@ -240,8 +232,59 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 	BR = Vec(right, bottom, 0);
 }
 
-void ESP::DrawIndicators(Entity* ent)
+void rotate(std::array< Vec2, 3 >& points, float rotation)
 {
+	const auto points_center = (points.at(0) + points.at(1) + points.at(2)) / 3;
+	for (auto& point : points) {
+		point -= points_center;
+
+		const auto temp_x = point.x;
+		const auto temp_y = point.y;
+
+		const auto theta = DEG2RAD(rotation);
+		const auto c = cos(theta);
+		const auto s = sin(theta);
+
+		point.x = temp_x * c - temp_y * s;
+		point.y = temp_x * s + temp_y * c;
+
+		point += points_center;
+	}
+}
+
+void ESP::DrawIndicators(Entity* ent, Color clr)
+{
+	Vec screen;
+	Vec eyepos = ent->GetEyePos();
+	if (WorldToScreen(eyepos, screen)) // if it's in FOV, return
+		return;
+
+	Vec viewangles;
+	int width, height;
+
+	I::engine->GetViewAngles(viewangles);
+	I::engine->GetScreenSize(width, height);
+
+	// more float division, i'm just gonna stop putting comments next to it at this point xD. ~chance
+//	const auto screen_center = vec2_t( width / 2.f, height / 2.f );
+	const auto screen_center = Vec(width * .5f, height * .5f, 0);
+
+	const auto angle_yaw_rad = DEG2RAD(viewangles.y - aimbot->CalculateAngle(eyepos).y - 90);
+
+	int radius = 100.f;
+	int size = 20.f;
+
+	const auto new_point_x = screen_center.x + ((((width - (size * 3)) * .5f) * (radius / 100.0f)) * cos(angle_yaw_rad)) + (int)(6.0f * (((float)size - 4.f) / 16.0f));
+	const auto new_point_y = screen_center.y + ((((height - (size * 3)) * .5f) * (radius / 100.0f)) * sin(angle_yaw_rad));
+
+	//Color ESP = player->IsDormant() ? Color(150, 150, 150, flPlayerAlpha[player->EntIndex()]) : Color(c_config::get().fov_arrows_esp_color_r, c_config::get().fov_arrows_esp_color_g, c_config::get().fov_arrows_esp_color_b, flPlayerAlpha[player->EntIndex()]);
+
+	std::array< Vec2, 3 >points{ Vec2(new_point_x - size, new_point_y - size),
+		Vec2(new_point_x + size, new_point_y),
+		Vec2(new_point_x - size, new_point_y + size) };
+
+	rotate(points, viewangles.y - aimbot->CalculateAngle(eyepos).y - 90);
+	I::surface->draw_filled_triangle(points, clr);
 }
 
 void ESP::Run_PaintTraverse()
@@ -251,8 +294,8 @@ void ESP::Run_PaintTraverse()
 	static Config2::CColor* EnemyBoxColor		= Config2::GetColor("visuals-esp-enemy-bbox-color");
 	static Config2::CState* EnemyName			= Config2::GetState("visuals-esp-enemy-name");
 	static Config2::CColor* EnemyNameColor		= Config2::GetColor("visuals-esp-enemy-name-color");
-	static Config2::CState* EnemySnaplines		= Config2::GetState("visuals-esp-enemy-snapline");
-	static Config2::CColor* EnemySnaplinesColor = Config2::GetColor("visuals-esp-enemy-snapline-color");
+	static Config2::CState* EnemyIndicator		= Config2::GetState("visuals-esp-enemy-indicator");
+	static Config2::CColor* EnemyIndicatorColor = Config2::GetColor("visuals-esp-enemy-indicator-color");
 	static Config2::CState* EnemySkeleton		= Config2::GetState("visuals-esp-enemy-skeleton");
 	static Config2::CColor* EnemySkeletonColor  = Config2::GetColor("visuals-esp-enemy-skeleton-color");
 	static Config2::CState* EnemyHealth			= Config2::GetState("visuals-esp-enemy-health");
@@ -268,8 +311,6 @@ void ESP::Run_PaintTraverse()
 	static Config2::CColor* FriendBoxColor			= Config2::GetColor("visuals-esp-friend-bbox-color");
 	static Config2::CState* FriendName				= Config2::GetState("visuals-esp-friend-name");
 	static Config2::CColor* FriendNameColor			= Config2::GetColor("visuals-esp-friend-name-color");
-	static Config2::CState* FriendSnaplines			= Config2::GetState("visuals-esp-friend-snapline");
-	static Config2::CColor* FriendSnaplinesColor	= Config2::GetColor("visuals-esp-friend-snapline-color");
 	static Config2::CState* FriendSkeleton			= Config2::GetState("visuals-esp-friend-skeleton");
 	static Config2::CColor* FriendSkeletonColor		= Config2::GetColor("visuals-esp-friend-skeleton-color");
 	static Config2::CState* FriendHealth			= Config2::GetState("visuals-esp-friend-health");
@@ -340,11 +381,6 @@ void ESP::Run_PaintTraverse()
 			{
 				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(FriendNameColor->GetR(), FriendNameColor->GetG(), FriendNameColor->GetB(), FriendNameColor->GetA()));
 			}
-			if (FriendSnaplines->Get())
-			{
-				I::surface->DrawSetColor(Color(FriendSnaplinesColor->GetR(), FriendSnaplinesColor->GetG(), FriendSnaplinesColor->GetB(), FriendSnaplinesColor->GetA()));
-				DrawSnapLines(TopLeft, BottomRight);
-			}
 			if (FriendHealth->Get())
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(),
@@ -396,10 +432,9 @@ void ESP::Run_PaintTraverse()
 			{
 				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(EnemyNameColor->GetR(), EnemyNameColor->GetG(), EnemyNameColor->GetB(), EnemyNameColor->GetA()));
 			}
-			if (EnemySnaplines->Get())
+			if (EnemyIndicator->Get())
 			{
-				I::surface->DrawSetColor(Color(EnemySnaplinesColor->GetR(), EnemySnaplinesColor->GetG(), EnemySnaplinesColor->GetB(), EnemySnaplinesColor->GetA()));
-				DrawSnapLines(TopLeft, BottomRight);
+				DrawIndicators(Ent, Color(EnemyIndicatorColor->GetR(), EnemyIndicatorColor->GetG(), EnemyIndicatorColor->GetB(), EnemyIndicatorColor->GetA()));
 			}
 			if (EnemyHealth->Get())
 			{

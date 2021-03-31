@@ -677,7 +677,7 @@ void LocalAnimFix(Entity* entity)
 	if (!ClientAnims)
 		return;
 
-	float duck = anim->m_flDuckAmount;
+	float duck = anim->m_fDuckAmount;
 
 	static float proper_abs = anim->m_flGoalFeetYaw;
 	
@@ -786,10 +786,6 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		// update our local entlist
 		G::UpdateEntities();
 
-		H::console.clear();
-		H::console.resize(0);
-		H::console.push_back(std::to_string(deadflagOffset));
-
 		// third person
 		if (ThirdPerson->Get()) *(Vec*)((DWORD)G::LocalPlayer + deadflagOffset + 4) = antiaim->real;
 
@@ -808,8 +804,8 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
 	{
-		L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
-		resolver->Resolve();
+		/*L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
+		resolver->Resolve();*/
 		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoFlash");
 		miscvisuals->NoFlash();
 		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoSmokeFSN");
@@ -818,6 +814,9 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		SkinChanger::RunFSN();
 	} break;
 	}
+
+	resolver->PreResolver(stage);
+	resolver->PostResolver(stage);
 
 	/*
 	

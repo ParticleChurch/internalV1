@@ -1,6 +1,65 @@
 #pragma once
 class Matrix3x4;
 
+class Vec2 {
+public:
+	float x;
+	float y;
+
+	Vec2() {
+		this->x = 0;
+		this->y = 0;
+	}
+
+	Vec2(float x, float y) {
+		this->x = x;
+		this->y = y;
+	}
+
+	Vec2 operator + (const Vec2& b) {
+		return Vec2(b.x + this->x, b.y + this->y);
+	}
+
+	void operator = (const Vec2& b) {
+		this->x = b.x;
+		this->y = b.y;
+	}
+
+	void operator -= (const Vec2& b) {
+		this->x -= b.x;
+		this->y -= b.y;
+	}
+
+	Vec2 operator / (const int b) {
+		return Vec2(this->x / b, this->y / b);
+	}
+
+	Vec2 operator / (const float b) {
+		return Vec2(this->x / b, this->y / b);
+	}
+
+	void operator += (const Vec2& b) {
+		this->x += b.x;
+		this->y += b.y;
+	}
+};
+
+struct Vertex {
+	Vertex() { }
+	Vertex(const Vec2& pos, const Vec2& coord = Vec2(0, 0)) {
+		position = pos;
+		m_TexCoord = coord;
+	}
+	void Init(const Vec2& pos, const Vec2& coord = Vec2(0, 0)) {
+		position = pos;
+		m_TexCoord = coord;
+	}
+
+	Vec2	position;
+	Vec2	m_TexCoord;
+};
+
+
 class Vec {
 public:
 	float x;
