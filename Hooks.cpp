@@ -355,7 +355,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			H::console.resize(0);
 		}
 		ImGui::Text("DT");
-		ImGui::SliderInt("###dtamount", &doubletap->shift_ticks, 0, 16);
+		ImGui::SliderInt("###dtamount", &doubletap->shift_ticks, 0, 32);
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (auto& a : resolver->ShotsMissed)

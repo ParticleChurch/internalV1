@@ -23,6 +23,7 @@ private:
 
 	// General Private Functions
 	float CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox);
+	float CalculatePsudoHitchance();
 	bool ValidPlayer(Player player);
 	int GetHitGroup(int Hitbox);
 	void GetClosestEntity(int& RecordUserID, float& Distance);
@@ -44,8 +45,8 @@ private:
 	bool TryOnShot();
 	void GetRageHitboxes(int gun);
 	void GetClosestEntityNotScanned(int& RecordUserID, float& Distance);
+	bool ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count);
 	bool ScanPlayer(int RecordUserID, Vec& Point);
-	bool ScanPlayerMin(int RecordUserID, Vec& Point);
 
 public:
 	// General Public Functions

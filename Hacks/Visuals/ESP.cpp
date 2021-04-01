@@ -272,7 +272,7 @@ void ESP::DrawIndicators(Entity* ent, Color clr)
 	const auto angle_yaw_rad = DEG2RAD(viewangles.y - aimbot->CalculateAngle(eyepos).y - 90);
 
 	int radius = 100.f;
-	int size = 20.f;
+	int size = 15.f;
 
 	const auto new_point_x = screen_center.x + ((((width - (size * 3)) * .5f) * (radius / 100.0f)) * cos(angle_yaw_rad)) + (int)(6.0f * (((float)size - 4.f) / 16.0f));
 	const auto new_point_y = screen_center.y + ((((height - (size * 3)) * .5f) * (radius / 100.0f)) * sin(angle_yaw_rad));

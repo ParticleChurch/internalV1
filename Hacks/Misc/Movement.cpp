@@ -293,7 +293,7 @@ void Movement::AutoStop()
 			continue;
 
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
-		if (autowall->GetDamage(NextPos, it->second.EyePos, it->second.entity))
+		if (autowall->Damage(NextPos))
 		{
 			PossibleDamage = true;
 			break;

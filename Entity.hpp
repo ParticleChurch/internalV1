@@ -501,8 +501,7 @@ public:
 
 	bool IsAlive()
 	{
-		typedef bool(__thiscall* oAlive)(void*);
-		return GetVFunc<oAlive>(this, 155)(this);
+		return this->GetHealth() > 0 && this->GetLifeState() == 0;
 	}
 
 	bool IsPlayer()

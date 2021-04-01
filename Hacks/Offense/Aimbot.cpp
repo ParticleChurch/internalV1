@@ -65,6 +65,132 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 	return (hits / 255.f);
 }
 
+float Aimbot::CalculatePsudoHitchance()
+{
+	if (!G::LocalPlayerWeapon)
+		return 0;
+
+	float inaccuracy = 0;
+	int weapIndex = GetWeaponIndex(G::LocalPlayerWeapon->GetWeaponId());
+
+	switch (weapIndex)
+	{
+		// Pistols__________________________
+	case 1: // glock
+		inaccuracy = 0.0042f;
+		break;
+	case 2: // p2000
+		inaccuracy = 0.003680f;
+		break;
+	case 3: // usp
+		inaccuracy = 0.003680f;
+		break;
+	case 4: // deulies
+		inaccuracy = 0.00525f;
+		break;
+	case 5: // P250
+		inaccuracy = 0.006830f;
+		break;
+	case 6: // Tec9
+		inaccuracy = 0.00368f;
+		break;
+	case 7: // 5-7
+		inaccuracy = 0.00683f;
+		break;
+	case 8: // CZ
+		inaccuracy = 0.0076f;
+		break;
+	case 9: // Deagle
+		inaccuracy = 0.00218f;
+		break;
+	case 10: // Revolver
+		inaccuracy = 0.005f;
+		break;
+		// Heavy__________________________
+	case 11: // Nova
+		inaccuracy = 0.00525f;
+		break;
+	case 12: // XM
+		inaccuracy = 0.00525f;
+		break;
+	case 13: // SawedOFF
+		inaccuracy = 0.00525f;
+		break;
+	case 14: // Mag7
+		inaccuracy = 0.00525f;
+		break;
+	case 15: // M249
+		inaccuracy = 0.00534f;
+		break;
+	case 16: // Negev
+		inaccuracy = 0.00763f;
+		break;
+		// Smg__________________________
+	case 17: // Mac10
+		inaccuracy = 0.00998f;
+		break;
+	case 18: // MP9
+		inaccuracy = 0.0055f;
+		break;
+	case 19: // MP7
+		inaccuracy = 0.00592f;
+		break;
+	case 20: // MP5
+		inaccuracy = 0.00592f;
+		break;
+	case 21: // UMP
+		inaccuracy = 0.01007f;
+		break;
+	case 22: // P90
+		inaccuracy = 0.01024f;
+		break;
+	case 23: // BIZON
+		inaccuracy = 0.0105f;
+		break;
+		// Rifles__________________________
+	case 24: // Galil
+		inaccuracy = 0.00525f;
+		break;
+	case 25: // Famas
+		inaccuracy = 0.00739f;
+		break;
+	case 26: // AK
+		inaccuracy = 0.00481f;
+		break;
+	case 27: // M4A1
+		inaccuracy = 0.0041f;
+		break;
+	case 28: // M4A1s
+		inaccuracy = 0.0041f;
+		break;
+	case 29: // Scout
+		inaccuracy = 0.0028f;
+		break;
+	case 30: // Sg553
+		inaccuracy = 0.005f;
+		break;
+	case 31: // AUG
+		inaccuracy = 0.00311f;
+		break;
+	case 32: // AWP
+		inaccuracy = 0.0015f;
+		break;
+	case 33: // AUTO
+		inaccuracy = 0.0015f;
+		break;
+	case 34: // AUTO
+		inaccuracy = 0.0015f;
+		break;
+	default: // idk whatever
+		inaccuracy = 0.f;
+		break;
+	}
+
+	inaccuracy /= G::LocalPlayerWeapon->GetInaccuracy();
+
+	return inaccuracy;
+}
+
 bool Aimbot::ValidPlayer(Player player)
 {
 	if (!player.Valid)
@@ -357,7 +483,7 @@ QAngle Aimbot::GetClosestAng(int RecordUserID, bool& valid)
 		if (!visible)
 			continue;
 
-		float dam = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, false);
+		float dam = autowall->Damage(mid);
 
 		Vec Angle = aimbot->CalculateAngle(mid);
 		float CrossDist = aimbot->CrosshairDist(Angle);
@@ -481,10 +607,9 @@ void Aimbot::Rage()
 
 	// Aimpoint
 	Vec AimPoint;
-	// Clear up the playerscanlist
-	PlayersScanned.clear(); 
-	PlayersScanned.resize(0);
-	PlayersScanned.push_back(RecordID);
+	// tick_count
+	int tick_count = G::cmd->tick_count;
+
 	// if the recordID is proper, and the closest player is hittable
 	// under the users standerds (hitchance etc...)
 	if (RecordID != -1 && ScanPlayer(RecordID, AimPoint))
@@ -500,18 +625,24 @@ void Aimbot::Rage()
 
 		// If autoshoot.. FIRE!
 		if (AutoShoot->Get())
+		{
 			G::cmd->buttons |= IN_ATTACK;
-
+			G::cmd->tick_count = tick_count;
+		}
+			
 		// only force send if not fakeducking... (as that will break fd)
 		if (G::pSendPacket && !FakeDuck->Get())
 			*G::pSendPacket = true;
 		return;
 	}
-	// Otherwise do a less detailed scan of all of the other players
+	// Otherwise do a less detailed backtrack scan of all of the players
 	else
 	{
-		return;
-		int max = 2;
+		// Clear up the playerscanlist
+		PlayersScanned.clear();
+		PlayersScanned.resize(0);
+
+		int max = 5;
 		for (auto &a : G::EntList)
 		{	
 			if (max <= 0) // only allow 2 additional scans (any more and lots of lag maen
@@ -520,7 +651,8 @@ void Aimbot::Rage()
 			Dist = FLT_MAX;
 			RecordID = -1;
 			GetClosestEntityNotScanned(RecordID, Dist);
-			if (RecordID != -1 && ScanPlayerMin(RecordID, AimPoint))
+			PlayersScanned.push_back(RecordID); // we have scanned it...
+			if (RecordID != -1 && ScanPlayerBacktrack(RecordID, AimPoint, tick_count))
 			{
 				// Get Angle and do recoil
 				QAngle Angle = CalculateAngle(AimPoint);
@@ -533,8 +665,11 @@ void Aimbot::Rage()
 
 				// If autoshoot.. FIRE!
 				if (AutoShoot->Get())
+				{
 					G::cmd->buttons |= IN_ATTACK;
-
+					G::cmd->tick_count = tick_count;
+				}
+					
 				// only force send if not fakeducking... (as that will break fd)
 				if (G::pSendPacket && !FakeDuck->Get())
 					*G::pSendPacket = true;
@@ -691,7 +826,7 @@ bool Aimbot::TryOnShot()
 
 					Vec head = a.Bone(8);
 					// if we can't hit it...
-					if (!autowall->CanScanBacktrack(it->second.entity, head, G::LocalPlayerWeaponData, 1, true, HITGROUP_HEAD))
+					if (!autowall->CanHitFloatingPoint(head, false))
 						goto SKIP; // go on to another entity
 
 					QAngle Angle = CalculateAngle(head);
@@ -750,19 +885,19 @@ void Aimbot::GetRageHitboxes(int gun)
 		selection = Heavy_Hitbox_R->Mask;
 		break;
 	case 3:
-		L::Verbose("rifle");
+		L::Verbose("scoupt");
 		selection = Scout_Hitbox_R->Mask;
 		break;
 	case 4:
-		L::Verbose("scout");
+		L::Verbose("awp");
 		selection = AWP_Hitbox_R->Mask;
 		break;
 	case 5:
-		L::Verbose("awp");
+		L::Verbose("auto");
 		selection = Auto_Hitbox_R->Mask;
 		break;
 	case 6:
-		L::Verbose("auto");
+		L::Verbose("rifle");
 		selection = Rifle_Hitbox_R->Mask;
 		break;
 	default:
@@ -836,11 +971,104 @@ void Aimbot::GetClosestEntityNotScanned(int& RecordUserID, float& Distance)
 	}
 }
 
+static float LerpTime2() // GLAD https://github.com/sstokic-tgm/Gladiatorcheatz-v2.1/blob/eaa88bbb4eca71f8aebfed32a5b86300df8ce6a3/features/LagCompensation.cpp
+{
+	static ConVar* UpdateRate = I::cvar->FindVar("cl_updaterate");
+	int updaterate = UpdateRate->GetInt();
+	static ConVar* minupdate = I::cvar->FindVar("sv_minupdaterate");
+	static ConVar* maxupdate = I::cvar->FindVar("sv_maxupdaterate");
+
+	if (minupdate && maxupdate)
+		updaterate = maxupdate->GetInt();
+
+	static ConVar* interpratio = I::cvar->FindVar("cl_interp_ratio");
+	float ratio = interpratio->GetFloat();
+
+	if (ratio == 0)
+		ratio = 1.0f;
+
+	static ConVar* lerpcvar = I::cvar->FindVar("cl_interp");
+	float lerp = lerpcvar->GetFloat();
+	static ConVar* cmin = I::cvar->FindVar("sv_client_min_interp_ratio");
+	static ConVar* cmax = I::cvar->FindVar("sv_client_max_interp_ratio");
+
+	if (cmin && cmax && cmin->GetFloat() != 1)
+		ratio = std::clamp(ratio, cmin->GetFloat(), cmax->GetFloat());
+
+	return max(lerp, (ratio / updaterate));
+}
+
+/*
+This scans midpoints and sees if they are hitable with autowall. It cycles through to try to hit the oldest
+tick, which might not always be the best idea. Probably alright for baim cfgs
+*/
+bool Aimbot::ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count)
+{
+	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
+		return false;
+
+	if (!(G::EntList[RecordUserID].entity)) // entity DOES NOT exist
+		return false;
+
+	if (!(G::EntList[RecordUserID].health > 0)) // entity is NOT alive
+		return false;
+
+	if (G::EntList[RecordUserID].team == G::LocalPlayerTeam) // Entity is on same team
+		return false;
+
+	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
+		return false;
+
+	// Doing backtrack shit
+
+	// Do psudo hitchance (because backtrack, basically how relatively a weapon is)
+	float hitchance = CalculatePsudoHitchance();
+	if (!(hitchance >= rage.hitchance))
+		return false;
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
+	if (!StudioModel) return false; //if cant get the model
+
+	float damage = 0.f;
+	Matrix3x4 Matrix[128];
+
+	// Records
+	bool valid = false;
+	for (Player::Tick &record : G::EntList[RecordUserID].BacktrackRecords)
+	{
+		std::memcpy(&Matrix, &record.Matrix, sizeof(Matrix3x4) * 128); // copy first 128 parts of matrix
+
+		// Hitboxes
+		for (auto HITBOX : rage.hitboxes)
+		{
+			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+			if (!StudioBox) continue;	//if cant get the hitbox...
+			int HitGroup = GetHitGroup(HITBOX);
+
+			Vec min = StudioBox->bbmin.Transform(Matrix[StudioBox->bone]);
+			Vec max = StudioBox->bbmin.Transform(Matrix[StudioBox->bone]);
+			Vec mid = (max + min) / 2;
+
+			// Make sure Damage is good
+			if (autowall->CanHitFloatingPoint(mid))
+			{
+				Point = mid;
+				tick_count = TimeToTicks(record.SimulationTime + LerpTime2());
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 /*
 In this case we are doing a full scan to try and grab the points in which damage possible. This 
 is quite laggy. It return once it has found points that are good. It's like multipoint but only
-for closest entity
+for closest entity. NOTE: Only does multipoint on UPPER_CHEST, HEAD, and PELVIS
+// might be able to do multithreading w/
+https://www.unknowncheats.me/forum/counterstrike-global-offensive/335391-fixing-tls-multithreaded-engine-calls.html
 */
+
 bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 {
 	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
@@ -895,7 +1123,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 				// no need to autowall if visible...
 				if (visible)
 				{
-					damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, mid, true);
+					damage = autowall->Damage(mid, true);
 					if (damage >= rage.vis_mindam)
 					{
 						Point = mid;
@@ -910,7 +1138,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 				}
 				else
 				{
-					damage = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, true);
+					damage = autowall->Damage(mid, true);
 					if (damage >= rage.hid_mindam)
 					{
 						Point = mid;
@@ -947,7 +1175,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			// no need to autowall if visible...
 			if (visible)
 			{
-				damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, left, true);
+				damage = autowall->Damage(left, true);
 				if (damage >= rage.vis_mindam)
 				{
 					Point = left;
@@ -962,7 +1190,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			}
 			else
 			{
-				damage = autowall->GetDamage(G::EntList[RecordUserID].entity, left, true);
+				damage = autowall->Damage(left, true);
 				if (damage >= rage.hid_mindam)
 				{
 					Point = left;
@@ -996,7 +1224,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			// no need to autowall if visible...
 			if (visible)
 			{
-				damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, right, true);
+				damage = autowall->Damage(right, true);
 				if (damage >= rage.vis_mindam)
 				{
 					Point = right;
@@ -1011,7 +1239,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			}
 			else
 			{
-				damage = autowall->GetDamage(G::EntList[RecordUserID].entity, right, true);
+				damage = autowall->Damage(right, true);
 				if (damage >= rage.hid_mindam)
 				{
 					Point = right;
@@ -1027,119 +1255,6 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 		}
 	}
 	return false;
-}
-
-/*
-This function finds the point that matches the conditions, than returns, regardless of whether
-theres a better point to be found. One optimization could be going in order of points that
-typicaly do more damage, to prioritize them. Will ignore for now.
-
-This code is optimized for speed over damage/accuracy
-
-// might be able to do multithreading w/
-https://www.unknowncheats.me/forum/counterstrike-global-offensive/335391-fixing-tls-multithreaded-engine-calls.html
-*/
-
-bool Aimbot::ScanPlayerMin(int RecordUserID, Vec& Point)
-{
-	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
-		return false;
-
-	if (!(G::EntList[RecordUserID].entity)) // entity DOES NOT exist
-		return false;
-
-	if (!(G::EntList[RecordUserID].health > 0)) // entity is NOT alive
-		return false;
-
-	if (G::EntList[RecordUserID].team == G::LocalPlayerTeam) // Entity is on same team
-		return false;
-
-	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
-		return false;
-
-	if (!ValidSimTime(G::EntList[RecordUserID].CurSimTime)) // if not valid simtime
-		return false;
-
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
-	if (!StudioModel) return false; //if cant get the model
-
-	bool ValidPointFound = false;
-
-	// Hitboxes
-	for (auto HITBOX : rage.hitboxes)
-	{
-		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
-		if (!StudioBox) continue;	//if cant get the hitbox...
-		int HitGroup = GetHitGroup(HITBOX);
-
-		Vec min = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
-
-		// Get mid aimpoint
-		Vec mid = (max + min) / 2;
-		
-		// Check for hitchance before autowalling...
-		QAngle MidAng = CalculateAngle(mid);
-
-		// Attempt for visible damage
-		float Damage = autowall->GetDamageVis(G::EntList[RecordUserID].entity, mid, true);
-
-		// If there is visible min damage to be done
-		if (Damage > 0.f)
-		{
-			// Get hitchance
-			float MidHitChance = CalculateHitchance(MidAng, mid, G::EntList[RecordUserID].entity, HITBOX);
-
-			// If hitchances aren't proper
-			if (MidHitChance < rage.hitchance)
-				continue;
-
-			if (Damage >= rage.vis_mindam)
-			{
-				ValidPointFound = true;
-				Point = mid;
-				return true;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && Damage >= G::EntList[RecordUserID].health)
-			{
-				Point = mid;
-				return true;
-			}
-		}
-		// Otherwise use the non visible damages
-		else
-		{
-			// Get autowall damage
-			Damage = autowall->GetDamage(G::EntList[RecordUserID].entity, mid, true);
-
-			// no point in calc hitchance if no damage to be done
-			if (Damage <= 0)
-				continue;
-
-			// Get hitchance
-			float MidHitChance = CalculateHitchance(MidAng, mid, G::EntList[RecordUserID].entity, HITBOX);
-
-			// If hitchances aren't proper
-			if (MidHitChance < rage.hitchance)
-				continue;
-
-			// if there is damage to be done, and hitchance is possible...
-			if (Damage >= rage.hid_mindam)
-			{
-				ValidPointFound = true;
-				Point = mid;
-				return true;
-			}
-			// Fire if lethal crap
-			else if (rage.FireIfLethal && Damage >= G::EntList[RecordUserID].health)
-			{
-				Point = mid;
-				return true;
-			}
-		}
-	}
-	return ValidPointFound;
 }
 
 Vec Aimbot::CalculateAngle(Vec Target)

@@ -50,7 +50,7 @@ void FakeLag::LagOnPeak()
 		if (!ValidSimTime(it->second.CurSimTime)) // if not valid simtime
 			continue;
 
-		if (autowall->GetDamage(it->second.entity, G::LocalPlayer, NextPos) > 1)
+		if (autowall->Damage(NextPos) > 1)
 		{
 			DamageIncoming = true;
 			break;
