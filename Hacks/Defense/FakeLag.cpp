@@ -27,7 +27,24 @@ void FakeLag::LagOnPeak()
 	if (!G::LocalPlayerAlive)
 		return;
 
-	bool DamageIncoming = false;
+	static Config2::CFloat* FakeLagTrigDist = Config2::GetFloat("antiaim-fakelag-trigger-distance");
+	static Config2::CFloat* FakeLagTrigTick = Config2::GetFloat("antiaim-fakelag-trigger-tick");
+
+	// no point in autowalling/lagging... if values are too low
+	if (FakeLagTrigDist->Get() < 1 || FakeLagTrigTick->Get() < 1)
+	{
+		LaggingOnPeak = false;
+		return;
+	}
+
+	// no point in lagging if velocity is too low
+	if (int(G::LocalPlayer->GetVecVelocity().VecLength2D()) < 100)
+	{
+		LaggingOnPeak = false;
+		return;
+	}
+
+	bool DamageOutgoing = false;
 
 	std::map<int, Player>::iterator it;
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
@@ -50,28 +67,29 @@ void FakeLag::LagOnPeak()
 		if (!ValidSimTime(it->second.CurSimTime)) // if not valid simtime
 			continue;
 
-		if (autowall->Damage(NextPos) > 1)
+		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
 		{
-			DamageIncoming = true;
+			DamageOutgoing = true;
 			break;
 		}
 	}
+
+
 	
 	static bool ChokeOnce = false;
 
 	// If there is damage incoming, we are about to send packets, and we have not choked before
-	if (DamageIncoming && PredictedVal && !ChokeOnce)
+	if (DamageOutgoing && PredictedVal && !ChokeOnce)
 	{
 		ChokeOnce = true;				// We have choked once
 		LaggingOnPeak = true;
 	}
-	else if(!DamageIncoming && ChokeOnce) // no damage incoming, reset the choke once
+	else if(!DamageOutgoing && ChokeOnce) // no damage incoming, reset the choke once
 	{
 		ChokeOnce = false;
 	}
 
-	static Config2::CFloat* FakeLagTrigDist = Config2::GetFloat("antiaim-fakelag-trigger-distance");
-	static Config2::CFloat* FakeLagTrigTick = Config2::GetFloat("antiaim-fakelag-trigger-tick");
+	
 
 	// If there we should lag on peak... 
 	if (LaggingOnPeak)

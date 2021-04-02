@@ -244,7 +244,7 @@ void Movement::AutoStop()
 	if (!G::LocalPlayerWeaponData)
 		return;
 
-	// If attempting bhop or olding jump...
+	// If attempting bhop or holding jump...
 	if (G::cmd->buttons & IN_JUMP)
 		return;
 
@@ -272,6 +272,9 @@ void Movement::AutoStop()
 	// Updating our next position
 	Vec NextPos = G::LocalPlayer->GetEyePos() + velocity;
 
+	Player player;
+	
+
 	bool PossibleDamage = false;
 
 	std::map<int, Player>::iterator it;
@@ -293,8 +296,9 @@ void Movement::AutoStop()
 			continue;
 
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
-		if (autowall->Damage(NextPos))
+		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
 		{
+			player = it->second;
 			PossibleDamage = true;
 			break;
 		}

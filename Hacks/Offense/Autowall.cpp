@@ -139,6 +139,53 @@ float Autowall::Damage(const Vec& point, bool AllowFriendlyFire)
     return 0.f;
 }
 
+float Autowall::Damage(Vec start, const Vec& point, bool AllowFriendlyFire)
+{
+    if (!G::LocalPlayer) return false;
+
+    if (!G::LocalPlayerWeaponData) return false;
+
+    float Damage = G::LocalPlayerWeaponData->Damage;
+
+    Vec Start{ start };
+    Vec Direction{ Start - point };
+    Direction /= Direction.VecLength();
+
+    // Then check if autowallable
+    int hitsLeft = 4;
+    while (Damage >= 1.0f && hitsLeft > 0) {
+        trace_t Trace;
+        CTraceFilter Filter(G::LocalPlayer);
+        Ray_t Ray(Start, point);
+        I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
+
+        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
+            return false;
+
+        if (Trace.Fraction == 1.0f)
+            break;
+
+        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
+            Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
+
+            float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+            if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
+                Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+            return Damage;
+        }
+
+        const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
+
+        if (SurfaceData->game.flPenetrationModifier < 0.1f)
+            break;
+
+        Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, G::LocalPlayerWeaponData->Penetration, Damage);
+        hitsLeft--;
+    }
+    return 0.f;
+}
+
 bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 {
     if (!G::LocalPlayer) return false;
@@ -148,6 +195,63 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
     float Damage = G::LocalPlayerWeaponData->Damage;
 
     Vec Start{ G::LocalPlayer->GetEyePos() };
+    Vec Direction{ Start - point };
+    Direction /= Direction.VecLength();
+
+    // First check if it's visible
+    trace_t Trace;
+    Ray_t Ray(G::LocalPlayer->GetEyePos(), point);
+    CTraceFilter Filter(G::LocalPlayer);
+    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
+    if (Trace.Fraction == 1.f)
+        return true;
+
+    // Then check if it is autowallable
+    int hitsLeft = 4;
+    while (Damage >= 1.0f && hitsLeft > 0) {
+        trace_t Trace;
+        CTraceFilter Filter(G::LocalPlayer);
+        Ray_t Ray(Start, point);
+        I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
+
+        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
+            return false;
+
+        // We have reached end of trace and therefore can hit it
+        if (Trace.Fraction == 1.0f)
+            return true;
+
+        // We've hit an enemy hitbox, and therefore can't hit point? can hit? idk... prob should should ig
+        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
+            Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
+
+            float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+            if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
+                Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+            return Damage >= 1;
+        }
+
+        const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
+
+        if (SurfaceData->game.flPenetrationModifier < 0.1f)
+            break;
+
+        Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, G::LocalPlayerWeaponData->Penetration, Damage);
+        hitsLeft--;
+    }
+    return false;
+}
+
+bool Autowall::CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriendlyFire)
+{
+    if (!G::LocalPlayer) return false;
+
+    if (!G::LocalPlayerWeaponData) return false;
+
+    float Damage = G::LocalPlayerWeaponData->Damage;
+
+    Vec Start{ start };
     Vec Direction{ Start - point };
     Direction /= Direction.VecLength();
 

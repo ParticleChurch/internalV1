@@ -952,7 +952,7 @@ bool __fastcall H::WriteUsercmdDeltaToBufferHook(void* ecx, void* edx, int slot,
 	int32_t new_commands = *pNumNewCommands;
 
 	int32_t next_cmdnr = I::clientstate->m_last_outgoing_command + I::clientstate->m_choked_commands + 1;
-	int32_t total_new_commands = min(doubletap->m_tick_to_shift, 16);
+	int32_t total_new_commands = doubletap->m_tick_to_shift;//min(doubletap->m_tick_to_shift, 16);
 	doubletap->m_tick_to_shift -= total_new_commands;
 	doubletap->m_tick_to_recharge += total_new_commands;
 
