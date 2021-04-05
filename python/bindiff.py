@@ -1,5 +1,5 @@
-f1 = r"E:/GitHub/internalV1/Release/CSGOCollabV1.dll"
-f2 = r"E:/GitHub/internalV1/Release/metamorph.dll"
+f1 = r"E:\GitHub\Metamorpher\out\4.dll"
+f2 = r"E:\GitHub\Metamorpher\out\3.dll"
 
 one = open(f1, "rb")
 two = open(f2, "rb")
@@ -25,6 +25,5 @@ print("unchanged sequences:", [-x for x in s[:10]])
 print("changed sequences:", [*reversed(s[-10:])])
 print("Total bytes changed: %d" % sum([q for q in s if q > 0]))
 print("Total bytes unchanged: %d" % sum([-q for q in s if q < 0]))
-print(s.count(3))
 one.close()
 two.close()

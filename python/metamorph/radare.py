@@ -7,9 +7,7 @@ class PEParser:
             self.dllfile = filename
             self.r2in = r2pipe.open(filename, [])
             self.file_info = json.loads(self.r2in.cmd("ij"))
-            if True:
-                print(self.r2in.cmd("wx?"))
-                return
+            
             # check file type
             if not "bin" in self.file_info:
                 raise TypeError("This is not a PE file.")
@@ -26,6 +24,8 @@ class PEParser:
                     continue
                 f = json.loads(self.r2in.cmd("pdfj @%s" % entry["name"]))
                 self.fcns.append(f)
+                print(entry)
+                return
         else:
             with open(filename, "r") as f:
                 d = json.loads(f.read())
