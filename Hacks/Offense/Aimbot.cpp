@@ -579,7 +579,7 @@ void Aimbot::Rage()
 	if (fakelag->LaggingOnPeak) return;
 
 	// If succeed with our onshot...
-	if (TryOnShot()) return;
+	/*if (TryOnShot()) return;*/
 
 	// if force on shot, for testing ill be always doing this
 
@@ -642,7 +642,7 @@ void Aimbot::Rage()
 		PlayersScanned.clear();
 		PlayersScanned.resize(0);
 
-		int max = 5;
+		int max = maxplayerscan;
 		for (auto &a : G::EntList)
 		{	
 			if (max <= 0) // only allow 2 additional scans (any more and lots of lag maen
@@ -1019,45 +1019,38 @@ bool Aimbot::ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count)
 	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
 		return false;
 
-	// Doing backtrack shit
+	// Make sure correct studio model
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
+	if (!StudioModel) return false; //if cant get the model
 
 	// Do psudo hitchance (because backtrack, basically how relatively a weapon is)
 	float hitchance = CalculatePsudoHitchance();
 	if (!(hitchance >= rage.hitchance))
 		return false;
 
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
-	if (!StudioModel) return false; //if cant get the model
-
-	float damage = 0.f;
-	Matrix3x4 Matrix[128];
-
-	// Records
-	bool valid = false;
-	for (Player::Tick &record : G::EntList[RecordUserID].BacktrackRecords)
+	// Find Best Tick (back is the oldest tick)
+	Player::Tick TargetTick = G::EntList[RecordUserID].BacktrackRecords.back();
+	
+	// go through those hitboxes and see if I can shoot them :D
+	for (auto HITBOX : rage.hitboxes)
 	{
-		std::memcpy(&Matrix, &record.Matrix, sizeof(Matrix3x4) * 128); // copy first 128 parts of matrix
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+		if (!StudioBox) continue;	//if cant get the hitbox...
+		int HitGroup = GetHitGroup(HITBOX);
 
-		// Hitboxes
-		for (auto HITBOX : rage.hitboxes)
+		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
+		Vec mid = (max + min) / 2;
+
+		// Make sure Damage is good
+		if (autowall->CanHitFloatingPoint(mid))
 		{
-			mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
-			if (!StudioBox) continue;	//if cant get the hitbox...
-			int HitGroup = GetHitGroup(HITBOX);
-
-			Vec min = StudioBox->bbmin.Transform(Matrix[StudioBox->bone]);
-			Vec max = StudioBox->bbmin.Transform(Matrix[StudioBox->bone]);
-			Vec mid = (max + min) / 2;
-
-			// Make sure Damage is good
-			if (autowall->CanHitFloatingPoint(mid))
-			{
-				Point = mid;
-				tick_count = TimeToTicks(record.SimulationTime + LerpTime2());
-				return true;
-			}
+			Point = mid;
+			tick_count = TimeToTicks(TargetTick.SimulationTime + LerpTime2());
+			return true;
 		}
 	}
+
 	return false;
 }
 

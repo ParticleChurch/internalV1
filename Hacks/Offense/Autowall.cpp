@@ -204,7 +204,12 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
     CTraceFilter Filter(G::LocalPlayer);
     I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
     if (Trace.Fraction == 1.f)
-        return true;
+    {
+        // if it hit an entity and it isn't on localplayer team...
+        if(Trace.Entity && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
+            return true;
+    }
+        
 
     // Then check if it is autowallable
     int hitsLeft = 4;
@@ -219,7 +224,11 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 
         // We have reached end of trace and therefore can hit it
         if (Trace.Fraction == 1.0f)
+        {
+            H::console.push_back("trace fraction 1");
             return true;
+        }
+            
 
         // We've hit an enemy hitbox, and therefore can't hit point? can hit? idk... prob should should ig
         if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {

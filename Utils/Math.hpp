@@ -221,6 +221,10 @@ static int TimeToTicks(float time) noexcept
 {
 	return static_cast<int>(0.5f + time / I::globalvars->m_intervalPerTick);
 }
+static float TicksToTime(int ticks) {
+	return I::globalvars->m_intervalPerTick * (float)(ticks);
+}
+
 static float GetLerp()
 {
 	auto ratio = std::clamp(G::InterpRatio->GetFloat(), G::MinInterpRatio->GetFloat(), G::MaxInterpRatio->GetFloat());
@@ -231,7 +235,8 @@ static bool ValidSimTime(float SimulationTime)
 	auto network = I::engine->GetNetChannelInfo();
 	if (!network)
 		return false;
-
+	
+	//maybe replace I::globalvars->ServerTime() to TicksToTime(G::LocalPlayer->GetTickBase())
 	auto delta = std::clamp(network->GetLatency(0) + network->GetLatency(1) + GetLerp(), 0.f, G::MaxUnlag->GetFloat()) - (I::globalvars->ServerTime() - SimulationTime);
 	return std::fabsf(delta) <= 0.2f;
 }

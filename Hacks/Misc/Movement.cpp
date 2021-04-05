@@ -272,8 +272,9 @@ void Movement::AutoStop()
 	// Updating our next position
 	Vec NextPos = G::LocalPlayer->GetEyePos() + velocity;
 
-	Player player;
-	
+	H::console.clear();
+	H::console.resize(0);
+	H::console.push_back("autostop/scope");
 
 	bool PossibleDamage = false;
 
@@ -298,7 +299,7 @@ void Movement::AutoStop()
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
 		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
 		{
-			player = it->second;
+			H::console.push_back("can hit player @" + std::string(it->second.info.name));
 			PossibleDamage = true;
 			break;
 		}

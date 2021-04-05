@@ -354,8 +354,9 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			H::console.clear();
 			H::console.resize(0);
 		}
-		ImGui::Text("DT");
-		ImGui::SliderInt("###dtamount", &doubletap->shift_ticks, 0, 32);
+		ImGui::SliderInt("Player###playerscan", &aimbot->maxplayerscan, 0, 16);
+		
+		ImGui::SliderInt("DT###dtamount", &doubletap->shift_ticks, 0, 32);
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (auto& a : resolver->ShotsMissed)
@@ -908,8 +909,8 @@ void __stdcall H::EmitSoundHook(SoundData data)
 		ShowWindow(window, SW_RESTORE);*/
 
 	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
-	}
-	oEmitSound(I::sound, data);
+	} else
+		oEmitSound(I::sound, data); //idk if this will crash but it will remove sound? maybe?
 
 	L::Verbose("H::EmitSoundHook - complete");
 }
