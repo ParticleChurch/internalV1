@@ -210,6 +210,23 @@ public:
 		return (unsigned int*)((DWORD)this + offset);
 	}
 
+	int* GetModelIndex()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_nModelIndex");
+		return (int*)((DWORD)this + offset);
+	}
+
+	HANDLE GetWeapon()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseViewModel", "m_hWeapon");
+		return *(HANDLE*)((DWORD)this + offset);
+	}
+
+	HANDLE GetViewModel() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_hViewModel[0]");
+		return *(HANDLE*)((DWORD)this + offset);
+	}
+
 	int* GetItemDefinitionIndex() {
 		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_iItemDefinitionIndex");
 		return (int*)((DWORD)this + offset);

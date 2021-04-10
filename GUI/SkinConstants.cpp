@@ -127,14 +127,17 @@ namespace Skins
 		"Falchion",
 		"Flip",
 		"Gut",
-		"Huntsman",
+        "Huntsman",
 		"Karambit",
+        "Bayonet",
 		"M9 Bayonet",
 		"Navaja",
 		"Shadow Daggers",
 		"Stiletto",
 		"Talon",
-		"Ursus"
+		"Ursus",
+		"T Default",
+		"CT Default"
 	};
 
 	std::vector<std::string> GloveNames = {
@@ -991,54 +994,112 @@ namespace Skins
         return nullptr;
     }
 
-    constexpr int WeaponFromId(WeaponId_ id)
+    constexpr int WeaponFromId(WeaponId id)
     {
         switch (id)
         {
         default: return -1;
-        case WeaponId_::DesertEagle:   return (int)Weapon::DesertEagle;
-        case WeaponId_::DualBerettas:  return (int)Weapon::DualBerettas;
-        case WeaponId_::FiveSeveN:     return (int)Weapon::FiveSeven;
-        case WeaponId_::Glock18:       return (int)Weapon::Glock18;
-        case WeaponId_::AK47:          return (int)Weapon::AK47;
-        case WeaponId_::AUG:           return (int)Weapon::AUG;
-        case WeaponId_::AWP:           return (int)Weapon::AWP;
-        case WeaponId_::FAMAS:         return (int)Weapon::FAMAS;
-        case WeaponId_::G3SG1:         return (int)Weapon::G3SG1;
-        case WeaponId_::GalilAR:       return (int)Weapon::Galil;
-        case WeaponId_::M249:          return (int)Weapon::M249;
-        case WeaponId_::M4A4:          return (int)Weapon::M4A4;
-        case WeaponId_::MAC10:         return (int)Weapon::MAC10;
-        case WeaponId_::P90:           return (int)Weapon::P90;
-        case WeaponId_::MP5SD:         return (int)Weapon::MP5;
-        case WeaponId_::UMP45:         return (int)Weapon::UMP45;
-        case WeaponId_::XM1014:        return (int)Weapon::XM1014;
-        case WeaponId_::PPBizon:       return (int)Weapon::PPBizon;
-        case WeaponId_::MAG7:          return (int)Weapon::MAG7;
-        case WeaponId_::Negev:         return (int)Weapon::Negev;
-        case WeaponId_::SawedOff:      return (int)Weapon::SawedOff;
-        case WeaponId_::Tec9:          return (int)Weapon::Tec9;
-        case WeaponId_::Zeusx27:       return (int)Weapon::Zeus;
-        case WeaponId_::P2000:         return (int)Weapon::P2000;
-        case WeaponId_::MP7:           return (int)Weapon::MP7;
-        case WeaponId_::MP9:           return (int)Weapon::MP9;
-        case WeaponId_::Nova:          return (int)Weapon::Nova;
-        case WeaponId_::P250:          return (int)Weapon::P250;
-        case WeaponId_::SCAR20:        return (int)Weapon::SCAR20;
-        case WeaponId_::SG553:         return (int)Weapon::SG553;
-        case WeaponId_::SSG08:         return (int)Weapon::SSG08;
-        case WeaponId_::M4A1S:         return (int)Weapon::M4A1S;
-        case WeaponId_::USPS:          return (int)Weapon::USPS;
-        case WeaponId_::CZ75Auto:      return (int)Weapon::CZ75;
-        case WeaponId_::R8Revolver:    return (int)Weapon::R8Revolver;
+        case WeaponId::DesertEagle:   return (int)Weapon::DesertEagle;
+        case WeaponId::DualBerettas:  return (int)Weapon::DualBerettas;
+        case WeaponId::FiveSeveN:     return (int)Weapon::FiveSeven;
+        case WeaponId::Glock18:       return (int)Weapon::Glock18;
+        case WeaponId::AK47:          return (int)Weapon::AK47;
+        case WeaponId::AUG:           return (int)Weapon::AUG;
+        case WeaponId::AWP:           return (int)Weapon::AWP;
+        case WeaponId::FAMAS:         return (int)Weapon::FAMAS;
+        case WeaponId::G3SG1:         return (int)Weapon::G3SG1;
+        case WeaponId::GalilAR:       return (int)Weapon::Galil;
+        case WeaponId::M249:          return (int)Weapon::M249;
+        case WeaponId::M4A4:          return (int)Weapon::M4A4;
+        case WeaponId::MAC10:         return (int)Weapon::MAC10;
+        case WeaponId::P90:           return (int)Weapon::P90;
+        case WeaponId::MP5SD:         return (int)Weapon::MP5;
+        case WeaponId::UMP45:         return (int)Weapon::UMP45;
+        case WeaponId::XM1014:        return (int)Weapon::XM1014;
+        case WeaponId::PPBizon:       return (int)Weapon::PPBizon;
+        case WeaponId::MAG7:          return (int)Weapon::MAG7;
+        case WeaponId::Negev:         return (int)Weapon::Negev;
+        case WeaponId::SawedOff:      return (int)Weapon::SawedOff;
+        case WeaponId::Tec9:          return (int)Weapon::Tec9;
+        case WeaponId::Zeusx27:       return (int)Weapon::Zeus;
+        case WeaponId::P2000:         return (int)Weapon::P2000;
+        case WeaponId::MP7:           return (int)Weapon::MP7;
+        case WeaponId::MP9:           return (int)Weapon::MP9;
+        case WeaponId::Nova:          return (int)Weapon::Nova;
+        case WeaponId::P250:          return (int)Weapon::P250;
+        case WeaponId::SCAR20:        return (int)Weapon::SCAR20;
+        case WeaponId::SG553:         return (int)Weapon::SG553;
+        case WeaponId::SSG08:         return (int)Weapon::SSG08;
+        case WeaponId::M4A1S:         return (int)Weapon::M4A1S;
+        case WeaponId::USPS:          return (int)Weapon::USPS;
+        case WeaponId::CZ75Auto:      return (int)Weapon::CZ75;
+        case WeaponId::R8Revolver:    return (int)Weapon::R8Revolver;
          // other...
-        case WeaponId_::C4Explosive:           return (int)Weapon::C4;
-        case WeaponId_::IncendiaryGrenade:     return (int)Weapon::Incendiary;
-        case WeaponId_::Molotov:               return (int)Weapon::Molotov;
-        case WeaponId_::DecoyGrenade:          return (int)Weapon::Decoy;
-        case WeaponId_::Flashbang:             return (int)Weapon::Flashbang;
-        case WeaponId_::HighExplosiveGrenade:  return (int)Weapon::HE;
-        case WeaponId_::SmokeGrenade:          return (int)Weapon::Smoke;
+        case WeaponId::C4Explosive:           return (int)Weapon::C4;
+        case WeaponId::IncendiaryGrenade:     return (int)Weapon::Incendiary;
+        case WeaponId::Molotov:               return (int)Weapon::Molotov;
+        case WeaponId::DecoyGrenade:          return (int)Weapon::Decoy;
+        case WeaponId::Flashbang:             return (int)Weapon::Flashbang;
+        case WeaponId::HighExplosiveGrenade:  return (int)Weapon::HE;
+        case WeaponId::SmokeGrenade:          return (int)Weapon::Smoke;
+        }
+    }
+    constexpr int KnifeFromId(WeaponId id)
+    {
+        switch (id)
+        {
+        default: return -1;
+
+        case WeaponId::NomadKnife: return (int)Knife::Nomad;
+        case WeaponId::SkeletonKnife: return (int)Knife::Skeleton;
+        case WeaponId::SurvivalKnife: return (int)Knife::Survival;
+        case WeaponId::ParacordKnife: return (int)Knife::Paracord;
+        case WeaponId::ClassicKnife: return (int)Knife::Classic;
+        case WeaponId::BowieKnife: return (int)Knife::Bowie;
+        case WeaponId::ButterflyKnife: return (int)Knife::Butterfly;
+        case WeaponId::FalchionKnife: return (int)Knife::Falchion;
+        case WeaponId::FlipKnife: return (int)Knife::Flip;
+        case WeaponId::GutKnife: return (int)Knife::Gut;
+        case WeaponId::HuntsmanKnife: return (int)Knife::Huntsman;
+        case WeaponId::Karambit: return (int)Knife::Karambit;
+        case WeaponId::Bayonet: return (int)Knife::Bayonet;
+        case WeaponId::M9Bayonet: return (int)Knife::M9Bayonet;
+        case WeaponId::NavajaKnife: return (int)Knife::Navaja;
+        case WeaponId::ShadowDaggers: return (int)Knife::ShadowDaggers;
+        case WeaponId::StilettoKnife: return (int)Knife::Stiletto;
+        case WeaponId::TalonKnife: return (int)Knife::Talon;
+        case WeaponId::UrsusKnife: return (int)Knife::Ursus;
+        case WeaponId::TDefaultKnife: return (int)Knife::TDefault;
+        case WeaponId::CTDefaultKnife: return (int)Knife::CTDefault;
+        }
+    }
+    extern constexpr const char* GetKnifeModel(Knife knife)
+    {
+        switch (knife)
+        {
+        default: return "";
+
+        case Knife::Nomad:         return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Skeleton:      return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Survival:      return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Paracord:      return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Classic:       return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Bowie:         return "models/weapons/v_knife_survival_bowie.mdl";
+        case Knife::Butterfly:     return "models/weapons/v_knife_butterfly.mdl";
+        case Knife::Falchion:      return "models/weapons/v_knife_falchion_advanced.mdl";
+        case Knife::Flip:          return "models/weapons/v_knife_flip.mdl";
+        case Knife::Gut:           return "models/weapons/v_knife_gut.mdl";
+        case Knife::Huntsman:      return "models/weapons/v_knife_tactical.mdl";
+        case Knife::Karambit:      return "models/weapons/v_knife_karam.mdl";
+        case Knife::Bayonet:       return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::M9Bayonet:     return "models/weapons/v_knife_m9_bay.mdl";
+        case Knife::Navaja:        return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::ShadowDaggers: return "models/weapons/v_knife_push.mdl";
+        case Knife::Stiletto:      return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Talon:         return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Ursus:         return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::TDefault:      return "models/weapons/v_knife_default_t.mdl";
+        case Knife::CTDefault:     return "models/weapons/v_knife_default_ct.mdl";
         }
     }
 };

@@ -82,12 +82,15 @@ namespace Skins
 		Gut,
 		Huntsman,
 		Karambit,
+		Bayonet,
 		M9Bayonet,
 		Navaja,
 		ShadowDaggers,
 		Stiletto,
 		Talon,
 		Ursus,
+		TDefault,
+		CTDefault,
 		_COUNT,
 	};
 	extern std::vector<std::string> KnifeNames;
@@ -149,6 +152,8 @@ namespace Skins
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
 
-	extern constexpr int WeaponFromId(WeaponId_ id);
+	extern constexpr int WeaponFromId(WeaponId id);
+	extern constexpr int KnifeFromId(WeaponId id);
+	extern constexpr const char* GetKnifeModel(Knife knife);
 	extern PaintKit* PaintKitFromID(int ID);
 }
