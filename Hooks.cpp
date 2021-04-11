@@ -625,6 +625,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		G::CM_End();	
 
 		//movement->RageAutoStrafe();
+		animfix->UpdateVal(cmd, *pSendPacket);
 	}
 
 	L::Verbose("H::CreateMoveHook - complete");
@@ -650,70 +651,6 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 	}
 
 	L::Verbose("H::PaintTraverseHook - complete");
-}
-
-bool fresh_tick()
-{
-	static int old_tick_count;
-
-	if (old_tick_count != I::globalvars->m_tickCount)
-	{
-		old_tick_count = I::globalvars->m_tickCount;
-		return true;
-	}
-
-	return false;
-}
-
-void LocalAnimFix(Entity* entity)
-{
-	if (!entity || !entity->GetHealth() || !G::cmd)
-		return;
-
-	AnimState* anim = G::LocalPlayer->GetAnimstate();
-	if (!anim)
-		return;
-
-	bool* ClientAnims = entity->ClientAnimations();
-	if (!ClientAnims)
-		return;
-
-	float duck = anim->m_fDuckAmount;
-
-	static float proper_abs = anim->m_flGoalFeetYaw;
-	
-	static std::array<float, 24> sent_pose_params = entity->m_flPoseParameter();
-	static AnimationLayer backup_layers[15];
-	
-	if (fresh_tick())
-	{
-		AnimationLayer* OldLayerPtr = entity->GetAnimOverlays();
-		if (!OldLayerPtr)
-			return;
-
-		std::memcpy(backup_layers, OldLayerPtr, (sizeof(AnimationLayer) * 15));
-		*ClientAnims = true;
-		entity->UpdateAnimationState(anim, antiaim->real); // idek
-
-		if (anim)
-			anim->m_iLastClientSideAnimationUpdateFramecount = I::globalvars->m_frameCount - 1;
-		
-		entity->UpdateClientSideAnimation();
-		
-		if (G::pSendPacket && *G::pSendPacket)
-		{
-			proper_abs = anim->m_flGoalFeetYaw;
-			sent_pose_params = entity->m_flPoseParameter();
-		}
-		
-	}
-	
-	*ClientAnims = false;
-	entity->SetAbsAngles(Vec(0, proper_abs, 0)); // MAYBE BAD?
-	anim->m_flUnknownFraction = duck;// 
-	std::memcpy(entity->GetAnimOverlays(), backup_layers, (sizeof(AnimationLayer) * 15));
-	entity->m_flPoseParameter() = sent_pose_params;
-	
 }
 
 void __stdcall H::FrameStageNotifyHook(int stage)
@@ -781,7 +718,12 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	case FRAME_RENDER_START:
 	{
 		L::Verbose("H::FrameStageNotifyHook - LocalAnimFix");
-		LocalAnimFix(G::LocalPlayer);
+		/*LocalAnimFix(G::LocalPlayer);*/
+		G::LocalPlayer->GetAnimOverlays()[3].m_flWeight = 0.0f;
+		G::LocalPlayer->GetAnimOverlays()[3].m_flCycle = 0.0f;
+		G::LocalPlayer->GetAnimOverlays()[12].m_flWeight = 0.0f;
+
+		animfix->UpdateReal();
 
 		L::Verbose("H::FrameStageNotifyHook - UpdateEntities");
 		// update our local entlist

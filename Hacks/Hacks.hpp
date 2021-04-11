@@ -14,4 +14,5 @@
 #include "Visuals/World.hpp"
 #include "Visuals/MiscVisuals.hpp"
 #include "Visuals/SkinChanger.hpp"
+#include "Visuals/AnimFix.hpp"
 

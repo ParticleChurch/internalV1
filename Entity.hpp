@@ -5,11 +5,45 @@ public:
 	virtual void* pad() = 0;
 	virtual const Vec& obbMins() = 0;
 	virtual const Vec& obbMaxs() = 0;
+	int get_solid()
+	{
+		typedef int(__thiscall* oget_solid)(void*);
+		return GetVFunc<oget_solid>(this, 11)(this);
+	}
 };
 
+using CBaseHandle = uint32_t;
 class Entity
 {
 public:
+	//2 should be GetRefEHandle
+	CBaseHandle& GetRefEHandle()
+	{
+		typedef CBaseHandle& (__thiscall* oGetRefEHandle)(void*);
+		return GetVFunc<oGetRefEHandle>(this, 2)(this);
+	}
+
+	// FUCKING ANIMATIONS
+	void CreateState(AnimState* state)
+	{
+		static auto CreateAnimState = reinterpret_cast<void(__thiscall*)(AnimState*, Entity*)>(FindPattern("client.dll", "55 8B EC 56 8B F1 B9 ? ? ? ? C7 46"));
+		if (!CreateAnimState)
+			return;
+
+		CreateAnimState(state, this);
+	}
+
+	void ResetAnimationState(AnimState* state)
+	{
+		if (!state)
+			return;
+
+		static auto ResetAnimState = reinterpret_cast<void(__thiscall*)(AnimState*)>(FindPattern("client.dll", "56 6A 01 68 ? ? ? ? 8B F1"));
+		if (!ResetAnimState)
+			return;
+
+		ResetAnimState(state);
+	}
 	// Thirdperson crap
 	int* GetObserverTarget()
 	{
