@@ -21,6 +21,7 @@ if (L::OutputMode != L::LogMode::None && p->Type != t){ \
 namespace Config2
 {
 	std::vector<CPaintKit*> WeaponPaintKits = {};
+	std::vector<CPaintKit*> KnifePaintKits = {};
 	uint64_t GUIFramesRenderedCounter = 0;
 	std::map<std::string, Property*> PropertyTable{};
 	std::vector<Tab*> Tabs{};
@@ -364,8 +365,8 @@ namespace Config2
 
 			{ // knives
 				Group* g = t->Add("Knives");
-
-				g->Add("skinchanger-knife-bruh", "Coming Soon!", new CLabel());
+				g->Add("skinchanger-knife-paintkit", "", new CPaintKit());
+				g->Add("skinchanger-knife-model", "", new CVerticalState(Skins::KnifeNames, false));
 			}
 
 			{ // weapons

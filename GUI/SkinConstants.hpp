@@ -154,6 +154,7 @@ namespace Skins
 
 	extern constexpr int WeaponFromId(WeaponId id);
 	extern constexpr int KnifeFromId(WeaponId id);
+	extern constexpr int IdFromKnife(Knife k);
 	extern constexpr const char* GetKnifeModel(Knife knife);
 	extern PaintKit* PaintKitFromID(int ID);
 }

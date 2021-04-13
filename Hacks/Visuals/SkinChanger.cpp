@@ -81,8 +81,8 @@ void SkinChanger::RunFSN()
         }
         else if ((Index = Skins::KnifeFromId(id)) >= 0)
         {
-            *Weapon->GetItemDefinitionIndex() = (int)WeaponId::Karambit;
-            *Weapon->GetModelIndex() = I::modelinfo->GetModelIndex(Skins::GetKnifeModel(Skins::Knife::Karambit));
+            *Weapon->GetItemDefinitionIndex() = (int)WeaponId::NomadKnife;
+            *Weapon->GetModelIndex() = I::modelinfo->GetModelIndex(Skins::GetKnifeModel(Skins::Knife::Nomad));
             ForceSkin(Weapon, 413);
         }
     }

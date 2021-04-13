@@ -1073,17 +1073,46 @@ namespace Skins
         case WeaponId::CTDefaultKnife: return (int)Knife::CTDefault;
         }
     }
-    extern constexpr const char* GetKnifeModel(Knife knife)
+    constexpr int IdFromKnife(Knife k)
+    {
+        switch (k)
+        {
+        default: return -1;
+
+        case Knife::Nomad:         return (int)WeaponId::NomadKnife;
+        case Knife::Skeleton:      return (int)WeaponId::SkeletonKnife;
+        case Knife::Survival:      return (int)WeaponId::SurvivalKnife;
+        case Knife::Paracord:      return (int)WeaponId::ParacordKnife;
+        case Knife::Classic:       return (int)WeaponId::ClassicKnife;
+        case Knife::Bowie:         return (int)WeaponId::BowieKnife;
+        case Knife::Butterfly:     return (int)WeaponId::ButterflyKnife;
+        case Knife::Falchion:      return (int)WeaponId::FalchionKnife;
+        case Knife::Flip:          return (int)WeaponId::FlipKnife;
+        case Knife::Gut:           return (int)WeaponId::GutKnife;
+        case Knife::Huntsman:      return (int)WeaponId::HuntsmanKnife;
+        case Knife::Karambit:      return (int)WeaponId::Karambit;
+        case Knife::Bayonet:       return (int)WeaponId::Bayonet;
+        case Knife::M9Bayonet:     return (int)WeaponId::M9Bayonet;
+        case Knife::Navaja:        return (int)WeaponId::NavajaKnife;
+        case Knife::ShadowDaggers: return (int)WeaponId::ShadowDaggers;
+        case Knife::Stiletto:      return (int)WeaponId::StilettoKnife;
+        case Knife::Talon:         return (int)WeaponId::TalonKnife;
+        case Knife::Ursus:         return (int)WeaponId::UrsusKnife;
+        case Knife::TDefault:      return (int)WeaponId::TDefaultKnife;
+        case Knife::CTDefault:     return (int)WeaponId::CTDefaultKnife;
+        }
+    }
+    constexpr const char* GetKnifeModel(Knife knife)
     {
         switch (knife)
         {
         default: return "";
 
-        case Knife::Nomad:         return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Skeleton:      return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Survival:      return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Paracord:      return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Classic:       return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Nomad:         return "models/weapons/v_knife_outdoor.mdl";
+        case Knife::Skeleton:      return "models/weapons/v_knife_skeleton.mdl";
+        case Knife::Survival:      return "models/weapons/v_knife_canis.mdl";
+        case Knife::Paracord:      return "models/weapons/v_knife_cord.mdl";
+        case Knife::Classic:       return "models/weapons/v_knife_css.mdl";
         case Knife::Bowie:         return "models/weapons/v_knife_survival_bowie.mdl";
         case Knife::Butterfly:     return "models/weapons/v_knife_butterfly.mdl";
         case Knife::Falchion:      return "models/weapons/v_knife_falchion_advanced.mdl";
@@ -1091,72 +1120,15 @@ namespace Skins
         case Knife::Gut:           return "models/weapons/v_knife_gut.mdl";
         case Knife::Huntsman:      return "models/weapons/v_knife_tactical.mdl";
         case Knife::Karambit:      return "models/weapons/v_knife_karam.mdl";
-        case Knife::Bayonet:       return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Bayonet:       return "models/weapons/v_knife_bayonet.mdl";
         case Knife::M9Bayonet:     return "models/weapons/v_knife_m9_bay.mdl";
-        case Knife::Navaja:        return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Navaja:        return "models/weapons/v_knife_gypsy_jackknife.mdl";
         case Knife::ShadowDaggers: return "models/weapons/v_knife_push.mdl";
-        case Knife::Stiletto:      return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Talon:         return "models/weapons/v_knife_XXX.mdl";    //TODO
-        case Knife::Ursus:         return "models/weapons/v_knife_XXX.mdl";    //TODO
+        case Knife::Stiletto:      return "models/weapons/v_knife_stiletto.mdl";
+        case Knife::Talon:         return "models/weapons/v_knife_widowmaker.mdl";
+        case Knife::Ursus:         return "models/weapons/v_knife_ursus.mdl";
         case Knife::TDefault:      return "models/weapons/v_knife_default_t.mdl";
         case Knife::CTDefault:     return "models/weapons/v_knife_default_ct.mdl";
         }
     }
 };
-
-/*
-std::vector<std::vector<std::string>> Skins::WeaponGroups = {
-	{"Pistol", "pistol",
-		"Glock-18", "glock",
-		"P2000", "hkp2000",
-		"USP-S", "usp_silencer",
-		"Dual Berettas", "elite", // lol wtf valve
-		"P250", "p250",
-		"Tec-9", "tec9",
-		"Five-Seven", "fn57",
-		"CZ-75", "cz75a",
-		"Desert Eagle",	"deagle",
-		"R8 Revolver", "revolver"
-	},
-	{"Heavy", "heavy",
-		"Nova", "nove",
-		"XM1014", "xm1014",
-		"Sawed-Off", "sawedoff", // TODO check if this is right
-		"MAG-7", "mag7",
-		"M249", "m249",
-		"Negev", "negev",
-	},
-	{"SMG", "smg",
-		"MP9", "mp9", 
-		"MAC-10", "mac10", 
-		"MP7", "mp7", 
-		"MP5", "mp5sd", 
-		"UMP-45", "ump45", 
-		"P90", "p90", 
-		"PP-Bizon", "bizon"
-	},
-	{"Rifle", "rifle",
-		"FAMAS", "famas",
-		"Galil", "galilar",
-		"M4A4", "m4a4",
-		"AK-47", "ak47",
-		"M4A1-S", "m4a1_silencer",
-		"SSG 08", "ssg08",
-		"AUG", "aug",
-		"SG 553", "sg556", // valve why, wtf?
-		"AWP", "awp",
-		"SCAR-20", "scar20",
-		"G3SG1", "g3sg1"
-	},
-	{"Other", "other",
-		"Zeus x27", "taser",
-		"C4", "c4",
-		"Incendiary", "incgrenade",
-		"Molotov", "molotov", 
-		"Decoy", "decoy",
-		"Flashbang", "flashbang",
-		"HE Grenade", "hegrenade", 
-		"Smoke", "smokegrenade"
-	},
-};
-*/
