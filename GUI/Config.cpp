@@ -365,8 +365,14 @@ namespace Config2
 
 			{ // knives
 				Group* g = t->Add("Knives");
+				g->Add("skinchanger-knife-enable", "", new CBoolean(false));
 				g->Add("skinchanger-knife-paintkit", "", new CPaintKit());
 				g->Add("skinchanger-knife-model", "", new CVerticalState(Skins::KnifeNames, false));
+
+				// TODO: delete this
+				GetState("skinchanger-knife-enable")->Set(true);
+				GetState("skinchanger-knife-model")->Set((int)Skins::Knife::Butterfly);
+				GetPaintKit("skinchanger-knife-paintkit")->PaintKit = Skins::PaintKitFromID(413);
 			}
 
 			{ // weapons

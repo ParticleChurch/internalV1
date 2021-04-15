@@ -2,6 +2,7 @@
 
 enum class WeaponId : int
 {
+    INVALID = -1,
     DesertEagle = 1,
     DualBerettas = 2,
     FiveSeveN = 3,

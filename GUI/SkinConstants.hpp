@@ -2,12 +2,14 @@
 #include <vector>
 #include <string>
 #include "TextService.hpp"
+#include "KnifeSequence.hpp"
 #include "../Valve/Custom/WeaponId.hpp"
 
 namespace Skins
 {
 	enum class Weapon : uint64_t
 	{
+		INVALID = -1,
 		Glock18 = 0,
 		P2000,
 		USPS,
@@ -70,6 +72,7 @@ namespace Skins
 
 	enum class Knife : int
 	{
+		INVALID = -1,
 		Nomad = 0,
 		Skeleton,
 		Survival,
@@ -152,9 +155,9 @@ namespace Skins
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
 
-	extern constexpr int WeaponFromId(WeaponId id);
-	extern constexpr int KnifeFromId(WeaponId id);
-	extern constexpr int IdFromKnife(Knife k);
+	extern constexpr Weapon WeaponFromId(WeaponId id);
+	extern constexpr Knife KnifeFromId(WeaponId id);
+	extern constexpr WeaponId IdFromKnife(Knife k);
 	extern constexpr const char* GetKnifeModel(Knife knife);
 	extern PaintKit* PaintKitFromID(int ID);
 }

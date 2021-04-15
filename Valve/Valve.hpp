@@ -15,6 +15,7 @@
 #include "SDK/EFontFlags.hpp"
 #include "SDK/player_info_t.hpp"
 #include "SDK/RecvProp.hpp"
+#include "SDK/RecvProxyData.hpp"
 #include "SDK/RecvTable.hpp"
 #include "SDK/ClientClass.h"
 #include "SDK/WeaponData.hpp"

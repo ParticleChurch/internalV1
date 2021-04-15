@@ -27,10 +27,11 @@ void Init()
     H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up
     GUI2::LoadProgress = 0.05f;
 
-    I::Init();       L::Log("I::Init() complete");
-    N::Init();       L::Log("N::Init() complete");
-    G::Init();       L::Log("G::Init() complete");
-    H::Init();       L::Log("H::Init() complete");
+    I::Init();           L::Log("I::Init() complete");
+    SkinChanger::Hook(); L::Log("SkinChanger::Hook() complete");
+    N::Init();           L::Log("N::Init() complete");
+    G::Init();           L::Log("G::Init() complete");
+    H::Init();           L::Log("H::Init() complete");
     GUI2::LoadProgress = 1.f;
     L::Log(N::DumpTable().c_str());
 
@@ -38,8 +39,9 @@ void Init()
     while (!G::KillDLL) Sleep(100);
     L::Log("Ejecting...");
 
-    H::UnHook(); L::Log("H::UnHook(); complete");
-    H::Free();   L::Log("H::Free(); complete");
+    SkinChanger::UnHook(); L::Log("SkinChanger::UnHook(); complete");
+    H::UnHook();           L::Log("H::UnHook(); complete");
+    H::Free();             L::Log("H::Free(); complete");
 
     L::Log("Freeing logger and FreeLibraryAndExitThread");
     L::Free();

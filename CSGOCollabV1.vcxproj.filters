@@ -121,6 +121,9 @@
     <ClCompile Include="Hacks\Visuals\AnimFix.cpp">
       <Filter>Source\Hacks\Visuals</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\KnifeSequence.cpp">
+      <Filter>Source\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -413,6 +416,12 @@
     </ClInclude>
     <ClInclude Include="Hacks\Visuals\AnimFix.hpp">
       <Filter>Headers\Hacks\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="Valve\SDK\RecvProxyData.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\KnifeSequence.hpp">
+      <Filter>Headers\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -10,8 +10,9 @@ class CUserCmd;
 struct player_info_t;
 //recv
 struct RecvProp;
-class RecvTable;
+class DVariant;
 class CRecvProxyData;
+class RecvTable;
 class CRecvDecoder;
 typedef void (*RecvVarProxyFn)(const CRecvProxyData* pData, void* pStruct, void* pOut);
 //clientclass
