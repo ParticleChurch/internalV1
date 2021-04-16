@@ -2418,28 +2418,239 @@ void GUI2::DrawActiveTab()
 
 		// knife changer
 		{
+			static Config2::CState* KnifeModel = Config2::GetState("skinchanger-knife-model");
+			static Config2::CPaintKit* KnifePaintkit = Config2::GetPaintKit("skinchanger-knife-paintkit");
+
 			static int WindowHeight = 0;
 			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
-			ImGui::BeginChild("##knife-skins", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight));
+			ImGui::BeginChild("##knife-skins", ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
 			auto Widget = ImGui::GetCurrentWindow();
 
-			static std::vector<std::string> Knifes = {
-				"Talon", "talon",
-				"Karambit", "karambit",
-				"M9-Bayonet", "m9-bayonet",
-				"Huntsman", "huntsman",
-				"T Default", "terrorist-knife",
-				"CT Default", "counter-terrorist-knife"
-			};
-
-			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
+			ImGui::SetCursorPos(ImVec2(10.f, 9.f));
 			ImGui::PushFont(Arial18BoldItalics);
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::Text("Knives");
 			ImGui::PopStyleColor(1);
 			ImGui::PopFont();
-			ImGui::Separator();
 
+			// enable switch
+			ImGui::PushFont(Arial16);
+			static Config2::Property* KnifeChangerEnable = Config2::GetProperty("skinchanger-knife-enable");
+			ImGui::SetCursorPos(ImVec2(5.f, 33.f));
+			ImGui::DrawBooleanProperty(KnifeChangerEnable);
+
+			// knife models
+			static Config2::Property* KnifeModelProperty = Config2::GetProperty("skinchanger-knife-model");
+			ImGui::SetCursorPos(ImVec2(5.f, 58.f));
+			ImGui::DrawVerticalStatefulProperty(KnifeModelProperty);
+
+			// current skin + clear button
+			bool KnifeHasSkinSelection = KnifePaintkit->PaintKit->ID > 0;
+			std::string KnifeSkinName = KnifeHasSkinSelection ? KnifePaintkit->Stringify() : "None";
+			{
+				static Animation::Anim* MyAnimation = Animation::newAnimation("knife-current-skin-hover", 0);
+
+				const char* label = "Current: ";
+				ImVec2 labelSize = ImGui::CalcTextSize(label);
+
+				ImGui::SetCursorPos(ImVec2(10, 83 + (24 - labelSize.y) / 2));
+				ImGui::Text(label);
+
+				ImGui::SetCursorPos(ImVec2(10 + labelSize.x + 5, 83));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				ImGui::BeginChild("##skin-knife-current-selection", ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
+				ImGui::PopStyleVar(1);
+				ImGui::PopStyleColor(1);
+
+				Animation::changed(MyAnimation, ImGui::IsWindowHovered() || ImGui::GetActiveID() == ImGui::GetID("##remove-active-knife-skin"));
+				float AnimFactor = Animation::animate(Animation::age(MyAnimation), 0.15);
+				if (!MyAnimation->state)
+					AnimFactor = 1.f - AnimFactor;
+
+				ImGui::PushFont(Arial16);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(Animation::lerp(0.6f, 1.f, AnimFactor)));
+
+				ImGui::SetCursorPos(ImVec2(4, 4));
+
+				if (!KnifeHasSkinSelection)
+					ImGui::Text("None");
+				else
+				{
+					auto win = ImGui::GetCurrentWindow();
+					int maxX = win->Size.x - 24;
+
+					if (AnimFactor > 0)
+					{
+						ImGui::PushClipRect(win->Pos, win->Pos + ImVec2(maxX, win->Size.y), false);
+						ImGui::Text(KnifeSkinName.c_str());
+						ImGui::PopClipRect();
+
+
+						ImGui::SetCursorPos(ImVec2(maxX + 7, 7));
+						ImGui::DrawXIcon(TextInputText->ModulateAlpha(AnimFactor * 0.8f), ImVec2(9, 9));
+						ImGui::SetCursorPos(ImVec2(maxX + 3, 3));
+						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
+						if (ImGui::Button("##remove-active-weapon-skin", ImVec2(18, 18)))
+						{
+							KnifePaintkit->ClearSelection();
+							KnifeHasSkinSelection = false;
+						}
+						ImGui::PopStyleColor(3);
+					}
+					else
+					{
+						ImGui::Text(KnifeSkinName.c_str());
+					}
+				}
+
+				ImGui::PopFont();
+				ImGui::PopStyleColor(1);
+
+				ImGui::EndChild();
+			}
+			ImGui::PopFont();
+
+
+			// search bar
+			static bool IsSearchingKnife = false;
+			static char* KnifeSearchQuery = nullptr;
+			while (!KnifeSearchQuery) if (KnifeSearchQuery = new char[256]) ZeroMemory(KnifeSearchQuery, 256);
+			{
+				ImGui::SetCursorPos(ImVec2(10, 112));
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				ImGui::BeginChild("##skin-knife-searchbar", ImVec2(Widget->Size.x - 20, 24), false);
+
+				const char* InputLabel = "##KnifeSkinSearchTextInput";
+				auto InputID = ImGui::GetID(InputLabel);
+				static Animation::Anim* MySearchAnimation = Animation::newAnimation("knife-skin-search");
+				IsSearchingKnife = ImGui::GetActiveID() == InputID || KnifeSearchQuery[0];
+
+				float SearchAnimationFactor = Animation::animate(Animation::age(MySearchAnimation), 0.15);
+				if (!IsSearchingKnife)
+					SearchAnimationFactor = 1.f - SearchAnimationFactor;
+
+				Animation::changed(MySearchAnimation, IsSearchingKnife);
+
+				ImGui::SetCursorPos(ImVec2(5, 5));
+				ImGui::DrawSearchIcon(TextInputText->ModulateAlpha(0.8f), ImVec2(14, 14));
+
+				ImGui::PushFont(Arial16);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TextInputText);
+				ImGui::SetCursorPos(ImVec2(24, 4));
+				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearchingKnife ? 48 : 28));
+				ImGui::InputText(InputLabel, KnifeSearchQuery, 256);
+				ImGui::PopStyleColor(1);
+
+				if (!IsSearchingKnife)
+				{
+					ImGui::SetCursorPos(ImVec2(24, 4));
+					ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
+					ImGui::Text("Search Skins");
+					ImGui::PopStyleColor(1);
+				}
+				else
+				{
+					float F = (float)Animation::animate(Animation::age(SearchAnimation), 0.15);
+					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+					ImGui::DrawXIcon(TextInputText->ModulateAlpha(F * 0.8f), ImVec2(9, 9));
+					// dummy button
+					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
+					if (ImGui::Button("##cancel-search-dummy-knife-skin", ImVec2(18, 18)))
+					{
+						ZeroMemory(KnifeSearchQuery, 256);
+						if (ImGui::GetActiveID() == InputID)
+							ImGui::ClearActiveID();
+					}
+					ImGui::PopStyleColor(3);
+				}
+				ImGui::PopFont();
+
+				ImGui::EndChild();
+				ImGui::PopStyleColor(1);
+				ImGui::PopStyleVar(1);
+			}
+
+			// skin list
+			{
+				ImGui::SetCursorPos(ImVec2(11, 143));
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
+				ImGui::PushStyleColor(ImGuiCol_ChildBg, ButtonBackgroundColor);
+				ImGui::PushStyleColor(ImGuiCol_Button, 0);
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
+				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 22, 105), false);
+				auto win = ImGui::GetCurrentWindow();
+				Widget->DrawList->AddRect(
+					win->Pos - ImVec2(1, 1),
+					win->Pos + win->Size + ImVec2(1, 1),
+					ButtonOutlineColor,
+					0.f, 0
+				);
+
+				std::string SearchQuery = KnifeSearchQuery;
+
+				ImGui::PushFont(Arial16);
+				size_t SkinsShown = 0;
+				for (size_t i = 0; i < Skins::PaintKits.size(); i++)
+				{
+					Skins::PaintKit PK = Skins::PaintKits[i];
+					std::vector<std::vector<int>> IntendedApplicants = {}; // {{Weapon Knife or Glove, Mode, Version},{same},{...}}
+					for (size_t j = 0; j < PK.Weapons.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Weapons[j], 0, (int)j });
+					for (size_t j = 0; j < PK.Knives.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Knives[j], 1, (int)j });
+					for (size_t j = 0; j < PK.Gloves.size(); j++)
+						IntendedApplicants.push_back({ (int)PK.Gloves[j], 2, (int)j });
+
+					for (size_t j = 0; j < IntendedApplicants.size(); j++)
+					{
+						int NameId = IntendedApplicants[j][0];
+						int Mode = IntendedApplicants[j][1];
+						int Version = IntendedApplicants[j][2];
+
+						std::string SkinName =
+							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
+							" | " +
+							PK.VisibleName;
+
+						if (IsSearchingKnife && !TextService::Contains(SearchQuery, SkinName, false))
+							continue;
+
+						ImGui::SetCursorPos(ImVec2(0, SkinsShown * 30));
+						if (KnifePaintkit->PaintKit && KnifePaintkit->PaintKit->ID == PK.ID && Mode == KnifePaintkit->Mode && Version == KnifePaintkit->Version)
+						{
+							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), ButtonSelectedColor);
+						}
+						else if (ImGui::Button(("##invisible-knife-skin-select-" + SkinName).c_str(), ImVec2(win->Size.x, 30)))
+						{
+							KnifePaintkit->PaintKit = &Skins::PaintKits[i];
+							KnifePaintkit->Mode = Mode;
+							KnifePaintkit->Version = Version;
+						}
+						else if (ImGui::IsItemHovered())
+						{
+							ImGui::SetCursorPos(ImVec2(0, SkinsShown * 30));
+							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), ButtonHoveringColor);
+						}
+
+						ImGui::SetCursorPos(ImVec2(5, SkinsShown * 30 + (30 - ImGui::GetFontSize()) / 2));
+						ImGui::Text(SkinName.c_str());
+						SkinsShown++;
+					}
+				}
+				ImGui::PopFont();
+
+				ImGui::EndChild();
+				ImGui::PopStyleVar(1);
+				ImGui::PopStyleColor(4);
+			}
 			WindowHeight = Widget->ContentSize.y;
 			ImGui::EndChild();
 			y = ImGui::GetCursorPosY();
@@ -2583,7 +2794,6 @@ void GUI2::DrawActiveTab()
 			{
 				static Animation::Anim* MyAnimation = Animation::newAnimation("weapon-current-skin-hover", 0);
 				
-
 				const char* label = "Current: ";
 				ImVec2 labelSize = ImGui::CalcTextSize(label);
 

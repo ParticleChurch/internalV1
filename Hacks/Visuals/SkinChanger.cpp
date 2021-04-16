@@ -308,12 +308,20 @@ void SkinChanger::RunFSN()
             if (EnableKnifeChanger->Get())
             {
                 SkinChanger::AppliedKnife = ConfigKnifeModel;
-                *Weapon->GetItemDefinitionIndex() = (int)ConfigKnifeModel;
-                *Weapon->GetModelIndex() = ModelIndex;
-                ForceSkin(Weapon, 413);
+                if (*Weapon->GetItemDefinitionIndex() != (int)ConfigKnifeModel || *Weapon->GetModelIndex() != ModelIndex)
+                {
+                    *Weapon->GetItemDefinitionIndex() = (int)ConfigKnifeModel;
+                    *Weapon->GetModelIndex() = ModelIndex;
+                    Update();
+                }
+                if (KnifeSkin->PaintKit && KnifeSkin->PaintKit->ID > 0)
+                    ForceSkin(Weapon, KnifeSkin->PaintKit->ID);
+                else
+                    ClearSkin(Weapon);
             }
             else
             {
+                SkinChanger::AppliedKnife = OriginalKnife;
                 if (Weapon->GetWeaponId() != OriginalKnife)
                 {
                     *Weapon->GetItemDefinitionIndex() = (int)OriginalKnife;
