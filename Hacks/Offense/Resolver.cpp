@@ -69,9 +69,15 @@ void Resolver::LogBulletImpact(GameEvent* event)
 	// Keep track of the entity we supossedly missed due to resolver
 	player_info_t info;
 	if (I::engine->GetPlayerInfo(tr.Entity->Index(), &info))
+	{
 		ImpactEndUserID = info.userid;
-	else
+		ImpactHitgroup = tr.Hitgroup;
+	}
+	else {
 		ImpactEndUserID = -1;
+		ImpactHitgroup = -1;
+	}
+
 
 	// If it isn't found in newshots, ADD IT!
 	if (ShotsMissed.find(info.userid) == ShotsMissed.end())
@@ -93,12 +99,14 @@ void Resolver::LogBulletImpact(GameEvent* event)
 
 	// Log the shot up by 1
 	ShotsMissed[info.userid]++;
+	
 }
 
 void Resolver::LogPlayerHurt(GameEvent* event)
 {
 	int UserID = event->GetInt("userid");
 	int iAttacker = event->GetInt("attacker");
+	int hitgroup = event->GetInt("hitgroup");
 
 	// if the localplayer gets hurt, return
 	if (I::engine->GetPlayerForUserID(UserID) == G::LocalPlayerIndex)
@@ -111,8 +119,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	player_info_t info;
 	I::engine->GetPlayerInfo(I::engine->GetPlayerForUserID(UserID), &info);
 
-	// if they are the same indexes --> HIT!
-	if (ImpactEndUserID == UserID)
+	// if they are the same indexes + same hitgroup --> HIT!
+	if (ImpactEndUserID == UserID && ImpactHitgroup == hitgroup)
 	{
 		// No shots were missed, revert back to normal
 		ShotsMissed[ImpactEndUserID]--;

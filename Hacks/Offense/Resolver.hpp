@@ -5,6 +5,7 @@ class Resolver
 private:
 	// Deal with Gameevents
 	int ImpactEndUserID;
+	int ImpactHitgroup;
 
 	// Deal with weaponFireEvent
 	void LogWeaponFire(GameEvent* event);
