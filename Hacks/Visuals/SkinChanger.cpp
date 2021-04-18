@@ -7,11 +7,16 @@ DWORD FindHudElement(const char* Name)
     return FindHudElement(PHUD, Name);
 }
 
+
 void Update()
 {
     static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
+    //ForceUpdate();
+    I::clientstate->m_delta_tick = -1;
+}
+void ResetInventory()
+{
     static auto ClearHudWeaponIcon = (int(__thiscall*)(void*, int))FindPattern("client.dll", "55 8B EC 51 53 56 8B 75 08 8B D9 57 6B FE 2C");
-
     DWORD hudWeaponSelection = FindHudElement("CCSGO_HudWeaponSelection");
     if (hudWeaponSelection)
     {
@@ -21,8 +26,7 @@ void Update()
             while (*weaponCount)
                 ClearHudWeaponIcon((void*)(hudWeapons), *weaponCount - 1);
     }
-
-    ForceUpdate();
+    Update();
 }
 
 int TransformSequence(int OriginalSequence, Skins::Knife OriginalKnife, Skins::Knife NewKnife)
@@ -200,7 +204,7 @@ void SkinChanger::UnHook()
     if (G::LocalPlayer && G::LocalPlayerAlive && G::IsInGame)
     {
         RunFSN();
-        Update();
+        ResetInventory();
     }
 
     for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
@@ -225,13 +229,13 @@ void SkinChanger::UnHook()
     }
 }
 
-void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit)
+void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit, float Wear)
 {
     // only update if something has changed
     bool NeedsUpdate =
         *Weapon->GetItemIDHigh() == 0 ||
         *Weapon->GetFallbackPaintKit() != PaintKit ||
-        *Weapon->GetFallbackWear() > 0.001f ||
+        *Weapon->GetFallbackWear() != Wear ||
         *Weapon->GetFallbackStatTrak() != -1 ||
         *Weapon->GetFallbackOriginalOwnerXuidLow() != 0 ||
         *Weapon->GetFallbackOriginalOwnerXuidHigh() != 0 ||
@@ -242,7 +246,7 @@ void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit)
     *Weapon->GetFallbackPaintKit() = PaintKit;
     *Weapon->GetFallbackOriginalOwnerXuidLow() = 0;
     *Weapon->GetFallbackOriginalOwnerXuidHigh() = 0;
-    *Weapon->GetFallbackWear() = 0.0001f;
+    *Weapon->GetFallbackWear() = Wear;
     memcpy(Weapon->GetCustomName(), "www.a4g4.com", sizeof("www.a4g4.com"));
     *Weapon->GetItemIDHigh() = -1;
     Update();
@@ -267,6 +271,7 @@ void SkinChanger::RunFSN()
     static auto EnableKnifeChanger = Config2::GetState("skinchanger-knife-enable");
     static auto KnifeModel = Config2::GetState("skinchanger-knife-model");
     static auto KnifeSkin = Config2::GetPaintKit("skinchanger-knife-paintkit");
+    static auto KnifeWear = Config2::GetFloat("skinchanger-knife-wear");
 
     for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
     {
@@ -279,9 +284,9 @@ void SkinChanger::RunFSN()
         if ((Index = (int)Skins::WeaponFromId(id)) >= 0)
         {
             // this is a gun
-            Skins::PaintKit* PaintKit = Config2::WeaponPaintKits.at(Index)->PaintKit;
+            const Skins::PaintKit* PaintKit = Config2::WeaponPaintKits.at(Index)->PaintKit;
             if (PaintKit && PaintKit->ID != 0)
-                ForceSkin(Weapon, PaintKit->ID);
+                ForceSkin(Weapon, PaintKit->ID, 0.f);
             else
                 ClearSkin(Weapon);
         }
@@ -312,10 +317,10 @@ void SkinChanger::RunFSN()
                 {
                     *Weapon->GetItemDefinitionIndex() = (int)ConfigKnifeModel;
                     *Weapon->GetModelIndex() = ModelIndex;
-                    Update();
+                    ResetInventory();
                 }
                 if (KnifeSkin->PaintKit && KnifeSkin->PaintKit->ID > 0)
-                    ForceSkin(Weapon, KnifeSkin->PaintKit->ID);
+                    ForceSkin(Weapon, KnifeSkin->PaintKit->ID, KnifeWear->Get());
                 else
                     ClearSkin(Weapon);
             }
@@ -326,6 +331,7 @@ void SkinChanger::RunFSN()
                 {
                     *Weapon->GetItemDefinitionIndex() = (int)OriginalKnife;
                     *Weapon->GetModelIndex() = I::modelinfo->GetModelIndex(Skins::GetKnifeModel(Skins::KnifeFromId(OriginalKnife)));
+                    ResetInventory();
                 }
                 ClearSkin(Weapon);
             }

@@ -13,8 +13,11 @@ def get_paintkit_id(url):
     for p in ps:
         label = p.findChildren("strong")[0].get_text(strip = True)
         if "finish catalog" in label.lower():
-            id = p.findChildren("span")[0].get_text(strip = True)
-            return int(id)
+            try:
+                id = p.findChildren("span")[0].get_text(strip = True)
+                return int(id)
+            except:
+                pass
 
 def get_weapons(url):
     weapons = []
@@ -76,6 +79,25 @@ BRUH = [
     ("G3SG1", "Weapon::G3SG1"),
     
     # knives
+    ("Nomad+Knife", "Knife::Nomad"),
+    ("Skeleton+Knife", "Knife::Skeleton"),
+    ("Survival+Knife", "Knife::Survival"),
+    ("Paracord+Knife", "Knife::Paracord"),
+    ("Classic+Knife", "Knife::Classic"),
+    ("Bayonet", "Knife::Bayonet"),
+    ("Bowie+Knife", "Knife::Bowie"),
+    ("Butterfly+Knife", "Knife::Butterfly"),
+    ("Falchion+Knife", "Knife::Falchion"),
+    ("Flip+Knife", "Knife::Flip"),
+    ("Gut+Knife", "Knife::Gut"),
+    ("Huntsman+Knife", "Knife::Huntsman"),
+    ("Karambit", "Knife::Karambit"),
+    ("M9+Bayonet", "Knife::M9Bayonet"),
+    ("Navaja+Knife", "Knife::Navaja"),
+    ("Shadow+Daggers", "Knife::ShadowDaggers"),
+    ("Stiletto+Knife", "Knife::Stiletto"),
+    ("Talon+Knife", "Knife::Talon"),
+    ("Ursus+Knife", "Knife::Ursus"),
 ]
 
 with open("csgostash_output.txt", "w") as f:

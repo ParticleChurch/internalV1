@@ -11,7 +11,7 @@ namespace SkinChanger
 	extern void Hook();
 	extern void UnHook();
 	extern void ClearSkin(Entity* Weapon);
-	extern void ForceSkin(Entity* Weapon, int PaintKit);
+	extern void ForceSkin(Entity* Weapon, int PaintKit, float Wear);
 	extern void RunFSN();
 }
 

@@ -304,19 +304,18 @@ namespace Config2
 		int Mode = 0; // 0 == PaintKit.Weapons, 1 == PaintKit.Knives, 2 == PaintKit.Gloves
 		int Version = 0; // Index in mode
 
-		Skins::PaintKit* PaintKit;
+		const Skins::PaintKit* PaintKit;
 
-		CPaintKit(Skins::PaintKit* PaintKit = nullptr)
+		CPaintKit(const Skins::PaintKit* PaintKit = nullptr)
 		{
+			this->ClearSelection();
 			if (PaintKit)
 				this->PaintKit = PaintKit;
-			else
-				this->PaintKit = &Skins::PaintKits[0];
 		}
 
 		void ClearSelection()
 		{
-			this->PaintKit = &Skins::PaintKits[0];
+			this->PaintKit = Skins::PaintKits + 0;
 			this->Mode = 0;
 			this->Version = 0;
 		}
@@ -328,20 +327,11 @@ namespace Config2
 			switch (this->Mode)
 			{
 			case 0:
-				if ((size_t)this->Version < this->PaintKit->Weapons.size())
-					return Skins::WeaponNames[(int)this->PaintKit->Weapons[this->Version]] + " | " + this->PaintKit->VisibleName;
-				else
-					return this->PaintKit->VisibleName;
+				return Skins::WeaponNames[(int)this->PaintKit->Weapons[this->Version]] + " | " + this->PaintKit->VisibleName;
 			case 1:
-				if ((size_t)this->Version < this->PaintKit->Knives.size())
-					return Skins::KnifeNames[(int)this->PaintKit->Knives[this->Version]] + " | " + this->PaintKit->VisibleName;
-				else
-					return this->PaintKit->VisibleName;
+				return Skins::KnifeNames[(int)this->PaintKit->Knives[this->Version]] + " | " + this->PaintKit->VisibleName;
 			case 2:
-				if ((size_t)this->Version < this->PaintKit->Gloves.size())
-					return Skins::GloveNames[(int)this->PaintKit->Gloves[this->Version]] + " | " + this->PaintKit->VisibleName;
-				else
-					return this->PaintKit->VisibleName;
+				return Skins::GloveNames[(int)this->PaintKit->Gloves[this->Version]] + " | " + this->PaintKit->VisibleName;
 			default:
 				return this->PaintKit->VisibleName;
 			}

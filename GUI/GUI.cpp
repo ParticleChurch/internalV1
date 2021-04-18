@@ -2444,6 +2444,11 @@ void GUI2::DrawActiveTab()
 			ImGui::SetCursorPos(ImVec2(5.f, 58.f));
 			ImGui::DrawVerticalStatefulProperty(KnifeModelProperty);
 
+			// knife wear
+			static Config2::Property* KnifeWearProperty = Config2::GetProperty("skinchanger-knife-wear");
+			ImGui::SetCursorPos(ImVec2(5.f, 83.f));
+			ImGui::DrawFloatProperty(KnifeWearProperty);
+
 			// current skin + clear button
 			bool KnifeHasSkinSelection = KnifePaintkit->PaintKit->ID > 0;
 			std::string KnifeSkinName = KnifeHasSkinSelection ? KnifePaintkit->Stringify() : "None";
@@ -2453,10 +2458,10 @@ void GUI2::DrawActiveTab()
 				const char* label = "Current: ";
 				ImVec2 labelSize = ImGui::CalcTextSize(label);
 
-				ImGui::SetCursorPos(ImVec2(10, 83 + (24 - labelSize.y) / 2));
+				ImGui::SetCursorPos(ImVec2(10, 108 + (24 - labelSize.y) / 2));
 				ImGui::Text(label);
 
-				ImGui::SetCursorPos(ImVec2(10 + labelSize.x + 5, 83));
+				ImGui::SetCursorPos(ImVec2(10 + labelSize.x + 5, 108));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-knife-current-selection", ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
@@ -2519,7 +2524,7 @@ void GUI2::DrawActiveTab()
 			static char* KnifeSearchQuery = nullptr;
 			while (!KnifeSearchQuery) if (KnifeSearchQuery = new char[256]) ZeroMemory(KnifeSearchQuery, 256);
 			{
-				ImGui::SetCursorPos(ImVec2(10, 112));
+				ImGui::SetCursorPos(ImVec2(10, 137));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				ImGui::BeginChild("##skin-knife-searchbar", ImVec2(Widget->Size.x - 20, 24), false);
@@ -2579,13 +2584,13 @@ void GUI2::DrawActiveTab()
 
 			// skin list
 			{
-				ImGui::SetCursorPos(ImVec2(11, 143));
+				ImGui::SetCursorPos(ImVec2(11, 168));
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, ButtonBackgroundColor);
 				ImGui::PushStyleColor(ImGuiCol_Button, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
-				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 22, 105), false);
+				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 22, 125), false);
 				auto win = ImGui::GetCurrentWindow();
 				Widget->DrawList->AddRect(
 					win->Pos - ImVec2(1, 1),
@@ -2598,15 +2603,15 @@ void GUI2::DrawActiveTab()
 
 				ImGui::PushFont(Arial16);
 				size_t SkinsShown = 0;
-				for (size_t i = 0; i < Skins::PaintKits.size(); i++)
+				for (size_t i = 0; i < Skins::NPaintKits; i++)
 				{
 					Skins::PaintKit PK = Skins::PaintKits[i];
 					std::vector<std::vector<int>> IntendedApplicants = {}; // {{Weapon Knife or Glove, Mode, Version},{same},{...}}
-					for (size_t j = 0; j < PK.Weapons.size(); j++)
+					for (size_t j = 0; PK.Weapons[j] != Skins::Weapon::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Weapons[j], 0, (int)j });
-					for (size_t j = 0; j < PK.Knives.size(); j++)
+					for (size_t j = 0; PK.Knives[j] != Skins::Knife::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Knives[j], 1, (int)j });
-					for (size_t j = 0; j < PK.Gloves.size(); j++)
+					for (size_t j = 0; PK.Gloves[j] != Skins::Glove::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Gloves[j], 2, (int)j });
 
 					for (size_t j = 0; j < IntendedApplicants.size(); j++)
@@ -2943,15 +2948,15 @@ void GUI2::DrawActiveTab()
 
 				ImGui::PushFont(Arial16);
 				size_t SkinsShown = 0;
-				for (size_t i = 0; i < Skins::PaintKits.size(); i++)
+				for (size_t i = 0; i < Skins::NPaintKits; i++)
 				{
 					Skins::PaintKit PK = Skins::PaintKits[i];
 					std::vector<std::vector<int>> IntendedApplicants = {}; // {{Weapon Knife or Glove, Mode, Version},{same},{...}}
-					for (size_t j = 0; j < PK.Weapons.size(); j++)
+					for (size_t j = 0; PK.Weapons[j] != Skins::Weapon::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Weapons[j], 0, (int)j });
-					for (size_t j = 0; j < PK.Knives.size(); j++)
+					for (size_t j = 0; PK.Knives[j] != Skins::Knife::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Knives[j], 1, (int)j });
-					for (size_t j = 0; j < PK.Gloves.size(); j++)
+					for (size_t j = 0; PK.Gloves[j] != Skins::Glove::INVALID; j++)
 						IntendedApplicants.push_back({ (int)PK.Gloves[j], 2, (int)j });
 
 					for (size_t j = 0; j < IntendedApplicants.size(); j++)

@@ -366,8 +366,14 @@ namespace Config2
 			{ // knives
 				Group* g = t->Add("Knives");
 				g->Add("skinchanger-knife-enable", "Enable Knife Changer", new CBoolean(false));
-				g->Add("skinchanger-knife-paintkit", "", new CPaintKit());
 				g->Add("skinchanger-knife-model", "Knife Model", new CVerticalState(Skins::KnifeNames, false));
+				g->Add("skinchanger-knife-wear", "Skin Wear", new CFloat(0, 1, 4));
+				g->Add("skinchanger-knife-nametag", "Nametag", new CTextInput(32));
+				g->Add("skinchanger-knife-stattrak", "StatTrak", new CBoolean(false));
+				g->Add("skinchanger-knife-stattrak-count", "StatTrak Kills", new CTextInput(6)); // 999999
+				g->Add("skinchanger-knife-paintkit", "", new CPaintKit());
+
+				strcpy(GetText("skinchanger-knife-stattrak-count")->Data, "69420");
 			}
 
 			{ // weapons
@@ -1011,7 +1017,7 @@ namespace Config2
 		case PropertyType::PAINTKIT:
 		{
 			if (valueSize != sizeof(int) * 3) return false;
-			Skins::PaintKit* pk = Skins::PaintKitFromID(((int*)value)[0]);
+			const Skins::PaintKit* pk = Skins::PaintKitFromID(((int*)value)[0]);
 			if (!pk) return false;
 			((CPaintKit*)p->Value)->PaintKit = pk;
 			((CPaintKit*)p->Value)->Mode = ((int*)value)[1];

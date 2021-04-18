@@ -100,58 +100,33 @@ namespace Skins
 
 	enum class Glove {
 		// todo
+		INVALID = -1,
 		_COUNT
 	};
 	extern std::vector<std::string> GloveNames;
 
-	class PaintKit
+	struct PaintKit
 	{
-	private:
-		uint64_t RawWeapons;
-		uint64_t RawKnives;
-		uint64_t RawGloves;
-
-	public:
-		int ID = 0;
-		std::string VisibleName;
+		const int ID = 0;
+		const char* VisibleName;
 
 		// this paint kit is *supposed* to be applied to:
 		// these vectors should be built at runtime to save dll size
-		std::vector<Weapon> Weapons;
-		std::vector<Knife> Knives;
-		std::vector<Glove> Gloves;
+		const Weapon* Weapons;
+		const Knife* Knives;
+		const Glove* Gloves;
 
-		PaintKit(
-			int ID,
-			std::string VisibleName,
-			uint64_t Weapons = 0,
-			uint64_t Knives = 0,
-			uint64_t Gloves = 0
-		)
-		{
-			this->ID = ID;
-			this->VisibleName = VisibleName;
-
-			this->RawWeapons = Weapons;
-			this->Weapons = {};
-			for (uint64_t i = 0; i < (uint64_t)Weapon::_COUNT; i++)
-				if (this->RawWeapons & (((uint64_t)1) << i))
-					this->Weapons.push_back((Weapon)i);
-
-			this->RawKnives = Knives;
-			this->Knives = {};
-			for (uint64_t i = 0; i < (uint64_t)Knife::_COUNT; i++)
-				if (this->RawKnives & (((uint64_t)1) << i))
-					this->Knives.push_back((Knife)i);
-
-			this->RawGloves = Gloves;
-			this->Gloves = {};
-			for (uint64_t i = 0; i < (uint64_t)Glove::_COUNT; i++)
-				if (this->RawGloves & (((uint64_t)1) << i))
-					this->Gloves.push_back((Glove)i);
-		}
+		constexpr PaintKit(
+			const int ID,
+			const char* VisibleName,
+			const Weapon Weapons[],
+			const Knife Knives[],
+			const Glove Gloves[]
+		) : ID(ID), VisibleName(VisibleName), Weapons(Weapons), Knives(Knives), Gloves(Gloves)
+		{}
 	};
-	extern std::vector<PaintKit> PaintKits;
+	constexpr size_t NPaintKits = 884;
+	extern const PaintKit PaintKits[];
 
 	//extern std::vector<std::vector<std::string>> WeaponGroups;
 
@@ -159,5 +134,5 @@ namespace Skins
 	extern constexpr Knife KnifeFromId(WeaponId id);
 	extern constexpr WeaponId IdFromKnife(Knife k);
 	extern constexpr const char* GetKnifeModel(Knife knife);
-	extern PaintKit* PaintKitFromID(int ID);
+	extern const PaintKit* PaintKitFromID(int ID);
 }
