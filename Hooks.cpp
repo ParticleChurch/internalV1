@@ -347,7 +347,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::NewFrame();
 
 		
-		//debugger console
+		/* debugger console
 		ImGui::Begin("console");
 		if (ImGui::Button("Clear Console"))
 		{
@@ -371,7 +371,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		for (auto a : console)
 			ImGui::Text(a.c_str());
 		ImGui::End();
-		//
+		//*/
 		
 
 		GUI2::Main();

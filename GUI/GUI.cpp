@@ -2590,7 +2590,7 @@ void GUI2::DrawActiveTab()
 				ImGui::PushStyleColor(ImGuiCol_Button, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
-				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 22, 125), false);
+				ImGui::BeginChild("##weapon-skin-listings", ImVec2(Widget->Size.x - 22, 135), false);
 				auto win = ImGui::GetCurrentWindow();
 				Widget->DrawList->AddRect(
 					win->Pos - ImVec2(1, 1),
