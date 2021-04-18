@@ -342,6 +342,18 @@ public:
 		return (int*)((DWORD)this + offset);
 	}
 
+	float* GetAnimTime()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_flAnimTime");
+		return (float*)((DWORD)this + offset);
+	}
+
+	int* GetAnimSequence()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseViewModel", "m_nSequence");
+		return (int*)((DWORD)this + offset);
+	}
+
 	// END SKINCHANGER VALUES ______________________________________________________________________________
 
 	float GetNextAttack()

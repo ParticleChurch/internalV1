@@ -347,6 +347,7 @@ void SkinChanger::RunFSN()
         if (Weapon && *Weapon->GetModelIndex() != *ViewModel->GetModelIndex())
         {
             *ViewModel->GetModelIndex() = *Weapon->GetModelIndex();
+            *ViewModel->GetAnimSequence() = TransformSequence(*ViewModel->GetAnimSequence(), Skins::KnifeFromId(OriginalKnife), Skins::KnifeFromId(AppliedKnife));
         }
     }
 }
