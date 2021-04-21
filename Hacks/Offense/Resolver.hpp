@@ -14,6 +14,8 @@ struct PlayerRes
 	bool Shot = false;
 	float ShotTime = 0.f;
 	float LookAtLocalAng = 0.f;
+	QAngle PrevAng;
+	int LagTime = 0;
 	//bool IsDormant = true;
 	//bool IsMoving = false;
 	//bool IsOnGround = false;
@@ -58,7 +60,9 @@ public:
 	void Resolve();
 
 	void ResolveEnt(Entity* entity, int Index);
-	void UpdateEnt(Entity* entity, int UserID);
+	void FindShot(Entity* entity, int UserID);
+	float GetBackwardYaw(Entity* entity);
+	void DetectSide(Entity* entity, int* side);
 
 };
 

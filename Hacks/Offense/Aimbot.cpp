@@ -1148,7 +1148,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			continue;
 		}
 
-		float radius = StudioBox->m_flRadius * rage.hitchance;
+		float radius = StudioBox->m_flRadius * (1-rage.hitchance);
 
 		// Calc Left Point
 		Vec left = G::EntList[RecordUserID].entity->GetLeft(mid, radius, G::LocalPlayer);

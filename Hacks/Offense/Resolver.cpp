@@ -326,72 +326,150 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 		record.OldSimTime = entity->GetSimulationTime();
 	}
 
+	
+
 	// If Desyncing... RESOLVE!
-	if (record.IsDesyncing)
+	if (/*record.IsDesyncing*/ true)
 	{
 		PlayerInfo[UserID].ResolverFlag = std::to_string(PlayerInfo[UserID].ShotsMissed) + "|";
 
+		// Applies pitch if shooting (I think)
+		FindShot(entity, UserID);
+		record.PrevAng = entity->GetEyeAngles();
+
+		// Get Side of desync
+		int side = 0;
+		DetectSide(entity, &side);
+		
+		// Get Animstate
 		AnimState* animstate = entity->GetAnimstate();
 		if (!animstate) return;
 
-		float EyeDelta = entity->GetEyeAngles().y - entity->GetLBY();
-		bool LowDelta = EyeDelta <= 30.f;
-		int Side = (EyeDelta > 0.f) ? -1 : 1;
-		float desync_delta = LowDelta ? entity->GetMaxDesyncAngle() / 2 : entity->GetMaxDesyncAngle();
+		// Get EyeYaw
+		float EyeYaw = animstate->m_flEyeYaw;
 
-		// The order is assuming everyone has low delta
-		switch (PlayerInfo[UserID].ShotsMissed % 5)
+		// Get MaxDesyncDelta
+		float MaxDesyncAng = entity->GetMaxDesyncAngle();
+
+		// Check if extending
+		AnimationLayer* layer = entity->GetAnimOverlay(3);
+		bool m_extending = false;
+		if (layer)
+			m_extending = layer->m_flCycle == 0.f && layer->m_flWeight == 0.f;
+
+		// set up brute ang
+		static float brute = 0.f;
+
+		// if they are roughly facing forward...
+		bool forward = fabsf(NormalizeYaw(NormalizeYaw(entity->GetEyeAngles().y) - NormalizeYaw(GetBackwardYaw(entity) + 180))) < 90.f;
+
+		// resolve shooting players separately.
+		if (record.Shot)
 		{
+			float flPseudoFireYaw = NormalizeYaw(aimbot->CalculateAngle(entity->GetVecOrigin(), G::LocalPlayer->GetVecOrigin()).y);
+
+			if (m_extending) {
+				float flLeftFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y + 58.f)));
+				float flRightFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y - 58.f)));
+
+				//g_notify.add( tfm::format( XOR( "found shot record on %s: [ yaw: %i ]" ), game::GetPlayerName( record->m_player->index( ) ), int( flLeftFireYawDelta > flRightFireYawDelta ? -58.f : 58.f ) ) );
+
+				brute = flLeftFireYawDelta > flRightFireYawDelta ? -58.f : 58.f;
+			}
+			else {
+				float flLeftFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y + 29.f)));
+				float flRightFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y - 29.f)));
+
+				//g_notify.add( tfm::format( XOR( "found shot record on %s: [ yaw: %i ]" ), game::GetPlayerName( record->m_player->index( ) ), int( flLeftFireYawDelta > flRightFireYawDelta ? -29.f : 29.f ) ) );
+
+				brute = flLeftFireYawDelta > flRightFireYawDelta ? -29.f : 29.f;
+			}
+		}
+
+		float resolve_yaw = MaxDesyncAng;
+		// Because we know they are choking packets --> assume desync
+		switch (record.ShotsMissed % 3) {
 		case 0:
-			PlayerInfo[UserID].ResolverFlag += "0";
+			PlayerInfo[UserID].ResolverFlag += "LEFT";
+			brute = resolve_yaw * (forward ? side : -side);
 			break;
 		case 1:
-			PlayerInfo[UserID].ResolverFlag += "+Side/2";
-			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * Side * 0.5;
+			PlayerInfo[UserID].ResolverFlag += "RIGHT";
+			brute = resolve_yaw * (forward ? -side : side);
 			break;
 		case 2:
-			PlayerInfo[UserID].ResolverFlag += "-Side/2";
-			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * -Side * 0.5;
-			break;
-		case 3:
-			PlayerInfo[UserID].ResolverFlag += "+Side";
-			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * Side;
-			break;
-		case 4:
-			PlayerInfo[UserID].ResolverFlag += "-Side";
-			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * -Side;
+			PlayerInfo[UserID].ResolverFlag += "0";
+			brute = 0;
 			break;
 		}
 
+		animstate->m_flGoalFeetYaw = EyeYaw + brute;
+
+		// normalize the eye angles, doesn't really matter but its clean.
+		animstate->m_flGoalFeetYaw = NormalizeYaw(animstate->m_flGoalFeetYaw);
+		//entity->PGetEyeAngles()->y = NormalizeYaw(entity->PGetEyeAngles()->y);
 	}
 	else
 	{
 		PlayerInfo[UserID].ResolverFlag = "Not Desyncing";
 	}
-
 }
 
-void Resolver::UpdateEnt(Entity* entity, int UserID)
+void Resolver::FindShot(Entity* entity, int UserID)
 {
 	auto& record = PlayerInfo[UserID];
 	Entity* pWeapon = entity->GetActiveWeapon();
 
-	//Hitting OnSHOT
-	if (pWeapon)
-	{
-		if (record.ShotTime != pWeapon->GetLastShotTime())
-		{
+	float shoot_time = -1.f;
+	if (pWeapon) {
+		// with logging this time was always one tick behind.
+		// so add one tick to the last shoot time.
+		shoot_time = pWeapon->GetLastShotTime() + I::globalvars->m_intervalPerTick;
+	}
+
+	// this record has a shot on it.
+	if (TimeToTicks(shoot_time) == TimeToTicks(entity->GetSimulationTime())) {
+		if (record.LagTime <= 2)
 			record.Shot = true;
-			record.ShotTime = pWeapon->GetLastShotTime();
-		}
+
+		// more then 1 choke, cant hit pitch, apply prev pitch.
 		else
-			record.Shot = false;
+			entity->PGetEyeAngles()->x = record.PrevAng.x;
+	}
+}
+
+float Resolver::GetBackwardYaw(Entity* entity)
+{
+	return aimbot->CalculateAngle(G::LocalPlayer->GetVecOrigin(), entity->GetVecOrigin()).y;
+}
+
+void Resolver::DetectSide(Entity* entity, int* side)
+{
+	Vec src3D, dst3D, forward, right, up, src, dst;
+	float back_two, right_two, left_two;
+	trace_t tr;
+	CTraceFilter filter(entity);
+
+	AngleVectors(QAngle(0, GetBackwardYaw(entity), 0), &forward, &right, &up);
+
+	src3D = entity->GetEyePos();
+	dst3D = src3D + (forward * 384); //Might want to experiment with other numbers, incase you don't know what the number does, its how far the trace will go. Lower = shorter.
+
+	I::enginetrace->TraceRay(Ray_t(src3D, dst3D), MASK_SHOT, &filter, &tr);
+	back_two = (tr.Endpos - tr.Startpos).VecLength();
+
+	I::enginetrace->TraceRay(Ray_t(src3D + right * 35, dst3D + right * 35), MASK_SHOT, &filter, &tr);
+	right_two = (tr.Endpos - tr.Startpos).VecLength();
+
+	I::enginetrace->TraceRay(Ray_t(src3D - right * 35, dst3D - right * 35), MASK_SHOT, &filter, &tr);
+	left_two = (tr.Endpos - tr.Startpos).VecLength();
+
+	if (left_two > right_two) {
+		*side = -1;
+	}
+	else if (right_two > left_two) {
+		*side = 1;
 	}
 	else
-	{
-		record.Shot = false;
-		record.ShotTime = 0.f;
-	}
-
-
+		*side = 0;
 }

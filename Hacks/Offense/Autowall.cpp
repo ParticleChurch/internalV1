@@ -198,20 +198,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
     Vec Direction{ Start - point };
     Direction /= Direction.VecLength();
 
-    // First check if it's visible
-    trace_t Trace;
-    Ray_t Ray(G::LocalPlayer->GetEyePos(), point);
-    CTraceFilter Filter(G::LocalPlayer);
-    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
-    if (Trace.Fraction == 1.f)
-    {
-        // if it hit an entity and it isn't on localplayer team...
-        if(Trace.Entity && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
-            return true;
-    }
-        
-
-    // Then check if it is autowallable
+    // Then check if is autowallable
     int hitsLeft = 4;
     while (Damage >= 1.0f && hitsLeft > 0) {
         trace_t Trace;
@@ -264,15 +251,7 @@ bool Autowall::CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriend
     Vec Direction{ Start - point };
     Direction /= Direction.VecLength();
 
-    // First check if it's visible
-    trace_t Trace;
-    Ray_t Ray(G::LocalPlayer->GetEyePos(), point);
-    CTraceFilter Filter(G::LocalPlayer);
-    I::enginetrace->TraceRay(Ray, MASK_SHOT, &Filter, &Trace);
-    if (Trace.Fraction == 1.f)
-        return true;
-
-    // Then check if it is autowallable
+    // if it is autowallable
     int hitsLeft = 4;
     while (Damage >= 1.0f && hitsLeft > 0) {
         trace_t Trace;
@@ -285,7 +264,7 @@ bool Autowall::CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriend
 
         // We have reached end of trace and therefore can hit it
         if (Trace.Fraction == 1.0f)
-            return true;
+            return false;
 
         // We've hit an enemy hitbox, and therefore can't hit point? can hit? idk... prob should should ig
         if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
