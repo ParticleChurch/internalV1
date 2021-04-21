@@ -226,7 +226,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
         if (Trace.Fraction == 1.0f)
         {
             H::console.push_back("trace fraction 1");
-            return true;
+            return false;
         }
             
 
