@@ -1,3 +1,5 @@
+
+
 #include "../../Include.hpp"
 
 Resolver* resolver = new Resolver();
@@ -34,16 +36,18 @@ void Resolver::LogWeaponFire(GameEvent* event)
 		return;
 
 	// If it isnt in the list... add it!
-	if (OldShotsMissed.find(UserID) == OldShotsMissed.end()) {
+	if (PlayerInfo.find(UserID) == PlayerInfo.end())
+	{
 		// not found
-		OldShotsMissed.insert(std::pair(UserID, 0));
+		PlayerRes NewPlayer;
+		PlayerInfo.insert(std::pair(UserID, NewPlayer));
 		return;
 	}
 
 	// Otherwise it's already in the list, update everything!
-	for (auto& a : ShotsMissed)
+	for (auto& a : PlayerInfo)
 	{
-		OldShotsMissed[a.first] = a.second;
+		a.second.OldShotsMissed = a.second.ShotsMissed;
 	}
 }
 
@@ -78,28 +82,24 @@ void Resolver::LogBulletImpact(GameEvent* event)
 		ImpactHitgroup = -1;
 	}
 
-
 	// If it isn't found in newshots, ADD IT!
-	if (ShotsMissed.find(info.userid) == ShotsMissed.end())
+	// If it isnt in the list... add it!
+	if (PlayerInfo.find(UserID) == PlayerInfo.end())
 	{
-		ShotsMissed.insert(std::pair(info.userid, 1));
-		return;
-	}
-
-	// Otherwise...
-	// If it isn't found in oldshots, return... as waiting for weaponfire is better
-	if (OldShotsMissed.find(info.userid) == OldShotsMissed.end())
-	{
+		// not found
+		PlayerRes NewPlayer;
+		NewPlayer.ShotsMissed = 1;
+		PlayerInfo.insert(std::pair(UserID, NewPlayer));
 		return;
 	}
 
 	// No need to increase if already increased once...
-	if (ShotsMissed[info.userid] > OldShotsMissed[info.userid])
+	if (PlayerInfo[info.userid].ShotsMissed > PlayerInfo[info.userid].OldShotsMissed)
 		return;
 
 	// Log the shot up by 1
-	ShotsMissed[info.userid]++;
-	
+	PlayerInfo[info.userid].ShotsMissed++;
+
 }
 
 void Resolver::LogPlayerHurt(GameEvent* event)
@@ -123,7 +123,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	if (ImpactEndUserID == UserID && ImpactHitgroup == hitgroup)
 	{
 		// No shots were missed, revert back to normal
-		ShotsMissed[ImpactEndUserID]--;
+		if (PlayerInfo.find(ImpactEndUserID) != PlayerInfo.end())
+			PlayerInfo[ImpactEndUserID].ShotsMissed--;
 	}
 }
 
@@ -138,8 +139,8 @@ void Resolver::LogShots(GameEvent* event)
 		Note: Every time a client fires their weapon
 
 		Name:	weapon_fire
-		Structure:	
-		short	userid	
+		Structure:
+		short	userid
 		string	weapon	weapon name used
 		bool	silenced	is weapon silenced
 		*/
@@ -153,11 +154,11 @@ void Resolver::LogShots(GameEvent* event)
 		Note: Every time a bullet hits something
 
 		Name:	bullet_impact
-		Structure:	
-		short	userid	
-		float	x	
-		float	y	
-		float	z	
+		Structure:
+		short	userid
+		float	x
+		float	y
+		float	z
 		*/
 		LogBulletImpact(event);
 	}
@@ -167,7 +168,7 @@ void Resolver::LogShots(GameEvent* event)
 		/*
 		player_hurt
 		Name:	player_hurt
-		Structure:	
+		Structure:
 		short	userid	user ID of who was hurt
 		short	attacker	user ID of who attacked
 		byte	health	remaining health points
@@ -182,39 +183,7 @@ void Resolver::LogShots(GameEvent* event)
 	break;
 	default:
 		return;
-	}	
-}
-
-void Resolver::Resolve()
-{
-	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
-	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
-
-	if (!G::LocalPlayerAlive) return;
-	if (!RageEnable->Get() && !LegitEnable->Get()) return;
-
-	L::Verbose("Resolver::Resolve - begin");
-	Entity* ent;
-	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
-	{
-		L::Verbose("Resolver::Resolve - ent ", "");  L::Verbose(std::to_string(i).c_str());
-		if (!(ent = I::entitylist->GetClientEntity(i))
-			|| ent == G::LocalPlayer
-			|| ent->GetTeam() == G::LocalPlayerTeam
-			|| ent->IsDormant()
-			|| ent->GetHealth() <= 0
-		)
-			continue;
-
-		//L::Verbose("Resolver::Resolve - BF");
-		//BruteForce(ent, i);
-
-		L::Verbose("Resolver::Resolve - BF");
-		//Example(ent, i);
-		L::Verbose("Resolver::Resolve - AF");
-		AnimationFix(ent);
 	}
-	L::Verbose("Resolver::Resolve - done");
 }
 
 void Resolver::AnimationFix(Entity* entity)
@@ -289,140 +258,27 @@ void Resolver::AnimationFix(Entity* entity)
 	I::globalvars->m_tickCount = m_nTicks;
 }
 
-void Resolver::BruteForce(Entity* entity, int index)
-{
-	L::Verbose("Resolver::BruteForce - begin");
-	ResolverFlag[index] = "";
-
-	L::Verbose("Resolver::BruteForce - GetPlayerInfo");
-	player_info_t info;
-	if (!I::engine->GetPlayerInfo(index, &info))
-		return;
-	int UserID = info.userid;
-
-	L::Verbose("Resolver::BruteForce - GetAnimstate");
-	AnimState* animstate = entity->GetAnimstate();
-	if (!animstate)
-		return;
-
-	L::Verbose("Resolver::BruteForce - PGetEyeAngles");
-	Vec* EyeAngles = entity->PGetEyeAngles();
-	L::Verbose("Resolver::BruteForce - GetLBY");
-	float lby = entity->GetLBY();
-	L::Verbose("Resolver::BruteForce - GetVecVelocity");
-	float velocity = entity->GetVecVelocity().VecLength2D();
-	L::Verbose("Resolver::BruteForce - MaxAccurateSpeed");
-	float maxAccurateSpeed = entity->MaxAccurateSpeed() / 3.f;
-	L::Verbose("Resolver::BruteForce - EyeAngles->y");
-	//EyeAngles->y = lby;
-	//L::Verbose("Resolver::BruteForce - animstate->goal_feet_yaw");
-	//animstate->m_flGoalFeetYaw = lby;
-
-	if (I::globalvars->m_curTime - entity->GetLastShotTime() <= I::globalvars->m_intervalPerTick) // if they shot within the last tick
-	{
-		Priority[UserID] = 4;
-		ResolverFlag[index] = "Onshot";
-	}
-	else if (!(entity->GetFlags() & FL_ONGROUND)) 
-	{
-		Priority[UserID] = 3;
-		ResolverFlag[index] = "Off Ground";
-	}
-	else if (velocity > maxAccurateSpeed)
-	{
-		Priority[UserID] = 2;
-		ResolverFlag[index] = "Inaccurate Aim";
-	}
-	else if (velocity < maxAccurateSpeed && velocity >= 3.f)
-	{
-		Priority[UserID] = 1;
-		ResolverFlag[index] = "Resolved Slow-Walk: ";
-		switch (ShotsMissed[UserID] % 5) {
-		case 0:
-			ResolverFlag[index] += "0";
-			break;
-		case 1:
-			EyeAngles->y += -35.f;
-			animstate->m_flGoalFeetYaw += -35.f;
-			ResolverFlag[index] += "-35";
-			break;
-		case 2:
-			EyeAngles->y += 35.f;
-			animstate->m_flGoalFeetYaw += 35.f;
-			ResolverFlag[index] += "35";
-			break;
-		case 3:
-			EyeAngles->y = lby + -12.5f;
-			animstate->m_flGoalFeetYaw += -12.5f;
-			ResolverFlag[index] += "-12.5";
-			break;
-		case 4:
-			EyeAngles->y = lby + 12.5f;
-			animstate->m_flGoalFeetYaw += 12.5f;
-			ResolverFlag[index] += "12.5";
-			break;
-		}
-	}
-	else // not shooting, on ground, not moving
-	{
-		ResolverFlag[index] = "Resolved Stand-Still: ";
-		switch (ShotsMissed[UserID] % 7) {
-		case 0:
-			// do fucking nothing
-			ResolverFlag[index] += "0";
-			break;
-		case 1:
-			ResolverFlag[index] += "20";
-			EyeAngles->y += 20.f;
-			animstate->m_flGoalFeetYaw += 20.f;
-			break;
-		case 2:
-			ResolverFlag[index] += "-20";
-			EyeAngles->y = lby + -20.f;
-			animstate->m_flGoalFeetYaw += -20.f;
-			break;
-		case 3:
-			ResolverFlag[index] += "35";
-			EyeAngles->y = lby + 40.f;
-			animstate->m_flGoalFeetYaw += 40.f;
-			break;
-		case 4:
-			ResolverFlag[index] += "-35";
-			EyeAngles->y = lby + -40.f;
-			animstate->m_flGoalFeetYaw += -40.f;
-			break;
-		case 5:
-			ResolverFlag[index] += "65";
-			EyeAngles->y += 65.f;
-			animstate->m_flGoalFeetYaw += 65.f;
-			break;
-		case 6:
-			ResolverFlag[index] += "-65";
-			EyeAngles->y = lby + -65.f;
-			animstate->m_flGoalFeetYaw += -65.f;
-			break;
-		}
-	}
-}
-
-void Resolver::PreResolver(int stage)
-{
-	//FRAME_NET_UPDATE_POSTDATAUPDATE_START - 2
+//FRAME_NET_UPDATE_POSTDATAUPDATE_START - 2
 	//FRAME_RENDER_START - 5
 
-	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START)
-		return;
-
+void Resolver::Resolve()
+{
 	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
 	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
 
 	if (!G::LocalPlayerAlive) return;
 	if (!RageEnable->Get() && !LegitEnable->Get()) return;
 
+	static int tick_count = I::globalvars->m_tickCount;
+	if (I::globalvars->m_tickCount == tick_count)
+		return;
+	tick_count = I::globalvars->m_tickCount;
+
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
+
 		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
 		if (!(ent = I::entitylist->GetClientEntity(i))
 			|| ent == G::LocalPlayer
@@ -436,94 +292,106 @@ void Resolver::PreResolver(int stage)
 
 		player_info_t info;
 		if (!I::engine->GetPlayerInfo(i, &info))
-			return;
+			continue;
+
 		int UserID = info.userid;
 
-		L::Verbose("Resolver::PreResolver - GetAnimstate");
-		AnimState* animstate = ent->GetAnimstate();
-		if (!animstate)
-			return;
+		// If it aint in there... add it
+		if (PlayerInfo.find(UserID) == PlayerInfo.end())
+		{
+			PlayerRes NewPlayer;
+			PlayerInfo.insert(std::pair(UserID, NewPlayer));
+		}
 
-		float yaw = animstate->m_flGoalFeetYaw;
+		ResolveEnt(ent, i);
 
-		// If it isn't found in OrigYaw, ADD IT!
-		// Backing up old yaw
-		if (OrigYaw.find(UserID) == OrigYaw.end())
-			OrigYaw.insert(std::pair(UserID, yaw));
+	}
+	L::Verbose("Resolver::Resolve - done");
+}
+
+void Resolver::ResolveEnt(Entity* entity, int Index)
+{
+	player_info_t info;
+	if (!I::engine->GetPlayerInfo(Index, &info))
+		return;
+	int UserID = info.userid;
+	auto& record = PlayerInfo[UserID];
+
+	if (entity->GetSimulationTime() != record.OldSimTime)
+	{
+		if (entity->GetSimulationTime() - record.OldSimTime > I::globalvars->m_intervalPerTick) //Desync check
+			record.IsDesyncing = true;
 		else
-			OrigYaw[UserID] = yaw;
+			record.IsDesyncing = false;
+		record.OldSimTime = entity->GetSimulationTime();
+	}
 
+	// If Desyncing... RESOLVE!
+	if (record.IsDesyncing)
+	{
+		PlayerInfo[UserID].ResolverFlag = std::to_string(PlayerInfo[UserID].ShotsMissed) + "|";
 
-		// Resolving
-		int missedshots = ShotsMissed[UserID];
-		ResolverFlag[i] = std::to_string(missedshots) + "|";
+		AnimState* animstate = entity->GetAnimstate();
+		if (!animstate) return;
 
-		float EyeDelta = ent->GetEyeAngles().y - animstate->m_flGoalFeetYaw;
+		float EyeDelta = entity->GetEyeAngles().y - entity->GetLBY();
 		bool LowDelta = EyeDelta <= 30.f;
 		int Side = (EyeDelta > 0.f) ? -1 : 1;
-		float desync_delta = LowDelta ? ent->GetMaxDesyncAngle() / 2 : ent->GetMaxDesyncAngle();
+		float desync_delta = LowDelta ? entity->GetMaxDesyncAngle() / 2 : entity->GetMaxDesyncAngle();
 
-		switch (missedshots % 3)
+		// The order is assuming everyone has low delta
+		switch (PlayerInfo[UserID].ShotsMissed % 5)
 		{
-		case 0: 
-			ResolverFlag[i] += std::to_string(desync_delta * Side);
-			animstate->m_flGoalFeetYaw = ent->GetEyeAngles().y + desync_delta * Side; 
+		case 0:
+			PlayerInfo[UserID].ResolverFlag += "0";
 			break;
-		case 1: 
-			ResolverFlag[i] += std::to_string(desync_delta * -Side);
-			animstate->m_flGoalFeetYaw = ent->GetEyeAngles().y + desync_delta * -Side; 
+		case 1:
+			PlayerInfo[UserID].ResolverFlag += "+Side/2";
+			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * Side * 0.5;
 			break;
-		case 2: 
-			ResolverFlag[i] += "0";
-			break;// animstate->m_flGoalFeetYaw = 0;
+		case 2:
+			PlayerInfo[UserID].ResolverFlag += "-Side/2";
+			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * -Side * 0.5;
+			break;
+		case 3:
+			PlayerInfo[UserID].ResolverFlag += "+Side";
+			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * Side;
+			break;
+		case 4:
+			PlayerInfo[UserID].ResolverFlag += "-Side";
+			animstate->m_flGoalFeetYaw = entity->GetEyeAngles().y + desync_delta * -Side;
+			break;
 		}
 
 	}
-	L::Verbose("Resolver::Resolve - done");
-}
-
-void Resolver::PostResolver(int stage)
-{
-	//FRAME_RENDER_START
-	
-	if (stage != FRAME_NET_UPDATE_START)
-		return;
-
-	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
-	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
-
-	if (!G::LocalPlayerAlive) return;
-	if (!RageEnable->Get() && !LegitEnable->Get()) return;
-
-	L::Verbose("Resolver::PostResolver - begin");
-	Entity* ent;
-	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
+	else
 	{
-		L::Verbose("Resolver::PostResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
-		if (!(ent = I::entitylist->GetClientEntity(i))
-			|| ent == G::LocalPlayer
-			|| ent->GetTeam() == G::LocalPlayerTeam
-			|| ent->IsDormant()
-			|| ent->GetHealth() <= 0
-			)
-			continue;
-
-		player_info_t info;
-		if (!I::engine->GetPlayerInfo(i, &info))
-			return;
-		int UserID = info.userid;
-
-		L::Verbose("Resolver::PostResolver - GetAnimstate");
-		AnimState* animstate = ent->GetAnimstate();
-		if (!animstate)
-			return;
-
-		// If it isn't found in OrigYaw, return
-		if (OrigYaw.find(UserID) == OrigYaw.end())
-			return;
-		else
-			animstate->m_flGoalFeetYaw = OrigYaw[UserID];
+		PlayerInfo[UserID].ResolverFlag = "Not Desyncing";
 	}
-	L::Verbose("Resolver::Resolve - done");
+
 }
 
+void Resolver::UpdateEnt(Entity* entity, int UserID)
+{
+	auto& record = PlayerInfo[UserID];
+	Entity* pWeapon = entity->GetActiveWeapon();
+
+	//Hitting OnSHOT
+	if (pWeapon)
+	{
+		if (record.ShotTime != pWeapon->GetLastShotTime())
+		{
+			record.Shot = true;
+			record.ShotTime = pWeapon->GetLastShotTime();
+		}
+		else
+			record.Shot = false;
+	}
+	else
+	{
+		record.Shot = false;
+		record.ShotTime = 0.f;
+	}
+
+
+}

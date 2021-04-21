@@ -408,10 +408,11 @@ void ESP::Run_PaintTraverse()
 				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 			}
 
-			if (i < 64 and EnemyResolver->Get())
+			//resolver->PlayerInfo[PlayerInfo.userid]
+			if (resolver->PlayerInfo.find(PlayerInfo.userid) != resolver->PlayerInfo.end() && EnemyResolver->Get())
 			{
 				// ADD CHECK HERE
-				std::string TEXT = resolver->ResolverFlag[i];
+				std::string TEXT = resolver->PlayerInfo[PlayerInfo.userid].ResolverFlag;
 				//TEXT += "\n" + std::to_string(I::globalvars->m_curTime - G::EntList[PlayerInfo.userid].LastShotTime);
 				static std::wstring wide_string;
 				wide_string = std::wstring(TEXT.begin(), TEXT.end());

@@ -359,13 +359,20 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui::SliderInt("DT###dtamount", &doubletap->shift_ticks, 0, 32);
 		if (ImGui::Button("Reset Resolver"))
 		{
-			for (auto& a : resolver->ShotsMissed)
-				a.second = 0;
+			for (auto& a : resolver->PlayerInfo)
+			{
+				a.second.OldShotsMissed = 0;
+				a.second.ShotsMissed = 0;
+			}
+				
 		}
-		if (ImGui::Button("Randomize Resolver"))
+		if (ImGui::Button("Iterate Resolver"))
 		{
-			for (auto& a : resolver->ShotsMissed)
-				a.second = rand() % 10;
+			for (auto& a : resolver->PlayerInfo)
+			{
+				a.second.OldShotsMissed += 1;
+				a.second.ShotsMissed += 1;
+			}
 		}
 		
 		for (auto a : console)
@@ -747,8 +754,8 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
 	{
-		/*L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
-		resolver->Resolve();*/
+		L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
+		resolver->Resolve();
 		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoFlash");
 		miscvisuals->NoFlash();
 		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoSmokeFSN");
@@ -757,9 +764,6 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		SkinChanger::RunFSN();
 	} break;
 	}
-
-	resolver->PreResolver(stage);
-	resolver->PostResolver(stage);
 
 	/*
 	
