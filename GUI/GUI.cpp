@@ -1001,6 +1001,10 @@ namespace ImGui
 						Config2::GetState("legit-aim-enable")->Set(0);
 					else if (p->Name == "legit-aim-enable" && Value->Value.Get() == 1)
 						Config2::GetState("rage-aim-enable")->Set(0);
+					if (p->Name == "antiaim-rage-enable" && Value->Value.Get() == 1)
+						Config2::GetState("antiaim-legit-enable")->Set(0);
+					else if (p->Name == "antiaim-legit-enable" && Value->Value.Get() == 1)
+						Config2::GetState("antiaim-rage-enable")->Set(0);
 					if (Value->BoundToKey >= 0)
 					{
 						if (Value->BindMode == Config2::KeybindMode::HOLDTODISABLE)
