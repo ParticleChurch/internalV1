@@ -48,6 +48,7 @@ void Resolver::LogWeaponFire(GameEvent* event)
 	for (auto& a : PlayerInfo)
 	{
 		a.second.OldShotsMissed = a.second.ShotsMissed;
+		a.second.LogShot = false;
 	}
 }
 
@@ -107,6 +108,7 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	int UserID = event->GetInt("userid");
 	int iAttacker = event->GetInt("attacker");
 	int hitgroup = event->GetInt("hitgroup");
+	int dmg = event->GetInt("dmg_health");
 
 	// if the localplayer gets hurt, return
 	if (I::engine->GetPlayerForUserID(UserID) == G::LocalPlayerIndex)
@@ -124,7 +126,27 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	{
 		// No shots were missed, revert back to normal
 		if (PlayerInfo.find(ImpactEndUserID) != PlayerInfo.end())
+		{
+			// GOOD shot
+			ConsoleColorMsg(Color(0, 255, 0), "Shot ");
+			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
+			ConsoleColorMsg(Color(255, 255, 255), " for ");
+			ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
+			ConsoleColorMsg(Color(255, 255, 255), " in the ");
+			ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
 			PlayerInfo[ImpactEndUserID].ShotsMissed--;
+		}	
+	}
+	else
+	{
+		// LUCKY shot
+		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
+		ConsoleColorMsg(Color(255, 255, 255), "Shot ");
+		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
+		ConsoleColorMsg(Color(255, 255, 255), " for ");
+		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
+		ConsoleColorMsg(Color(255, 255, 255), " in the ");
+		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
 	}
 }
 
@@ -303,6 +325,15 @@ void Resolver::Resolve()
 			PlayerInfo.insert(std::pair(UserID, NewPlayer));
 		}
 
+
+		// If it's different and we haven't logged the shot
+		if (PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
+		{
+			PlayerInfo[UserID].LogShot = true;
+			ConsoleColorMsg(Color(255, 69, 0), "Missed shot at ");
+			ConsoleColorMsg(Color(0, 255, 0), "[%s]\n", info.name);
+		}
+
 		ResolveEnt(ent, i);
 
 	}
@@ -325,8 +356,6 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 			record.IsDesyncing = false;
 		record.OldSimTime = entity->GetSimulationTime();
 	}
-
-	
 
 	// If Desyncing... RESOLVE!
 	if (/*record.IsDesyncing*/ true)
@@ -385,29 +414,32 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 				brute = flLeftFireYawDelta > flRightFireYawDelta ? -29.f : 29.f;
 			}
 		}
+		// Otherwise BRUTEFORCE
+		else
+		{
+			float resolve_yaw = MaxDesyncAng;
+			// Because we know they are choking packets --> assume desync
+			switch (record.ShotsMissed % 3) {
+			case 0:
+				PlayerInfo[UserID].ResolverFlag += "LEFT";
+				brute = resolve_yaw * (forward ? side : -side);
+				break;
+			case 1:
+				PlayerInfo[UserID].ResolverFlag += "RIGHT";
+				brute = resolve_yaw * (forward ? -side : side);
+				break;
+			case 2:
+				PlayerInfo[UserID].ResolverFlag += "0";
+				brute = 0;
+				break;
+			}
 
-		float resolve_yaw = MaxDesyncAng;
-		// Because we know they are choking packets --> assume desync
-		switch (record.ShotsMissed % 3) {
-		case 0:
-			PlayerInfo[UserID].ResolverFlag += "LEFT";
-			brute = resolve_yaw * (forward ? side : -side);
-			break;
-		case 1:
-			PlayerInfo[UserID].ResolverFlag += "RIGHT";
-			brute = resolve_yaw * (forward ? -side : side);
-			break;
-		case 2:
-			PlayerInfo[UserID].ResolverFlag += "0";
-			brute = 0;
-			break;
+			animstate->m_flGoalFeetYaw = EyeYaw + brute;
+
+			// normalize the eye angles, doesn't really matter but its clean.
+			animstate->m_flGoalFeetYaw = NormalizeYaw(animstate->m_flGoalFeetYaw);
+			//entity->PGetEyeAngles()->y = NormalizeYaw(entity->PGetEyeAngles()->y);
 		}
-
-		animstate->m_flGoalFeetYaw = EyeYaw + brute;
-
-		// normalize the eye angles, doesn't really matter but its clean.
-		animstate->m_flGoalFeetYaw = NormalizeYaw(animstate->m_flGoalFeetYaw);
-		//entity->PGetEyeAngles()->y = NormalizeYaw(entity->PGetEyeAngles()->y);
 	}
 	else
 	{

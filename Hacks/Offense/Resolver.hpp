@@ -5,6 +5,7 @@ struct PlayerRes
 	// Log Shots
 	int OldShotsMissed = 0;
 	int ShotsMissed = 0;
+	bool LogShot = false;
 	// Resolver Specific
 	float SimTime = 0;
 	float OldSimTime = 0;

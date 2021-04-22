@@ -603,7 +603,9 @@ void Aimbot::Rage()
 
 	int RecordID = -1;
 	float Dist = FLT_MAX;
+	L::Verbose("GetClosestEntity");
 	GetClosestEntity(RecordID, Dist);
+	
 
 	// Aimpoint
 	Vec AimPoint;
@@ -614,6 +616,7 @@ void Aimbot::Rage()
 	// under the users standerds (hitchance etc...)
 	if (RecordID != -1 && ScanPlayer(RecordID, AimPoint))
 	{
+		L::Verbose("go brrrr2");
 		// Get Angle and do recoil
 		QAngle Angle = CalculateAngle(AimPoint);
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
@@ -650,10 +653,13 @@ void Aimbot::Rage()
 			max--;
 			Dist = FLT_MAX;
 			RecordID = -1;
+			L::Verbose("GetClosestEntityNotScanned");
 			GetClosestEntityNotScanned(RecordID, Dist);
 			PlayersScanned.push_back(RecordID); // we have scanned it...
+			L::Verbose("ScanPlayerBacktrack");
 			if (RecordID != -1 && ScanPlayerBacktrack(RecordID, AimPoint, tick_count))
 			{
+				L::Verbose("go brrrr");
 				// Get Angle and do recoil
 				QAngle Angle = CalculateAngle(AimPoint);
 				Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
@@ -1064,6 +1070,7 @@ https://www.unknowncheats.me/forum/counterstrike-global-offensive/335391-fixing-
 
 bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 {
+	L::Verbose("ScanPlayer");
 	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
 
@@ -1151,7 +1158,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 		float radius = StudioBox->m_flRadius * (1-rage.hitchance);
 
 		// Calc Left Point
-		Vec left = G::EntList[RecordUserID].entity->GetLeft(mid, radius, G::LocalPlayer);
+		Vec left = G::EntList[RecordUserID].entity->GetLeft(max, radius, G::LocalPlayer);
 
 		// Calc Left Angle
 		QAngle LeftAngle = CalculateAngle(left);
@@ -1200,7 +1207,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 
 
 		// Calc Right Point
-		Vec right = G::EntList[RecordUserID].entity->GetRight(mid, radius, G::LocalPlayer);
+		Vec right = G::EntList[RecordUserID].entity->GetRight(max, radius, G::LocalPlayer);
 
 		// Calc Right Angle
 		QAngle RightAngle = CalculateAngle(right);

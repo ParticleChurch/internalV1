@@ -50,6 +50,45 @@ typedef float RadianEuler[3];
 #define HITGROUP_RIGHTLEG 7
 #define HITGROUP_GEAR 10
 
+static std::string HitGroupStr(int i)
+{
+	std::string str = "Unknown";
+	switch (i)
+	{
+	case HITGROUP_GENERIC:
+		str = "GENERIC";
+		break;
+	case HITGROUP_HEAD:
+		str = "HEAD";
+		break;
+	case HITGROUP_CHEST:
+		str = "CHEST";
+		break;
+	case HITGROUP_STOMACH:
+		str = "STOMACH";
+		break;
+	case HITGROUP_LEFTARM:
+		str = "LEFTARM";
+		break;
+	case HITGROUP_RIGHTARM:
+		str = "RIGHTARM";
+		break;
+	case HITGROUP_LEFTLEG:
+		str = "LEFTLEG";
+		break;
+	case HITGROUP_RIGHTLEG:
+		str = "RIGHTLEG";
+		break;
+	case HITGROUP_GEAR:
+		str = "GEAR";
+		break;
+	default:
+		str = "UNKNOWN";
+		break;
+	}
+	return str;
+}
+
 struct Model {
 	void* handle;
 	char name[260];
