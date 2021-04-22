@@ -2,7 +2,7 @@
 
 class Autowall
 {
-private:
+public:
 	float GetDamageMultiplier(int HitGroup);
 	bool IsArmored(int HitGroup, bool Helmet);
 	std::add_pointer_t<bool __cdecl(float, float, float, float, float, float, trace_t&)> TraceToExit = reinterpret_cast<decltype(TraceToExit)>(FindPattern("client", "55 8B EC 83 EC 30 F3 0F 10 75"));

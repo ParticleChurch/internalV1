@@ -18,7 +18,7 @@ private:
 		int hid_mindam; // hidden min damage
 		int vis_mindam; // visible min damage
 		float hitchance;
-		bool FireIfLethal;
+		bool BaimIfLethal;
 	}rage;
 
 	// General Private Functions
@@ -44,6 +44,7 @@ private:
 	bool UpdateRageVal();
 	bool TryOnShot();
 	void GetRageHitboxes(int gun);
+	void HandleBaimConditions(int RecordUserID);
 	void GetClosestEntityNotScanned(int& RecordUserID, float& Distance);
 	bool ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count);
 	bool ScanPlayer(int RecordUserID, Vec& Point);

@@ -701,37 +701,37 @@ bool Aimbot::UpdateRageVal()
 	static Config2::CFloat* Pistol_VisMin		= Config2::GetFloat("rageaim-pistol-mindamage-visible");
 	static Config2::CFloat* Pistol_HidMin		= Config2::GetFloat("rageaim-pistol-mindamage-hidden");
 	static Config2::CFloat* Pistol_HitChance	= Config2::GetFloat("rageaim-pistol-hitchance");
-	static Config2::CState* Pistol_FireIfLethal	= Config2::GetState("rageaim-pistol-fireiflethal");
+	static Config2::CState* Pistol_FireIfLethal	= Config2::GetState("rageaim-pistol-baimiflethal");
 
 	static Config2::CFloat* Smg_VisMin			= Config2::GetFloat("rageaim-smg-mindamage-visible");
 	static Config2::CFloat* Smg_HidMin			= Config2::GetFloat("rageaim-smg-mindamage-hidden");
 	static Config2::CFloat* Smg_HitChance		= Config2::GetFloat("rageaim-smg-hitchance");
-	static Config2::CState* Smg_FireIfLethal	= Config2::GetState("rageaim-smg-fireiflethal");
+	static Config2::CState* Smg_FireIfLethal	= Config2::GetState("rageaim-smg-baimiflethal");
 
 	static Config2::CFloat* Heavy_VisMin		= Config2::GetFloat("rageaim-heavy-mindamage-visible");
 	static Config2::CFloat* Heavy_HidMin		= Config2::GetFloat("rageaim-heavy-mindamage-hidden");
 	static Config2::CFloat* Heavy_HitChance		= Config2::GetFloat("rageaim-heavy-hitchance");
-	static Config2::CState* Heavy_FireIfLethal	= Config2::GetState("rageaim-heavy-fireiflethal");
+	static Config2::CState* Heavy_FireIfLethal	= Config2::GetState("rageaim-heavy-baimiflethal");
 
 	static Config2::CFloat* Scout_VisMin		= Config2::GetFloat("rageaim-scout-mindamage-visible");
 	static Config2::CFloat* Scout_HidMin		= Config2::GetFloat("rageaim-scout-mindamage-hidden");
 	static Config2::CFloat* Scout_HitChance		= Config2::GetFloat("rageaim-scout-hitchance");
-	static Config2::CState* Scout_FireIfLethal	= Config2::GetState("rageaim-scout-fireiflethal");
+	static Config2::CState* Scout_FireIfLethal	= Config2::GetState("rageaim-scout-baimiflethal");
 
 	static Config2::CFloat* AWP_VisMin			= Config2::GetFloat("rageaim-awp-mindamage-visible");
 	static Config2::CFloat* AWP_HidMin			= Config2::GetFloat("rageaim-awp-mindamage-hidden");
 	static Config2::CFloat* AWP_HitChance		= Config2::GetFloat("rageaim-awp-hitchance");
-	static Config2::CState* AWP_FireIfLethal	= Config2::GetState("rageaim-awp-fireiflethal");
+	static Config2::CState* AWP_FireIfLethal	= Config2::GetState("rageaim-awp-baimiflethal");
 
 	static Config2::CFloat* Auto_VisMin			= Config2::GetFloat("rageaim-auto-mindamage-visible");
 	static Config2::CFloat* Auto_HidMin			= Config2::GetFloat("rageaim-auto-mindamage-hidden");
 	static Config2::CFloat* Auto_HitChance		= Config2::GetFloat("rageaim-auto-hitchance");
-	static Config2::CState* Auto_FireIfLethal	= Config2::GetState("rageaim-auto-fireiflethal");
+	static Config2::CState* Auto_FireIfLethal	= Config2::GetState("rageaim-auto-baimiflethal");
 
 	static Config2::CFloat* Rifle_VisMin		= Config2::GetFloat("rageaim-rifle-mindamage-visible");
 	static Config2::CFloat* Rifle_HidMin		= Config2::GetFloat("rageaim-rifle-mindamage-hidden");
 	static Config2::CFloat* Rifle_HitChance		= Config2::GetFloat("rageaim-rifle-hitchance");
-	static Config2::CState* Rifle_FireIfLethal	= Config2::GetState("rageaim-rifle-fireiflethal");
+	static Config2::CState* Rifle_FireIfLethal	= Config2::GetState("rageaim-rifle-baimiflethal");
 	
 
 	// I could use a switch case for this meh
@@ -740,7 +740,7 @@ bool Aimbot::UpdateRageVal()
 		rage.vis_mindam = Pistol_VisMin->Get();
 		rage.hid_mindam = Pistol_HidMin->Get();
 		rage.hitchance = Pistol_HitChance->Get() / 100.f;
-		rage.FireIfLethal = Pistol_FireIfLethal->Get();
+		rage.BaimIfLethal = Pistol_FireIfLethal->Get();
 		GetRageHitboxes(0);
 		return true;
 	}
@@ -749,7 +749,7 @@ bool Aimbot::UpdateRageVal()
 		rage.vis_mindam = Smg_VisMin->Get();
 		rage.hid_mindam = Smg_HidMin->Get();
 		rage.hitchance = Smg_HitChance->Get() / 100.f;
-		rage.FireIfLethal = Smg_FireIfLethal->Get();
+		rage.BaimIfLethal = Smg_FireIfLethal->Get();
 		GetRageHitboxes(1);
 		return true;
 	}
@@ -758,7 +758,7 @@ bool Aimbot::UpdateRageVal()
 		rage.vis_mindam = Heavy_VisMin->Get();
 		rage.hid_mindam = Heavy_HidMin->Get();
 		rage.hitchance = Heavy_HitChance->Get() / 100.f;
-		rage.FireIfLethal = Heavy_FireIfLethal->Get();
+		rage.BaimIfLethal = Heavy_FireIfLethal->Get();
 		GetRageHitboxes(2);
 		return true;
 	}
@@ -769,7 +769,7 @@ bool Aimbot::UpdateRageVal()
 			rage.vis_mindam = Scout_VisMin->Get();
 			rage.hid_mindam = Scout_HidMin->Get();
 			rage.hitchance = Scout_HitChance->Get() / 100.f;
-			rage.FireIfLethal = Scout_FireIfLethal->Get();
+			rage.BaimIfLethal = Scout_FireIfLethal->Get();
 			GetRageHitboxes(3);
 			return true;
 		}
@@ -778,7 +778,7 @@ bool Aimbot::UpdateRageVal()
 			rage.vis_mindam = AWP_VisMin->Get();
 			rage.hid_mindam = AWP_HidMin->Get();
 			rage.hitchance = AWP_HitChance->Get() / 100.f;
-			rage.FireIfLethal = AWP_FireIfLethal->Get();
+			rage.BaimIfLethal = AWP_FireIfLethal->Get();
 			GetRageHitboxes(4);
 			return true;
 		}
@@ -787,7 +787,7 @@ bool Aimbot::UpdateRageVal()
 			rage.vis_mindam = Auto_VisMin->Get();
 			rage.hid_mindam = Auto_VisMin->Get();
 			rage.hitchance = Auto_VisMin->Get() / 100.f;
-			rage.FireIfLethal = Auto_VisMin->Get();
+			rage.BaimIfLethal = Auto_VisMin->Get();
 			GetRageHitboxes(5);
 			return true;
 		}
@@ -796,7 +796,7 @@ bool Aimbot::UpdateRageVal()
 			rage.vis_mindam = Rifle_VisMin->Get();
 			rage.hid_mindam = Rifle_HidMin->Get();
 			rage.hitchance = Rifle_HitChance->Get() / 100.f;
-			rage.FireIfLethal = Rifle_FireIfLethal->Get();
+			rage.BaimIfLethal = Rifle_FireIfLethal->Get();
 			GetRageHitboxes(6);
 			return true;
 		}
@@ -952,6 +952,36 @@ void Aimbot::GetRageHitboxes(int gun)
 	}
 }
 
+void Aimbot::HandleBaimConditions(int RecordUserID)
+{
+	// If not enabled
+	if (!rage.BaimIfLethal) return;
+
+	// if no data return
+	if (!G::LocalPlayerWeaponData) return;
+
+	// Get player + player health
+	Player p = G::EntList[RecordUserID];
+	int health = p.health;
+	
+	// calculate damage --> assume trace is .99 of the way there
+	float Damage = G::LocalPlayerWeaponData->Damage;
+	Damage = autowall->GetDamageMultiplier(HITGROUP_STOMACH) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, 0.99 * G::LocalPlayerWeaponData->Range / 500.0f);
+	float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+	if (autowall->IsArmored(HITGROUP_STOMACH, p.entity->HasHelmet()))
+		Damage -= (p.entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? p.entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+	
+	// If potentially lethal
+	//  --> push only pelvis
+	if (p.health < Damage)
+	{
+		// Push only pelvis
+		rage.hitboxes.clear();
+		rage.hitboxes.resize(0);
+		rage.hitboxes.push_back(HITBOX_PELVIS);
+	}
+}
+
 void Aimbot::GetClosestEntityNotScanned(int& RecordUserID, float& Distance)
 {
 	float CrossEntDist = FLT_MAX;
@@ -1095,6 +1125,9 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 
 	float damage = 0.f;
 
+	// Deal with baim crap
+	HandleBaimConditions(RecordUserID);
+
 	// Hitboxes
 	for (auto HITBOX : rage.hitboxes)
 	{
@@ -1122,35 +1155,16 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 				bool visible = autowall->IsVisible(mid, G::EntList[RecordUserID].entity);
 
 				// no need to autowall if visible...
-				if (visible)
+				damage = autowall->Damage(mid, HITBOX, true);
+				if (visible && damage >= rage.vis_mindam)
 				{
-					damage = autowall->Damage(mid, HITBOX, true);
-					if (damage >= rage.vis_mindam)
-					{
-						Point = mid;
-						return true;
-					}
-					// Fire if lethal crap
-					else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-					{
-						Point = mid;
-						return true;
-					}
+					Point = mid;
+					return true;
 				}
-				else
+				else if(damage >= rage.hid_mindam)
 				{
-					damage = autowall->Damage(mid, HITBOX, true);
-					if (damage >= rage.hid_mindam)
-					{
-						Point = mid;
-						return true;
-					}
-					// Fire if lethal crap
-					else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-					{
-						Point = mid;
-						return true;
-					}
+					Point = mid;
+					return true;
 				}
 			}
 			continue;
@@ -1174,35 +1188,16 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			bool visible = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
 
 			// no need to autowall if visible...
-			if (visible)
+			damage = autowall->Damage(left, HITBOX, true);
+			if (visible && damage >= rage.vis_mindam)
 			{
-				damage = autowall->Damage(left, HITBOX, true);
-				if (damage >= rage.vis_mindam)
-				{
-					Point = left;
-					return true;
-				}
-				// Fire if lethal crap
-				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-				{
-					Point = left;
-					return true;
-				}
+				Point = left;
+				return true;
 			}
-			else
+			else if(damage >= rage.hid_mindam)
 			{
-				damage = autowall->Damage(left, HITBOX, true);
-				if (damage >= rage.hid_mindam)
-				{
-					Point = left;
-					return true;
-				}
-				// Fire if lethal crap
-				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-				{
-					Point = left;
-					return true;
-				}
+				Point = left;
+				return true;
 			}
 		}
 
@@ -1223,35 +1218,16 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			bool visible = autowall->IsVisible(right, G::EntList[RecordUserID].entity);
 
 			// no need to autowall if visible...
-			if (visible)
+			damage = autowall->Damage(right, HITBOX, true);
+			if (visible && damage >= rage.vis_mindam)
 			{
-				damage = autowall->Damage(right, HITBOX, true);
-				if (damage >= rage.vis_mindam)
-				{
-					Point = right;
-					return true;
-				}
-				// Fire if lethal crap
-				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-				{
-					Point = right;
-					return true;
-				}
+				Point = right;
+				return true;
 			}
-			else
+			else if(damage >= rage.hid_mindam)
 			{
-				damage = autowall->Damage(right, HITBOX, true);
-				if (damage >= rage.hid_mindam)
-				{
-					Point = right;
-					return true;
-				}
-				// Fire if lethal crap
-				else if (rage.FireIfLethal && damage >= G::EntList[RecordUserID].health)
-				{
-					Point = right;
-					return true;
-				}
+				Point = right;
+				return true;
 			}
 		}
 	}
