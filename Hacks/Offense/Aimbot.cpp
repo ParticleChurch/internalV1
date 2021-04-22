@@ -483,7 +483,7 @@ QAngle Aimbot::GetClosestAng(int RecordUserID, bool& valid)
 		if (!visible)
 			continue;
 
-		float dam = autowall->Damage(mid);
+		float dam = autowall->Damage(mid, HITBOX);
 
 		Vec Angle = aimbot->CalculateAngle(mid);
 		float CrossDist = aimbot->CrosshairDist(Angle);
@@ -1123,7 +1123,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 				// no need to autowall if visible...
 				if (visible)
 				{
-					damage = autowall->Damage(mid, true);
+					damage = autowall->Damage(mid, HITBOX, true);
 					if (damage >= rage.vis_mindam)
 					{
 						Point = mid;
@@ -1138,7 +1138,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 				}
 				else
 				{
-					damage = autowall->Damage(mid, true);
+					damage = autowall->Damage(mid, HITBOX, true);
 					if (damage >= rage.hid_mindam)
 					{
 						Point = mid;
@@ -1158,7 +1158,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 		float radius = StudioBox->m_flRadius * (1-rage.hitchance);
 
 		// Calc Left Point
-		Vec left = G::EntList[RecordUserID].entity->GetLeft(max, radius, G::LocalPlayer);
+		Vec left = G::EntList[RecordUserID].entity->GetLeft(mid, radius, G::LocalPlayer);
 
 		// Calc Left Angle
 		QAngle LeftAngle = CalculateAngle(left);
@@ -1175,7 +1175,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			// no need to autowall if visible...
 			if (visible)
 			{
-				damage = autowall->Damage(left, true);
+				damage = autowall->Damage(left, HITBOX, true);
 				if (damage >= rage.vis_mindam)
 				{
 					Point = left;
@@ -1190,7 +1190,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			}
 			else
 			{
-				damage = autowall->Damage(left, true);
+				damage = autowall->Damage(left, HITBOX, true);
 				if (damage >= rage.hid_mindam)
 				{
 					Point = left;
@@ -1207,7 +1207,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 
 
 		// Calc Right Point
-		Vec right = G::EntList[RecordUserID].entity->GetRight(max, radius, G::LocalPlayer);
+		Vec right = G::EntList[RecordUserID].entity->GetRight(mid, radius, G::LocalPlayer);
 
 		// Calc Right Angle
 		QAngle RightAngle = CalculateAngle(right);
@@ -1224,7 +1224,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			// no need to autowall if visible...
 			if (visible)
 			{
-				damage = autowall->Damage(right, true);
+				damage = autowall->Damage(right, HITBOX, true);
 				if (damage >= rage.vis_mindam)
 				{
 					Point = right;
@@ -1239,7 +1239,7 @@ bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
 			}
 			else
 			{
-				damage = autowall->Damage(right, true);
+				damage = autowall->Damage(right, HITBOX, true);
 				if (damage >= rage.hid_mindam)
 				{
 					Point = right;

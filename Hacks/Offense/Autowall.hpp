@@ -12,7 +12,7 @@ public:
 	bool IsVisible(Vec Start, Vec End, Entity* Ent);
 	bool IsVisible(Vec End, Entity* Ent);
 
-	float Damage(const Vec& point, bool AllowFriendlyFire = false);
+	float Damage(const Vec& point, int hitbox, bool AllowFriendlyFire = false );
 	float Damage(Vec start, const Vec& point, bool AllowFriendlyFire = false);
 	bool CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire = false);
 	bool CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriendlyFire = false);

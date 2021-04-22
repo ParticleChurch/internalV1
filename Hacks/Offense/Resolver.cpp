@@ -139,7 +139,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	}
 	else
 	{
-		// LUCKY shot
+		// LUCKY shot (wasn't going t hit but did)
+		PlayerInfo[ImpactEndUserID].ShotsMissed++;
 		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
 		ConsoleColorMsg(Color(255, 255, 255), "Shot ");
 		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
@@ -348,6 +349,7 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 	int UserID = info.userid;
 	auto& record = PlayerInfo[UserID];
 
+	record.LagTime = TimeToTicks(entity->GetSimulationTime() - record.OldSimTime);
 	if (entity->GetSimulationTime() != record.OldSimTime)
 	{
 		if (entity->GetSimulationTime() - record.OldSimTime > I::globalvars->m_intervalPerTick) //Desync check
@@ -395,6 +397,7 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 		// resolve shooting players separately.
 		if (record.Shot)
 		{
+			PlayerInfo[UserID].ResolverFlag += "Shot!";
 			float flPseudoFireYaw = NormalizeYaw(aimbot->CalculateAngle(entity->GetVecOrigin(), G::LocalPlayer->GetVecOrigin()).y);
 
 			if (m_extending) {
@@ -468,6 +471,8 @@ void Resolver::FindShot(Entity* entity, int UserID)
 		else
 			entity->PGetEyeAngles()->x = record.PrevAng.x;
 	}
+	else
+		record.Shot = false;
 }
 
 float Resolver::GetBackwardYaw(Entity* entity)
