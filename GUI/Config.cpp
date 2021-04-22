@@ -410,6 +410,7 @@ namespace Config2
 			{
 				Group* g = t->Add("Other");
 				g->Add("show-menu", "Menu Toggle", new CBoolean(true));
+				g->Add("misc-other-logs", "Shot Logs", new CBoolean());
 				g->Add("misc-other-autoaccept", "AutoAccept", new CBoolean());
 				g->Add("misc-other-killsay", "KillSay", new CBoolean());
 				g->Add("misc-other-killsay-input", "KillSay Text", new CTextInput());

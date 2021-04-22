@@ -43,6 +43,9 @@ private:
 	// Deal with PlayerHurt
 	void LogPlayerHurt(GameEvent* event);
 public:
+	// For logging spread
+	bool LogShot = false;
+
 	//userid, PlayerRes
 	std::map<int, PlayerRes> PlayerInfo;
 

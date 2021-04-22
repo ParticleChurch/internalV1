@@ -629,6 +629,7 @@ void Aimbot::Rage()
 		// If autoshoot.. FIRE!
 		if (AutoShoot->Get())
 		{
+			resolver->LogShot = true;
 			G::cmd->buttons |= IN_ATTACK;
 			G::cmd->tick_count = tick_count;
 		}

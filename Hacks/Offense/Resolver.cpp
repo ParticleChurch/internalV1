@@ -71,6 +71,8 @@ void Resolver::LogBulletImpact(GameEvent* event)
 	if (!ShouldHitEntity)
 		return;
 
+	LogShot = false; // dont log missed to spread (cuz it should have hit entity)
+
 	// Keep track of the entity we supossedly missed due to resolver
 	player_info_t info;
 	if (I::engine->GetPlayerInfo(tr.Entity->Index(), &info))
@@ -105,6 +107,7 @@ void Resolver::LogBulletImpact(GameEvent* event)
 
 void Resolver::LogPlayerHurt(GameEvent* event)
 {
+	static Config2::CState* LogEnable = Config2::GetState("misc-other-logs");
 	int UserID = event->GetInt("userid");
 	int iAttacker = event->GetInt("attacker");
 	int hitgroup = event->GetInt("hitgroup");
@@ -125,7 +128,7 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	if (ImpactEndUserID == UserID && ImpactHitgroup == hitgroup)
 	{
 		// No shots were missed, revert back to normal
-		if (PlayerInfo.find(ImpactEndUserID) != PlayerInfo.end())
+		if (LogEnable->Get() && PlayerInfo.find(ImpactEndUserID) != PlayerInfo.end())
 		{
 			// GOOD shot
 			ConsoleColorMsg(Color(0, 255, 0), "Shot ");
@@ -137,7 +140,7 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 			PlayerInfo[ImpactEndUserID].ShotsMissed--;
 		}	
 	}
-	else
+	else if(LogEnable->Get())
 	{
 		// LUCKY shot (wasn't going t hit but did)
 		PlayerInfo[ImpactEndUserID].ShotsMissed++;
@@ -148,6 +151,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
 		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
+
+		LogShot = false; // dont log missed to spread (cuz luckily hit entity)
 	}
 }
 
@@ -288,6 +293,8 @@ void Resolver::Resolve()
 {
 	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
 	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
+	static Config2::CState* LogEnable = Config2::GetState("misc-other-logs");
+	
 
 	if (!G::LocalPlayerAlive) return;
 	if (!RageEnable->Get() && !LegitEnable->Get()) return;
@@ -299,6 +306,15 @@ void Resolver::Resolve()
 
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
+
+	if (LogShot && LogEnable->Get())
+	{
+		LogShot = false;
+		ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to ");
+		ConsoleColorMsg(Color(255, 0, 0), "spread\n");
+	}
+	
+
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
 
@@ -328,11 +344,12 @@ void Resolver::Resolve()
 
 
 		// If it's different and we haven't logged the shot
-		if (PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
+		if (LogEnable->Get() && PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
 		{
 			PlayerInfo[UserID].LogShot = true;
 			ConsoleColorMsg(Color(255, 69, 0), "Missed shot at ");
-			ConsoleColorMsg(Color(0, 255, 0), "[%s]\n", info.name);
+			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
+			ConsoleColorMsg(Color(255, 69, 0), " due to prediction error\n");
 		}
 
 		ResolveEnt(ent, i);
