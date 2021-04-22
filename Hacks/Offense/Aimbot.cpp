@@ -701,64 +701,102 @@ bool Aimbot::UpdateRageVal()
 	static Config2::CFloat* Pistol_VisMin		= Config2::GetFloat("rageaim-pistol-mindamage-visible");
 	static Config2::CFloat* Pistol_HidMin		= Config2::GetFloat("rageaim-pistol-mindamage-hidden");
 	static Config2::CFloat* Pistol_HitChance	= Config2::GetFloat("rageaim-pistol-hitchance");
-	static Config2::CState* Pistol_FireIfLethal	= Config2::GetState("rageaim-pistol-baimiflethal");
+	static Config2::CState* Pistol_BaimIfLethal	= Config2::GetState("rageaim-pistol-baimiflethal");
+	static Config2::CState* Pistol_Override		= Config2::GetState("rageaim-pistol-override");
+	static Config2::CFloat* Pistol_OverrideDam  = Config2::GetFloat("rageaim-pistol-override-damage");
 
 	static Config2::CFloat* Smg_VisMin			= Config2::GetFloat("rageaim-smg-mindamage-visible");
 	static Config2::CFloat* Smg_HidMin			= Config2::GetFloat("rageaim-smg-mindamage-hidden");
 	static Config2::CFloat* Smg_HitChance		= Config2::GetFloat("rageaim-smg-hitchance");
-	static Config2::CState* Smg_FireIfLethal	= Config2::GetState("rageaim-smg-baimiflethal");
+	static Config2::CState* Smg_BaimIfLethal	= Config2::GetState("rageaim-smg-baimiflethal");
+	static Config2::CState* Smg_Override		= Config2::GetState("rageaim-smg-override");
+	static Config2::CFloat* Smg_OverrideDam		= Config2::GetFloat("rageaim-smg-override-damage");
 
 	static Config2::CFloat* Heavy_VisMin		= Config2::GetFloat("rageaim-heavy-mindamage-visible");
 	static Config2::CFloat* Heavy_HidMin		= Config2::GetFloat("rageaim-heavy-mindamage-hidden");
 	static Config2::CFloat* Heavy_HitChance		= Config2::GetFloat("rageaim-heavy-hitchance");
-	static Config2::CState* Heavy_FireIfLethal	= Config2::GetState("rageaim-heavy-baimiflethal");
+	static Config2::CState* Heavy_BaimIfLethal	= Config2::GetState("rageaim-heavy-baimiflethal");
+	static Config2::CState* Heavy_Override		= Config2::GetState("rageaim-heavy-override");
+	static Config2::CFloat* Heavy_OverrideDam	= Config2::GetFloat("rageaim-heavy-override-damage");
 
 	static Config2::CFloat* Scout_VisMin		= Config2::GetFloat("rageaim-scout-mindamage-visible");
 	static Config2::CFloat* Scout_HidMin		= Config2::GetFloat("rageaim-scout-mindamage-hidden");
 	static Config2::CFloat* Scout_HitChance		= Config2::GetFloat("rageaim-scout-hitchance");
-	static Config2::CState* Scout_FireIfLethal	= Config2::GetState("rageaim-scout-baimiflethal");
+	static Config2::CState* Scout_BaimIfLethal	= Config2::GetState("rageaim-scout-baimiflethal");
+	static Config2::CState* Scout_Override		= Config2::GetState("rageaim-scout-override");
+	static Config2::CFloat* Scout_OverrideDam	= Config2::GetFloat("rageaim-scout-override-damage");
 
 	static Config2::CFloat* AWP_VisMin			= Config2::GetFloat("rageaim-awp-mindamage-visible");
 	static Config2::CFloat* AWP_HidMin			= Config2::GetFloat("rageaim-awp-mindamage-hidden");
 	static Config2::CFloat* AWP_HitChance		= Config2::GetFloat("rageaim-awp-hitchance");
-	static Config2::CState* AWP_FireIfLethal	= Config2::GetState("rageaim-awp-baimiflethal");
+	static Config2::CState* AWP_BaimIfLethal	= Config2::GetState("rageaim-awp-baimiflethal");
+	static Config2::CState* AWP_Override		= Config2::GetState("rageaim-awp-override");
+	static Config2::CFloat* AWP_OverrideDam		= Config2::GetFloat("rageaim-awp-override-damage");
 
 	static Config2::CFloat* Auto_VisMin			= Config2::GetFloat("rageaim-auto-mindamage-visible");
 	static Config2::CFloat* Auto_HidMin			= Config2::GetFloat("rageaim-auto-mindamage-hidden");
 	static Config2::CFloat* Auto_HitChance		= Config2::GetFloat("rageaim-auto-hitchance");
-	static Config2::CState* Auto_FireIfLethal	= Config2::GetState("rageaim-auto-baimiflethal");
+	static Config2::CState* Auto_BaimIfLethal	= Config2::GetState("rageaim-auto-baimiflethal");
+	static Config2::CState* Auto_Override		= Config2::GetState("rageaim-auto-override");
+	static Config2::CFloat* Auto_OverrideDam	= Config2::GetFloat("rageaim-auto-override-damage");
 
 	static Config2::CFloat* Rifle_VisMin		= Config2::GetFloat("rageaim-rifle-mindamage-visible");
 	static Config2::CFloat* Rifle_HidMin		= Config2::GetFloat("rageaim-rifle-mindamage-hidden");
 	static Config2::CFloat* Rifle_HitChance		= Config2::GetFloat("rageaim-rifle-hitchance");
-	static Config2::CState* Rifle_FireIfLethal	= Config2::GetState("rageaim-rifle-baimiflethal");
+	static Config2::CState* Rifle_BaimIfLethal	= Config2::GetState("rageaim-rifle-baimiflethal");
+	static Config2::CState* Rifle_Override		= Config2::GetState("rageaim-rifle-override");
+	static Config2::CFloat* Rifle_OverrideDam	= Config2::GetFloat("rageaim-rifle-override-damage");
 	
 
 	// I could use a switch case for this meh
 	if (WeaponClass == 35)		//pistol
 	{
-		rage.vis_mindam = Pistol_VisMin->Get();
-		rage.hid_mindam = Pistol_HidMin->Get();
+		if (!Pistol_Override->Get())
+		{
+			rage.vis_mindam = Pistol_VisMin->Get();
+			rage.hid_mindam = Pistol_HidMin->Get();
+		}
+		else
+		{
+			rage.vis_mindam = Pistol_OverrideDam->Get();
+			rage.hid_mindam = Pistol_OverrideDam->Get();
+		}
 		rage.hitchance = Pistol_HitChance->Get() / 100.f;
-		rage.BaimIfLethal = Pistol_FireIfLethal->Get();
+		rage.BaimIfLethal = Pistol_BaimIfLethal->Get();
 		GetRageHitboxes(0);
 		return true;
 	}
 	else if (WeaponClass == 37)	//smg
 	{
-		rage.vis_mindam = Smg_VisMin->Get();
-		rage.hid_mindam = Smg_HidMin->Get();
+		if (!Smg_Override->Get())
+		{
+			rage.vis_mindam = Smg_VisMin->Get();
+			rage.hid_mindam = Smg_HidMin->Get();
+		} 
+		else
+		{
+			rage.vis_mindam = Smg_OverrideDam->Get();
+			rage.hid_mindam = Smg_OverrideDam->Get();
+		}
 		rage.hitchance = Smg_HitChance->Get() / 100.f;
-		rage.BaimIfLethal = Smg_FireIfLethal->Get();
+		rage.BaimIfLethal = Smg_BaimIfLethal->Get();
 		GetRageHitboxes(1);
 		return true;
 	}
 	else if (WeaponClass == 36)	//heavy
 	{
-		rage.vis_mindam = Heavy_VisMin->Get();
-		rage.hid_mindam = Heavy_HidMin->Get();
+		if (!Heavy_Override->Get())
+		{
+			rage.vis_mindam = Heavy_VisMin->Get();
+			rage.hid_mindam = Heavy_HidMin->Get();
+		} 
+		else
+		{
+			rage.vis_mindam = Heavy_OverrideDam->Get();
+			rage.hid_mindam = Heavy_OverrideDam->Get();
+		}
 		rage.hitchance = Heavy_HitChance->Get() / 100.f;
-		rage.BaimIfLethal = Heavy_FireIfLethal->Get();
+		rage.BaimIfLethal = Heavy_BaimIfLethal->Get();
 		GetRageHitboxes(2);
 		return true;
 	}
@@ -766,26 +804,50 @@ bool Aimbot::UpdateRageVal()
 	{
 		if (weaponID == 40) //scout
 		{
-			rage.vis_mindam = Scout_VisMin->Get();
-			rage.hid_mindam = Scout_HidMin->Get();
+			if (!Scout_Override->Get())
+			{
+				rage.vis_mindam = Scout_VisMin->Get();
+				rage.hid_mindam = Scout_HidMin->Get();
+			}
+			else
+			{
+				rage.vis_mindam = Scout_OverrideDam->Get();
+				rage.hid_mindam = Scout_OverrideDam->Get();
+			}
 			rage.hitchance = Scout_HitChance->Get() / 100.f;
-			rage.BaimIfLethal = Scout_FireIfLethal->Get();
+			rage.BaimIfLethal = Scout_BaimIfLethal->Get();
 			GetRageHitboxes(3);
 			return true;
 		}
 		else if (weaponID == 9) //awp
 		{
-			rage.vis_mindam = AWP_VisMin->Get();
-			rage.hid_mindam = AWP_HidMin->Get();
+			if (!Auto_Override->Get())
+			{
+				rage.vis_mindam = AWP_VisMin->Get();
+				rage.hid_mindam = AWP_HidMin->Get();
+			}
+			else
+			{
+				rage.vis_mindam = AWP_OverrideDam->Get();
+				rage.hid_mindam = AWP_OverrideDam->Get();
+			}
 			rage.hitchance = AWP_HitChance->Get() / 100.f;
-			rage.BaimIfLethal = AWP_FireIfLethal->Get();
+			rage.BaimIfLethal = AWP_BaimIfLethal->Get();
 			GetRageHitboxes(4);
 			return true;
 		}
 		else if (weaponID == 11 || weaponID == 38) //autos
 		{
-			rage.vis_mindam = Auto_VisMin->Get();
-			rage.hid_mindam = Auto_VisMin->Get();
+			if (!Auto_Override->Get())
+			{
+				rage.vis_mindam = Auto_VisMin->Get();
+				rage.hid_mindam = Auto_VisMin->Get();
+			}
+			else
+			{
+				rage.vis_mindam = Auto_OverrideDam->Get();
+				rage.hid_mindam = Auto_OverrideDam->Get();
+			}
 			rage.hitchance = Auto_VisMin->Get() / 100.f;
 			rage.BaimIfLethal = Auto_VisMin->Get();
 			GetRageHitboxes(5);
@@ -793,10 +855,18 @@ bool Aimbot::UpdateRageVal()
 		}
 		else //rifles
 		{
-			rage.vis_mindam = Rifle_VisMin->Get();
-			rage.hid_mindam = Rifle_HidMin->Get();
+			if (!Rifle_Override->Get())
+			{
+				rage.vis_mindam = Rifle_VisMin->Get();
+				rage.hid_mindam = Rifle_HidMin->Get();
+			}
+			else
+			{
+				rage.vis_mindam = Rifle_OverrideDam->Get();
+				rage.hid_mindam = Rifle_OverrideDam->Get();
+			}
 			rage.hitchance = Rifle_HitChance->Get() / 100.f;
-			rage.BaimIfLethal = Rifle_FireIfLethal->Get();
+			rage.BaimIfLethal = Rifle_BaimIfLethal->Get();
 			GetRageHitboxes(6);
 			return true;
 		}
@@ -978,6 +1048,7 @@ void Aimbot::HandleBaimConditions(int RecordUserID)
 		// Push only pelvis
 		rage.hitboxes.clear();
 		rage.hitboxes.resize(0);
+		rage.hitboxes.push_back(HITBOX_UPPER_CHEST);
 		rage.hitboxes.push_back(HITBOX_PELVIS);
 	}
 }

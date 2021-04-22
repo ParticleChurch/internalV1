@@ -114,52 +114,66 @@ namespace Config2
 
 				p = g->Add("rageaim-pistol-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 0);
-				g->Add("rageaim-pistol-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-pistol-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-pistol-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-pistol-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-pistol-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-pistol-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-pistol-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-pistol-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 				p = g->Add("rageaim-smg-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 1);
-				g->Add("rageaim-smg-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-smg-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-smg-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-smg-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-smg-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-smg-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-smg-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-smg-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 				p = g->Add("rageaim-heavy-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 2);
-				g->Add("rageaim-heavy-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-heavy-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-heavy-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-heavy-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-heavy-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-heavy-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-heavy-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-heavy-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 				p = g->Add("rageaim-rifle-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 3);
-				g->Add("rageaim-rifle-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-rifle-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-rifle-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-rifle-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-rifle-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-rifle-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-rifle-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-rifle-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 				p = g->Add("rageaim-scout-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 4);
-				g->Add("rageaim-scout-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-scout-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-scout-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-scout-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-scout-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-scout-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-scout-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-scout-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 					
 				p = g->Add("rageaim-awp-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 5);
-				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-awp-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-awp-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-awp-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-awp-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-awp-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-awp-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 				p = g->Add("rageaim-auto-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 6);
-				g->Add("rageaim-auto-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
-				g->Add("rageaim-auto-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 1, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-auto-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
+				g->Add("rageaim-auto-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 				g->Add("rageaim-auto-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("rageaim-auto-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-auto-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
+				g->Add("rageaim-auto-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 
 #undef HITBOXES_CONFIG
 			}
