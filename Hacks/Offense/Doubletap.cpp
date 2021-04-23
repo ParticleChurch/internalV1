@@ -8,6 +8,11 @@ Doubletap* doubletap = new Doubletap();
 
 void Doubletap::DoubleTap()
 {
+
+	static Config2::CFloat* ShiftAmount = Config2::GetFloat("tickbase-shift");
+	static Config2::CFloat* RechargeAmount = Config2::GetFloat("tickbase-recharge");
+	shift_ticks = (int)ShiftAmount->Get();
+
 	static bool did_shift_before = false;
 	static int double_tapped = 0;
 	static int prev_shift_ticks = 0;
@@ -63,7 +68,7 @@ void Doubletap::DoubleTap()
 						&& fabsf(weap->GetLastShotTime() - TicksToTime(G::LocalPlayer->GetTickBase())) > 0.5f) {
 						*G::pSendPacket = true;
 						m_charged = false;
-						m_tick_to_recharge = shift_ticks + 5;
+						m_tick_to_recharge = (int)RechargeAmount->Get();
 						reset = false;
 					}
 				}

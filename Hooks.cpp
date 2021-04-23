@@ -356,7 +356,6 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		}
 		ImGui::SliderInt("Player###playerscan", &aimbot->maxplayerscan, 0, 16);
 		
-		ImGui::SliderInt("DT###dtamount", &doubletap->shift_ticks, 0, 32);
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (auto& a : resolver->PlayerInfo)

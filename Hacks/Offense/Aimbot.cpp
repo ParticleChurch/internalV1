@@ -1043,7 +1043,7 @@ void Aimbot::HandleBaimConditions(int RecordUserID)
 	
 	// If potentially lethal
 	//  --> push only pelvis
-	if (p.health < Damage)
+	if (p.health < Damage * 1.2) //1.2 is just a minor MANUAL adjustment lol
 	{
 		// Push only pelvis
 		rage.hitboxes.clear();

@@ -434,6 +434,22 @@ namespace Config2
 			}
 		}
 
+		// DEV Features
+		{
+			Tab* t = new Tab("Dev");
+			{
+				Group* g = t->Add("Tickbase Manipulation");
+				g->Add("tickbase-shift", "Shift Amount", new CFloat(0, 55, 0, "TICKS"));
+				g->Add("tickbase-recharge", "Recharge Amount", new CFloat(0, 64, 0, "TICKS"));
+			}
+			// Need to add buttons to run functions (maybe new CFunc(<insert address of func>)
+			// for reseting and iterating resolver
+			{
+				Group* g = t->Add("Cheat Specific");
+				g->Add("clantag-special", "Special Clantag", new CBoolean());
+			}
+		}
+
 		// THEME
 		{
 			Tab* t = new Tab("Theme");
@@ -544,6 +560,8 @@ namespace Config2
 				g->Add("theme-tooltip-border", "Tooltip Outline", new CColor(true));
 			}
 		}
+
+		
 
 		// CONFIG
 		{
