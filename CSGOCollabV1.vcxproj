@@ -300,6 +300,7 @@
     <ClInclude Include="Valve\SDK\CTraceFilter.hpp" />
     <ClInclude Include="Valve\SDK\CUserCmd.hpp" />
     <ClInclude Include="Valve\SDK\EFontFlags.hpp" />
+    <ClInclude Include="Valve\SDK\IClientNetworkable.hpp" />
     <ClInclude Include="Valve\SDK\KeyValues.h" />
     <ClInclude Include="Valve\SDK\Material.h" />
     <ClInclude Include="Valve\SDK\NetChannel.hpp" />

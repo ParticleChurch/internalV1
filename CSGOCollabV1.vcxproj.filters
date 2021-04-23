@@ -423,6 +423,9 @@
     <ClInclude Include="GUI\KnifeSequence.hpp">
       <Filter>Headers\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\SDK\IClientNetworkable.hpp">
+      <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

@@ -191,6 +191,10 @@ void SkinChanger::Hook()
                 }
             }
         }
+        else if (!strcmp(pClass->m_pNetworkName, "CEconWearable"))
+        {
+            CreateWearable = pClass->m_pCreateFn;
+        }
     }
 }
 
@@ -264,6 +268,19 @@ void SkinChanger::ClearSkin(Entity* Weapon)
     Update();
 }
 
+CreateClientClassFn SkinChanger::CreateWearable = nullptr;
+HANDLE GenerateGlove(Entity** Output)
+{
+    int NextIndex = I::entitylist->GetHighestEntityIndex() + 1;
+    int SerialNumber = rand() % 4096;
+    HANDLE Handle = (HANDLE)(NextIndex | SerialNumber << 16);
+
+    SkinChanger::CreateWearable(NextIndex, SerialNumber);
+    *Output = I::entitylist->GetClientEntity(NextIndex);
+
+    return Handle;
+}
+
 WeaponId SkinChanger::OriginalKnife = WeaponId::INVALID;
 WeaponId SkinChanger::AppliedKnife = WeaponId::TDefaultKnife;
 void SkinChanger::RunFSN()
@@ -272,6 +289,37 @@ void SkinChanger::RunFSN()
     static auto KnifeModel = Config2::GetState("skinchanger-knife-model");
     static auto KnifeSkin = Config2::GetPaintKit("skinchanger-knife-paintkit");
     static auto KnifeWear = Config2::GetFloat("skinchanger-knife-wear");
+
+    {
+        HANDLE* Wearables = G::LocalPlayer->GetWearables();
+
+        HANDLE hWearingGlove = Wearables[0];
+        Entity* WearingGlove = I::entitylist->GetClientEntityFromHandle(hWearingGlove);
+
+        static HANDLE hCreatedGlove = hWearingGlove;
+        Entity* CreatedGlove = hWearingGlove == hCreatedGlove ? WearingGlove : I::entitylist->GetClientEntityFromHandle(hCreatedGlove);
+
+        // if there's no valid glove, create one
+        if (!WearingGlove && !CreatedGlove)
+        {
+            hCreatedGlove = GenerateGlove(&CreatedGlove);
+        }
+
+        // if not wearing valid glove, apply created one
+        if (!WearingGlove)
+        {
+            hWearingGlove = hCreatedGlove;
+            WearingGlove = CreatedGlove;
+        }
+
+        Wearables[0] = hWearingGlove;
+
+        *WearingGlove->GetIndex() = -1;
+        *WearingGlove->GetItemDefinitionIndex() = (int)WeaponId::SportGloves;
+        WearingGlove->SetModelIndex(I::modelinfo->GetModelIndex("models/weapons/v_models/arms/glove_sporty/v_glove_sporty.mdl"));
+        ForceSkin(WearingGlove, 10048, 0.001f);
+        WearingGlove->GetClientNetworkable()->PreDataUpdate(0);
+    }
 
     for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
     {

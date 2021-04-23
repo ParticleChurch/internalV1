@@ -237,6 +237,18 @@ public:
 	// When changed, can be used to make a weapon appear as something else, 
 	// most commonly used to change the default knives.
 
+	bool* IsInitalized()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAttributableItem", "m_bInitialized");
+		return (bool*)((DWORD)this + offset);
+	}
+
+	HANDLE* GetWearables()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseCombatCharacter", "m_hMyWearables");
+		return (HANDLE*)((DWORD)this + offset);
+	}
+
 	// an array
 	unsigned int* GetWeapons()
 	{
@@ -244,10 +256,28 @@ public:
 		return (unsigned int*)((DWORD)this + offset);
 	}
 
+	int* GetIndex()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_bIsAutoaimTarget") + sizeof(int);
+		return (int*)((DWORD)this + offset);
+	}
+
 	int* GetModelIndex()
 	{
 		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_nModelIndex");
 		return (int*)((DWORD)this + offset);
+	}
+
+	void SetModelIndex(const int index)
+	{
+		typedef void (__thiscall* oSetModelIndex)(void*, const int);
+		return GetVFunc<oSetModelIndex>(this, 75)(this, index);
+	}
+
+	IClientNetworkable* GetClientNetworkable()
+	{
+		static DWORD offset = 8;// N::GetOffset("DT_BaseViewModel", "m_hWeapon");
+		return (IClientNetworkable*)((DWORD)this + offset);
 	}
 
 	HANDLE GetWeapon()

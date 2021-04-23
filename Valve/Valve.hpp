@@ -31,6 +31,7 @@
 #include "SDK/Material.h"
 #include "SDK/KeyValues.h"
 #include "SDK/SoundData.hpp"
+#include "SDK/IClientNetworkable.hpp"
 
 //INTERFACES
 #include "Interfaces/IBaseClientDLL.hpp"

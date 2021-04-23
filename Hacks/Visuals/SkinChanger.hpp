@@ -4,6 +4,7 @@ namespace SkinChanger
 {
 	extern RecvVarProxyFn oModelIndexProxy;
 	extern RecvVarProxyFn oSequenceProxy;
+	extern CreateClientClassFn CreateWearable;
 
 	extern WeaponId OriginalKnife;
 	extern WeaponId AppliedKnife;

@@ -33,7 +33,7 @@ void Init()
     G::Init();           L::Log("G::Init() complete");
     H::Init();           L::Log("H::Init() complete");
     GUI2::LoadProgress = 1.f;
-    L::Log(N::DumpTable().c_str());
+    //L::Log(N::DumpTable().c_str());
 
     L::Log("DLLMain complete. Now waiting for ejection");
     while (!G::KillDLL) Sleep(100);
