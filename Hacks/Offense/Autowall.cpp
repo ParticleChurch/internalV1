@@ -212,15 +212,17 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
             return false;
 
         // We have reached end of trace and therefore can hit it
-        if (Trace.Fraction == 1.0f)
+        L::Verbose("Checking trace fraction 1");
+        if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
             H::console.push_back("trace fraction 1");
-            return false;
+            return true;
         }
             
 
-        // We've hit an enemy hitbox, and therefore can't hit point? can hit? idk... prob should should ig
-        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
+        // We've hit an enemy hitbox, and therefore can't hit point?
+        // as long as trace entity's team isn't on our team
+        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
 
             float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;

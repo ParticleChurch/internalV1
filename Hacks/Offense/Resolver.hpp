@@ -45,6 +45,8 @@ private:
 public:
 	// For logging spread
 	bool LogShot = false;
+	bool BacktrackShot = false;
+	int UserID = -1;
 
 	//userid, PlayerRes
 	std::map<int, PlayerRes> PlayerInfo;

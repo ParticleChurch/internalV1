@@ -616,6 +616,7 @@ void Aimbot::Rage()
 	// under the users standerds (hitchance etc...)
 	if (RecordID != -1 && ScanPlayer(RecordID, AimPoint))
 	{
+		resolver->UserID = RecordID;
 		L::Verbose("go brrrr2");
 		// Get Angle and do recoil
 		QAngle Angle = CalculateAngle(AimPoint);
@@ -627,7 +628,7 @@ void Aimbot::Rage()
 		G::cmd->viewangles = Angle;
 
 		// If autoshoot.. FIRE!
-		if (AutoShoot->Get())
+		if (AutoShoot->Get()) 
 		{
 			resolver->LogShot = true;
 			G::cmd->buttons |= IN_ATTACK;
@@ -642,7 +643,7 @@ void Aimbot::Rage()
 	// Otherwise do a less detailed backtrack scan of all of the players
 	else
 	{
-		// Clear up the playerscanlist
+		// Clear up the playerscanlist (trying to scan closest player + whatever)
 		PlayersScanned.clear();
 		PlayersScanned.resize(0);
 
@@ -660,6 +661,7 @@ void Aimbot::Rage()
 			L::Verbose("ScanPlayerBacktrack");
 			if (RecordID != -1 && ScanPlayerBacktrack(RecordID, AimPoint, tick_count))
 			{
+				resolver->UserID = RecordID;
 				L::Verbose("go brrrr");
 				// Get Angle and do recoil
 				QAngle Angle = CalculateAngle(AimPoint);
@@ -681,7 +683,7 @@ void Aimbot::Rage()
 				if (G::pSendPacket && !FakeDuck->Get())
 					*G::pSendPacket = true;
 				return;
-			}
+			} 
 		}
 		return;
 	}
@@ -1127,32 +1129,45 @@ bool Aimbot::ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count)
 	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
 		return false;
 
+	if (G::EntList[RecordUserID].BacktrackRecords.empty()) // no backtrack records...
+		return false;
+
+	L::Verbose("StudioModel");
+
 	// Make sure correct studio model
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
 	if (!StudioModel) return false; //if cant get the model
+
+	L::Verbose("psudo hitchance");
 
 	// Do psudo hitchance (because backtrack, basically how relatively a weapon is)
 	float hitchance = CalculatePsudoHitchance();
 	if (!(hitchance >= rage.hitchance))
 		return false;
 
-	// Find Best Tick (back is the oldest tick)
+	L::Verbose("BacktrackRecords.back()");
+	// Find Best Tick (back is the oldest tick, or the shot one)
 	Player::Tick TargetTick = G::EntList[RecordUserID].BacktrackRecords.back();
 	
+	L::Verbose("Through Hitboxes");
 	// go through those hitboxes and see if I can shoot them :D
 	for (auto HITBOX : rage.hitboxes)
 	{
+		L::Verbose("StudioBox");
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
 
+		L::Verbose("min, max, mid");
 		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
 
 		// Make sure Damage is good
+		L::Verbose("CanHitFloatingPoint");
 		if (autowall->CanHitFloatingPoint(mid))
 		{
+			
 			Point = mid;
 			tick_count = TimeToTicks(TargetTick.SimulationTime + LerpTime2());
 			return true;

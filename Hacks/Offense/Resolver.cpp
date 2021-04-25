@@ -145,7 +145,6 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		// LUCKY shot (wasn't going t hit but did)
 		PlayerInfo[ImpactEndUserID].ShotsMissed++;
 		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
-		ConsoleColorMsg(Color(255, 255, 255), "Shot ");
 		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
 		ConsoleColorMsg(Color(255, 255, 255), " for ");
 		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
@@ -307,13 +306,28 @@ void Resolver::Resolve()
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
 
-	if (LogShot && LogEnable->Get())
+	if (LogShot && LogEnable->Get() && !BacktrackShot)
 	{
-		LogShot = false;
-		ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to ");
-		ConsoleColorMsg(Color(255, 0, 0), "spread\n");
+		player_info_t info;
+		if (!I::engine->GetPlayerInfo(UserID, &info))
+		{
+			ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to");
+			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
+		}
+		else
+		{
+			ConsoleColorMsg(Color(255, 255, 255), "Missed shot on");
+			ConsoleColorMsg(Color(255, 0, 0), "[%s]", info.name);
+			ConsoleColorMsg(Color(255, 255, 255), "  due to ");
+			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
+		}
 	}
-	
+	else if(LogEnable->Get())
+	{
+		ConsoleColorMsg(Color(123, 123, 123), "Backtrack Shot --> Unknown");
+		BacktrackShot = false;
+	}
+	LogShot = false;
 
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{

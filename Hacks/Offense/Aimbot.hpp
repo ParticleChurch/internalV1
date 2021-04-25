@@ -50,7 +50,7 @@ private:
 	bool ScanPlayer(int RecordUserID, Vec& Point);
 
 public:
-	int maxplayerscan = 0;
+	int maxplayerscan = 1;
 	// General Public Functions
 	Vec CalculateAngle(Vec Target);
 	Vec CalculateAngle(Vec Source, Vec Target);

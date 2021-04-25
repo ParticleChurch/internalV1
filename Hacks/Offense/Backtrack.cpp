@@ -134,7 +134,6 @@ static void CapsuleOverlay2(Entity* pPlayer, Color col, float duration, Matrix3x
 	}
 }
 
-
 void Backtrack::run()
 {
 	static Config2::CState* RageAimbot = Config2::GetState("rage-aim-enable");
