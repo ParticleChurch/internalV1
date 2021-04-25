@@ -12,6 +12,15 @@ public:
 	}
 };
 
+
+class CBoneAccessor {
+public:
+	void* m_pAnimating;
+	Matrix3x4* m_pBones;
+	int        m_ReadableBones;
+	int        m_WritableBones;
+};
+
 using CBaseHandle = uint32_t;
 class Entity
 {
@@ -24,6 +33,17 @@ public:
 	}
 
 	// FUCKING ANIMATIONS
+	CBoneAccessor& m_BoneAccessor() {
+		// .text:101A9253 1C4    C7 81 A0 26 00 00 00 FF 0F 00    mov     dword ptr[ ecx + 26A0h ], 0FFF00h
+		// .text:101A925D 1C4    C7 81 9C 26 00 00 00 FF 0F 00    mov     dword ptr[ ecx + 269Ch ], 0FFF00h
+		// .text:101A9267 1C4    8B 10                            mov     edx, [ eax ]
+		// .text:101A9269 1C4    8D 81 94 26 00 00                lea     eax, [ ecx + 2694h ]; Load Effective Address
+		// .text:101A926F 1C4    50                               push    eax
+		static DWORD BoneAccessor = FindPattern("client.dll", "8D 81 ? ? ? ? 50 8D 84 24") + 2;
+
+		return *(CBoneAccessor*)(BoneAccessor);
+	}
+
 	void CreateState(AnimState* state)
 	{
 		static auto CreateAnimState = reinterpret_cast<void(__thiscall*)(AnimState*, Entity*)>(FindPattern("client.dll", "55 8B EC 56 8B F1 B9 ? ? ? ? C7 46"));
@@ -55,6 +75,23 @@ public:
 	{
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_iObserverMode");
 		return (int*)((DWORD)this + offset);
+	}
+
+	uint32_t& OcclusionFlags()
+	{
+		return *(uint32_t*)((DWORD)this + 0xA28);
+	}
+
+	void StandardBlendingRules(studiohdr_t* hdr, Vec* pos, quaternion_t* q, float time, int mask)
+	{
+		using StandardBlendingRules_t = void(__thiscall*)(decltype(this), studiohdr_t*, Vec*, quaternion_t*, float, int);
+		return GetVFunc< StandardBlendingRules_t >(this, 205)(this, hdr, pos, q, time, mask);
+	}
+
+	void BuildTransformations(studiohdr_t* hdr, Vec* pos, quaternion_t* q, const Matrix3x4& transform, int mask, uint8_t* computed)
+	{
+		using BuildTransformations_t = void(__thiscall*)(decltype(this), studiohdr_t*, Vec*, quaternion_t*, Matrix3x4 const&, int, uint8_t*);
+		return GetVFunc< BuildTransformations_t >(this, 189)(this, hdr, pos, q, transform, mask, computed);
 	}
 
 	const Matrix3x4& GetTransform()
@@ -470,6 +507,12 @@ public:
 		return *(float*)((DWORD)this + offset);
 	}
 
+	int& GetEffects() //GetEyeAngles
+	{
+		static DWORD offset = 0xF0;
+		return *(int*)((DWORD)this + offset);
+	}
+
 	Vec GetEyeAngles() //GetEyeAngles
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
@@ -491,6 +534,13 @@ public:
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");
 		*(QAngle*)((DWORD)this + offset) = angle;
+	}
+
+	Vec& GetAbsOrigin()
+	{
+		typedef Vec& (__thiscall* OriginalFn)(void*);
+		static OriginalFn f = GetVFunc<OriginalFn>(this, 10);
+		return f(this);
 	}
 
 	Vec& GetAbsAngles()
@@ -592,6 +642,13 @@ public:
 		SetAbsAngles(this, angle);
 	}
 
+	void SetAbsOrigin(Vec origin)
+	{
+		using SetAbsOriginFn = void(__thiscall*)(decltype(this), const Vec&);
+		static SetAbsOriginFn SetAbsOrigin = (SetAbsOriginFn)FindPattern("client.dll", "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8 ? ?");
+		SetAbsOrigin(this, origin);
+	}
+
 	bool IsAlive()
 	{
 		return this->GetHealth() > 0 && this->GetLifeState() == 0;
@@ -624,6 +681,12 @@ public:
 	{
 		typedef Model* (__thiscall* oGetModel)(void*);
 		return GetVFunc<oGetModel>(this + 4, 8)(this + 4);
+	}
+
+	Vec& GetRenderOrigin()
+	{
+		typedef Vec& (__thiscall* oGetRenderOrigin)(void*);
+		return GetVFunc<oGetRenderOrigin>(this + 4, 1)(this + 4);
 	}
 
 	mstudiobbox_t* GetHitBoxSet(int Hitbox)

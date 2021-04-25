@@ -124,6 +124,9 @@
     <ClCompile Include="GUI\KnifeSequence.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="Hacks\Offense\LagComp.cpp">
+      <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -425,6 +428,9 @@
     </ClInclude>
     <ClInclude Include="Valve\SDK\IClientNetworkable.hpp">
       <Filter>Headers\Valve\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Hacks\Offense\LagComp.hpp">
+      <Filter>Headers\Hacks\Offense</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

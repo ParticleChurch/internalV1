@@ -198,6 +198,7 @@
     <ClCompile Include="Hacks\Offense\Autowall.cpp" />
     <ClCompile Include="Hacks\Offense\Backtrack.cpp" />
     <ClCompile Include="Hacks\Offense\Doubletap.cpp" />
+    <ClCompile Include="Hacks\Offense\LagComp.cpp" />
     <ClCompile Include="Hacks\Offense\Resolver.cpp" />
     <ClCompile Include="Hacks\Visuals\AnimFix.cpp" />
     <ClCompile Include="Hacks\Visuals\Chams.cpp" />
@@ -241,6 +242,7 @@
     <ClInclude Include="Hacks\Offense\Autowall.hpp" />
     <ClInclude Include="Hacks\Offense\Backtrack.hpp" />
     <ClInclude Include="Hacks\Offense\Doubletap.hpp" />
+    <ClInclude Include="Hacks\Offense\LagComp.hpp" />
     <ClInclude Include="Hacks\Offense\Resolver.hpp" />
     <ClInclude Include="Hacks\Visuals\AnimFix.hpp" />
     <ClInclude Include="Hacks\Visuals\Chams.hpp" />

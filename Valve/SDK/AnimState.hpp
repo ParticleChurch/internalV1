@@ -9,9 +9,9 @@ struct AnimState
 	void* pLastActiveWeapon; //0x68
 	float m_flLastClientSideAnimationUpdateTime; //0x6C
 	int m_iLastClientSideAnimationUpdateFramecount; //0x70
-	float m_flEyePitch; //0x74
+	float m_flAnimUpdateDelta; //0x74
 	float m_flEyeYaw; //0x78
-	float m_flPitch; //0x7C
+	float m_flEyePitch; //0x7C
 	float m_flGoalFeetYaw; //0x80
 	float m_flCurrentFeetYaw; //0x84
 	float m_flCurrentTorsoYaw; //0x88

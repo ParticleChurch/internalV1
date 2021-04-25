@@ -1,6 +1,11 @@
 #pragma once
 class Matrix3x4;
 
+class quaternion_t {
+public:
+	float x, y, z, w;
+};
+
 class Vec2 {
 public:
 	float x;
