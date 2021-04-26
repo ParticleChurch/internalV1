@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <array>
+#include <assert.h>
 
 namespace TextService
 {
@@ -15,63 +16,57 @@ namespace TextService
 /*
 	COMPILE-TIME ENCRYPTION
 */
-#ifdef _MSC_VER
-#define INLINE __forceinline
-#else
-#define INLINE inline
-#endif
-
 namespace TextService
 {
-	namespace StringEncoding
-	{
-		// get the timestamp (hh:mm:ss) at the time of compilation
-		constexpr unsigned char compile_time_hh = 10 * (__TIME__[0] - 48) + (__TIME__[1] - 48); // [0, 23]
-		constexpr unsigned char compile_time_mm = 10 * (__TIME__[3] - 48) + (__TIME__[4] - 48); // [0, 59]
-		constexpr unsigned char compile_time_ss = 10 * (__TIME__[6] - 48) + (__TIME__[7] - 48); // [0, 59]
-
-		// generate a "random" number at compile time
-		// although not random, its purpose is to be a different number everytime you compile
-		// since strings will be XOR'd with this value, it will be random enough
-		constexpr unsigned char xor_seed = 3 * compile_time_ss + compile_time_mm + compile_time_hh / 2; // 4 + [0, 3 * 59 + 59 + 11] = [4, 251]
-
-		template <size_t N, int K>
+	namespace StringEncoding {
 		struct string
 		{
-			unsigned char seed;
-			std::array<char, N + 1> data;
+			const char* original;
+			char* str;
+			size_t size;
 
-			constexpr char xor_char(char c) const
+			string(size_t size, size_t tagLength, const char* src) noexcept
 			{
-				return c ^ seed;
-			}
-
-			// compile time
-			template <size_t... indicies>
-			constexpr INLINE string(const char* str, std::index_sequence<indicies...>) : seed((unsigned char)((K + xor_seed) % 256)), data{ { xor_char(str[indicies])... } } {}
-
-			// runtime
-			INLINE char* runtime_xor()
-			{
-				for (size_t i = 0; i < N; ++i)
+				this->original = src;
+				this->str = new char[size];
+				this->size = size;
+				if (((const volatile char*)this->original)[0] == '^') // this string has been altered by an external source
 				{
-					data[i] = xor_char(data[i]);
+					size_t i = 0;
+
+					// xor 4 byte chunks
+					uint32_t key = *(uint32_t*)(this->original + 1);
+					for (; size >= 4 && i <= size - 4; i += 4)
+					{
+						*(uint32_t*)(this->str + i) = *(uint32_t*)(this->original + tagLength + i) ^ key;
+					}
+
+					// xor remaining bytes 1 at a time
+					char smallkey = key & 0xff;
+					for (; i < size; i++)
+					{
+						this->str[i] = this->original[tagLength + i] ^ smallkey;
+					}
 				}
-				data[N] = '\0';
-				return data.data();
+				else
+				{
+					assert(this->original[0] == '!');
+
+					// this string was not changed by an external source
+					// just copy without XOR-ing
+					for (size_t i = 0; i < size; i++)
+						this->str[i] = this->original[tagLength + i];
+				}
 			}
-			INLINE char* runtime_get()
-			{
-				return data.data();
-			}
+			~string() { delete[] this->str; }
+
+			__forceinline const char* runtime_get() noexcept { return str; }
 		};
-	}
+	};
 }
 
-#define MAKE_ENCODED_STRING(s) (TextService::StringEncoding::string<sizeof(s) - 1, __COUNTER__>((s), std::make_index_sequence<sizeof(s) - 1>()))
-#define ENCODED(s) (MAKE_ENCODED_STRING(s).runtime_get())
-// for now, disable this because it decreases performance... need to find a good alternative 
-//#define XOR(s) (MAKE_ENCODED_STRING(s).runtime_xor())
-#define XOR(s) s 
+#define MAKE_ENCODED(string_literal) (TextService::StringEncoding::string(sizeof(string_literal), 5, "!XOR!" string_literal))
+#define XOR(string_literal) (MAKE_ENCODED(string_literal).runtime_get())
 
-#undef INLINE
+#define MAKE_ENCODED_S(str, strsize) (TextService::StringEncoding::string(sizeof(str), 5 + sizeof(#strsize) - 1, "!XOR" #strsize "!" str))
+#define XOR_S(string_literal, string_size) (MAKE_ENCODED_S(string_literal, string_size).runtime_get())

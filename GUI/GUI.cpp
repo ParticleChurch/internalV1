@@ -2396,7 +2396,7 @@ void GUI2::DrawActiveTab()
 			ImGui::PushFont(Arial18BoldItalics);
 
 			ImGui::SetCursorPos(ImVec2(10.f, 131));
-			Ejected |= ImGui::Button("EJECT NOW##confirm", ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
+			Ejected |= ImGui::Button(XOR("EJECT NOW##confirm"), ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
 
 			ImGui::PopFont();
 
@@ -2408,7 +2408,7 @@ void GUI2::DrawActiveTab()
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 	}
-	else if (ActiveTab->Name == "Skinchanger")
+	else if (ActiveTab->Name == XOR("Skinchanger"))
 	{
 		ImU32 ButtonBackgroundColor = *ButtonBase;
 		ImU32 ButtonHoveringColor = *ButtonHovered;
