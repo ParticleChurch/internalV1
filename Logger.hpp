@@ -16,6 +16,7 @@ namespace L
 	constexpr LogMode OutputMode = LogMode::Both;
 	constexpr LogMode VerboseMode = LogMode::File;
 	extern std::string FilePath;
+	extern std::ofstream File;
 
 	extern void Init();
 	extern void Log(const char* txt, const char* end = "\n", bool flush = true);

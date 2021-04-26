@@ -21,8 +21,6 @@ void Init()
     GUI2::LoadProgress = 0.f;
 
     L::Init();    L::Log("DLLMain executed");
-    L::Log(XOR("hello1"));
-    L::Log(XOR("hello2"));
 
     Config2::Init(); L::Log("Config2::Init() complete");
     I::GUIInit(); L::Log("I::GUIInit() complete");
@@ -45,10 +43,6 @@ void Init()
     SkinChanger::UnHook(); L::Log("SkinChanger::UnHook(); complete");
     H::UnHook();           L::Log("H::UnHook(); complete");
     H::Free();             L::Log("H::Free(); complete");
-    for (char* s : TextService::StringEncoding::strings)
-        if (s)
-            delete[] s;
-    L::Log("Strings::Free(); complete");
 
     L::Log("Freeing logger and FreeLibraryAndExitThread");
     L::Free();

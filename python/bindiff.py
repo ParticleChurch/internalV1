@@ -1,5 +1,5 @@
-f1 = r"E:\GitHub\Metamorpher\out\4.dll"
-f2 = r"E:\GitHub\Metamorpher\out\3.dll"
+f1 = r"E:\GitHub\internalV1\Release\CSGOCollabV1.dll"
+f2 = r"E:\GitHub\internalV1\Release\0.dll"
 
 one = open(f1, "rb")
 two = open(f2, "rb")
