@@ -39,3 +39,6 @@ int TextService::CountOccurances(std::string needle, std::string haystack)
 
 	return count;
 }
+
+
+std::vector<char*> TextService::StringEncoding::strings = {};

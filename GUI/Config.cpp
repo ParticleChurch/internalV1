@@ -1220,7 +1220,7 @@ namespace Config2
 			size_t bruh = nBytes - i;
 			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				L::Log(XOR("Failed to import property... This theme is probably fucked"));
+				L::Log(XOR("Failed to import property... This theme is probably fucked0"));
 			}
 			i += bruh;
 		}
@@ -1251,7 +1251,7 @@ namespace Config2
 			size_t bruh = nBytes - i;
 			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				L::Log(XOR("Failed to import property... This config is probably fucked"));
+				L::Log("Failed to import property... This config is probably fucked");
 			}
 			i += bruh;
 		}
