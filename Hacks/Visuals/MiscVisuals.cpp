@@ -179,3 +179,58 @@ void MiscVisuals::ForceCrosshair()
 			m_iCrosshairData->SetValue(!(G::LocalPlayer->IsScoped() || !Enable->Get()) ? 3 : 0);
 	}
 }
+
+std::vector<std::string> MiscVisuals::GetSpectators()
+{
+	// If no localplayer or not in game, dont bother...
+	if (!I::engine->IsInGame()) return std::vector<std::string>();
+	if (!G::LocalPlayer) return std::vector<std::string>();
+
+	Entity* Player = G::LocalPlayer;
+	if (!G::LocalPlayer->IsAlive())
+	{
+		// if not observing crap, return nothing
+		Entity* ObserverTarget = Player->GetObserverTarget();
+		if (!ObserverTarget)
+		{
+			return std::vector<std::string>();
+		}
+			
+		// set to person we are observing
+		Player = ObserverTarget;
+	}
+
+	// Get people :D
+	int spectators = 0;
+	std::vector<std::string> SpecList = {};
+	
+	for (int i = 1; i <= I::globalvars->m_maxClients; i++) {
+		Entity* ent = I::entitylist->GetClientEntity(i);
+
+		if (!ent)
+			continue;
+
+		player_info_t info;
+
+		if (!I::engine->GetPlayerInfo(i, &info))
+			continue;
+
+		Entity* SpecatedPlayer = ent->GetObserverTarget();
+
+		if (!SpecatedPlayer)
+			continue;
+
+		if (ent->IsAlive() || ent->IsDormant())
+			continue;
+
+		player_info_t spectated_player_info;
+
+		if (!I::engine->GetPlayerInfo(SpecatedPlayer->Index(), &spectated_player_info))
+			continue;
+
+		SpecList.push_back(info.name);
+		spectators++;
+	}
+
+	return SpecList;
+}

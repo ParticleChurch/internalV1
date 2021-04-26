@@ -65,11 +65,17 @@ public:
 		ResetAnimState(state);
 	}
 	// Thirdperson crap
-	int* GetObserverTarget()
+	HANDLE& m_hObserverTarget()
 	{
-		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_hObserverTarget");
-		return (int*)((DWORD)this + offset);
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_hObserverTarget");
+		return *(HANDLE*)((DWORD)this + offset);
 	}
+
+	Entity* GetObserverTarget()
+	{
+		return I::entitylist->GetClientEntityFromHandle(m_hObserverTarget());
+	}
+	
 
 	int* GetObserverMode()
 	{

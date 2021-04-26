@@ -19,6 +19,7 @@ public:
 	void NoSmokeFSN();
 	void ChangeViewModel();
 	void ForceCrosshair();
+	std::vector<std::string> GetSpectators();
 
 };
 
