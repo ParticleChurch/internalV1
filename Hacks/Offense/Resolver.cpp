@@ -322,7 +322,7 @@ void Resolver::Resolve()
 			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
 		}
 	}
-	else if(LogEnable->Get())
+	else if(LogEnable->Get() && BacktrackShot)
 	{
 		ConsoleColorMsg(Color(123, 123, 123), "Backtrack Shot --> Unknown");
 		BacktrackShot = false;

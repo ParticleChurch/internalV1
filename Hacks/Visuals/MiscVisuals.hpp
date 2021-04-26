@@ -9,6 +9,8 @@ public:
 	// Thirdperson Function/Vars
 	void ThirdPerson_hkCamToFirstPeron();
 	void ThirdPerson_DoPostScreenEffects();
+
+	// Others
 	void RankRevealer();
 	void GrenadePrediction();
 	void NoScope();
@@ -16,6 +18,8 @@ public:
 	void NoSmoke_DoPostScreenEffects();
 	void NoSmokeFSN();
 	void ChangeViewModel();
+	void ForceCrosshair();
+	std::vector<std::string> GetSpectators();
 
 };
 

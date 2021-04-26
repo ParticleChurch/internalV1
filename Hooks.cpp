@@ -374,8 +374,15 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			}
 		}
 		
+		ImGui::Text("Spec List");
+		for (auto a : miscvisuals->GetSpectators())
+		{
+			ImGui::Text(a.c_str());
+		}
+		
 		for (auto a : console)
 			ImGui::Text(a.c_str());
+		
 		ImGui::End();
 		//*/
 		
@@ -822,6 +829,7 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
 	miscvisuals->NoSmoke_DoPostScreenEffects();
 	world->Run_DoPostScreenEffect();
+	miscvisuals->ForceCrosshair();
 	L::Verbose("H::DoPostScreenEffectsHook - end");
 
 	return oDoPostScreenEffects(I::clientmode, param);
