@@ -822,6 +822,7 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
 	miscvisuals->NoSmoke_DoPostScreenEffects();
 	world->Run_DoPostScreenEffect();
+	miscvisuals->ForceCrosshair();
 	L::Verbose("H::DoPostScreenEffectsHook - end");
 
 	return oDoPostScreenEffects(I::clientmode, param);

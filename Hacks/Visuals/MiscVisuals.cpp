@@ -165,3 +165,17 @@ void MiscVisuals::ChangeViewModel()
 	I::cvar->FindVar("viewmodel_offset_y")->SetValue(Config::GetFloat("visuals-view-y"));
 	I::cvar->FindVar("viewmodel_offset_z")->SetValue(Config::GetFloat("visuals-view-z"));*/
 }
+
+void MiscVisuals::ForceCrosshair()
+{
+	static Config2::CState* Enable = Config2::GetState("visuals-misc-forcecrosshair");
+
+	static ConVar* m_iCrosshairData = I::cvar->FindVar("weapon_debug_spread_show");
+
+	if (I::engine->IsInGame())
+	{
+		// if you are scoped or you aren't enabled
+		if (G::LocalPlayer && G::LocalPlayerAlive)
+			m_iCrosshairData->SetValue(!(G::LocalPlayer->IsScoped() || !Enable->Get()) ? 3 : 0);
+	}
+}
