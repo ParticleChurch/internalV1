@@ -20,7 +20,6 @@ public:
 	void ChangeViewModel();
 	void ForceCrosshair();
 	std::vector<std::string> GetSpectators();
-
 };
 
 extern MiscVisuals* miscvisuals;

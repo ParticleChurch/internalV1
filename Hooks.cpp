@@ -373,7 +373,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 				a.second.ShotsMissed += 1;
 			}
 		}
-		
+
 		ImGui::Text("Spec List");
 		for (auto a : miscvisuals->GetSpectators())
 		{
