@@ -27,18 +27,18 @@ ImFont* Arial18BoldItalics;
 void GUI2::LoadFonts(ImGuiIO& io)
 {
 	FontDefault = io.Fonts->AddFontDefault();
-	AYO_LOAD_FONT_BRUH(Arial8,             XOR("C:\\Windows\\Fonts\\arial.ttf"  ), 8.f);
-	AYO_LOAD_FONT_BRUH(Arial12,            XOR("C:\\Windows\\Fonts\\arial.ttf"  ), 12.f);
-	AYO_LOAD_FONT_BRUH(Arial14,            XOR("C:\\Windows\\Fonts\\arial.ttf"  ), 14.f);
-	AYO_LOAD_FONT_BRUH(Arial16,            XOR("C:\\Windows\\Fonts\\arial.ttf"  ), 16.f);
-	AYO_LOAD_FONT_BRUH(Arial18,            XOR("C:\\Windows\\Fonts\\arial.ttf"  ), 18.f);
-	AYO_LOAD_FONT_BRUH(Arial12Italics,     XOR("C:\\Windows\\Fonts\\ariali.ttf" ), 12.f);
-	AYO_LOAD_FONT_BRUH(Arial14Italics,     XOR("C:\\Windows\\Fonts\\ariali.ttf" ), 14.f);
-	AYO_LOAD_FONT_BRUH(Arial16Italics,     XOR("C:\\Windows\\Fonts\\ariali.ttf" ), 16.f);
-	AYO_LOAD_FONT_BRUH(Arial18Italics,     XOR("C:\\Windows\\Fonts\\ariali.ttf" ), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial8, XOR("C:\\Windows\\Fonts\\arial.ttf"), 8.f);
+	AYO_LOAD_FONT_BRUH(Arial12, XOR("C:\\Windows\\Fonts\\arial.ttf"), 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14, XOR("C:\\Windows\\Fonts\\arial.ttf"), 14.f);
+	AYO_LOAD_FONT_BRUH(Arial16, XOR("C:\\Windows\\Fonts\\arial.ttf"), 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18, XOR("C:\\Windows\\Fonts\\arial.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial12Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 14.f);
+	AYO_LOAD_FONT_BRUH(Arial16Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 18.f);
 	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 14.f);
 	AYO_LOAD_FONT_BRUH(Arial18BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 18.f);
-	AYO_LOAD_FONT_BRUH(Arial18Bold,        XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial18Bold, XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 18.f);
 
 	return;
 problemo:
@@ -124,11 +124,11 @@ namespace ImGui
 		int Segments = max(9, IM_PI * Size.x * 0.2f);
 
 		// bottom curve
-		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y - Size.x / 2), Size.x / 2, -IM_PI/6.f, IM_PI*7.f/6.f, Segments);
-		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y / 12.f), Size.y / 12.f, IM_PI*7.f/6.f, IM_PI*11.f/6.f, Segments / 3);
-		
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y - Size.x / 2), Size.x / 2, -IM_PI / 6.f, IM_PI * 7.f / 6.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(Size.x / 2, Size.y / 12.f), Size.y / 12.f, IM_PI * 7.f / 6.f, IM_PI * 11.f / 6.f, Segments / 3);
+
 		DrawList->AddConvexPolyFilled(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity));
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(0,0,0, Opacity), true, StrokeSize);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(0, 0, 0, Opacity), true, StrokeSize);
 		DrawList->PathClear();
 	}
 
@@ -195,7 +195,7 @@ namespace ImGui
 		DrawList->PathArcTo(Position + ImVec2(Size.x / 2.f, ShackleRadius + StrokeSize / 2.f), ShackleRadius, -IM_PI, 0.f, Segments * 4.f);
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f + ShackleRadius, Size.y / 2.f + StrokeSize / 2.f));
 
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255,255,255, Opacity), false, StrokeSize);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 255, 255, Opacity), false, StrokeSize);
 		DrawList->PathClear();
 	}
 
@@ -220,7 +220,7 @@ namespace ImGui
 		float MainRadius = Size.x * 0.75f / 2.f;
 		int Segments = max(4, IM_PI * MainRadius * 2.f);
 
-		DrawList->PathArcTo(Position + ImVec2(MainRadius, MainRadius), MainRadius, IM_PI / 4.f, 9.f*IM_PI/4.f, Segments);
+		DrawList->PathArcTo(Position + ImVec2(MainRadius, MainRadius), MainRadius, IM_PI / 4.f, 9.f * IM_PI / 4.f, Segments);
 		DrawList->PathLineTo(Position + ImVec2(Size.x, Size.y));
 
 		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, Color, false, StrokeSize);
@@ -244,7 +244,7 @@ namespace ImGui
 		Size -= ImVec2(StrokeSize, StrokeSize);
 		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
 
-		DrawList->PathArcTo(Position + Size / 2.f, Size.x/2.f, 0, 2.f * IM_PI, Size.x);
+		DrawList->PathArcTo(Position + Size / 2.f, Size.x / 2.f, 0, 2.f * IM_PI, Size.x);
 		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, IM_COL32(255, 50, 50, Opacity), true, StrokeSize);
 		DrawList->PathClear();
 
@@ -289,7 +289,7 @@ namespace ImGui
 
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.4f + StrokeSize));
 		DrawList->PathLineTo(Position + ImVec2(Size.x / 2.f, Size.y * 0.8f));
-		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, Color32, false, StrokeSize*2.f);
+		DrawList->AddPolyline(DrawList->_Path.Data, DrawList->_Path.Size, Color32, false, StrokeSize * 2.f);
 		DrawList->PathClear();
 	}
 
@@ -349,7 +349,7 @@ namespace ImGui
 
 	void DrawCheckmark(ImU32 Color, ImVec2 Dimensions = ImVec2(24.f, 24.f))
 	{
-		constexpr float AspectRatio = 4.f/3.f; // X / Y
+		constexpr float AspectRatio = 4.f / 3.f; // X / Y
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
@@ -383,7 +383,7 @@ namespace ImGui
 		Size -= ImVec2(StrokeSize, StrokeSize);
 		Position += ImVec2(StrokeSize, StrokeSize) / 2.f;
 
-		DrawList->AddLine(Position + ImVec2(0, Size.y), Position + ImVec2(Size.x/2.f, 0.f), Color, StrokeSize);
+		DrawList->AddLine(Position + ImVec2(0, Size.y), Position + ImVec2(Size.x / 2.f, 0.f), Color, StrokeSize);
 		DrawList->AddLine(Position + ImVec2(Size.x / 2.f, 0.f), Position + Size, Color, StrokeSize);
 	}
 
@@ -430,7 +430,7 @@ namespace ImGui
 
 	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength)
 	{
-		bool Active = GetID(("##" + Identifier).c_str()) == GetActiveID();
+		bool Active = GetID((XOR("##") + Identifier).c_str()) == GetActiveID();
 		bool HasContent = BufferLength && Buffer[0];
 		if (!HasContent && !Active)
 		{
@@ -440,7 +440,7 @@ namespace ImGui
 			bool NextItemHasWidth = GImGui->NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth;
 			float NextItemWidth = GImGui->NextItemData.Width;
 
-			PushStyleColor(ImGuiCol_Text, lerp(TextColorBefore, ImVec4(0,0,0, TextColorBefore.w), 0.5f));
+			PushStyleColor(ImGuiCol_Text, lerp(TextColorBefore, ImVec4(0, 0, 0, TextColorBefore.w), 0.5f));
 
 			TextEx(Placeholder.c_str());
 
@@ -452,7 +452,7 @@ namespace ImGui
 				GImGui->NextItemData.Width = NextItemWidth;
 			}
 		}
-		InputText(("##" + Identifier).c_str(), Buffer, BufferLength);
+		InputText((XOR("##") + Identifier).c_str(), Buffer, BufferLength);
 	}
 
 	std::string TruncateToEllipsis(std::string Input, float MaxWidth)
@@ -462,7 +462,7 @@ namespace ImGui
 
 		int PredictedCharCount = Input.size() * MaxWidth / CurrentWidth;
 		std::string Output = Input.substr(0, PredictedCharCount);
-		CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+		CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
 
 		if (CurrentWidth <= MaxWidth) // prediction was too short
 		{
@@ -471,9 +471,9 @@ namespace ImGui
 			{
 				AddChars++;
 				Output = Input.substr(0, PredictedCharCount + AddChars);
-				CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+				CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
 			}
-			return Input.substr(0, PredictedCharCount + AddChars - 1) + "...";
+			return Input.substr(0, PredictedCharCount + AddChars - 1) + XOR("...");
 		}
 		else // prediction was too long
 		{
@@ -482,9 +482,9 @@ namespace ImGui
 			{
 				RemoveChars++;
 				Output = Input.substr(0, PredictedCharCount - RemoveChars);
-				CurrentWidth = CalcTextSize((Output + "...").c_str()).x;
+				CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
 			}
-			return Input.substr(0, PredictedCharCount - RemoveChars) + "...";
+			return Input.substr(0, PredictedCharCount - RemoveChars) + XOR("...");
 		}
 	}
 
@@ -523,7 +523,7 @@ namespace ImGui
 			PointerPos += ImVec2(0, ItemHeightForVerticalFlip);
 		}
 
-		ImVec2 WindowPos = PointerPos - ImVec2(WindowSize.x/2, VerticalInvert ? (-PointerSize.y) : (WindowSize.y + PointerSize.y));
+		ImVec2 WindowPos = PointerPos - ImVec2(WindowSize.x / 2, VerticalInvert ? (-PointerSize.y) : (WindowSize.y + PointerSize.y));
 
 		// move horizontally
 		if (WindowPos.x + WindowSize.x > io.DisplaySize.x)
@@ -531,7 +531,7 @@ namespace ImGui
 			WindowPos += ImVec2(io.DisplaySize.x - (WindowPos.x + WindowSize.x), 0);
 			if (WindowPos.x < 0)
 			{
-				WindowPos -= ImVec2(WindowPos.x/2, 0);
+				WindowPos -= ImVec2(WindowPos.x / 2, 0);
 			}
 		}
 
@@ -545,7 +545,7 @@ namespace ImGui
 			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, 5), 5, 3.f * IM_PI / 2.f, 2.f * IM_PI, 4);
 			DrawList->PathArcTo(WindowPos + ImVec2(WindowSize.x - 5, WindowSize.y - 5), 5, 2.f * IM_PI, 5.f * IM_PI / 2.f, 4);
 			DrawList->PathLineTo(PointerPos + ImVec2(PointerSize.x, -PointerSize.y)); // top right of pointer
-			DrawList->PathLineTo(PointerPos); 
+			DrawList->PathLineTo(PointerPos);
 		}
 		else
 		{
@@ -692,7 +692,7 @@ namespace ImGui
 			else if (MasterLocked)
 			{
 				DrawWarningIcon(255, IconSize);
-				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + "\"";
+				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + XOR("\"");
 			}
 			else
 			{
@@ -709,7 +709,7 @@ namespace ImGui
 				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
 				}
 			}
 
@@ -806,7 +806,7 @@ namespace ImGui
 					for (int i = 0; i < 3; i++)
 					{
 						SetCursorPos(ImVec2(ItemWidth * i, 0));
-						if (Button((Config2::KeybindTypeNames[i] + "##" + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+						if (Button((Config2::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(ItemWidth, 20)))
 						{
 							Value->BindMode = (Config2::KeybindMode)i;
 						}
@@ -832,7 +832,7 @@ namespace ImGui
 			}
 			else if (Value->BoundToKey >= 0) // this key is already bound
 			{
-				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? "PRESS" : "HOLD";
+				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? XOR("PRESS") : XOR("HOLD");
 				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
 				const char* Suffix =
 					Value->BindMode == Config2::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
@@ -857,7 +857,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
 				SetCursorPos(Pos + ImVec2(x, 0));
-				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
 					if (p->Name == XOR("show-menu"))
 					{
@@ -934,7 +934,7 @@ namespace ImGui
 			if (Value->Value.Get() == 0)
 				AnimFactor = 1.f - AnimFactor;
 
-			bool Flipped = DrawBooleanSwitch("##" + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
+			bool Flipped = DrawBooleanSwitch(XOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
 			if (Flipped)
 			{
 				GUI2::WantMouse = true;
@@ -985,7 +985,7 @@ namespace ImGui
 			else if (MasterLocked)
 			{
 				DrawWarningIcon(255, IconSize);
-				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + "\"";
+				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + XOR("\"");
 			}
 			else
 			{
@@ -1002,7 +1002,7 @@ namespace ImGui
 				GUI2::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, ("http://a4g4.com/help/index.php#" + p->Name).c_str(), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
 				}
 			}
 
@@ -1058,7 +1058,7 @@ namespace ImGui
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
 			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
-		
+
 		// draw bar
 		float SpaceAfterBar = 43;
 		float BarLength = Window->ContentRegionRect.GetWidth() - GUI2::PropertyColumnPosition - Pos.x - SpaceAfterBar;
@@ -1072,7 +1072,7 @@ namespace ImGui
 			{
 				GUI2::WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
-	
+
 				if (!PremiumLocked)
 					Value->SetFactor(UserSetValue);
 			}
@@ -1181,7 +1181,7 @@ namespace ImGui
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
 				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
-				SetCursorPos(ImVec2(210 /2, 13) - Size / 2);
+				SetCursorPos(ImVec2(210 / 2, 13) - Size / 2);
 				Text(Title.c_str());
 				PopFont();
 
@@ -1352,7 +1352,7 @@ namespace ImGui
 					{
 
 						SetCursorPos(ImVec2(0, i * 20));
-						if (Button(("##li" + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						if (Button((XOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
 						{
 							Value->Value.Set(i);
 							CloseCurrentPopup();
@@ -1411,7 +1411,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 
 				SetCursorPos(Pos + ImVec2(x, 0));
-				if (Button((KeyName + "##" + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
 					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
 					for (size_t i = 0; i < vec.size(); i++)
@@ -1488,7 +1488,7 @@ namespace ImGui
 		ImVec2 Size(Width, 20);
 		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
 		ImGuiID ID = GetID((p->Name + XOR("-interactable")).c_str());
-		
+
 		// vars
 		size_t nItems = Value->StateNames.size();
 		float pixelsPerItem = (float)(Width - 4) / (float)nItems;
@@ -1701,7 +1701,7 @@ namespace ImGui
 						}
 
 						SetCursorPos(ImVec2(0, i * 20));
-						if (Button(("##li" + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						if (Button((XOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
 						{
 							Value->Set(i, !selected);
 						}
@@ -1774,7 +1774,7 @@ void GUI2::LoadingScreen()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(40, 40, 40, 0));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(40, 40, 40, 0));
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,ThisContentOpacity));
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, ThisContentOpacity));
 	ImGui::PushFont(Arial18Italics);
 
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
@@ -1791,18 +1791,18 @@ void GUI2::LoadingScreen()
 
 	// draw real background because imgui borders do not have enough segments
 	if (MovementFactor == 0.f)
-DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 628
+		DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 628
 	else
 	{
-	float radius = ImGui::lerp(100, 10, MovementFactor);
-	ImVec2 a = WindowCenter - (FrameSize - ImVec2(10, 10)) / 2 + ImVec2(radius, radius);
-	ImVec2 b = WindowCenter + (FrameSize - ImVec2(10, 10)) / 2 - ImVec2(radius, radius);
-	// tl, tr, br, bl
-	DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
-	DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
-	DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
-	DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI / 2, IM_PI, 16);
-	DrawList->PathFillConvex(BgColor);
+		float radius = ImGui::lerp(100, 10, MovementFactor);
+		ImVec2 a = WindowCenter - (FrameSize - ImVec2(10, 10)) / 2 + ImVec2(radius, radius);
+		ImVec2 b = WindowCenter + (FrameSize - ImVec2(10, 10)) / 2 - ImVec2(radius, radius);
+		// tl, tr, br, bl
+		DrawList->PathArcTo(a, radius, -IM_PI, -IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(b.x, a.y), radius, -IM_PI / 2, 0, 16);
+		DrawList->PathArcTo(b, radius, 0, IM_PI / 2, 16);
+		DrawList->PathArcTo(ImVec2(a.x, b.y), radius, IM_PI / 2, IM_PI, 16);
+		DrawList->PathFillConvex(BgColor);
 	}
 
 	// draw progress
@@ -1833,7 +1833,7 @@ DrawList->AddCircleFilled(WindowCenter, 100.f, BgColor, 64); // C = 2*100*pi = 6
 		ImGui::DrawTeardrop(Position, Size, ThisContentOpacity);
 	}
 
-	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + "%";
+	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + XOR("%");
 	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
 	ImGui::SetCursorPos(ImVec2(FrameSize.x / 2 - txtSize.x / 2, FrameSize.y * 0.8f));
 	ImGui::TextEx(txt.c_str());
@@ -1890,7 +1890,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 	// login errors
 	{
-		if (UserData::LoginError != "" && Animation::delta(Animation::now(), UserData::LoginErrorOriginTime) < 10.0)
+		if (UserData::LoginError.length() > 0 && Animation::delta(Animation::now(), UserData::LoginErrorOriginTime) < 10.0)
 		{
 			ImGui::SetCursorPos(ImVec2(FrameSize.x / 2, 0));
 			ImGui::ToolTip(UserData::LoginError, FrameSize.y);
@@ -1966,7 +1966,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	}
 
 	ImGui::PopStyleColor(3);
-	
+
 	// button colors
 	if (ContentOpacity < 1.f)
 	{
@@ -1997,7 +1997,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
 		// todo: show loading spinner instead of button when UserData::BusyAttemptingLogin 
-		if (ImGui::Button(UserData::BusyAttemptingLogin ? "---" : XOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
+		if (ImGui::Button(UserData::BusyAttemptingLogin ? XOR("---") : XOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
 		{
 			UserData::LoginInformation* info = new UserData::LoginInformation{};
 			info->Email = std::string(Email);
@@ -2009,7 +2009,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 1));
 		if (ImGui::Button(XOR("Register Online"), ImVec2(ButtonWidth, 30)))
 		{
-			ShellExecute(0, 0, "http://a4g4.com/register/", 0, 0, SW_SHOW);
+			ShellExecute(0, 0, XOR("http://a4g4.com/register/"), 0, 0, SW_SHOW);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 2));
@@ -2046,7 +2046,7 @@ void GUI2::AuthenticationIntro()
 	// 69 = done
 	if (!(IntroAnimation2->state == 1 || IntroAnimation2->state == 2 || IntroAnimation2->state == 3))
 		Animation::changed(IntroAnimation2, 1);
-	
+
 	double age = Animation::age(IntroAnimation2);
 	switch (IntroAnimation2->state)
 	{
@@ -2063,9 +2063,9 @@ void GUI2::AuthenticationIntro()
 
 		ImVec2 Size = ImGui::lerp(ImVec2(300, 288), DefaultMenuSize, f);
 		ImVec4 Color = ImGui::lerp(ImVec4(53.f / 255.f, 54.f / 255.f, 58.f / 255.f, 1.f), ImVec4(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f), f);
-		
+
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, Color);
-		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255,255,255,255));
+		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(255, 255, 255, 255));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, floor(ImGui::lerp(2.f, 0.f, f) + 0.5f));
 
 		ImGui::SetNextWindowSize(Size, ImGuiCond_Always);
@@ -2114,7 +2114,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 
 		// TODO: each group should have meta properties like "backgroundColor"
 		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
-		ImGui::BeginChild((t->Name + "-" + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild((t->Name + XOR("-") + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
 		auto GroupWindow = ImGui::GetCurrentWindow();
 
 		if (Group->ShowTitle)
@@ -2209,8 +2209,8 @@ void GUI2::DrawActiveTab()
 	static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
 	static Config2::CColor* ButtonBorder = Config2::GetColor(XOR("theme-button-border"));
 	static Config2::CColor* ButtonText = Config2::GetColor(XOR("theme-button-text"));
-	//static Config2::CColor* SearchbarBackground = Config2::GetColor("theme-main-searchbar-background");
-	//static Config2::CColor* SearchbarText = Config2::GetColor("theme-main-searchbar-text");
+	//static Config2::CColor* SearchbarBackground = Config2::GetColor(XOR("theme-main-searchbar-background"));
+	//static Config2::CColor* SearchbarText = Config2::GetColor(XOR("theme-main-searchbar-text"));
 	static Config2::CColor* TextInputBackground = Config2::GetColor(XOR("theme-text-input-background"));
 	static Config2::CColor* TextInputText = Config2::GetColor(XOR("theme-text-input-text"));
 	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat(XOR("theme-legit-rage-switch-border-size"));
@@ -2258,8 +2258,8 @@ void GUI2::DrawActiveTab()
 			double TimePassed = MasterMode->Value.GetTimeSinceChange();
 			double AnimFactor = Animation::animate(TimePassed, 0.15f, Animation::Interpolation::easeInOutQuint);
 			if (MasterMode->Value.Get() == 0) AnimFactor = 1.f - AnimFactor;
-			float XOffset = Animation::lerp(5.f, Width/2.f, AnimFactor);
-			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width/2 - 5, 35), *LegitRageSwitchHighlight, 5.f);
+			float XOffset = Animation::lerp(5.f, Width / 2.f, AnimFactor);
+			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width / 2 - 5, 35), *LegitRageSwitchHighlight, 5.f);
 
 			ImGui::SetCursorPos(ImVec2(0, 0));
 			if (ImGui::Button(IsOffencePage ? XOR("Legit##big-switch-offence") : XOR("Legit##big-switch-defence"), ImVec2(Width / 2, 40)))
@@ -2288,9 +2288,9 @@ void GUI2::DrawActiveTab()
 
 		// the rest of the shit
 		ImGui::SetCursorPos(ImVec2(0, 60));
-		DrawNormalTab(ActiveTab, MasterMode->Value.Get() == 0 ? "legit-" : "rage-");
+		DrawNormalTab(ActiveTab, MasterMode->Value.Get() == 0 ? XOR("legit-") : XOR("rage-"));
 	}
-	else if (ActiveTab->Name == "Eject")
+	else if (ActiveTab->Name == XOR("Eject"))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
@@ -2300,7 +2300,7 @@ void GUI2::DrawActiveTab()
 		// title text
 		{
 			ImGui::PushFont(Arial18Bold);
-			
+
 			const char* Text = XOR("Are you sure you would like to eject?");
 			float TextSize = ImGui::CalcTextSize(Text).x;
 
@@ -2428,7 +2428,7 @@ void GUI2::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
 				if (!KnifeHasSkinSelection)
-					ImGui::Text("None");
+					ImGui::Text(XOR("None"));
 				else
 				{
 					auto win = ImGui::GetCurrentWindow();
@@ -2571,7 +2571,7 @@ void GUI2::DrawActiveTab()
 
 						std::string SkinName =
 							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
-							" | " +
+							XOR(" | ") +
 							PK.VisibleName;
 
 						if (IsSearchingKnife && !TextService::Contains(SearchQuery, SkinName, false))
@@ -2733,7 +2733,7 @@ void GUI2::DrawActiveTab()
 					y += 30;
 				}
 			}
-			
+
 			ImGui::PopStyleColor(3);
 
 			Skins::Weapon CurrentSelectedWeapon = Skins::WeaponGroupWeapons[SelectedWeaponGroup][SelectedWeaponIndex];
@@ -2747,11 +2747,11 @@ void GUI2::DrawActiveTab()
 			// current skin for this weapon
 			{
 				static Animation::Anim* MyAnimation = Animation::newAnimation(XOR("weapon-current-skin-hover"), 0);
-				
+
 				const char* label = XOR("Current: ");
 				ImVec2 labelSize = ImGui::CalcTextSize(label);
 
-				ImGui::SetCursorPos(ImVec2(202, 37 + (24 - labelSize.y)/2));
+				ImGui::SetCursorPos(ImVec2(202, 37 + (24 - labelSize.y) / 2));
 				ImGui::Text(label);
 
 				ImGui::SetCursorPos(ImVec2(202 + labelSize.x + 5, 37));
@@ -2772,12 +2772,12 @@ void GUI2::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
 				if (!WeaponHasSkinSelection)
-					ImGui::Text("None"); 
+					ImGui::Text(XOR("None"));
 				else
 				{
 					auto win = ImGui::GetCurrentWindow();
 					int maxX = win->Size.x - 24;
-					
+
 					if (AnimFactor > 0)
 					{
 						ImGui::PushClipRect(win->Pos, win->Pos + ImVec2(maxX, win->Size.y), false);
@@ -2803,7 +2803,7 @@ void GUI2::DrawActiveTab()
 						ImGui::Text(WeaponSkinName.c_str());
 					}
 				}
-				
+
 				ImGui::PopFont();
 				ImGui::PopStyleColor(1);
 
@@ -2817,7 +2817,7 @@ void GUI2::DrawActiveTab()
 			while (!WeaponSearchQuery) if (WeaponSearchQuery = new char[256]) ZeroMemory(WeaponSearchQuery, 256);
 
 			// search bar
-			{ 
+			{
 				ImGui::SetCursorPos(ImVec2(202, 37 + 24 + 5));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
@@ -2858,7 +2858,7 @@ void GUI2::DrawActiveTab()
 					ImGui::DrawXIcon(TextInputText->ModulateAlpha(F * 0.8f), ImVec2(9, 9));
 					// dummy button
 					ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
 					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
 					if (ImGui::Button(XOR("##cancel-search-dummy-weapon-skin"), ImVec2(18, 18)))
@@ -2890,7 +2890,7 @@ void GUI2::DrawActiveTab()
 					win->Pos - ImVec2(1, 1),
 					win->Pos + win->Size + ImVec2(1, 1),
 					ButtonOutlineColor,
-					0.f,0
+					0.f, 0
 				);
 
 				std::string SearchQuery = WeaponSearchQuery;
@@ -2914,9 +2914,9 @@ void GUI2::DrawActiveTab()
 						int Mode = IntendedApplicants[j][1];
 						int Version = IntendedApplicants[j][2];
 
-						std::string SkinName = 
+						std::string SkinName =
 							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
-							" | " + 
+							XOR(" | ") +
 							PK.VisibleName;
 
 						if (IsSearchingWeapon && !TextService::Contains(SearchQuery, SkinName, false))
@@ -3254,11 +3254,11 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PushFont(Arial14BoldItalics);
 	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TopbarText);
 	int TitleBarHeight = 24;
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize())/2.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	std::string MainTitle =
 		std::string(XOR("A4G4 - ")) +
 		std::string((UserData::Premium ? XOR("FULL VERSION ") : XOR("TRIAL VERSION "))) +
-		std::string((UserData::Authenticated ? XOR("(USER ") + std::to_string(UserData::UserID) + ")": XOR("(UNAUTHENTICATED)")));
+		std::string((UserData::Authenticated ? XOR("(USER ") + std::to_string(UserData::UserID) + XOR(")") : XOR("(UNAUTHENTICATED)")));
 	ImGui::Begin(MainTitle.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
 	ImGui::PopStyleColor(1);
 	ImGui::PopStyleVar(1);
@@ -3337,18 +3337,18 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 		// draw background because imgui is fuckign retarded and can't clip the bottom corners correctly
 		DrawList->AddRectFilled(
 			Window->Pos + OverlayPosition, Window->Pos + OverlayPosition + OverlaySize,
-			*TablistBackground, 
+			*TablistBackground,
 			5.f, (SearchAnimationFactor > 0.5f) ? ImDrawCornerFlags_Bot : ImDrawCornerFlags_BotLeft
 		);
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0,0,0,0));
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
 		ImGui::SetCursorPos(OverlayPosition);
 		ImGui::BeginChild(XOR("##left-side"), OverlaySize, false);
 
 		// search bar
 		{
-			ImGui::SetCursorPos(ImVec2(5,5));
+			ImGui::SetCursorPos(ImVec2(5, 5));
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 			ImGui::BeginChild(XOR("##left-side-searchbar"), ImVec2(OverlaySize.x - 10, 24), false);
@@ -3359,7 +3359,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			IsSearching = ImGui::GetActiveID() == InputID || (SearchQuery && SearchQuery[0]);
 			Animation::changed(SearchAnimation, IsSearching);
 
-			ImGui::SetCursorPos(ImVec2(5,5));
+			ImGui::SetCursorPos(ImVec2(5, 5));
 			ImGui::DrawSearchIcon(SearchbarText->ModulateAlpha(0.8f), ImVec2(14, 14));
 
 			ImGui::PushFont(Arial16);
@@ -3402,7 +3402,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::PopStyleColor(1);
 			ImGui::PopStyleVar(1);
 		}
-		
+
 		// tabs list
 		if (!IsSearching)
 		{
@@ -3420,7 +3420,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			{
 				Config2::Tab* t = Config2::Tabs.at(i);
 				bool isSelected = t == ActiveTab;
-				bool isEject = t->Name == "Eject";
+				bool isEject = t->Name == XOR("Eject");
 
 				if (isEject || isSelected)
 				{
@@ -3518,7 +3518,7 @@ void GUI2::Main()
 {
 	static auto MenuOpen = Config2::GetState(XOR("show-menu"));
 	++Config2::GUIFramesRenderedCounter;
-	L::Verbose((XOR("GUI2::Main executed (frame ") + std::to_string(Config2::GUIFramesRenderedCounter) + ")").c_str());
+	L::Verbose((XOR("GUI2::Main executed (frame ") + std::to_string(Config2::GUIFramesRenderedCounter) + XOR(")")).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3542,9 +3542,9 @@ void GUI2::Main()
 			L::Verbose(XOR("GUI2::MainScreen complete"));
 
 			/*
-			L::Verbose("GUI::Main running");
+			L::Verbose(XOR("GUI::Main running"));
 			Ejected |= GUI::Main();
-			L::Verbose("GUI::Main complete");
+			L::Verbose(XOR("GUI::Main complete"));
 			//*/
 		}
 
