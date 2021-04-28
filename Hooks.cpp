@@ -92,7 +92,17 @@ public:
 				I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
 
 			if (userid == localIdx && HitGroup == 1) { //if hitting head
-				static auto LegitInvert = Config2::GetState("antiaim-legit-invert");
+				static Config2::CState* LegitInvert = Config2::GetState("antiaim-legit-invert");
+				static Config2::CState* RageInvert = Config2::GetState("antiaim-rage-invert");
+				static Config2::CState* RageInvertOnHit = Config2::GetState("antiaim-custom-fake-invert");
+				if (RageInvertOnHit->Get())
+				{
+					if(RageInvert->Get())
+						RageInvert->Set(0);
+					else
+						RageInvert->Set(1);
+				}
+					
 				LegitInvert->Invert();
 			}
 
