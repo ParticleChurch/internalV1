@@ -508,7 +508,7 @@ void AntiAim::CustomRage()
 	// Deal with the FLIP
 	static float FlipTime = I::globalvars->m_curTime;
 	static bool RealJitterFlip = false;
-	if (fabsf(I::globalvars->m_curTime - FlipTime) > 0.1) //200ms flip
+	if (fabsf(I::globalvars->m_curTime - FlipTime) > 0.1) //100ms flip
 	{
 		FlipTime = I::globalvars->m_curTime;
 		RealJitterFlip = !RealJitterFlip;

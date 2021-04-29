@@ -391,7 +391,7 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 	}
 
 	// If Desyncing... RESOLVE!
-	if (/*record.IsDesyncing*/ true)
+	if (record.IsDesyncing)
 	{
 		PlayerInfo[UserID].ResolverFlag = std::to_string(PlayerInfo[UserID].ShotsMissed) + "|";
 
