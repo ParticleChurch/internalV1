@@ -641,6 +641,57 @@ namespace ImGui
 // Property drawers
 namespace ImGui
 {
+	enum class PropertyIcon {
+		Info = 1,
+		Warning,
+		Error
+	};
+
+	int DrawGeneralLabel(Config::Property* p, PropertyIcon icon = PropertyIcon::Info, std::string iconText = "Click for more info.")
+	{
+		auto Window = ImGui::GetCurrentWindow();
+		ImVec2 Pos = GetCursorPos();
+
+		// draw icon 
+		ImVec2 IconSize(14, 14);
+		{
+			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+
+			switch (icon)
+			{
+			default:
+			case PropertyIcon::Info:
+				DrawInfoIcon(255, IconSize);
+				break;
+			case PropertyIcon::Warning:
+				DrawWarningIcon(255, IconSize);
+				break;
+			case PropertyIcon::Error:
+				DrawErrorIcon(255, IconSize);
+				break;
+			}
+
+			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
+			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
+			ItemAdd(BB, ID);
+			if (ItemHoverable(BB, ID))
+			{
+				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
+				ToolTip(iconText, IconSize.y);
+				GUI::WantMouse = true;
+				if (GImGui->IO.MouseClicked[0])
+					ShellExecute(0, 0, (XOR("https://www.a4g4.com/features#") + p->Name).c_str(), 0, 0, SW_HIDE);
+			}
+		}
+
+		// draw label
+		SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
+		Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+		
+		// setup for property to be drawn
+		SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
+	}
+
 	int DrawLabelProperty(Config::Property* p)
 	{
 		auto Window = ImGui::GetCurrentWindow();
