@@ -24,7 +24,7 @@ ImFont* Arial18Italics;
 ImFont* Arial14BoldItalics;
 ImFont* Arial18BoldItalics;
 #define AYO_LOAD_FONT_BRUH(name, path, size) if (!(name = io.Fonts->AddFontFromFileTTF(path, size))){goto problemo;}
-void GUI2::LoadFonts(ImGuiIO& io)
+void GUI::LoadFonts(ImGuiIO& io)
 {
 	FontDefault = io.Fonts->AddFontDefault();
 	AYO_LOAD_FONT_BRUH(Arial8, XOR("C:\\Windows\\Fonts\\arial.ttf"), 8.f);
@@ -84,7 +84,7 @@ namespace ImGui
 /*
 	=========== GUI VERSION 2.0 ===========
 */
-namespace GUI2
+namespace GUI
 {
 	bool Ejected = false;
 	bool WantMouse = false;
@@ -706,7 +706,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -714,12 +714,12 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		// draw input
 		{
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 			BeginChild((XOR("##entry-child-") + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
@@ -784,7 +784,7 @@ namespace ImGui
 				{
 					const char* Prefix = XOR("MODE:");
 					ImVec2 PrefixSize = CalcTextSize(Prefix);
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
+					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
 					Text(Prefix);
 					PopFont();
 
@@ -796,7 +796,7 @@ namespace ImGui
 					PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
 					PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
+					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
 					int ItemWidth = 60;
 					BeginChild((XOR("##bindmode-") + p->Name).c_str(), ImVec2(ItemWidth * 3, 20), true);
 					auto bruh_window = GetCurrentWindow();
@@ -810,7 +810,7 @@ namespace ImGui
 						{
 							Value->BindMode = (Config2::KeybindMode)i;
 						}
-						GUI2::WantMouse |= IsItemHovered();
+						GUI::WantMouse |= IsItemHovered();
 					}
 					EndChild();
 					PopStyleColor(5);
@@ -819,13 +819,13 @@ namespace ImGui
 					PushFont(Arial12);
 					const char* Suffix = XOR("[PRESS A KEY]");
 					ImVec2 SuffixSize = CalcTextSize(Suffix);
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
+					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
 					Text(Suffix);
 				}
 				else
 				{
 					// this is the show menu boolean
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 39, (20 - 12) / 2));
+					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39, (20 - 12) / 2));
 					Text(XOR("[PRESS A KEY]"));//
 				}
 				PopFont();
@@ -844,7 +844,7 @@ namespace ImGui
 				PopFont();
 				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
 
-				int x = GUI2::PropertyColumnPosition + 39;
+				int x = GUI::PropertyColumnPosition + 39;
 				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
 				PushFont(Arial12);
 				Text(Prefix);
@@ -862,20 +862,20 @@ namespace ImGui
 					if (p->Name == XOR("show-menu"))
 					{
 						Config2::SettingKeybindFor = p;
-						GUI2::WantMouse = true;
+						GUI::WantMouse = true;
 					}
 					else
 					{
 						Config2::_BindToKey(p, -1);
 						Config2::SettingKeybindFor = nullptr;
-						GUI2::WantMouse = true;
+						GUI::WantMouse = true;
 					}
 				}
 				else if (IsItemHovered())
 				{
 					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
 					ToolTip(p->Name == XOR("show-menu") ? XOR("Click To Edit") : XOR("Click To Clear"), 20);
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 
 				PopStyleColor(2);
@@ -892,7 +892,7 @@ namespace ImGui
 			else if (!PremiumLocked) // the key is not bound & we are able to bind it
 			{
 
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 35, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 35, 0));
 
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
@@ -902,11 +902,11 @@ namespace ImGui
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config2::SettingKeybindFor = p;
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
 				{
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 
 				PopStyleColor(2);
@@ -927,7 +927,7 @@ namespace ImGui
 				MasterLocked = ImEnabled && !MasterAllows;
 			}
 
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
+			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, (20 - 16) / 2));
 
 			double TimePassed = Value->Value.GetTimeSinceChange();
 			double AnimFactor = Animation::animate(TimePassed, 0.15f);
@@ -937,7 +937,7 @@ namespace ImGui
 			bool Flipped = DrawBooleanSwitch(XOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
 			if (Flipped)
 			{
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
 				if (!PremiumLocked)
 				{
@@ -962,10 +962,10 @@ namespace ImGui
 
 			if (IsItemHovered())
 			{
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (PremiumLocked)
 				{
-					SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 30 / 2, 0));
+					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 30 / 2, 0));
 					ToolTip(XOR("Premium users only"), 20);
 				}
 			}
@@ -999,7 +999,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -1007,7 +1007,7 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		return 20;
@@ -1048,7 +1048,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -1056,21 +1056,21 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		// draw bar
 		float SpaceAfterBar = 43;
-		float BarLength = Window->ContentRegionRect.GetWidth() - GUI2::PropertyColumnPosition - Pos.x - SpaceAfterBar;
+		float BarLength = Window->ContentRegionRect.GetWidth() - GUI::PropertyColumnPosition - Pos.x - SpaceAfterBar;
 		{
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, (20 - 16) / 2));
+			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, (20 - 16) / 2));
 
 			float DrawValue = Value->GetFactor();
 			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), *PropertyBase, *PropertyAccent, DrawValue, ImVec2(BarLength, 16));
 
 			if (DrawValue != UserSetValue)
 			{
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
 
 				if (!PremiumLocked)
@@ -1079,8 +1079,8 @@ namespace ImGui
 
 			if (IsItemHovered())
 			{
-				GUI2::WantMouse = true;
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
+				GUI::WantMouse = true;
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
 				ToolTip(PremiumLocked ? XOR("Premium users only") : Value->Stringify(), 20);
 			}
 		}
@@ -1088,7 +1088,7 @@ namespace ImGui
 		// draw unit
 		{
 			PushFont(Arial12);
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + BarLength + 5, (20 - GetFontSize()) / 2));
+			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + BarLength + 5, (20 - GetFontSize()) / 2));
 			TextEx(Value->Unit.c_str());
 			PopFont();
 		}
@@ -1134,7 +1134,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -1142,12 +1142,12 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		// draw color
 		{
-			SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 			ImVec4 ImColor = *Value;
 
 			if (((int)Value->GetR() + (int)Value->GetG() + (int)Value->GetB()) < 127 * 3) // this is a dark color
@@ -1160,8 +1160,8 @@ namespace ImGui
 				OpenPopup((XOR("##color-picker-") + p->Name).c_str());
 			else if (IsItemHovered())
 			{
-				GUI2::WantMouse = true;
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 20, 0));
+				GUI::WantMouse = true;
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 20, 0));
 				ToolTip(Value->Stringify(), 20);
 			}
 			PopStyleVar(2);
@@ -1176,7 +1176,7 @@ namespace ImGui
 			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
 			if (BeginPopup((XOR("##color-picker-") + p->Name).c_str()))
 			{
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				Config2::SettingKeybindFor = nullptr;
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
@@ -1259,7 +1259,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -1267,7 +1267,7 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		PushFont(Arial14);
@@ -1286,7 +1286,7 @@ namespace ImGui
 			{
 				bool open = false;
 
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
@@ -1316,12 +1316,12 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
 					{
-						GUI2::WantMouse = true;
+						GUI::WantMouse = true;
 						Config2::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
-				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
+				GUI::WantMouse |= IsItemHovered() || IsItemActive();
 
 				EndChild();
 				PopStyleColor(1);
@@ -1337,7 +1337,7 @@ namespace ImGui
 			PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)DropdownText->ModulateAlpha(0.2f));
 			// popup
 			{
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
 				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*DropdownBorder);
@@ -1346,7 +1346,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
 				{
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 					Config2::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
@@ -1382,7 +1382,7 @@ namespace ImGui
 				PushFont(Arial12);
 				const char* Prefix = XOR("[PRESS A KEY]");
 				ImVec2 PrefixSize = CalcTextSize(Prefix);
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 209, (20 - PrefixSize.y) / 2));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 209, (20 - PrefixSize.y) / 2));
 				Text(Prefix);
 				PopFont();
 			}
@@ -1398,7 +1398,7 @@ namespace ImGui
 				PopFont();
 				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
 
-				int x = GUI2::PropertyColumnPosition + 209;
+				int x = GUI::PropertyColumnPosition + 209;
 				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
 				PushFont(Arial12);
 				Text(Prefix);
@@ -1420,13 +1420,13 @@ namespace ImGui
 
 					Value->BoundToKey = -1;
 					Config2::SettingKeybindFor = nullptr;
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
 				{
 					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
 					ToolTip(XOR("Click To Clear"), 20);
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 
 				PopStyleColor(2);
@@ -1442,7 +1442,7 @@ namespace ImGui
 			}
 			else if (!PremiumLocked) // the key is not bound & we are able to bind it
 			{
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition + 205, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 205, 0));
 
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
@@ -1452,11 +1452,11 @@ namespace ImGui
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config2::SettingKeybindFor = p;
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
 				{
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 				}
 
 				PopStyleColor(2);
@@ -1504,14 +1504,14 @@ namespace ImGui
 			{
 				SetActiveID(ID, Window);
 			}
-			GUI2::WantMouse |= hovered;
+			GUI::WantMouse |= hovered;
 
 
 			if (GImGui->ActiveId == ID)
 			{
 				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 				{
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 					Config2::SettingKeybindFor = nullptr;
 
 					float MouseX = GImGui->IO.MousePos.x;
@@ -1591,7 +1591,7 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(ToolTipString, IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
@@ -1599,7 +1599,7 @@ namespace ImGui
 			}
 
 			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI2::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
 		}
 
 		PushFont(Arial14);
@@ -1620,7 +1620,7 @@ namespace ImGui
 			{
 				bool open = false;
 
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
@@ -1651,12 +1651,12 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
 					{
-						GUI2::WantMouse = true;
+						GUI::WantMouse = true;
 						Config2::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
-				GUI2::WantMouse |= IsItemHovered() || IsItemActive();
+				GUI::WantMouse |= IsItemHovered() || IsItemActive();
 
 
 				EndChild();
@@ -1673,7 +1673,7 @@ namespace ImGui
 				ImVec4 HoverColor = DropdownText->ModulateAlpha(0.1f);
 				ImVec4 ActiveColor = DropdownText->ModulateAlpha(0.2f);
 
-				SetCursorPos(Pos + ImVec2(GUI2::PropertyColumnPosition, 0));
+				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
 				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*DropdownBorder);
@@ -1682,7 +1682,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup(popupName))
 				{
-					GUI2::WantMouse = true;
+					GUI::WantMouse = true;
 					Config2::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
@@ -1728,7 +1728,7 @@ namespace ImGui
 	}
 }
 
-void GUI2::LoadingScreen()
+void GUI::LoadingScreen()
 {
 	// animation
 	static auto LastTime = Animation::now();
@@ -1857,7 +1857,7 @@ void GUI2::LoadingScreen()
 	}
 }
 
-void GUI2::AuthenticationScreen(float ContentOpacity)
+void GUI::AuthenticationScreen(float ContentOpacity)
 {
 	static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
 	static Config2::CColor* ButtonHovered = Config2::GetColor(XOR("theme-button-hovered"));
@@ -2037,7 +2037,7 @@ void GUI2::AuthenticationScreen(float ContentOpacity)
 	ImGui::PopFont();
 }
 
-void GUI2::AuthenticationIntro()
+void GUI::AuthenticationIntro()
 {
 	// 0 = this is the first ever call of this function
 	// 1 = tweening opacity out
@@ -2088,7 +2088,7 @@ void GUI2::AuthenticationIntro()
 	}
 }
 
-void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
+void GUI::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 {
 	static Config2::CColor* WidgetBackground = Config2::GetColor(XOR("theme-widget-background"));
 	static Config2::CColor* WidgetTitleText = Config2::GetColor(XOR("theme-widget-title"));
@@ -2192,7 +2192,7 @@ void GUI2::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 	return;
 }
 
-void GUI2::DrawActiveTab()
+void GUI::DrawActiveTab()
 {
 	static Config2::CColor* WidgetBackground = Config2::GetColor(XOR("theme-widget-background"));
 	static Config2::CColor* WidgetTitleText = Config2::GetColor(XOR("theme-widget-title"));
@@ -2997,7 +2997,7 @@ void GUI2::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
@@ -3033,7 +3033,7 @@ void GUI2::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
@@ -3112,7 +3112,7 @@ void GUI2::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
@@ -3148,7 +3148,7 @@ void GUI2::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI2::WantMouse = true;
+				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
@@ -3197,7 +3197,7 @@ void GUI2::DrawActiveTab()
 	ImGui::PopStyleColor(1);
 }
 
-void GUI2::MainScreen(float ContentOpacity, bool Interactable)
+void GUI::MainScreen(float ContentOpacity, bool Interactable)
 {
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
 	static Config2::CColor* TopbarBackground = Config2::GetColor(XOR("theme-topbar-background"));
@@ -3315,7 +3315,7 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 			ActiveTab->InitialPaint = false;
 			ImGui::SetScrollY(ActiveTab->ScrollHeight);
 		}
-		GUI2::DrawActiveTab();
+		GUI::DrawActiveTab();
 		if (ActiveTab)
 			ActiveTab->ScrollHeight = ImGui::GetScrollY();
 
@@ -3503,43 +3503,43 @@ void GUI2::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopStyleColor(17);
 }
 
-void GUI2::Init()
+void GUI::Init()
 {
-	L::Verbose(XOR("GUI2::Init running"));
+	L::Verbose(XOR("GUI::Init running"));
 	while (!SearchQuery)
 		if (SearchQuery = new char[256])
 			ZeroMemory(SearchQuery, 256);
 
 	SearchAnimation = Animation::newAnimation(XOR("search-open/close"), 0);
-	L::Verbose(XOR("GUI2::Init complete"));
+	L::Verbose(XOR("GUI::Init complete"));
 }
 
-void GUI2::Main()
+void GUI::Main()
 {
 	static auto MenuOpen = Config2::GetState(XOR("show-menu"));
 	++Config2::GUIFramesRenderedCounter;
-	L::Verbose((XOR("GUI2::Main executed (frame ") + std::to_string(Config2::GUIFramesRenderedCounter) + XOR(")")).c_str());
+	L::Verbose((XOR("GUI::Main executed (frame ") + std::to_string(Config2::GUIFramesRenderedCounter) + XOR(")")).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
-		GUI2::Init();
+		GUI::Init();
 		Init = true;
 	}
 
 	WantMouse = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
-		L::Verbose(XOR("GUI2::AuthenticationIntro running"));
+		L::Verbose(XOR("GUI::AuthenticationIntro running"));
 		AuthenticationIntro();
-		L::Verbose(XOR("GUI2::AuthenticationIntro complete"));
+		L::Verbose(XOR("GUI::AuthenticationIntro complete"));
 	}
 	else if (UserData::Initialized)
 	{
 		if (MenuOpen->Get())
 		{
-			L::Verbose(XOR("GUI2::MainScreen running"));
+			L::Verbose(XOR("GUI::MainScreen running"));
 			MainScreen();
-			L::Verbose(XOR("GUI2::MainScreen complete"));
+			L::Verbose(XOR("GUI::MainScreen complete"));
 		}
 
 		if (UserData::Authenticated)
@@ -3565,20 +3565,20 @@ void GUI2::Main()
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
-		L::Verbose(XOR("GUI2::LoadingScreen running"));
+		L::Verbose(XOR("GUI::LoadingScreen running"));
 		LoadingScreen();
-		L::Verbose(XOR("GUI2::LoadingScreen complete"));
+		L::Verbose(XOR("GUI::LoadingScreen complete"));
 	}
 	else
 	{
-		L::Verbose(XOR("GUI2::AuthenticationScreen running"));
+		L::Verbose(XOR("GUI::AuthenticationScreen running"));
 		AuthenticationScreen();
-		L::Verbose(XOR("GUI2::AuthenticationScreen complete"));
+		L::Verbose(XOR("GUI::AuthenticationScreen complete"));
 	}
 
 	L::Verbose(XOR("Config2::ProcessKeys running"));
 	Config2::ProcessKeys();
 	L::Verbose(XOR("Config2::ProcessKeys complete"));
 
-	L::Verbose(XOR("GUI2::Main complete"));
+	L::Verbose(XOR("GUI::Main complete"));
 }

@@ -18,7 +18,7 @@ void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
 void Init()
 {
     srand(static_cast <unsigned> (time(0)));
-    GUI2::LoadProgress = 0.f;
+    GUI::LoadProgress = 0.f;
 
     L::Init();    L::Log("DLLMain executed");
 
@@ -26,14 +26,14 @@ void Init()
     I::GUIInit(); L::Log("I::GUIInit() complete");
     G::GUIInit(); L::Log("G::GUIInit() complete");
     H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up
-    GUI2::LoadProgress = 0.05f;
+    GUI::LoadProgress = 0.05f;
 
     I::Init();           L::Log("I::Init() complete");
     SkinChanger::Hook(); L::Log("SkinChanger::Hook() complete");
     N::Init();           L::Log("N::Init() complete");
     G::Init();           L::Log("G::Init() complete");
     H::Init();           L::Log("H::Init() complete");
-    GUI2::LoadProgress = 1.f;
+    GUI::LoadProgress = 1.f;
     //L::Log(N::DumpTable().c_str());
 
     L::Log("DLLMain complete. Now waiting for ejection");

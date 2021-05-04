@@ -5,7 +5,7 @@
 #include "TextService.hpp"
 #include "Config.hpp"
 
-namespace GUI2
+namespace GUI
 {
 	constexpr bool ConsoleOutput = true;
 

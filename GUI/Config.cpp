@@ -1592,7 +1592,7 @@ namespace Config2
 				continue;
 
 			bool IsMouse = VK == VK_LBUTTON;
-			if (IsMouse && GUI2::WantMouse)
+			if (IsMouse && GUI::WantMouse)
 			{
 				continue;
 			}
@@ -1776,7 +1776,7 @@ namespace UserData
 			UserData::Email = std::string(email->second->AsString().begin(), email->second->AsString().end());
 			UserData::SessionID = std::string(session->second->AsString().begin(), session->second->AsString().end());
 			UserData::UserID = (uint64_t)id->second->AsNumber();
-			GUI2::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
+			GUI::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
 			if (ServerResponse) delete ServerResponse;
 			BusyAttemptingLogin = false;
 

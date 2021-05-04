@@ -241,19 +241,19 @@ void H::Init()
 
 	// hooks
 	clientVMT = new VMTManager((VMT*)I::client);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	clientmodeVMT = new VMTManager((VMT*)I::clientmode);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	panelVMT = new VMTManager((VMT*)I::panel);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	gameeventmanagerVMT = new VMTManager((VMT*)I::gameeventmanager);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	inputVMT = new VMTManager((VMT*)I::input);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	modelrenderVMT = new VMTManager((VMT*)I::modelrender);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 	soundVMT = new VMTManager((VMT*)I::sound);
-	GUI2::LoadProgress += 0.01f;
+	GUI::LoadProgress += 0.01f;
 
 	oCreateMove = (CreateMove)clientmodeVMT->Hook(24, &CreateMoveHook);
 	oFrameStageNotify = (FrameStageNotify)clientVMT->Hook(37, &FrameStageNotifyHook);
@@ -264,10 +264,10 @@ void H::Init()
 	oDrawModelExecute = (DrawModelExecute)modelrenderVMT->Hook(21, &DrawModelExecuteHook);
 	oEmitSound = (EmitSound)soundVMT->Hook(5, &EmitSoundHook);
 	clantag->reset();
-	GUI2::LoadProgress += 0.05f;
+	GUI::LoadProgress += 0.05f;
 
 	g_EventListener = new EventListener();
-	GUI2::LoadProgress += 0.05f;
+	GUI::LoadProgress += 0.05f;
 }
 
 void H::UnHook()
@@ -336,7 +336,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename = nullptr;
 
-		GUI2::LoadFonts(io);
+		GUI::LoadFonts(io);
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
@@ -397,8 +397,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		//*/
 		
 
-		GUI2::Main();
-		G::KillDLL |= GUI2::Ejected;
+		GUI::Main();
+		G::KillDLL |= GUI::Ejected;
 
 		ImGui::EndFrame();
 		ImGui::Render();

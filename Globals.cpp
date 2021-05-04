@@ -252,23 +252,23 @@ namespace G
 	void Init()
 	{
 		UpdateRate = I::cvar->FindVar("cl_updaterate");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		MaxUpdateRate = I::cvar->FindVar("sv_maxupdaterate");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		Interp = I::cvar->FindVar("cl_interp");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		InterpRatio = I::cvar->FindVar("cl_interp_ratio");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		MinInterpRatio = I::cvar->FindVar("sv_client_min_interp_ratio");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		MaxInterpRatio = I::cvar->FindVar("sv_client_max_interp_ratio");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 		MaxUnlag = I::cvar->FindVar("sv_maxunlag");
-		GUI2::LoadProgress += 0.02f;
+		GUI::LoadProgress += 0.02f;
 
 		while (!(AcceptMatchPattern = FindPattern("client.dll", "55 8B EC 83 E4 F8 8B 4D 08 BA ? ? ? ? E8 ? ? ? ? 85 C0 75 12")));
-		GUI2::LoadProgress += 0.3f;
+		GUI::LoadProgress += 0.3f;
 		while (!(LoadSkyboxPattern  = FindPattern("engine.dll", "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45")));
-		GUI2::LoadProgress += 0.3f;
+		GUI::LoadProgress += 0.3f;
 	}
 }
