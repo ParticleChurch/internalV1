@@ -182,8 +182,6 @@
     <ClCompile Include="GUI\ConfigConstants.cpp" />
     <ClCompile Include="GUI\GUI.cpp" />
     <ClCompile Include="GUI\HTTP.cpp" />
-    <ClCompile Include="GUI\JSON\JSON.cpp" />
-    <ClCompile Include="GUI\JSON\JSONValue.cpp" />
     <ClCompile Include="GUI\Keybind.cpp" />
     <ClCompile Include="GUI\KnifeSequence.cpp" />
     <ClCompile Include="GUI\SkinConstants.cpp" />
@@ -226,8 +224,6 @@
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\Keybind.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />
-    <ClInclude Include="GUI\JSON\JSON.h" />
-    <ClInclude Include="GUI\JSON\JSONValue.h" />
     <ClInclude Include="GUI\KnifeSequence.hpp" />
     <ClInclude Include="GUI\SkinConstants.hpp" />
     <ClInclude Include="GUI\TextService.hpp" />
@@ -261,6 +257,7 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Include.hpp" />
     <ClInclude Include="Interfaces.hpp" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Netvars.hpp" />
     <ClInclude Include="Utils\GetVFunc.hpp" />

@@ -33,6 +33,7 @@ void Init()
     N::Init();           L::Log("N::Init() complete");
     G::Init();           L::Log("G::Init() complete");
     H::Init();           L::Log("H::Init() complete");
+    UserData::ConnectAPI();   L::Log("UserData::ConnectAPI() complete");
     GUI::LoadProgress = 1.f;
     //L::Log(N::DumpTable().c_str());
 

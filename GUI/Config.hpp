@@ -102,31 +102,29 @@ namespace Config2
 
 namespace UserData
 {
-	// ping approx. every 60 seconds
-	extern TIME_POINT LastSuccessfulServerContact;
-	extern TIME_POINT LastServerContactAttempt;
-
-	extern bool Initialized; // this will be true if the main cheat gui should show up
-	extern bool Authenticated; // this will be true only if the user entered a valid email/password combo
-	extern std::string Email;
-	extern std::string SessionID;
-	extern uint64_t UserID;
+	extern std::string SessionId;
+	extern bool Authenticated;
 	extern bool Premium;
+	extern uint32_t PremiumTimeRemaining;
+	extern uint32_t UserId;
 
-	extern bool BusyAttemptingLogin;
-	extern size_t LoginAttemptCounter;
-	extern size_t PingAttemptCounter;
+	extern bool LoginDebounce;
 	extern std::string LoginError;
-	extern TIME_POINT LoginErrorOriginTime;
-	
+	extern TIME_POINT LoginErrorTime;
 	extern std::string CredentialsFile;
 	struct LoginInformation
 	{
 		std::string Email;
 		std::string Password;
 	};
+
+	extern bool PingDebounce;
+	extern TIME_POINT LastPingTime;
+
 	extern DWORD WINAPI AttemptLogin(LPVOID pInfo);
+	extern DWORD WINAPI GetUnauthenticatedSession(LPVOID pInfo);
 	extern DWORD WINAPI PingServer(LPVOID pInfo);
+	extern bool ConnectAPI();
 }
 
 namespace Config2
@@ -525,8 +523,12 @@ namespace Config2
 				|| // or lambda says not visible
 				(this->Lambda && !this->Lambda())
 				)
-				return this->LastCalculationValue = false;
-			return this->LastCalculationValue = true;
+			{
+				this->LastCalculationValue = false;
+				return false;
+			}
+			this->LastCalculationValue = true;
+			return true;
 		}
 	};
 	struct Property

@@ -1,4 +1,7 @@
 ﻿#include "../Include.hpp"
+#include "../json.hpp"
+#include "HTTP.hpp"
+#include <sstream>
 
 // config macro utils
 #define CONFIG_PROPERTY_TYPE_CHECK(p, t, ret) \
@@ -1579,8 +1582,6 @@ namespace Config2
 
 	void ProcessKeys()
 	{
-		// im gonna rely on the compiler to make this more efficient
-		// because i do not want to sacrifice readability
 		for (size_t key = 0; key < Keybind::nKeys; key++)
 		{
 			int VK = Keybind::KeyMap[key];
@@ -1588,7 +1589,7 @@ namespace Config2
 			bool CurrentPressed = GetAsyncKeyState(VK) < 0;
 			Keybind::KeyState[key] = CurrentPressed;
 
-			if (!UserData::Initialized)
+			if (UserData::SessionId == "")
 				continue;
 
 			bool IsMouse = VK == VK_LBUTTON;
@@ -1626,328 +1627,261 @@ namespace Config2
 
 namespace UserData
 {
-	TIME_POINT LastSuccessfulServerContact = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
-	TIME_POINT LastServerContactAttempt = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
-
-	bool Initialized = false;
+	std::string SessionId = "";
 	bool Authenticated = false;
-	std::string Email = "";
-	std::string SessionID = "";
-	uint64_t UserID = (uint64_t)-1;
 	bool Premium = false;
+	uint32_t PremiumTimeRemaining = 0;
+	uint32_t UserId = 0;
 
-	bool BusyAttemptingLogin = false;
-	size_t LoginAttemptCounter = 0;
-	size_t PingAttemptCounter = 0;
+	bool LoginDebounce = false;
 	std::string LoginError = "";
-	TIME_POINT LoginErrorOriginTime = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
-	
+	TIME_POINT LoginErrorTime = TIME_POINT(std::chrono::seconds(0));
 	std::string CredentialsFile = "";
+
+	void SetLoginError(std::string err)
+	{
+		LoginError = err;
+		LoginErrorTime = Animation::now();
+	}
+
+	bool PingDebounce = false;
+	TIME_POINT LastPingTime = TIME_POINT(std::chrono::seconds(0));
+
 	DWORD WINAPI AttemptLogin(LPVOID pInfo)
 	{
-		size_t myAttemptId = ++LoginAttemptCounter;
-		BusyAttemptingLogin = true;
+		if (LoginDebounce) return 1;
+		LoginDebounce = true;
+		SetLoginError("");
 
+		// get info from form
 		LoginInformation* info = (LoginInformation*)pInfo;
-		std::string InputEmail(info->Email.c_str());
-		std::string InputPassword(info->Password.c_str());
+		std::string inputEmail(info->Email.c_str());
+		std::string inputPassword(info->Password.c_str());
 		delete info;
 
-		// create outgoing JSON string
-		JSONValue* EmailJSON = new JSONValue(std::wstring(InputEmail.begin(), InputEmail.end()));
-		JSONValue* PasswordJSON = new JSONValue(std::wstring(InputPassword.begin(), InputPassword.end()));
-		JSONObject InputRoot;
-		InputRoot[L"email"] = EmailJSON;
-		InputRoot[L"password"] = PasswordJSON;
-		JSONValue* InputJSONV = new JSONValue(InputRoot);
-		std::wstring InputW = InputJSONV->Stringify();
-		std::string OutgoingJSONString(InputW.begin(), InputW.end());
-		delete InputJSONV;
+		// dump to json
+		nlohmann::json out = nlohmann::json::object();
+		out["email"] = inputEmail;
+		out["password"] = inputPassword;
 
-		// send API request
-		DWORD bytesRead = 0;
+		// call api
 		HTTP::contentType = "application/json";
-		byte* result = HTTP::Post("https://www.a4g4.com/API/dll/login.php", OutgoingJSONString, &bytesRead);
-		std::string ServerResponseJSONString = std::string((char*)result, bytesRead);
-		free(result);
-		L::Log(ServerResponseJSONString.c_str());
-		/* Example output:
-		{
-			"session": "559a56ff2bcf669b9413d543ba49d583e04d1c508c8bdc1433f426d626a6556e",
-			"serverTime": 1614573349,
-			"success": true,
-			"id": 4,
-			"accountAge": 93536,
-			"email": "dev@a4g4.com",
-			"subscription": {
-				"exists": true,
-				"id": "sub_J24l9bQSc0wCMh",
-				"status": 1,
-				"active": true,
-				"timeRemainging": 2667348,
-				"grace": false,
-				"nextPaymentDate": "April 1st, 2021, at 1:31 am",
-				"nextPaymentTimestamp": 1617240697
-			}
-		}
-		*/
+		DWORD bytesRead = 0;
+		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/login.php", out.dump(), &bytesRead);
 
-		// parse output
-		JSONValue* ServerResponse = JSON::Parse(std::wstring(ServerResponseJSONString.begin(), ServerResponseJSONString.end()).c_str());
-
-		// make sure that this thread is still the most recent handler available
-		if (myAttemptId != LoginAttemptCounter)
+		// validate response
+		if (!response || bytesRead < 7) // {"x":1}
 		{
-			if (ServerResponse) delete ServerResponse;
-			return 1;
+			SetLoginError("Failed to contact server - Please check your firewall.");
+			goto failed;
 		}
 
-		// json invalid
-		if (!ServerResponse || !ServerResponse->IsObject())
-		{
-			UserData::LoginError = "Invalid server response - please contact a developer.";
-			UserData::LoginErrorOriginTime = Animation::now();
-			L::Log("Failed to parse JSON response for login attempt");
-			if (ServerResponse) delete ServerResponse;
-			Sleep(1000);
-			BusyAttemptingLogin = false;
-			return 1;
-		}
-		JSONObject root = ServerResponse->AsObject();
-
-		// check success
-		{
-			auto success = root.find(L"success");
-			if (success == root.end() || !success->second->IsBool() || !success->second->AsBool())
+		// parse response
+		try {
+			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
+			free(response); response = nullptr;
+			
+			if (!parsed["success"].get<bool>())
 			{
-				auto err = root.find(L"error");
-				if (err != root.end() && err->second->IsString())
-				{
-					UserData::LoginError = std::string(err->second->AsString().begin(), err->second->AsString().end());
-					L::Log("Login attempt failed w/ err:", "");
-					L::Log(UserData::LoginError.c_str());
-				}
-				else
-				{
-					UserData::LoginError = "Unknown error - Try again";
-					L::Log("Login attempt failed w/o error description");
-				}
-				UserData::LoginErrorOriginTime = Animation::now();
-				if (ServerResponse) delete ServerResponse;
-				Sleep(1000);
-				BusyAttemptingLogin = false;
-				return 1;
+				SetLoginError(parsed["error"].get<std::string>());
+				goto failed;
+			}
+			else
+			{
+				SessionId = parsed["idSessions"].get<std::string>();
+				Authenticated = true;
+				UserId = parsed["idUsers"].get<uint32_t>();
+				PremiumTimeRemaining = parsed["premiumTimeRemaining"].get<uint32_t>();
+				Premium = PremiumTimeRemaining > 0;
+				LastPingTime = Animation::now();
 			}
 		}
-
-		if (myAttemptId != LoginAttemptCounter)
+		catch (std::exception& e)
 		{
-			if (ServerResponse) delete ServerResponse;
-			return 1;
+			SetLoginError("Unknown Error - Try Again"); // invalid server response
+			L::Log(e.what());
+			goto failed;
 		}
 
-		// get user information
+		// save login info to file
+		try
 		{
-			auto id = root.find(L"id");
-			auto email = root.find(L"email");
-			auto session = root.find(L"session");
-			auto subscription = root.find(L"subscription");
-
-			if (id == root.end() || !id->second->IsNumber()) goto VALUE_MISSING;
-			if (email == root.end() || !email->second->IsString()) goto VALUE_MISSING;
-			if (session == root.end() || !session->second->IsString()) goto VALUE_MISSING;
-			if (subscription == root.end() || !subscription->second->IsObject()) goto VALUE_MISSING;
-
-			auto subscriptionRoot = subscription->second->AsObject();
-			auto subscriptionExists = subscriptionRoot.find(L"exists");
-			auto premium = subscriptionRoot.find(L"active");
-			if (subscriptionExists == subscriptionRoot.end() || !subscriptionExists->second->IsBool()) goto VALUE_MISSING;
-
-			if (subscriptionExists->second->AsBool())
+			L::Log("Saving credentials to file...", " ");
+			auto f = std::ofstream(CredentialsFile, std::ios::binary);
+			if (f.is_open()) // if fails, whatever, they'll have to type password again
 			{
-				if (premium == subscriptionRoot.end() || !premium->second->IsBool()) goto VALUE_MISSING;
-			}
+				size_t usedSize = 0;
+				char data[1025]; // 1 for xor key, 512 for email, 512 for password
+				ZeroMemory(data, 1025);
 
-			// set these values in the config
-			LastSuccessfulServerContact = Animation::now();
-			UserData::Initialized = true;
-			UserData::Authenticated = true;
-			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
-			UserData::Email = std::string(email->second->AsString().begin(), email->second->AsString().end());
-			UserData::SessionID = std::string(session->second->AsString().begin(), session->second->AsString().end());
-			UserData::UserID = (uint64_t)id->second->AsNumber();
-			GUI::IntroAnimation2 = Animation::newAnimation("intro-2", 0);
-			if (ServerResponse) delete ServerResponse;
-			BusyAttemptingLogin = false;
+				// xor key
+				char k = (char)(rand() % 256);
+				data[0] = k;
+				usedSize = 1;
 
-			// save this login to file
-			try
-			{
-				L::Log("Saving credentials to file");
-				auto f = std::ofstream(UserData::CredentialsFile, std::ios::binary);
-				if (f.is_open()) // if fails, whatever, they'll have to type password again
-				{
-					size_t usedSize = 0;
-					char data[1025]; // 1 for xor key, 512 for email, 512 for password
-					ZeroMemory(data, 1025);
+				// email
+				size_t EmailLen = inputEmail.length();
+				memcpy(data + usedSize, inputEmail.c_str(), EmailLen);
+				usedSize += EmailLen;
+				if (EmailLen < 512)
+					usedSize += 1; // add a null terminator
 
-					// xor key
-					char k = (char)(rand() % 256);
-					data[0] = k;
-					usedSize = 1;
+				// pass
+				size_t PassLen = inputPassword.length();
+				memcpy(data + usedSize, inputPassword.c_str(), PassLen);
+				usedSize += PassLen;
+				if (PassLen < 512)
+					usedSize += 1; // add a null terminator
 
-					// email
-					size_t EmailLen = InputEmail.length();
-					memcpy(data + usedSize, InputEmail.c_str(), EmailLen);
-					usedSize += EmailLen;
-					if (EmailLen < 512)
-						usedSize += 1; // add a null terminator
+				// "encrypt"
+				for (size_t i = 1; i < usedSize; i++)
+					data[i] ^= k;
 
-					// pass
-					size_t PassLen = InputPassword.length();
-					memcpy(data + usedSize, InputPassword.c_str(), PassLen);
-					usedSize += PassLen;
-					if (PassLen < 512)
-						usedSize += 1; // add a null terminator
-
-					// "encrypt"
-					for (size_t i = 1; i < usedSize; i++)
-						data[i] ^= k;
-
-					f.write(data, usedSize);
-					f.close();
-					L::Log("Success!");
-				}
-			}
-			catch (const std::exception& e)
-			{
-				L::Log("Failed to save user credentials w/ error: ", "");
-				L::Log(e.what());
+				f.write(data, usedSize);
+				f.close();
+				L::Log("Success!");
 			}
 		}
+		catch (const std::exception& e)
+		{
+			L::Log("Failed to save user credentials w/ error: ", "");
+			L::Log(e.what());
+		}
 
+	//succeeded:
+		if (response) { free(response); response = nullptr; }
+		LoginDebounce = false;
 		return 0;
 
-	VALUE_MISSING:
-		UserData::LoginError = "Invalid server response - please contact a developer.";
-		UserData::LoginErrorOriginTime = Animation::now();
-		if (ServerResponse) delete ServerResponse;
+	failed:
+		if (response) { free(response); response = nullptr; }
 		Sleep(1000);
-		BusyAttemptingLogin = false;
+		LoginDebounce = false;
 		return 1;
 	}
-	
-	DWORD WINAPI PingServer(LPVOID pInfo)
+
+	DWORD WINAPI GetUnauthenticatedSession(LPVOID pInfo)
 	{
-		size_t AttemptIndex = ++PingAttemptCounter;
+		if (LoginDebounce) return 1;
+		LoginDebounce = true;
+		SetLoginError("");
 
-		// create outgoing JSON string
-		JSONValue* SessionJSON = new JSONValue(std::wstring(UserData::SessionID.begin(), UserData::SessionID.end()));
-		JSONObject InputRoot;
-		InputRoot[L"session"] = SessionJSON;
-		JSONValue* InputJSONV = new JSONValue(InputRoot);
-		std::wstring InputW = InputJSONV->Stringify();
-		std::string OutgoingJSONString(InputW.begin(), InputW.end());
-		delete InputJSONV;
-
-		// send API request
-		DWORD bytesRead = 0;
+		// call api
 		HTTP::contentType = "application/json";
-		byte* result = HTTP::Post("https://www.a4g4.com/API/dll/ping.php", OutgoingJSONString, &bytesRead);
-		std::string ServerResponseJSONString = std::string((char*)result, bytesRead);
-		free(result);
-		L::Log(ServerResponseJSONString.c_str());
-		/* Example output:
-		{
-			"session": "559a56ff2bcf669b9413d543ba49d583e04d1c508c8bdc1433f426d626a6556e",
-			"serverTime": 1614573349,
-			"success": true,
-			"id": 4,
-			"accountAge": 93536,
-			"email": "dev@a4g4.com",
-			"subscription": {
-				"exists": true,
-				"id": "sub_J24l9bQSc0wCMh",
-				"status": 1,
-				"active": true,
-				"timeRemainging": 2667348,
-				"grace": false,
-				"nextPaymentDate": "April 1st, 2021, at 1:31 am",
-				"nextPaymentTimestamp": 1617240697
-			}
-		}
-		*/
+		DWORD bytesRead = 0;
+		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/playfree.php", "{}", &bytesRead);
 
-		// parse output
-		JSONValue* ServerResponse = JSON::Parse(std::wstring(ServerResponseJSONString.begin(), ServerResponseJSONString.end()).c_str());
-
-		// make sure that this thread is still the most recent handler available
-		if (AttemptIndex != PingAttemptCounter)
+		// validate response
+		if (!response || bytesRead < 7) // {"x":1}
 		{
-			if (ServerResponse) delete ServerResponse;
-			return 1;
+			SetLoginError("Failed to contact server - Please check your firewall.");
+			goto failed;
 		}
 
-		// json invalid
-		if (!ServerResponse || !ServerResponse->IsObject())
-		{
-			L::Log("Failed to parse JSON response for ping attempt");
-			if (ServerResponse) delete ServerResponse;
-			return 1;
+		// parse response
+		try {
+			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
+			free(response); response = nullptr;
+			SessionId = parsed["idSessions"].get<std::string>();
+			Authenticated = false;
+			UserId = (uint32_t)-1;
+			PremiumTimeRemaining = 0;
+			Premium = PremiumTimeRemaining > 0;
+			LastPingTime = Animation::now();
 		}
-		JSONObject root = ServerResponse->AsObject();
-
-		// check success
+		catch (std::exception& e)
 		{
-			auto success = root.find(L"success");
-			if (success == root.end() || !success->second->IsBool() || !success->second->AsBool())
-			{
-				auto err = root.find(L"error");
-				if (err != root.end() && err->second->IsString())
-				{
-					L::Log("Ping attempt failed w/ err:", "");
-					L::Log(std::string(err->second->AsString().begin(), err->second->AsString().end()).c_str());
-				}
-				else
-				{
-					L::Log("Ping attempt failed w/o error description");
-				}
-				if (ServerResponse) delete ServerResponse;
-				return 1;
-			}
+			SetLoginError("Unknown Error - Try Again"); // invalid server response
+			L::Log(e.what());
+			goto failed;
 		}
 
-		if (AttemptIndex != PingAttemptCounter)
-		{
-			if (ServerResponse) delete ServerResponse;
-			return 1;
-		}
-
-		// get user information
-		{
-			auto subscription = root.find(L"subscription");
-			if (subscription == root.end() || !subscription->second->IsObject()) goto VALUE_MISSING;
-
-			auto subscriptionRoot = subscription->second->AsObject();
-			auto subscriptionExists = subscriptionRoot.find(L"exists");
-			auto premium = subscriptionRoot.find(L"active");
-			if (subscriptionExists == subscriptionRoot.end() || !subscriptionExists->second->IsBool()) goto VALUE_MISSING;
-
-			if (subscriptionExists->second->AsBool())
-			{
-				if (premium == subscriptionRoot.end() || !premium->second->IsBool()) goto VALUE_MISSING;
-			}
-
-			// set these values in the config
-			UserData::Premium = subscriptionExists->second->AsBool() && premium->second->AsBool();
-		}
-
-		LastSuccessfulServerContact = Animation::now();
-		if (ServerResponse) delete ServerResponse;
+		//succeeded:
+		if (response) { free(response); response = nullptr; }
+		LoginDebounce = false;
 		return 0;
 
-	VALUE_MISSING:
-		if (ServerResponse) delete ServerResponse;
+	failed:
+		if (response) { free(response); response = nullptr; }
+		Sleep(1000);
+		LoginDebounce = false;
 		return 1;
+	}
+
+	DWORD WINAPI PingServer(LPVOID pInfo)
+	{
+		if (PingDebounce) return false;
+		PingDebounce = true;
+
+		L::Log("Ping!");
+		// dump to json
+		nlohmann::json out = nlohmann::json::object();
+		out["sid"] = UserData::SessionId;
+
+		// call api
+		HTTP::contentType = "application/json";
+		DWORD bytesRead = 0;
+		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/ping.php", out.dump(), &bytesRead);
+		if (response)
+		{
+			L::Log(std::string(response, bytesRead).c_str());
+		}
+		// validate response
+		if (!response || bytesRead < 7) // {"x":1}
+		{
+			L::Log("Ping failed due to invalid server response");
+			goto failed;
+		}
+
+		// parse response
+		try {
+			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
+			free(response); response = nullptr;
+
+			if (!parsed["success"].get<bool>())
+			{
+				L::Log(("Ping failed w/ err: " + parsed["error"].get<std::string>()).c_str());
+				goto failed;
+			}
+			else
+			{
+				PremiumTimeRemaining = parsed["premiumTimeRemaining"].get<uint32_t>();
+				Premium = PremiumTimeRemaining > 0;
+				LastPingTime = Animation::now();
+			}
+		}
+		catch (std::exception& e)
+		{
+			L::Log("Ping failed w/ error: ", "");
+			L::Log(e.what());
+			goto failed;
+		}
+
+	failed:
+		Sleep(1000); // prevent from trying for at least 10 seconds
+		PingDebounce = false;
+		return 0;
+	}
+
+	bool ConnectAPI()
+	{
+		DWORD bytes = 0;
+		char* response = nullptr;
+		
+		// for some reason my brain isn't working right now
+		// this is the best way I can think of doing this
+		goto first;
+	retry: 
+		if (response) free(response);
+		Sleep(1000);
+		
+	first:
+		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected.php", "", &bytes);
+		if (bytes == 0 || !response) goto retry;
+		for (size_t i = 0; i < bytes; i++)
+			if (response[i] < '0' || '9' < response[i])
+				goto retry;
+
+		return true;
 	}
 }

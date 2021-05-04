@@ -1,14 +1,4 @@
 #include "../Include.hpp"
-#include "HTTP.hpp"
-// TODO: organize GUI namespace
-
-// will be set to the screen center
-ImVec2 LoginWindowPosition(100, 100);
-
-std::mutex LoginMutex{};
-uint32_t LoginAttemptIndex = 0;
-bool IsAttemptingLogin = false;
-
 
 ImFont* FontDefault;
 ImFont* Arial8;
@@ -1890,7 +1880,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 	// login errors
 	{
-		if (UserData::LoginError.length() > 0 && Animation::delta(Animation::now(), UserData::LoginErrorOriginTime) < 10.0)
+		if (UserData::LoginError.length() > 0 && Animation::delta(Animation::now(), UserData::LoginErrorTime) < 10.0)
 		{
 			ImGui::SetCursorPos(ImVec2(FrameSize.x / 2, 0));
 			ImGui::ToolTip(UserData::LoginError, FrameSize.y);
@@ -1997,12 +1987,11 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
 		// todo: show loading spinner instead of button when UserData::BusyAttemptingLogin 
-		if (ImGui::Button(UserData::BusyAttemptingLogin ? XOR("---") : XOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::BusyAttemptingLogin)
+		if (ImGui::Button(UserData::LoginDebounce ? XOR("---") : XOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
 		{
 			UserData::LoginInformation* info = new UserData::LoginInformation{};
 			info->Email = std::string(Email);
 			info->Password = std::string(Password);
-			UserData::LastServerContactAttempt = Animation::now();
 			CreateThread(NULL, 0, UserData::AttemptLogin, (LPVOID)info, 0, NULL);
 		}
 
@@ -2013,14 +2002,9 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 2));
-		if (ImGui::Button(XOR("Play Free"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2)
+		if (ImGui::Button(UserData::LoginDebounce ? XOR("---") : XOR("Play Free"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
 		{
-			UserData::Initialized = true;
-			UserData::Authenticated = false;
-			UserData::Premium = false;
-			UserData::UserID = (uint64_t)-1;
-
-			IntroAnimation2 = Animation::newAnimation(XOR("intro-2"), 0);
+			CreateThread(NULL, 0, UserData::GetUnauthenticatedSession, (LPVOID)nullptr, 0, NULL);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 3));
@@ -3258,7 +3242,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 	std::string MainTitle =
 		std::string(XOR("A4G4 - ")) +
 		std::string((UserData::Premium ? XOR("FULL VERSION ") : XOR("TRIAL VERSION "))) +
-		std::string((UserData::Authenticated ? XOR("(USER ") + std::to_string(UserData::UserID) + XOR(")") : XOR("(UNAUTHENTICATED)")));
+		std::string((UserData::Authenticated ? XOR("(USER ") + std::to_string(UserData::UserId) + XOR(")") : XOR("(UNAUTHENTICATED)")));
 	ImGui::Begin(MainTitle.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
 	ImGui::PopStyleColor(1);
 	ImGui::PopStyleVar(1);
@@ -3533,34 +3517,13 @@ void GUI::Main()
 		AuthenticationIntro();
 		L::Verbose(XOR("GUI::AuthenticationIntro complete"));
 	}
-	else if (UserData::Initialized)
+	else if (UserData::SessionId != "")
 	{
 		if (MenuOpen->Get())
 		{
 			L::Verbose(XOR("GUI::MainScreen running"));
 			MainScreen();
 			L::Verbose(XOR("GUI::MainScreen complete"));
-		}
-
-		if (UserData::Authenticated)
-		{
-			TIME_POINT now = Animation::now();
-			double timeSinceLastAttempt = Animation::delta(now, UserData::LastServerContactAttempt);
-			double timeSinceLastSuccess = Animation::delta(now, UserData::LastSuccessfulServerContact);
-
-			if (timeSinceLastSuccess > 420.0)
-			{
-				L::Log(XOR("It's been 7 minutes since last successful ping, time to just give up"));
-				Ejected = true;
-			}
-			else if (timeSinceLastSuccess > 300.0 && timeSinceLastAttempt > 10.0) // ping every 5 minutes, and retry every 10 seconds upon failure
-			{
-				L::Log(XOR("CreateThread(UserData::PingServer)"));
-
-				UserData::LastServerContactAttempt = now;
-				CreateThread(NULL, 0, UserData::PingServer, NULL, 0, NULL);
-				Sleep(0);
-			}
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
@@ -3580,5 +3543,14 @@ void GUI::Main()
 	Config2::ProcessKeys();
 	L::Verbose(XOR("Config2::ProcessKeys complete"));
 
+
+	if (UserData::SessionId != "") // if we should be pinging
+	{
+		double SecondsSincePing = Animation::delta(Animation::now(), UserData::LastPingTime);
+		if (SecondsSincePing > 300 && !UserData::PingDebounce) // can ping now
+			CreateThread(NULL, 0, UserData::PingServer, (LPVOID)nullptr, 0, NULL);
+		else if (SecondsSincePing > 420) // egregious ping delay
+			GUI::Ejected = true;
+	}
 	L::Verbose(XOR("GUI::Main complete"));
 }
