@@ -3540,12 +3540,6 @@ void GUI2::Main()
 			L::Verbose(XOR("GUI2::MainScreen running"));
 			MainScreen();
 			L::Verbose(XOR("GUI2::MainScreen complete"));
-
-			/*
-			L::Verbose(XOR("GUI::Main running"));
-			Ejected |= GUI::Main();
-			L::Verbose(XOR("GUI::Main complete"));
-			//*/
 		}
 
 		if (UserData::Authenticated)
