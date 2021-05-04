@@ -4,8 +4,8 @@ KillSay* killsay = new KillSay();
 
 void KillSay::run(GameEvent* event)
 {
-	static Config2::CState* Enable = Config2::GetState("misc-other-killsay");
-	static Config2::CTextInput* Text = Config2::GetText("misc-other-killsay-input");
+	static Config::CState* Enable = Config::GetState("misc-other-killsay");
+	static Config::CTextInput* Text = Config::GetText("misc-other-killsay-input");
 	if (!Enable->Get())
 		return;
 

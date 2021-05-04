@@ -201,10 +201,10 @@ void SkinChanger::Hook()
 void SkinChanger::UnHook()
 {
     // first, clear all skins + knife
-    for (size_t i = 0; i < Config2::WeaponPaintKits.size(); i++)
-        Config2::WeaponPaintKits.at(i)->ClearSelection();
-    Config2::GetPaintKit("skinchanger-knife-paintkit")->ClearSelection();
-    Config2::GetState("skinchanger-knife-enable")->Set(false);
+    for (size_t i = 0; i < Config::WeaponPaintKits.size(); i++)
+        Config::WeaponPaintKits.at(i)->ClearSelection();
+    Config::GetPaintKit("skinchanger-knife-paintkit")->ClearSelection();
+    Config::GetState("skinchanger-knife-enable")->Set(false);
     if (G::LocalPlayer && G::LocalPlayerAlive && G::IsInGame)
     {
         RunFSN();
@@ -285,10 +285,10 @@ WeaponId SkinChanger::OriginalKnife = WeaponId::INVALID;
 WeaponId SkinChanger::AppliedKnife = WeaponId::TDefaultKnife;
 void SkinChanger::RunFSN()
 {
-    static auto EnableKnifeChanger = Config2::GetState("skinchanger-knife-enable");
-    static auto KnifeModel = Config2::GetState("skinchanger-knife-model");
-    static auto KnifeSkin = Config2::GetPaintKit("skinchanger-knife-paintkit");
-    static auto KnifeWear = Config2::GetFloat("skinchanger-knife-wear");
+    static auto EnableKnifeChanger = Config::GetState("skinchanger-knife-enable");
+    static auto KnifeModel = Config::GetState("skinchanger-knife-model");
+    static auto KnifeSkin = Config::GetPaintKit("skinchanger-knife-paintkit");
+    static auto KnifeWear = Config::GetFloat("skinchanger-knife-wear");
 
     {
         HANDLE* Wearables = G::LocalPlayer->GetWearables();
@@ -332,7 +332,7 @@ void SkinChanger::RunFSN()
         if ((Index = (int)Skins::WeaponFromId(id)) >= 0)
         {
             // this is a gun
-            const Skins::PaintKit* PaintKit = Config2::WeaponPaintKits.at(Index)->PaintKit;
+            const Skins::PaintKit* PaintKit = Config::WeaponPaintKits.at(Index)->PaintKit;
             if (PaintKit && PaintKit->ID != 0)
                 ForceSkin(Weapon, PaintKit->ID, 0.f);
             else

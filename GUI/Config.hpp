@@ -12,7 +12,7 @@
 #include "HTTP.hpp"
 #include "ConfigConstants.hpp"
 
-namespace Config2
+namespace Config
 {
 	constexpr unsigned char VERSION_MAJOR = 1;
 	constexpr unsigned char VERSION_MINOR = 1;
@@ -65,7 +65,7 @@ namespace Config2
 	struct CMultiSelect;
 
 	// util
-	extern void _KeyStateChanged(int index, bool currentlyPressed);
+	extern void _KeyStateChanged(int index, bool currentlyPressed, bool checkPremium = true);
 	extern void _BindToKey(Property* p, int index);
 
 	// getters
@@ -80,11 +80,11 @@ namespace Config2
 
 	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
-	extern bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed);
+	extern bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed, bool checkPremium = true);
 	extern char* ExportTheme(size_t* nBytesOut);
 	extern char* ExportConfig(size_t* nBytesOut);
 	extern void ImportTheme(const char* Theme, size_t nBytes);
-	extern void ImportConfig(const char* buffer, size_t nBytes);
+	extern void ImportConfig(const char* buffer, size_t nBytes, bool checkPremium = true);
 
 	// file openers
 	extern void PromptImportThemeFile();
@@ -127,7 +127,7 @@ namespace UserData
 	extern bool ConnectAPI();
 }
 
-namespace Config2
+namespace Config
 {
 	struct CState
 	{
@@ -539,7 +539,6 @@ namespace Config2
 		Property* VisibilityLinked = nullptr;
 
 		// meta info
-		bool IsComplex = false;
 		bool IsPremium = false;
 
 		void* Value;

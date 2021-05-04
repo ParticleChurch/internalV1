@@ -9,8 +9,8 @@ Doubletap* doubletap = new Doubletap();
 void Doubletap::DoubleTap()
 {
 
-	static Config2::CFloat* ShiftAmount = Config2::GetFloat("tickbase-shift");
-	static Config2::CFloat* RechargeAmount = Config2::GetFloat("tickbase-recharge");
+	static Config::CFloat* ShiftAmount = Config::GetFloat("tickbase-shift");
+	static Config::CFloat* RechargeAmount = Config::GetFloat("tickbase-recharge");
 	shift_ticks = (int)ShiftAmount->Get();
 
 	static bool did_shift_before = false;

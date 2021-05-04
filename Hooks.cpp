@@ -92,9 +92,9 @@ public:
 				I::engine->ClientCmd_Unrestricted("play buttons/arena_switch_press_02");
 
 			if (userid == localIdx && HitGroup == 1) { //if hitting head
-				static Config2::CState* LegitInvert = Config2::GetState("antiaim-legit-invert");
-				static Config2::CState* RageInvert = Config2::GetState("antiaim-rage-invert");
-				static Config2::CState* RageInvertOnHit = Config2::GetState("antiaim-custom-fake-invert");
+				static Config::CState* LegitInvert = Config::GetState("antiaim-legit-invert");
+				static Config::CState* RageInvert = Config::GetState("antiaim-rage-invert");
+				static Config::CState* RageInvertOnHit = Config::GetState("antiaim-custom-fake-invert");
 				if (RageInvertOnHit->Get())
 				{
 					if(RageInvert->Get())
@@ -442,7 +442,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
-	static auto MenuOpen = Config2::GetState("show-menu");
+	static auto MenuOpen = Config::GetState("show-menu");
 	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
 	bool IsMouseInput =
 		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL || uMsg == WM_INPUT || // wm_input is not always mouse but usually will be
@@ -629,8 +629,8 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 
 		// bad animation fix (for third person)
 
-		static Config2::CState* LegitAA = Config2::GetState("antiaim-legit-enable");
-		static Config2::CState* RageAA = Config2::GetState("antiaim-rage-enable");
+		static Config::CState* LegitAA = Config::GetState("antiaim-legit-enable");
+		static Config::CState* RageAA = Config::GetState("antiaim-rage-enable");
 		if ((G::cmd->buttons & IN_ATTACK) || (G::cmd->buttons & IN_USE) || 
 			(!LegitAA->Get() && !RageAA->Get()))
 		{
@@ -659,7 +659,7 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
 	L::Verbose("H::PaintTraverseHook - begin");
 
-	static Config2::CState* NoScope = Config2::GetState("visuals-misc-noscope");
+	static Config::CState* NoScope = Config::GetState("visuals-misc-noscope");
 
 	if (strcmp("HudZoom", I::panel->GetName(vguiID)) == 0 && NoScope->Get())
 		return;
@@ -734,7 +734,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	*/
 
 	static int deadflagOffset = N::GetOffset("DT_CSPlayer", "deadflag");
-	static auto ThirdPerson = Config2::GetState("visuals-misc-thirdperson");
+	static auto ThirdPerson = Config::GetState("visuals-misc-thirdperson");
 
 	switch (stage)
 	{
@@ -817,7 +817,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 
 void __stdcall H::LockCursorHook()
 {
-	static auto MenuOpen = Config2::GetState("show-menu");
+	static auto MenuOpen = Config::GetState("show-menu");
 	L::Verbose("H::LockCursorHook - begin");
 	if (MenuOpen->Get())
 		I::surface->UnlockCursor();
@@ -861,7 +861,7 @@ void __stdcall H::EmitSoundHook(SoundData data)
 {
 	L::Verbose("H::EmitSoundHook - begin");
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
-	static Config2::CState* Enable = Config2::GetState("misc-other-autoaccept");
+	static Config::CState* Enable = Config::GetState("misc-other-autoaccept");
 
 	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep") && Enable->Get())
 	{

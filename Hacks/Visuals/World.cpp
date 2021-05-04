@@ -4,7 +4,7 @@ World* world = new World();
 
 void World::WorldMod(Material* mat)
 {
-	static Config2::CColor* Clr = Config2::GetColor("visuals-world-color");
+	static Config::CColor* Clr = Config::GetColor("visuals-world-color");
 
 	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
 	mat->AlphaModulate(Clr->GetA() / 255.f);
@@ -16,7 +16,7 @@ void World::PropMod(Material* mat)
 	static auto r_drawspecificstaticprop = I::cvar->FindVar("r_DrawSpecificStaticProp");
 	r_drawspecificstaticprop->SetValue(1);
 
-	static Config2::CColor* Clr = Config2::GetColor("visuals-world-prop-color");
+	static Config::CColor* Clr = Config::GetColor("visuals-world-prop-color");
 	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
 	mat->AlphaModulate(Clr->GetA() / 255.f);
 	
@@ -37,14 +37,14 @@ void World::SkyboxLoad(std::string name)
 
 void World::SkyboxMod(Material* mat)
 {
-	static Config2::CColor* Clr = Config2::GetColor("visuals-world-skybox-color");
+	static Config::CColor* Clr = Config::GetColor("visuals-world-skybox-color");
 	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
 }
 
 void World::LightMod()
 {
-	static Config2::CColor* clr = Config2::GetColor("visuals-world-color");
-	static Config2::CState* enable = Config2::GetState("visuals-world-enable");
+	static Config::CColor* clr = Config::GetColor("visuals-world-color");
+	static Config::CState* enable = Config::GetState("visuals-world-enable");
 
 	if (!enable->Get())
 		return;
@@ -62,13 +62,13 @@ void World::LightMod()
 
 void World::RunFSN()
 {
-	static Config2::CState* World = Config2::GetState("visuals-world-enable");
-	static Config2::CState* Prop = Config2::GetState("visuals-world-prop-enable");
-	static Config2::CState* SkyboxEnabled = Config2::GetState("visuals-world-skybox-enable");
-	static Config2::CState* SkyboxState = Config2::GetState("visuals-world-skybox-name");
-	static Config2::CColor* WorldClr = Config2::GetColor("visuals-world-color");
-	static Config2::CColor* PropClr = Config2::GetColor("visuals-world-prop-color");
-	static Config2::CColor* SkyboxClr = Config2::GetColor("visuals-world-skybox-color");
+	static Config::CState* World = Config::GetState("visuals-world-enable");
+	static Config::CState* Prop = Config::GetState("visuals-world-prop-enable");
+	static Config::CState* SkyboxEnabled = Config::GetState("visuals-world-skybox-enable");
+	static Config::CState* SkyboxState = Config::GetState("visuals-world-skybox-name");
+	static Config::CColor* WorldClr = Config::GetColor("visuals-world-color");
+	static Config::CColor* PropClr = Config::GetColor("visuals-world-prop-color");
+	static Config::CColor* SkyboxClr = Config::GetColor("visuals-world-skybox-color");
 
 	bool UpdateWorld = false;
 	if (World->Get())

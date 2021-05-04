@@ -183,9 +183,9 @@ float AntiAim::AtFreestanding()
 void AntiAim::legit()
 {
 	// boolean is a cstate with true=1,false=0
-	static Config2::CState* Enable = Config2::GetState("antiaim-legit-enable");
-	static Config2::CState* AADirection = Config2::GetState("antiaim-legit-invert"); // terrible property name btw
-	static Config2::CFloat* MaxDesync = Config2::GetFloat("antiaim-legit-max-angle");
+	static Config::CState* Enable = Config::GetState("antiaim-legit-enable");
+	static Config::CState* AADirection = Config::GetState("antiaim-legit-invert"); // terrible property name btw
+	static Config::CFloat* MaxDesync = Config::GetFloat("antiaim-legit-max-angle");
 
 	// make it so it only updates on a new tick :D
 	static int tick_count = G::cmd->tick_count;
@@ -267,10 +267,10 @@ void AntiAim::legit()
 void AntiAim::ManualRage()
 {
 	// First fight with direction booleans
-	static Config2::CState* Left	= Config2::GetState("antiaim-manual-left");
-	static Config2::CState* Back	= Config2::GetState("antiaim-manual-back");
-	static Config2::CState* Right	= Config2::GetState("antiaim-manual-right");
-	static Config2::CFloat* Max		= Config2::GetFloat("antiaim-manual-max");
+	static Config::CState* Left	= Config::GetState("antiaim-manual-left");
+	static Config::CState* Back	= Config::GetState("antiaim-manual-back");
+	static Config::CState* Right	= Config::GetState("antiaim-manual-right");
+	static Config::CFloat* Max		= Config::GetFloat("antiaim-manual-max");
 
 	static int PrevLeft = 0;
 	static int PrevBack = 1;
@@ -494,10 +494,10 @@ void AntiAim::ManualRage()
 
 void AntiAim::CustomRage()
 {
-	static Config2::CFloat* RealOffset = Config2::GetFloat("antiaim-custom-real");
-	static Config2::CFloat* RealJitter = Config2::GetFloat("antiaim-custom-real-jitter");
-	static Config2::CFloat* FakeOffset = Config2::GetFloat("antiaim-custom-fake");
-	static Config2::CFloat* FakeJitter = Config2::GetFloat("antiaim-custom-fake-jitter");
+	static Config::CFloat* RealOffset = Config::GetFloat("antiaim-custom-real");
+	static Config::CFloat* RealJitter = Config::GetFloat("antiaim-custom-real-jitter");
+	static Config::CFloat* FakeOffset = Config::GetFloat("antiaim-custom-fake");
+	static Config::CFloat* FakeJitter = Config::GetFloat("antiaim-custom-fake-jitter");
 
 	// Because we are doing move fix, we can desync in a smaller, but better way :D
 	static bool LastSendPacket = (G::pSendPacket && *G::pSendPacket);
@@ -565,7 +565,7 @@ void AntiAim::CustomRage()
 
 void AntiAim::SetYawBase()
 {
-	static Config2::CState* YawBase = Config2::GetState("visuals-rage-yawbase");
+	static Config::CState* YawBase = Config::GetState("visuals-rage-yawbase");
 	switch (YawBase->Get())
 	{
 	case 0:
@@ -586,10 +586,10 @@ void AntiAim::SetYawBase()
 void AntiAim::rage()
 {
 	// boolean is a cstate with true=1,false=0
-	static Config2::CState* Enable = Config2::GetState("antiaim-rage-enable");
-	static Config2::CFloat* Pitch = Config2::GetFloat("antiaim-rage-pitch");
-	static Config2::CState* Invert = Config2::GetState("antiaim-rage-invert");
-	static Config2::CState* Mode = Config2::GetState("antiaim-type");
+	static Config::CState* Enable = Config::GetState("antiaim-rage-enable");
+	static Config::CFloat* Pitch = Config::GetFloat("antiaim-rage-pitch");
+	static Config::CState* Invert = Config::GetState("antiaim-rage-invert");
+	static Config::CState* Mode = Config::GetState("antiaim-type");
 
 	if (!Enable->Get()) return;
 

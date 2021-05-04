@@ -4,8 +4,8 @@ Movement* movement = new Movement();
 
 void Movement::AAMoveFix()
 {
-	static Config2::CState* LegitEnable = Config2::GetState("antiaim-legit-enable");
-	static Config2::CState* RageEnable = Config2::GetState("antiaim-rage-enable");
+	static Config::CState* LegitEnable = Config::GetState("antiaim-legit-enable");
+	static Config::CState* RageEnable = Config::GetState("antiaim-rage-enable");
 	// If the localplayer is not alive...
 	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
@@ -23,7 +23,7 @@ void Movement::AAMoveFix()
 
 void Movement::BunnyHop()
 {
-	static Config2::CState* Enabled = Config2::GetState("misc-movement-bhop");
+	static Config::CState* Enabled = Config::GetState("misc-movement-bhop");
 	// If bhop is NOT enabled in config...
 	if (!Enabled->Get())
 		return;
@@ -38,7 +38,7 @@ void Movement::BunnyHop()
 
 void Movement::FastCrouch()
 {
-	static Config2::CState* Enabled = Config2::GetState("misc-movement-fastcrouch");
+	static Config::CState* Enabled = Config::GetState("misc-movement-fastcrouch");
 
 	// If FastCrouch is NOT enabled in config...
 	if (!Enabled->Get())
@@ -54,7 +54,7 @@ void Movement::FastCrouch()
 
 void Movement::RageAutoStrafe()
 {
-	static Config2::CState* State = Config2::GetState("misc-movement-autostrafe");
+	static Config::CState* State = Config::GetState("misc-movement-autostrafe");
 
 	if (State->Get() != 1) return;
 
@@ -124,7 +124,7 @@ void Movement::RageAutoStrafe()
 
 void Movement::LegitAutoStrafe()
 {
-	static Config2::CState* State = Config2::GetState("misc-movement-autostrafe");
+	static Config::CState* State = Config::GetState("misc-movement-autostrafe");
 
 	if (State->Get() != 2)
 		return;
@@ -146,8 +146,8 @@ void Movement::LegitAutoStrafe()
 void Movement::SlowWalk() 
 {
 
-	static Config2::CState* Enabled = Config2::GetState("misc-movement-slowwalk");
-	static Config2::CFloat* Speed = Config2::GetFloat("misc-movement-slowwalk-speed");
+	static Config::CState* Enabled = Config::GetState("misc-movement-slowwalk");
+	static Config::CFloat* Speed = Config::GetFloat("misc-movement-slowwalk-speed");
 
 	// IF slowwalk isn't enabled
 	if (!Enabled->Get())
@@ -184,7 +184,7 @@ void Movement::FakeDuck()
 	if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		return;
 
-	static Config2::CState* Enabled = Config2::GetState("misc-movement-fakeduck");
+	static Config::CState* Enabled = Config::GetState("misc-movement-fakeduck");
 
 	// If FakeDuck is NOT enabled in config...
 	if (!Enabled->Get()) return;
@@ -199,8 +199,8 @@ void Movement::FakeDuck()
 
 void Movement::LegSlide()
 {
-	static Config2::CState* Enabled = Config2::GetState("misc-movement-leg");
-	static Config2::CFloat* LegTime = Config2::GetFloat("misc-movement-leg-time");
+	static Config::CState* Enabled = Config::GetState("misc-movement-leg");
+	static Config::CFloat* LegTime = Config::GetFloat("misc-movement-leg-time");
 
 	if (!G::LocalPlayer) return;
 
@@ -224,9 +224,9 @@ void Movement::LegSlide()
 
 void Movement::AutoStop()
 {
-	static Config2::CState* RageAimbot = Config2::GetState("rage-aim-enable");
-	static Config2::CState* AutoScope = Config2::GetState("rage-aim-autoscope");
-	static Config2::CState* AutoStop = Config2::GetState("misc-movement-autostop");
+	static Config::CState* RageAimbot = Config::GetState("rage-aim-enable");
+	static Config::CState* AutoScope = Config::GetState("rage-aim-autoscope");
+	static Config::CState* AutoStop = Config::GetState("misc-movement-autostop");
 
 	if (!AutoScope->Get() && !AutoStop->Get())
 		return;

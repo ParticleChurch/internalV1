@@ -262,7 +262,7 @@ void Aimbot::GetClosestEntity(int& RecordUserID, float& Distance)
 
 void Aimbot::Legit()
 {
-	static Config2::CState* Enable = Config2::GetState("legit-aim-enable"); // terrible property name btw
+	static Config::CState* Enable = Config::GetState("legit-aim-enable"); // terrible property name btw
 
 	// Is legitbot enabled
 	if (!Enable->Get()) return;
@@ -314,25 +314,25 @@ bool Aimbot::UpdateLegitVal()
 	int weaponID = (int)weapon->GetWeaponId();
 	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
 
-	static Config2::CFloat* Pistol_FOV			= Config2::GetFloat("legitaim-pistol-fov");
-	static Config2::CState* Pistol_Smooth		= Config2::GetState("legitaim-pistol-smoothing");
-	static Config2::CFloat* Pistol_SmoothAmount = Config2::GetFloat("legitaim-pistol-smoothing-amount");
+	static Config::CFloat* Pistol_FOV			= Config::GetFloat("legitaim-pistol-fov");
+	static Config::CState* Pistol_Smooth		= Config::GetState("legitaim-pistol-smoothing");
+	static Config::CFloat* Pistol_SmoothAmount = Config::GetFloat("legitaim-pistol-smoothing-amount");
 
-	static Config2::CFloat* SMG_FOV				= Config2::GetFloat("legitaim-smg-fov");
-	static Config2::CState* SMG_Smooth			= Config2::GetState("legitaim-smg-smoothing");
-	static Config2::CFloat* SMG_SmoothAmount	= Config2::GetFloat("legitaim-smg-smoothing-amount");
+	static Config::CFloat* SMG_FOV				= Config::GetFloat("legitaim-smg-fov");
+	static Config::CState* SMG_Smooth			= Config::GetState("legitaim-smg-smoothing");
+	static Config::CFloat* SMG_SmoothAmount	= Config::GetFloat("legitaim-smg-smoothing-amount");
 
-	static Config2::CFloat* Heavy_FOV			= Config2::GetFloat("legitaim-heavy-fov");
-	static Config2::CState* Heavy_Smooth		= Config2::GetState("legitaim-heavy-smoothing");
-	static Config2::CFloat* Heavy_SmoothAmount  = Config2::GetFloat("legitaim-heavy-smoothing-amount");
+	static Config::CFloat* Heavy_FOV			= Config::GetFloat("legitaim-heavy-fov");
+	static Config::CState* Heavy_Smooth		= Config::GetState("legitaim-heavy-smoothing");
+	static Config::CFloat* Heavy_SmoothAmount  = Config::GetFloat("legitaim-heavy-smoothing-amount");
 
-	static Config2::CFloat* Rifle_FOV			= Config2::GetFloat("legitaim-rifle-fov");
-	static Config2::CState* Rifle_Smooth		= Config2::GetState("legitaim-rifle-smoothing");
-	static Config2::CFloat* Rifle_SmoothAmount	= Config2::GetFloat("legitaim-rifle-smoothing-amount");
+	static Config::CFloat* Rifle_FOV			= Config::GetFloat("legitaim-rifle-fov");
+	static Config::CState* Rifle_Smooth		= Config::GetState("legitaim-rifle-smoothing");
+	static Config::CFloat* Rifle_SmoothAmount	= Config::GetFloat("legitaim-rifle-smoothing-amount");
 
-	static Config2::CFloat* Sniper_FOV			= Config2::GetFloat("legitaim-sniper-fov");
-	static Config2::CState* Sniper_Smooth		= Config2::GetState("legitaim-sniper-smoothing");
-	static Config2::CFloat* Sniper_SmoothAmount = Config2::GetFloat("legitaim-sniper-smoothing-amount");
+	static Config::CFloat* Sniper_FOV			= Config::GetFloat("legitaim-sniper-fov");
+	static Config::CState* Sniper_Smooth		= Config::GetState("legitaim-sniper-smoothing");
+	static Config::CFloat* Sniper_SmoothAmount = Config::GetFloat("legitaim-sniper-smoothing-amount");
 
 
 	// I could use a switch case for this meh
@@ -389,11 +389,11 @@ void Aimbot::GetLegitHitboxes(int gun)
 	legit.hitboxes.clear();
 	legit.hitboxes.resize(0);
 
-	static Config2::CMultiSelect* Pistol_Hitbox = Config2::GetSelected("legitaim-pistol-hitbox");
-	static Config2::CMultiSelect* SMG_Hitbox = Config2::GetSelected("legitaim-smg-hitbox");
-	static Config2::CMultiSelect* Heavy_Hitbox = Config2::GetSelected("legitaim-heavy-hitbox");
-	static Config2::CMultiSelect* Rifle_Hitbox = Config2::GetSelected("legitaim-rifle-hitbox");
-	static Config2::CMultiSelect* Sniper_Hitbox = Config2::GetSelected("legitaim-sniper-hitbox");
+	static Config::CMultiSelect* Pistol_Hitbox = Config::GetSelected("legitaim-pistol-hitbox");
+	static Config::CMultiSelect* SMG_Hitbox = Config::GetSelected("legitaim-smg-hitbox");
+	static Config::CMultiSelect* Heavy_Hitbox = Config::GetSelected("legitaim-heavy-hitbox");
+	static Config::CMultiSelect* Rifle_Hitbox = Config::GetSelected("legitaim-rifle-hitbox");
+	static Config::CMultiSelect* Sniper_Hitbox = Config::GetSelected("legitaim-sniper-hitbox");
 
 	switch (gun)
 	{
@@ -556,10 +556,10 @@ void Aimbot::SmoothFastToSlow(QAngle& Ang)
 
 void Aimbot::Rage()
 {
-	static Config2::CState* Enable = Config2::GetState("rage-aim-enable"); 
-	static Config2::CState* Silent = Config2::GetState("rage-aim-silent");
-	static Config2::CState* AutoShoot = Config2::GetState("rage-aim-autoshoot");
-	static Config2::CState* FakeDuck = Config2::GetState("misc-movement-fakeduck");
+	static Config::CState* Enable = Config::GetState("rage-aim-enable"); 
+	static Config::CState* Silent = Config::GetState("rage-aim-silent");
+	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
+	static Config::CState* FakeDuck = Config::GetState("misc-movement-fakeduck");
 
 	// Make sure it's a different tick
 	static int tickcount = G::cmd->tick_count;
@@ -700,54 +700,54 @@ bool Aimbot::UpdateRageVal()
 	int weaponID = (int)weapon->GetWeaponId();
 	int WeaponClass = (int)GetWeaponClass((WeaponId)weaponID);
 
-	static Config2::CFloat* Pistol_VisMin		= Config2::GetFloat("rageaim-pistol-mindamage-visible");
-	static Config2::CFloat* Pistol_HidMin		= Config2::GetFloat("rageaim-pistol-mindamage-hidden");
-	static Config2::CFloat* Pistol_HitChance	= Config2::GetFloat("rageaim-pistol-hitchance");
-	static Config2::CState* Pistol_BaimIfLethal	= Config2::GetState("rageaim-pistol-baimiflethal");
-	static Config2::CState* Pistol_Override		= Config2::GetState("rageaim-pistol-override");
-	static Config2::CFloat* Pistol_OverrideDam  = Config2::GetFloat("rageaim-pistol-override-damage");
+	static Config::CFloat* Pistol_VisMin		= Config::GetFloat("rageaim-pistol-mindamage-visible");
+	static Config::CFloat* Pistol_HidMin		= Config::GetFloat("rageaim-pistol-mindamage-hidden");
+	static Config::CFloat* Pistol_HitChance	= Config::GetFloat("rageaim-pistol-hitchance");
+	static Config::CState* Pistol_BaimIfLethal	= Config::GetState("rageaim-pistol-baimiflethal");
+	static Config::CState* Pistol_Override		= Config::GetState("rageaim-pistol-override");
+	static Config::CFloat* Pistol_OverrideDam  = Config::GetFloat("rageaim-pistol-override-damage");
 
-	static Config2::CFloat* Smg_VisMin			= Config2::GetFloat("rageaim-smg-mindamage-visible");
-	static Config2::CFloat* Smg_HidMin			= Config2::GetFloat("rageaim-smg-mindamage-hidden");
-	static Config2::CFloat* Smg_HitChance		= Config2::GetFloat("rageaim-smg-hitchance");
-	static Config2::CState* Smg_BaimIfLethal	= Config2::GetState("rageaim-smg-baimiflethal");
-	static Config2::CState* Smg_Override		= Config2::GetState("rageaim-smg-override");
-	static Config2::CFloat* Smg_OverrideDam		= Config2::GetFloat("rageaim-smg-override-damage");
+	static Config::CFloat* Smg_VisMin			= Config::GetFloat("rageaim-smg-mindamage-visible");
+	static Config::CFloat* Smg_HidMin			= Config::GetFloat("rageaim-smg-mindamage-hidden");
+	static Config::CFloat* Smg_HitChance		= Config::GetFloat("rageaim-smg-hitchance");
+	static Config::CState* Smg_BaimIfLethal	= Config::GetState("rageaim-smg-baimiflethal");
+	static Config::CState* Smg_Override		= Config::GetState("rageaim-smg-override");
+	static Config::CFloat* Smg_OverrideDam		= Config::GetFloat("rageaim-smg-override-damage");
 
-	static Config2::CFloat* Heavy_VisMin		= Config2::GetFloat("rageaim-heavy-mindamage-visible");
-	static Config2::CFloat* Heavy_HidMin		= Config2::GetFloat("rageaim-heavy-mindamage-hidden");
-	static Config2::CFloat* Heavy_HitChance		= Config2::GetFloat("rageaim-heavy-hitchance");
-	static Config2::CState* Heavy_BaimIfLethal	= Config2::GetState("rageaim-heavy-baimiflethal");
-	static Config2::CState* Heavy_Override		= Config2::GetState("rageaim-heavy-override");
-	static Config2::CFloat* Heavy_OverrideDam	= Config2::GetFloat("rageaim-heavy-override-damage");
+	static Config::CFloat* Heavy_VisMin		= Config::GetFloat("rageaim-heavy-mindamage-visible");
+	static Config::CFloat* Heavy_HidMin		= Config::GetFloat("rageaim-heavy-mindamage-hidden");
+	static Config::CFloat* Heavy_HitChance		= Config::GetFloat("rageaim-heavy-hitchance");
+	static Config::CState* Heavy_BaimIfLethal	= Config::GetState("rageaim-heavy-baimiflethal");
+	static Config::CState* Heavy_Override		= Config::GetState("rageaim-heavy-override");
+	static Config::CFloat* Heavy_OverrideDam	= Config::GetFloat("rageaim-heavy-override-damage");
 
-	static Config2::CFloat* Scout_VisMin		= Config2::GetFloat("rageaim-scout-mindamage-visible");
-	static Config2::CFloat* Scout_HidMin		= Config2::GetFloat("rageaim-scout-mindamage-hidden");
-	static Config2::CFloat* Scout_HitChance		= Config2::GetFloat("rageaim-scout-hitchance");
-	static Config2::CState* Scout_BaimIfLethal	= Config2::GetState("rageaim-scout-baimiflethal");
-	static Config2::CState* Scout_Override		= Config2::GetState("rageaim-scout-override");
-	static Config2::CFloat* Scout_OverrideDam	= Config2::GetFloat("rageaim-scout-override-damage");
+	static Config::CFloat* Scout_VisMin		= Config::GetFloat("rageaim-scout-mindamage-visible");
+	static Config::CFloat* Scout_HidMin		= Config::GetFloat("rageaim-scout-mindamage-hidden");
+	static Config::CFloat* Scout_HitChance		= Config::GetFloat("rageaim-scout-hitchance");
+	static Config::CState* Scout_BaimIfLethal	= Config::GetState("rageaim-scout-baimiflethal");
+	static Config::CState* Scout_Override		= Config::GetState("rageaim-scout-override");
+	static Config::CFloat* Scout_OverrideDam	= Config::GetFloat("rageaim-scout-override-damage");
 
-	static Config2::CFloat* AWP_VisMin			= Config2::GetFloat("rageaim-awp-mindamage-visible");
-	static Config2::CFloat* AWP_HidMin			= Config2::GetFloat("rageaim-awp-mindamage-hidden");
-	static Config2::CFloat* AWP_HitChance		= Config2::GetFloat("rageaim-awp-hitchance");
-	static Config2::CState* AWP_BaimIfLethal	= Config2::GetState("rageaim-awp-baimiflethal");
-	static Config2::CState* AWP_Override		= Config2::GetState("rageaim-awp-override");
-	static Config2::CFloat* AWP_OverrideDam		= Config2::GetFloat("rageaim-awp-override-damage");
+	static Config::CFloat* AWP_VisMin			= Config::GetFloat("rageaim-awp-mindamage-visible");
+	static Config::CFloat* AWP_HidMin			= Config::GetFloat("rageaim-awp-mindamage-hidden");
+	static Config::CFloat* AWP_HitChance		= Config::GetFloat("rageaim-awp-hitchance");
+	static Config::CState* AWP_BaimIfLethal	= Config::GetState("rageaim-awp-baimiflethal");
+	static Config::CState* AWP_Override		= Config::GetState("rageaim-awp-override");
+	static Config::CFloat* AWP_OverrideDam		= Config::GetFloat("rageaim-awp-override-damage");
 
-	static Config2::CFloat* Auto_VisMin			= Config2::GetFloat("rageaim-auto-mindamage-visible");
-	static Config2::CFloat* Auto_HidMin			= Config2::GetFloat("rageaim-auto-mindamage-hidden");
-	static Config2::CFloat* Auto_HitChance		= Config2::GetFloat("rageaim-auto-hitchance");
-	static Config2::CState* Auto_BaimIfLethal	= Config2::GetState("rageaim-auto-baimiflethal");
-	static Config2::CState* Auto_Override		= Config2::GetState("rageaim-auto-override");
-	static Config2::CFloat* Auto_OverrideDam	= Config2::GetFloat("rageaim-auto-override-damage");
+	static Config::CFloat* Auto_VisMin			= Config::GetFloat("rageaim-auto-mindamage-visible");
+	static Config::CFloat* Auto_HidMin			= Config::GetFloat("rageaim-auto-mindamage-hidden");
+	static Config::CFloat* Auto_HitChance		= Config::GetFloat("rageaim-auto-hitchance");
+	static Config::CState* Auto_BaimIfLethal	= Config::GetState("rageaim-auto-baimiflethal");
+	static Config::CState* Auto_Override		= Config::GetState("rageaim-auto-override");
+	static Config::CFloat* Auto_OverrideDam	= Config::GetFloat("rageaim-auto-override-damage");
 
-	static Config2::CFloat* Rifle_VisMin		= Config2::GetFloat("rageaim-rifle-mindamage-visible");
-	static Config2::CFloat* Rifle_HidMin		= Config2::GetFloat("rageaim-rifle-mindamage-hidden");
-	static Config2::CFloat* Rifle_HitChance		= Config2::GetFloat("rageaim-rifle-hitchance");
-	static Config2::CState* Rifle_BaimIfLethal	= Config2::GetState("rageaim-rifle-baimiflethal");
-	static Config2::CState* Rifle_Override		= Config2::GetState("rageaim-rifle-override");
-	static Config2::CFloat* Rifle_OverrideDam	= Config2::GetFloat("rageaim-rifle-override-damage");
+	static Config::CFloat* Rifle_VisMin		= Config::GetFloat("rageaim-rifle-mindamage-visible");
+	static Config::CFloat* Rifle_HidMin		= Config::GetFloat("rageaim-rifle-mindamage-hidden");
+	static Config::CFloat* Rifle_HitChance		= Config::GetFloat("rageaim-rifle-hitchance");
+	static Config::CState* Rifle_BaimIfLethal	= Config::GetState("rageaim-rifle-baimiflethal");
+	static Config::CState* Rifle_Override		= Config::GetState("rageaim-rifle-override");
+	static Config::CFloat* Rifle_OverrideDam	= Config::GetFloat("rageaim-rifle-override-damage");
 	
 
 	// I could use a switch case for this meh
@@ -879,8 +879,8 @@ bool Aimbot::UpdateRageVal()
 
 bool Aimbot::TryOnShot()
 {
-	static Config2::CState* Silent = Config2::GetState("rage-aim-silent");
-	static Config2::CState* AutoShoot = Config2::GetState("rage-aim-autoshoot");
+	static Config::CState* Silent = Config::GetState("rage-aim-silent");
+	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
 
 	float lerp = GetLerp();
 	std::map<int, Player>::iterator it;
@@ -941,13 +941,13 @@ void Aimbot::GetRageHitboxes(int gun)
 	rage.hitboxes.resize(0);
 
 	
-	static Config2::CMultiSelect* Pistol_Hitbox_R	= Config2::GetSelected("rageaim-pistol-hitbox");
-	static Config2::CMultiSelect* SMG_Hitbox_R = Config2::GetSelected("rageaim-smg-hitbox");
-	static Config2::CMultiSelect* Heavy_Hitbox_R = Config2::GetSelected("rageaim-heavy-hitbox");
-	static Config2::CMultiSelect* Rifle_Hitbox_R = Config2::GetSelected("rageaim-rifle-hitbox");
-	static Config2::CMultiSelect* Scout_Hitbox_R = Config2::GetSelected("rageaim-scout-hitbox");
-	static Config2::CMultiSelect* AWP_Hitbox_R = Config2::GetSelected("rageaim-awp-hitbox");
-	static Config2::CMultiSelect* Auto_Hitbox_R = Config2::GetSelected("rageaim-auto-hitbox");
+	static Config::CMultiSelect* Pistol_Hitbox_R	= Config::GetSelected("rageaim-pistol-hitbox");
+	static Config::CMultiSelect* SMG_Hitbox_R = Config::GetSelected("rageaim-smg-hitbox");
+	static Config::CMultiSelect* Heavy_Hitbox_R = Config::GetSelected("rageaim-heavy-hitbox");
+	static Config::CMultiSelect* Rifle_Hitbox_R = Config::GetSelected("rageaim-rifle-hitbox");
+	static Config::CMultiSelect* Scout_Hitbox_R = Config::GetSelected("rageaim-scout-hitbox");
+	static Config::CMultiSelect* AWP_Hitbox_R = Config::GetSelected("rageaim-awp-hitbox");
+	static Config::CMultiSelect* Auto_Hitbox_R = Config::GetSelected("rageaim-auto-hitbox");
 
 	switch (gun)
 	{

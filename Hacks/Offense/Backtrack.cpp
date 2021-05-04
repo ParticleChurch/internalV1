@@ -62,7 +62,7 @@ void Backtrack::ClearRecords()
 
 void Backtrack::RunFSN()
 {
-	static Config2::CFloat* BacktrackTime = Config2::GetFloat("legitaim-backtrack-time");
+	static Config::CFloat* BacktrackTime = Config::GetFloat("legitaim-backtrack-time");
 
 	std::map<int, Player>::iterator it;
 	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
@@ -136,7 +136,7 @@ static void CapsuleOverlay2(Entity* pPlayer, Color col, float duration, Matrix3x
 
 void Backtrack::run()
 {
-	static Config2::CState* RageAimbot = Config2::GetState("rage-aim-enable");
+	static Config::CState* RageAimbot = Config::GetState("rage-aim-enable");
 
 	if (RageAimbot->Get()) return;
 

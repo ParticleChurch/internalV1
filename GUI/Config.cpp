@@ -21,7 +21,7 @@ if (L::OutputMode != L::LogMode::None && p->Type != t){ \
 	_p->Visible.StateEquals = _v; \
 }
 
-namespace Config2
+namespace Config
 {
 	std::vector<CPaintKit*> WeaponPaintKits = {};
 	std::vector<CPaintKit*> KnifePaintKits = {};
@@ -426,7 +426,7 @@ namespace Config2
 			Tab* t = new Tab("Misc");
 			{
 				Group* g = t->Add("Movement");
-				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
+				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean())->IsPremium = true;
 				g->Add("misc-movement-autostrafe", "Autostrafe", new CVerticalState({ "None", "Rage", "Legit" }));
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-autostop", "AutoStop", new CBoolean());
@@ -591,7 +591,7 @@ namespace Config2
 		}
 
 		ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
-		ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
+		ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize, false);
 		_BindToKey(GetProperty("show-menu"), Keybind::ReverseKeyMap(VK_INSERT));
 		GetState("show-menu")->Set(1);
 	}
@@ -697,12 +697,16 @@ namespace Config2
 		return (CTextInput*)p->Value;
 	}
 
-	void _KeyStateChanged(int index, bool currentlyPressed)
+	void _KeyStateChanged(int index, bool currentlyPressed, bool checkPremium)
 	{
 		std::vector<void*>& Properties = Keybind::Binds[index];
 		for (size_t i = 0; i < Properties.size(); i++)
 		{
 			Property* p = (Property*)Properties.at(i);
+
+			if (checkPremium && p->IsPremium && !UserData::Premium)
+				continue;
+
 			switch (p->Type)
 			{
 			case PropertyType::BOOLEAN:
@@ -736,7 +740,7 @@ namespace Config2
 					((CVerticalState*)p->Value)->Value.Increment();
 			} break;
 			default:
-				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
+				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
 				return;
 			}
 		}
@@ -904,7 +908,13 @@ namespace Config2
 		// adjust capacity
 		if (vacantSpaceInBuffer < spaceRequired)
 		{
-			char* re = (char*)realloc(*buffer, *bufferSpaceAllocated + (spaceRequired - vacantSpaceInBuffer));
+			char* re = nullptr;
+			try {
+				re = (char*)realloc(*buffer, *bufferSpaceAllocated + (spaceRequired - vacantSpaceInBuffer));
+			}
+			catch (std::exception& e) {
+				L::Log(e.what());
+			}
 			if (!re)
 			{
 				L::Log(XOR("ExportSingleProperty failed - could not expand buffer"));
@@ -998,7 +1008,7 @@ namespace Config2
 		return true;
 	}
 
-	bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed)
+	bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed, bool checkPremium)
 	{
 		if (bufferSize < sizeof(size_t)) return false;
 		
@@ -1026,6 +1036,12 @@ namespace Config2
 		// read value
 		if (bufferSize < valueSize) return false;
 		if (nBytesUsed) *nBytesUsed += valueSize;
+
+		if (checkPremium && p->IsPremium && !UserData::Premium)
+		{
+			return true;
+		}
+
 		const char* value = buffer + sizeof(size_t) + nameSize;
 		switch (p->Type)
 		{
@@ -1120,7 +1136,7 @@ namespace Config2
 		char* buffer = (char*)malloc(headerSize);
 		if (!buffer)
 		{
-			L::Log(XOR("Config2::ExportTheme failed - initial malloc failed"));
+			L::Log(XOR("Config::ExportTheme failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1141,7 +1157,7 @@ namespace Config2
 
 			if (!ThemeTab)
 			{
-				L::Log("Config2::ExportTheme failed - couldn't find theme tab");
+				L::Log("Config::ExportTheme failed - couldn't find theme tab");
 				free(buffer);
 				return nullptr;
 			}
@@ -1155,13 +1171,13 @@ namespace Config2
 				Property* p = group->Properties.at(i);
 				if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 				{
-					L::Log(XOR("Config2::ExportTheme failed - ExportSingleProperty failed"));
+					L::Log(XOR("Config::ExportTheme failed - ExportSingleProperty failed"));
 					free(buffer);
 					return nullptr;
 				}
 			}
 		}
-		L::Log(XOR("Config2::ExportTheme success"));
+		L::Log(XOR("Config::ExportTheme success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1173,11 +1189,11 @@ namespace Config2
 		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/CONFIG") - 1;
 
 		size_t size = 0;
-		size_t capacity = headerSize;
-		char* buffer = (char*)malloc(headerSize);
+		size_t capacity = headerSize + 4096;
+		char* buffer = (char*)malloc(capacity);
 		if (!buffer)
 		{
-			L::Log(XOR("Config2::ExportConfig failed - initial malloc failed"));
+			L::Log(XOR("Config::ExportConfig failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1199,14 +1215,14 @@ namespace Config2
 
 					if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 					{
-						L::Log(XOR("Config2::ExportConfig failed - ExportSingleProperty failed"));
+						L::Log(XOR("Config::ExportConfig failed - ExportSingleProperty failed"));
 						free(buffer);
 						return nullptr;
 					}
 				}
 			}
 		}
-		L::Log(XOR("Config2::ExportConfig success"));
+		L::Log(XOR("Config::ExportConfig success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1243,7 +1259,7 @@ namespace Config2
 		}
 	}
 
-	void ImportConfig(const char* buffer, size_t nBytes)
+	void ImportConfig(const char* buffer, size_t nBytes, bool checkPremium)
 	{
 		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/CONFIG";
 		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/CONFIG") - 1;
@@ -1266,7 +1282,7 @@ namespace Config2
 		while (i < nBytes)
 		{
 			size_t bruh = nBytes - i;
-			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
+			if (!ImportSingleProperty(buffer + i, bruh, &bruh, checkPremium))
 			{
 				L::Log("Failed to import property... This config is probably fucked");
 			}
@@ -1323,12 +1339,12 @@ namespace Config2
 		}
 
 		// export the theme
-		L::Verbose("_PromptExportThemeFile passing execution to Config2::ExportTheme()");
+		L::Verbose("_PromptExportThemeFile passing execution to Config::ExportTheme()");
 		size_t nBytesOut = 0;
-		char* data = Config2::ExportTheme(&nBytesOut);
+		char* data = Config::ExportTheme(&nBytesOut);
 		if (!data || nBytesOut == 0)
 		{
-			L::Log("_PromptExportThemeFile failed - Config2::ExportTheme failed");
+			L::Log("_PromptExportThemeFile failed - Config::ExportTheme failed");
 			file.close();
 			return 3;
 		}
@@ -1412,8 +1428,8 @@ namespace Config2
 		}
 		file.close();
 
-		L::Verbose("_PromptImportThemeFile passing execution to Config2::ImportTheme()");
-		Config2::ImportTheme(buffer, bytes);
+		L::Verbose("_PromptImportThemeFile passing execution to Config::ImportTheme()");
+		Config::ImportTheme(buffer, bytes);
 		free(buffer);
 		return 0;
 	}
@@ -1461,12 +1477,12 @@ namespace Config2
 		}
 
 		// export the theme
-		L::Verbose("_PromptExportConfigFile passing execution to Config2::ExportConfig()");
+		L::Verbose("_PromptExportConfigFile passing execution to Config::ExportConfig()");
 		size_t nBytesOut = 0;
-		char* data = Config2::ExportConfig(&nBytesOut);
+		char* data = Config::ExportConfig(&nBytesOut);
 		if (!data || nBytesOut == 0)
 		{
-			L::Log("_PromptExportConfigFile failed - Config2::ExportConfig failed");
+			L::Log("_PromptExportConfigFile failed - Config::ExportConfig failed");
 			file.close();
 			return 3;
 		}
@@ -1550,8 +1566,8 @@ namespace Config2
 		}
 		file.close();
 
-		L::Verbose("_PromptImportConfigFile passing execution to Config2::ImportConfig()");
-		Config2::ImportConfig(buffer, bytes);
+		L::Verbose("_PromptImportConfigFile passing execution to Config::ImportConfig()");
+		Config::ImportConfig(buffer, bytes);
 		free(buffer);
 		return 0;
 	}

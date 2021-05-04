@@ -22,7 +22,7 @@ void Init()
 
     L::Init();    L::Log("DLLMain executed");
 
-    Config2::Init(); L::Log("Config2::Init() complete");
+    Config::Init(); L::Log("Config::Init() complete");
     I::GUIInit(); L::Log("I::GUIInit() complete");
     G::GUIInit(); L::Log("G::GUIInit() complete");
     H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up

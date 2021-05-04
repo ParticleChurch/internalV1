@@ -90,7 +90,7 @@ namespace GUI
 
 	bool IsSearching = false;
 	char* SearchQuery = nullptr;
-	Config2::Tab* ActiveTab = nullptr;
+	Config::Tab* ActiveTab = nullptr;
 };
 
 // Util drawers
@@ -250,8 +250,8 @@ namespace ImGui
 
 	void DrawInfoIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
 	{
-		static Config2::CColor* ColorBase = Config2::GetColor(XOR("theme-info-icon"));
-		Config2::CColor Color = ColorBase->ModulateAlpha(Opacity);
+		static Config::CColor* ColorBase = Config::GetColor(XOR("theme-info-icon"));
+		Config::CColor Color = ColorBase->ModulateAlpha(Opacity);
 		ImU32 Color32 = Color;
 
 		constexpr float AspectRatio = 1.f; // X / Y
@@ -480,10 +480,10 @@ namespace ImGui
 
 	void ToolTip(std::string str, int ItemHeightForVerticalFlip = 20)
 	{
-		static Config2::CColor* TooltipBackground = Config2::GetColor(XOR("theme-tooltip-background"));
-		static Config2::CColor* TooltipText = Config2::GetColor(XOR("theme-tooltip-text"));
-		static Config2::CColor* TooltipBorder = Config2::GetColor(XOR("theme-tooltip-border"));
-		static Config2::CFloat* TooltipBorderSize = Config2::GetFloat(XOR("theme-tooltip-border-size"));
+		static Config::CColor* TooltipBackground = Config::GetColor(XOR("theme-tooltip-background"));
+		static Config::CColor* TooltipText = Config::GetColor(XOR("theme-tooltip-text"));
+		static Config::CColor* TooltipBorder = Config::GetColor(XOR("theme-tooltip-border"));
+		static Config::CFloat* TooltipBorderSize = Config::GetFloat(XOR("theme-tooltip-border-size"));
 
 		constexpr int MinWidth = 20;
 
@@ -641,7 +641,7 @@ namespace ImGui
 // Property drawers
 namespace ImGui
 {
-	int DrawLabelProperty(Config2::Property* p)
+	int DrawLabelProperty(Config::Property* p)
 	{
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -653,19 +653,19 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawTextInputProperty(Config2::Property* p)
+	int DrawTextInputProperty(Config::Property* p)
 	{
-		static Config2::CColor* TextInputBackground = Config2::GetColor(XOR("theme-text-input-background"));
-		static Config2::CColor* TextInputText = Config2::GetColor(XOR("theme-text-input-text"));
+		static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
+		static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
 
-		Config2::CTextInput* Value = (Config2::CTextInput*)p->Value;
+		Config::CTextInput* Value = (Config::CTextInput*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 		ImVec2 Pos = GetCursorPos();
 
 		// MasterLocked = p->Master is a boolean that is false
-		bool MasterLocked = p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN && ((Config2::CBoolean*)p->Master->Value)->Value.Get() == 0;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && ((Config::CBoolean*)p->Master->Value)->Value.Get() == 0;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
 		// draw label 
@@ -724,7 +724,7 @@ namespace ImGui
 
 			if (IsTyping)
 			{
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 			}
 			else
 			{
@@ -743,16 +743,16 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawBooleanProperty(Config2::Property* p)
+	int DrawBooleanProperty(Config::Property* p)
 	{
-		static Config2::CColor* PropertyBase = Config2::GetColor(XOR("theme-property-base"));
-		static Config2::CColor* PropertyAccent = Config2::GetColor(XOR("theme-property-accent"));
-		static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
-		static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
-		static Config2::CColor* ButtonBorder = Config2::GetColor(XOR("theme-button-border"));
-		static Config2::CColor* ButtonText = Config2::GetColor(XOR("theme-button-text"));
-		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat(XOR("theme-button-border-size"));
-		Config2::CBoolean* Value = (Config2::CBoolean*)p->Value;
+		static Config::CColor* PropertyBase = Config::GetColor(XOR("theme-property-base"));
+		static Config::CColor* PropertyAccent = Config::GetColor(XOR("theme-property-accent"));
+		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+		Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -767,7 +767,7 @@ namespace ImGui
 		{
 			PushFont(Arial14);
 
-			if (p == Config2::SettingKeybindFor) // this is being set right now
+			if (p == Config::SettingKeybindFor) // this is being set right now
 			{
 				PushFont(Arial12);
 				if (p->Name != XOR("show-menu"))
@@ -796,9 +796,9 @@ namespace ImGui
 					for (int i = 0; i < 3; i++)
 					{
 						SetCursorPos(ImVec2(ItemWidth * i, 0));
-						if (Button((Config2::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+						if (Button((Config::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(ItemWidth, 20)))
 						{
-							Value->BindMode = (Config2::KeybindMode)i;
+							Value->BindMode = (Config::KeybindMode)i;
 						}
 						GUI::WantMouse |= IsItemHovered();
 					}
@@ -822,11 +822,11 @@ namespace ImGui
 			}
 			else if (Value->BoundToKey >= 0) // this key is already bound
 			{
-				const char* Prefix = Value->BindMode == Config2::KeybindMode::TOGGLE ? XOR("PRESS") : XOR("HOLD");
+				const char* Prefix = Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("PRESS") : XOR("HOLD");
 				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
 				const char* Suffix =
-					Value->BindMode == Config2::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
-					Value->BindMode == Config2::KeybindMode::HOLDTOENABLE ? XOR("TO ENABLE") : XOR("TO DISABLE");
+					Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
+					Value->BindMode == Config::KeybindMode::HOLDTOENABLE ? XOR("TO ENABLE") : XOR("TO DISABLE");
 
 				PushFont(Arial12);
 				ImVec2 PrefixSize = CalcTextSize(Prefix);
@@ -851,13 +851,13 @@ namespace ImGui
 				{
 					if (p->Name == XOR("show-menu"))
 					{
-						Config2::SettingKeybindFor = p;
+						Config::SettingKeybindFor = p;
 						GUI::WantMouse = true;
 					}
 					else
 					{
-						Config2::_BindToKey(p, -1);
-						Config2::SettingKeybindFor = nullptr;
+						Config::_BindToKey(p, -1);
+						Config::SettingKeybindFor = nullptr;
 						GUI::WantMouse = true;
 					}
 				}
@@ -891,7 +891,7 @@ namespace ImGui
 
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
-					Config2::SettingKeybindFor = p;
+					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
@@ -909,9 +909,9 @@ namespace ImGui
 		// draw switch
 		if (true) // here only because vs won't let me collapse it otherwise for some reason
 		{
-			if (p->Master && p->Master->Type == Config2::PropertyType::BOOLEAN)
+			if (p->Master && p->Master->Type == Config::PropertyType::BOOLEAN)
 			{
-				bool MasterAllows = ((Config2::CBoolean*)p->Master->Value)->Value.Get() != 0;
+				bool MasterAllows = ((Config::CBoolean*)p->Master->Value)->Value.Get() != 0;
 				bool ImEnabled = Value->Value.Get() != 0;
 
 				MasterLocked = ImEnabled && !MasterAllows;
@@ -928,24 +928,24 @@ namespace ImGui
 			if (Flipped)
 			{
 				GUI::WantMouse = true;
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 				if (!PremiumLocked)
 				{
 					Value->Value.Invert();
 					if (p->Name == XOR("rage-aim-enable") && Value->Value.Get() == 1)
-						Config2::GetState(XOR("legit-aim-enable"))->Set(0);
+						Config::GetState(XOR("legit-aim-enable"))->Set(0);
 					else if (p->Name == XOR("legit-aim-enable") && Value->Value.Get() == 1)
-						Config2::GetState(XOR("rage-aim-enable"))->Set(0);
+						Config::GetState(XOR("rage-aim-enable"))->Set(0);
 					if (p->Name == XOR("antiaim-rage-enable") && Value->Value.Get() == 1)
-						Config2::GetState(XOR("antiaim-legit-enable"))->Set(0);
+						Config::GetState(XOR("antiaim-legit-enable"))->Set(0);
 					else if (p->Name == XOR("antiaim-legit-enable") && Value->Value.Get() == 1)
-						Config2::GetState(XOR("antiaim-rage-enable"))->Set(0);
+						Config::GetState(XOR("antiaim-rage-enable"))->Set(0);
 					if (Value->BoundToKey >= 0)
 					{
-						if (Value->BindMode == Config2::KeybindMode::HOLDTODISABLE)
-							Value->BindMode = Config2::KeybindMode::HOLDTOENABLE;
-						else if (Value->BindMode == Config2::KeybindMode::HOLDTOENABLE)
-							Value->BindMode = Config2::KeybindMode::HOLDTODISABLE;
+						if (Value->BindMode == Config::KeybindMode::HOLDTODISABLE)
+							Value->BindMode = Config::KeybindMode::HOLDTOENABLE;
+						else if (Value->BindMode == Config::KeybindMode::HOLDTOENABLE)
+							Value->BindMode = Config::KeybindMode::HOLDTODISABLE;
 					}
 				}
 			}
@@ -1003,11 +1003,11 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawFloatProperty(Config2::Property* p)
+	int DrawFloatProperty(Config::Property* p)
 	{
-		static Config2::CColor* PropertyBase = Config2::GetColor(XOR("theme-property-base"));
-		static Config2::CColor* PropertyAccent = Config2::GetColor(XOR("theme-property-accent"));
-		Config2::CFloat* Value = (Config2::CFloat*)p->Value;
+		static Config::CColor* PropertyBase = Config::GetColor(XOR("theme-property-base"));
+		static Config::CColor* PropertyAccent = Config::GetColor(XOR("theme-property-accent"));
+		Config::CFloat* Value = (Config::CFloat*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -1061,7 +1061,7 @@ namespace ImGui
 			if (DrawValue != UserSetValue)
 			{
 				GUI::WantMouse = true;
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 
 				if (!PremiumLocked)
 					Value->SetFactor(UserSetValue);
@@ -1086,14 +1086,14 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawColorProperty(Config2::Property* p)
+	int DrawColorProperty(Config::Property* p)
 	{
-		static Config2::CColor* EditorBase = Config2::GetColor(XOR("theme-color-editor-background"));
-		static Config2::CColor* EditorText = Config2::GetColor(XOR("theme-color-editor-text"));
-		static Config2::CColor* EditorBorder = Config2::GetColor(XOR("theme-color-editor-border"));
-		static Config2::CFloat* EditorBorderSize = Config2::GetFloat(XOR("theme-color-editor-border-size"));
+		static Config::CColor* EditorBase = Config::GetColor(XOR("theme-color-editor-background"));
+		static Config::CColor* EditorText = Config::GetColor(XOR("theme-color-editor-text"));
+		static Config::CColor* EditorBorder = Config::GetColor(XOR("theme-color-editor-border"));
+		static Config::CFloat* EditorBorderSize = Config::GetFloat(XOR("theme-color-editor-border-size"));
 
-		Config2::CColor* Value = (Config2::CColor*)p->Value;
+		Config::CColor* Value = (Config::CColor*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -1167,7 +1167,7 @@ namespace ImGui
 			if (BeginPopup((XOR("##color-picker-") + p->Name).c_str()))
 			{
 				GUI::WantMouse = true;
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
 				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
@@ -1206,19 +1206,19 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawVerticalStatefulProperty(Config2::Property* p)
+	int DrawVerticalStatefulProperty(Config::Property* p)
 	{
-		static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
-		static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
-		static Config2::CColor* ButtonHovered = Config2::GetColor(XOR("theme-button-hovered"));
-		static Config2::CColor* ButtonBorder = Config2::GetColor(XOR("theme-button-border"));
-		static Config2::CColor* ButtonText = Config2::GetColor(XOR("theme-button-text"));
-		static Config2::CColor* DropdownBase = Config2::GetColor(XOR("theme-dropdown-background"));
-		static Config2::CColor* DropdownText = Config2::GetColor(XOR("theme-dropdown-text"));
-		static Config2::CColor* DropdownBorder = Config2::GetColor(XOR("theme-dropdown-border"));
-		static Config2::CFloat* DropdownBorderSize = Config2::GetFloat(XOR("theme-dropdown-border-size"));
-		static Config2::CFloat* ButtonBorderSize = Config2::GetFloat(XOR("theme-button-border-size"));
-		Config2::CVerticalState* Value = (Config2::CVerticalState*)p->Value;
+		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+		static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
+		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
+		static Config::CColor* DropdownBase = Config::GetColor(XOR("theme-dropdown-background"));
+		static Config::CColor* DropdownText = Config::GetColor(XOR("theme-dropdown-text"));
+		static Config::CColor* DropdownBorder = Config::GetColor(XOR("theme-dropdown-border"));
+		static Config::CFloat* DropdownBorderSize = Config::GetFloat(XOR("theme-dropdown-border-size"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+		Config::CVerticalState* Value = (Config::CVerticalState*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -1307,7 +1307,7 @@ namespace ImGui
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
 					{
 						GUI::WantMouse = true;
-						Config2::SettingKeybindFor = nullptr;
+						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
@@ -1337,7 +1337,7 @@ namespace ImGui
 				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
 				{
 					GUI::WantMouse = true;
-					Config2::SettingKeybindFor = nullptr;
+					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 
@@ -1367,7 +1367,7 @@ namespace ImGui
 		{
 			PushFont(Arial14);
 
-			if (p == Config2::SettingKeybindFor) // this is being set right now
+			if (p == Config::SettingKeybindFor) // this is being set right now
 			{
 				PushFont(Arial12);
 				const char* Prefix = XOR("[PRESS A KEY]");
@@ -1409,7 +1409,7 @@ namespace ImGui
 							vec.erase(vec.begin() + i--);
 
 					Value->BoundToKey = -1;
-					Config2::SettingKeybindFor = nullptr;
+					Config::SettingKeybindFor = nullptr;
 					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
@@ -1441,7 +1441,7 @@ namespace ImGui
 
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
-					Config2::SettingKeybindFor = p;
+					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
 				}
 				else if (IsItemHovered())
@@ -1458,12 +1458,12 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawHorizontalStatefulProperty(Config2::Property* p)
+	int DrawHorizontalStatefulProperty(Config::Property* p)
 	{
-		static Config2::CColor* HStateBackground = Config2::GetColor(XOR("theme-hstate-background"));
-		static Config2::CColor* HStateHighlight = Config2::GetColor(XOR("theme-hstate-highlight"));
-		static Config2::CColor* HStateText = Config2::GetColor(XOR("theme-hstate-text"));
-		Config2::CHorizontalState* Value = (Config2::CHorizontalState*)p->Value;
+		static Config::CColor* HStateBackground = Config::GetColor(XOR("theme-hstate-background"));
+		static Config::CColor* HStateHighlight = Config::GetColor(XOR("theme-hstate-highlight"));
+		static Config::CColor* HStateText = Config::GetColor(XOR("theme-hstate-text"));
+		Config::CHorizontalState* Value = (Config::CHorizontalState*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -1502,7 +1502,7 @@ namespace ImGui
 				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 				{
 					GUI::WantMouse = true;
-					Config2::SettingKeybindFor = nullptr;
+					Config::SettingKeybindFor = nullptr;
 
 					float MouseX = GImGui->IO.MousePos.x;
 					float DX = MouseX - itemsStartX;
@@ -1544,13 +1544,13 @@ namespace ImGui
 		return 20;
 	}
 
-	int DrawMultiSelectorProperty(Config2::Property* p)
+	int DrawMultiSelectorProperty(Config::Property* p)
 	{
-		static Config2::CColor* DropdownBase = Config2::GetColor(XOR("theme-dropdown-background"));
-		static Config2::CColor* DropdownText = Config2::GetColor(XOR("theme-dropdown-text"));
-		static Config2::CColor* DropdownBorder = Config2::GetColor(XOR("theme-dropdown-border"));
-		static Config2::CFloat* DropdownBorderSize = Config2::GetFloat(XOR("theme-dropdown-border-size"));
-		Config2::CMultiSelect* Value = (Config2::CMultiSelect*)p->Value;
+		static Config::CColor* DropdownBase = Config::GetColor(XOR("theme-dropdown-background"));
+		static Config::CColor* DropdownText = Config::GetColor(XOR("theme-dropdown-text"));
+		static Config::CColor* DropdownBorder = Config::GetColor(XOR("theme-dropdown-border"));
+		static Config::CFloat* DropdownBorderSize = Config::GetFloat(XOR("theme-dropdown-border-size"));
+		Config::CMultiSelect* Value = (Config::CMultiSelect*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
@@ -1642,7 +1642,7 @@ namespace ImGui
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
 					{
 						GUI::WantMouse = true;
-						Config2::SettingKeybindFor = nullptr;
+						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
@@ -1673,7 +1673,7 @@ namespace ImGui
 				if (BeginPopup(popupName))
 				{
 					GUI::WantMouse = true;
-					Config2::SettingKeybindFor = nullptr;
+					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 						bool selected = Value->Get(i);
@@ -1849,12 +1849,12 @@ void GUI::LoadingScreen()
 
 void GUI::AuthenticationScreen(float ContentOpacity)
 {
-	static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
-	static Config2::CColor* ButtonHovered = Config2::GetColor(XOR("theme-button-hovered"));
-	static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
-	static Config2::CColor* ButtonBorder = Config2::GetColor(XOR("theme-button-border"));
-	static Config2::CColor* ButtonText = Config2::GetColor(XOR("theme-button-text"));
-	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat(XOR("theme-button-border-size"));
+	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+	static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
+	static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
+	static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
 	// TODO: set background color + outline color to config theme
 
 	unsigned char ThisContentOpacity = ContentOpacity * 255;
@@ -2072,10 +2072,10 @@ void GUI::AuthenticationIntro()
 	}
 }
 
-void GUI::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
+void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 {
-	static Config2::CColor* WidgetBackground = Config2::GetColor(XOR("theme-widget-background"));
-	static Config2::CColor* WidgetTitleText = Config2::GetColor(XOR("theme-widget-title"));
+	static Config::CColor* WidgetBackground = Config::GetColor(XOR("theme-widget-background"));
+	static Config::CColor* WidgetTitleText = Config::GetColor(XOR("theme-widget-title"));
 
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
@@ -2086,7 +2086,7 @@ void GUI::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
-		Config2::Group* Group = t->Groups[g];
+		Config::Group* Group = t->Groups[g];
 		if (Group->Title == XOR("__META__")) continue;
 		if (Group->Title.substr(0, GroupPrefix.size()) != GroupPrefix) continue;
 
@@ -2130,28 +2130,28 @@ void GUI::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 
 				switch (Property->Type)
 				{
-				case Config2::PropertyType::BOOLEAN:
+				case Config::PropertyType::BOOLEAN:
 					GroupY += ImGui::DrawBooleanProperty(Property);
 					break;
-				case Config2::PropertyType::FLOAT:
+				case Config::PropertyType::FLOAT:
 					GroupY += ImGui::DrawFloatProperty(Property);
 					break;
-				case Config2::PropertyType::COLOR:
+				case Config::PropertyType::COLOR:
 					GroupY += ImGui::DrawColorProperty(Property);
 					break;
-				case Config2::PropertyType::VSTATEFUL:
+				case Config::PropertyType::VSTATEFUL:
 					GroupY += ImGui::DrawVerticalStatefulProperty(Property);
 					break;
-				case Config2::PropertyType::HSTATEFUL:
+				case Config::PropertyType::HSTATEFUL:
 					GroupY += ImGui::DrawHorizontalStatefulProperty(Property);
 					break;
-				case Config2::PropertyType::MULTISELECT:
+				case Config::PropertyType::MULTISELECT:
 					GroupY += ImGui::DrawMultiSelectorProperty(Property);
 					break;
-				case Config2::PropertyType::TEXTINPUT:
+				case Config::PropertyType::TEXTINPUT:
 					GroupY += ImGui::DrawTextInputProperty(Property);
 					break;
-				case Config2::PropertyType::LABEL:
+				case Config::PropertyType::LABEL:
 				default:
 					GroupY += ImGui::DrawLabelProperty(Property);
 					break;
@@ -2178,27 +2178,27 @@ void GUI::DrawNormalTab(Config2::Tab* t, std::string GroupPrefix)
 
 void GUI::DrawActiveTab()
 {
-	static Config2::CColor* WidgetBackground = Config2::GetColor(XOR("theme-widget-background"));
-	static Config2::CColor* WidgetTitleText = Config2::GetColor(XOR("theme-widget-title"));
-	static Config2::CColor* PropertyText = Config2::GetColor(XOR("theme-property-text"));
-	static Config2::CColor* LegitRageSwitchBackground = Config2::GetColor(XOR("theme-legit-rage-switch-background"));
-	static Config2::CColor* LegitRageSwitchHighlight = Config2::GetColor(XOR("theme-legit-rage-switch-highlight"));
-	static Config2::CColor* LegitRageSwitchOutline = Config2::GetColor(XOR("theme-legit-rage-switch-outline"));
-	static Config2::CColor* LegitRageSwitchText = Config2::GetColor(XOR("theme-legit-rage-switch-text"));
-	static Config2::CColor* EjectLabel = Config2::GetColor(XOR("theme-eject"));
-	static Config2::CColor* EjectButton = Config2::GetColor(XOR("theme-eject-button"));
-	static Config2::CColor* EjectButtonText = Config2::GetColor(XOR("theme-eject-button-text"));
-	static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
-	static Config2::CColor* ButtonHovered = Config2::GetColor(XOR("theme-button-hovered"));
-	static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
-	static Config2::CColor* ButtonBorder = Config2::GetColor(XOR("theme-button-border"));
-	static Config2::CColor* ButtonText = Config2::GetColor(XOR("theme-button-text"));
-	//static Config2::CColor* SearchbarBackground = Config2::GetColor(XOR("theme-main-searchbar-background"));
-	//static Config2::CColor* SearchbarText = Config2::GetColor(XOR("theme-main-searchbar-text"));
-	static Config2::CColor* TextInputBackground = Config2::GetColor(XOR("theme-text-input-background"));
-	static Config2::CColor* TextInputText = Config2::GetColor(XOR("theme-text-input-text"));
-	static Config2::CFloat* LegitRageSwitchBorderSize = Config2::GetFloat(XOR("theme-legit-rage-switch-border-size"));
-	static Config2::CFloat* ButtonBorderSize = Config2::GetFloat(XOR("theme-button-border-size"));
+	static Config::CColor* WidgetBackground = Config::GetColor(XOR("theme-widget-background"));
+	static Config::CColor* WidgetTitleText = Config::GetColor(XOR("theme-widget-title"));
+	static Config::CColor* PropertyText = Config::GetColor(XOR("theme-property-text"));
+	static Config::CColor* LegitRageSwitchBackground = Config::GetColor(XOR("theme-legit-rage-switch-background"));
+	static Config::CColor* LegitRageSwitchHighlight = Config::GetColor(XOR("theme-legit-rage-switch-highlight"));
+	static Config::CColor* LegitRageSwitchOutline = Config::GetColor(XOR("theme-legit-rage-switch-outline"));
+	static Config::CColor* LegitRageSwitchText = Config::GetColor(XOR("theme-legit-rage-switch-text"));
+	static Config::CColor* EjectLabel = Config::GetColor(XOR("theme-eject"));
+	static Config::CColor* EjectButton = Config::GetColor(XOR("theme-eject-button"));
+	static Config::CColor* EjectButtonText = Config::GetColor(XOR("theme-eject-button-text"));
+	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+	static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
+	static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
+	//static Config::CColor* SearchbarBackground = Config::GetColor(XOR("theme-main-searchbar-background"));
+	//static Config::CColor* SearchbarText = Config::GetColor(XOR("theme-main-searchbar-text"));
+	static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
+	static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
+	static Config::CFloat* LegitRageSwitchBorderSize = Config::GetFloat(XOR("theme-legit-rage-switch-border-size"));
+	static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
 
 	if (!ActiveTab) return;
 
@@ -2211,13 +2211,13 @@ void GUI::DrawActiveTab()
 	{
 		bool IsOffencePage = ActiveTab->Name == XOR("Offence");
 
-		static Config2::Property* MasterSwitch = Config2::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
+		static Config::Property* MasterSwitch = Config::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
 		if (!MasterSwitch)
 		{
-			MasterSwitch = Config2::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
+			MasterSwitch = Config::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
 			if (!MasterSwitch) return;
 		}
-		Config2::CHorizontalState* MasterMode = (Config2::CHorizontalState*)MasterSwitch->Value;
+		Config::CHorizontalState* MasterMode = (Config::CHorizontalState*)MasterSwitch->Value;
 
 		// big switch at the top
 		{
@@ -2249,7 +2249,7 @@ void GUI::DrawActiveTab()
 			if (ImGui::Button(IsOffencePage ? XOR("Legit##big-switch-offence") : XOR("Legit##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
 				WantMouse = true;
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(0);
 			}
 			WantMouse |= ImGui::IsItemHovered();
@@ -2258,7 +2258,7 @@ void GUI::DrawActiveTab()
 			if (ImGui::Button(IsOffencePage ? XOR("Rage##big-switch-offence") : XOR("Rage##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
 				WantMouse = true;
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(1);
 			}
 			WantMouse |= ImGui::IsItemHovered();
@@ -2351,8 +2351,8 @@ void GUI::DrawActiveTab()
 
 		// knife changer
 		{
-			static Config2::CState* KnifeModel = Config2::GetState(XOR("skinchanger-knife-model"));
-			static Config2::CPaintKit* KnifePaintkit = Config2::GetPaintKit(XOR("skinchanger-knife-paintkit"));
+			static Config::CState* KnifeModel = Config::GetState(XOR("skinchanger-knife-model"));
+			static Config::CPaintKit* KnifePaintkit = Config::GetPaintKit(XOR("skinchanger-knife-paintkit"));
 
 			static int WindowHeight = 0;
 			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
@@ -2368,17 +2368,17 @@ void GUI::DrawActiveTab()
 
 			// enable switch
 			ImGui::PushFont(Arial16);
-			static Config2::Property* KnifeChangerEnable = Config2::GetProperty(XOR("skinchanger-knife-enable"));
+			static Config::Property* KnifeChangerEnable = Config::GetProperty(XOR("skinchanger-knife-enable"));
 			ImGui::SetCursorPos(ImVec2(5.f, 33.f));
 			ImGui::DrawBooleanProperty(KnifeChangerEnable);
 
 			// knife models
-			static Config2::Property* KnifeModelProperty = Config2::GetProperty(XOR("skinchanger-knife-model"));
+			static Config::Property* KnifeModelProperty = Config::GetProperty(XOR("skinchanger-knife-model"));
 			ImGui::SetCursorPos(ImVec2(5.f, 58.f));
 			ImGui::DrawVerticalStatefulProperty(KnifeModelProperty);
 
 			// knife wear
-			static Config2::Property* KnifeWearProperty = Config2::GetProperty(XOR("skinchanger-knife-wear"));
+			static Config::Property* KnifeWearProperty = Config::GetProperty(XOR("skinchanger-knife-wear"));
 			ImGui::SetCursorPos(ImVec2(5.f, 83.f));
 			ImGui::DrawFloatProperty(KnifeWearProperty);
 
@@ -2721,9 +2721,9 @@ void GUI::DrawActiveTab()
 			ImGui::PopStyleColor(3);
 
 			Skins::Weapon CurrentSelectedWeapon = Skins::WeaponGroupWeapons[SelectedWeaponGroup][SelectedWeaponIndex];
-			Config2::Property* CurrentWeaponSkinProp =
-				Config2::GetProperty(XOR("skinchanger-weapon-") + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[(int)CurrentSelectedWeapon])));
-			Config2::CPaintKit* CurrentPaintKit = (Config2::CPaintKit*)CurrentWeaponSkinProp->Value;
+			Config::Property* CurrentWeaponSkinProp =
+				Config::GetProperty(XOR("skinchanger-weapon-") + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[(int)CurrentSelectedWeapon])));
+			Config::CPaintKit* CurrentPaintKit = (Config::CPaintKit*)CurrentWeaponSkinProp->Value;
 
 			bool WeaponHasSkinSelection = CurrentPaintKit->PaintKit->ID > 0;
 			std::string WeaponSkinName = WeaponHasSkinSelection ? CurrentPaintKit->Stringify() : XOR("None");
@@ -2992,13 +2992,13 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
 			if (ImGui::Button(XOR("Export##theme"), ImVec2(60, 20)))
 			{
-				Config2::PromptExportThemeFile();
+				Config::PromptExportThemeFile();
 			}
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
 			if (ImGui::Button(XOR("Import##theme"), ImVec2(60, 20)))
 			{
-				Config2::PromptImportThemeFile();
+				Config::PromptImportThemeFile();
 			}
 
 		}
@@ -3028,21 +3028,21 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Dark##themepreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
+				Config::ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Light##themepreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportTheme(ConfigConstants::ThemeLight, ConfigConstants::ThemeLightSize);
+				Config::ImportTheme(ConfigConstants::ThemeLight, ConfigConstants::ThemeLightSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Contrast##themepreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportTheme(ConfigConstants::ThemeContrast, ConfigConstants::ThemeContrastSize);
+				Config::ImportTheme(ConfigConstants::ThemeContrast, ConfigConstants::ThemeContrastSize);
 			}
 			x += 66;
 		}
@@ -3107,13 +3107,13 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
 			if (ImGui::Button(XOR("Export##config"), ImVec2(60, 20)))
 			{
-				Config2::PromptExportConfigFile();
+				Config::PromptExportConfigFile();
 			}
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
 			if (ImGui::Button(XOR("Import##config"), ImVec2(60, 20)))
 			{
-				Config2::PromptImportConfigFile();
+				Config::PromptImportConfigFile();
 			}
 
 		}
@@ -3143,21 +3143,21 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Off##configpreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
+				Config::ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Legit##configpreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportConfig(ConfigConstants::ConfigLegit, ConfigConstants::ConfigLegitSize);
+				Config::ImportConfig(ConfigConstants::ConfigLegit, ConfigConstants::ConfigLegitSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
 			if (ImGui::Button(XOR("Rage##configpreset"), ImVec2(60, 20)))
 			{
-				Config2::ImportConfig(ConfigConstants::ConfigRage, ConfigConstants::ConfigRageSize);
+				Config::ImportConfig(ConfigConstants::ConfigRage, ConfigConstants::ConfigRageSize);
 			}
 			x += 66;
 		}
@@ -3184,23 +3184,23 @@ void GUI::DrawActiveTab()
 void GUI::MainScreen(float ContentOpacity, bool Interactable)
 {
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
-	static Config2::CColor* TopbarBackground = Config2::GetColor(XOR("theme-topbar-background"));
-	static Config2::CColor* TopbarText = Config2::GetColor(XOR("theme-topbar-text"));
-	static Config2::CColor* TablistBackground = Config2::GetColor(XOR("theme-overlay-background"));
-	static Config2::CColor* TablistText = Config2::GetColor(XOR("theme-overlay-text"));
-	static Config2::CColor* ActiveTablistText = Config2::GetColor(XOR("theme-overlay-active-text"));
-	static Config2::CColor* SearchbarBackground = Config2::GetColor(XOR("theme-main-searchbar-background"));
-	static Config2::CColor* SearchbarText = Config2::GetColor(XOR("theme-main-searchbar-text"));
-	static Config2::CColor* ButtonBase = Config2::GetColor(XOR("theme-button-background"));
-	static Config2::CColor* ButtonHovered = Config2::GetColor(XOR("theme-button-hovered"));
-	static Config2::CColor* ButtonActive = Config2::GetColor(XOR("theme-button-active"));
-	static Config2::CColor* EjectLabel = Config2::GetColor(XOR("theme-eject"));
-	static Config2::CColor* MainBorder = Config2::GetColor(XOR("theme-border"));
-	static Config2::CColor* MainBackground = Config2::GetColor(XOR("theme-background"));
-	static Config2::CColor* ScrollbarBackground = Config2::GetColor(XOR("theme-scrollbar-background"));
-	static Config2::CColor* ScrollbarGrab = Config2::GetColor(XOR("theme-scrollbar-grabber"));
-	static Config2::CColor* ActiveTabPointer = Config2::GetColor(XOR("theme-overlay-active-pointer"));
-	static Config2::CFloat* MainBorderSize = Config2::GetFloat(XOR("theme-border-size"));
+	static Config::CColor* TopbarBackground = Config::GetColor(XOR("theme-topbar-background"));
+	static Config::CColor* TopbarText = Config::GetColor(XOR("theme-topbar-text"));
+	static Config::CColor* TablistBackground = Config::GetColor(XOR("theme-overlay-background"));
+	static Config::CColor* TablistText = Config::GetColor(XOR("theme-overlay-text"));
+	static Config::CColor* ActiveTablistText = Config::GetColor(XOR("theme-overlay-active-text"));
+	static Config::CColor* SearchbarBackground = Config::GetColor(XOR("theme-main-searchbar-background"));
+	static Config::CColor* SearchbarText = Config::GetColor(XOR("theme-main-searchbar-text"));
+	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+	static Config::CColor* EjectLabel = Config::GetColor(XOR("theme-eject"));
+	static Config::CColor* MainBorder = Config::GetColor(XOR("theme-border"));
+	static Config::CColor* MainBackground = Config::GetColor(XOR("theme-background"));
+	static Config::CColor* ScrollbarBackground = Config::GetColor(XOR("theme-scrollbar-background"));
+	static Config::CColor* ScrollbarGrab = Config::GetColor(XOR("theme-scrollbar-grabber"));
+	static Config::CColor* ActiveTabPointer = Config::GetColor(XOR("theme-overlay-active-pointer"));
+	static Config::CFloat* MainBorderSize = Config::GetFloat(XOR("theme-border-size"));
 
 
 	// Initially center the window w/ default size
@@ -3268,8 +3268,8 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		}
 	}
 
-	if (!ActiveTab && Config2::Tabs.size() > 0)
-		ActiveTab = Config2::Tabs.at(0);
+	if (!ActiveTab && Config::Tabs.size() > 0)
+		ActiveTab = Config::Tabs.at(0);
 
 	float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15);
 	if (!IsSearching)
@@ -3363,7 +3363,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			}
 			else
 			{
-				Config2::SettingKeybindFor = nullptr;
+				Config::SettingKeybindFor = nullptr;
 				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
 				ImGui::DrawXIcon(SearchbarText->ModulateAlpha(SearchAnimationFactor * 0.8f), ImVec2(9, 9));
 				// dummy button
@@ -3400,9 +3400,9 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			int SelectedTabIndex = -1;
 			int HoveredTabIndex = -1;
 
-			for (size_t i = 0; i < Config2::Tabs.size(); i++)
+			for (size_t i = 0; i < Config::Tabs.size(); i++)
 			{
-				Config2::Tab* t = Config2::Tabs.at(i);
+				Config::Tab* t = Config::Tabs.at(i);
 				bool isSelected = t == ActiveTab;
 				bool isEject = t->Name == XOR("Eject");
 
@@ -3433,7 +3433,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 					ActiveTab = t;
 					ActiveTab->InitialPaint = true;
 					isSelected = true;
-					Config2::SettingKeybindFor = nullptr;
+					Config::SettingKeybindFor = nullptr;
 				}
 
 				if (ImGui::IsItemHovered())
@@ -3500,9 +3500,9 @@ void GUI::Init()
 
 void GUI::Main()
 {
-	static auto MenuOpen = Config2::GetState(XOR("show-menu"));
-	++Config2::GUIFramesRenderedCounter;
-	L::Verbose((XOR("GUI::Main executed (frame ") + std::to_string(Config2::GUIFramesRenderedCounter) + XOR(")")).c_str());
+	static auto MenuOpen = Config::GetState(XOR("show-menu"));
+	++Config::GUIFramesRenderedCounter;
+	L::Verbose((XOR("GUI::Main executed (frame ") + std::to_string(Config::GUIFramesRenderedCounter) + XOR(")")).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3539,9 +3539,9 @@ void GUI::Main()
 		L::Verbose(XOR("GUI::AuthenticationScreen complete"));
 	}
 
-	L::Verbose(XOR("Config2::ProcessKeys running"));
-	Config2::ProcessKeys();
-	L::Verbose(XOR("Config2::ProcessKeys complete"));
+	L::Verbose(XOR("Config::ProcessKeys running"));
+	Config::ProcessKeys();
+	L::Verbose(XOR("Config::ProcessKeys complete"));
 
 
 	if (UserData::SessionId != "") // if we should be pinging

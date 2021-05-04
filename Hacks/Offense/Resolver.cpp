@@ -107,7 +107,7 @@ void Resolver::LogBulletImpact(GameEvent* event)
 
 void Resolver::LogPlayerHurt(GameEvent* event)
 {
-	static Config2::CState* LogEnable = Config2::GetState("misc-other-logs");
+	static Config::CState* LogEnable = Config::GetState("misc-other-logs");
 	int UserID = event->GetInt("userid");
 	int iAttacker = event->GetInt("attacker");
 	int hitgroup = event->GetInt("hitgroup");
@@ -290,9 +290,9 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::Resolve()
 {
-	static Config2::CState* RageEnable = Config2::GetState("rage-aim-enable");
-	static Config2::CState* LegitEnable = Config2::GetState("legit-aim-enable");
-	static Config2::CState* LogEnable = Config2::GetState("misc-other-logs");
+	static Config::CState* RageEnable = Config::GetState("rage-aim-enable");
+	static Config::CState* LegitEnable = Config::GetState("legit-aim-enable");
+	static Config::CState* LogEnable = Config::GetState("misc-other-logs");
 	
 
 	if (!G::LocalPlayerAlive) return;

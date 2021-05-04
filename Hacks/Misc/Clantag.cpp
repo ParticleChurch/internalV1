@@ -4,9 +4,9 @@ Clantag* clantag = new Clantag();
 
 void Clantag::run()
 {
-	static Config2::CState* Enable = Config2::GetState("misc-other-clantag");
-	static Config2::CTextInput* Text = Config2::GetText("misc-other-clantag-input");
-	static Config2::CState* Special = Config2::GetState("clantag-special");
+	static Config::CState* Enable = Config::GetState("misc-other-clantag");
+	static Config::CTextInput* Text = Config::GetText("misc-other-clantag-input");
+	static Config::CState* Special = Config::GetState("clantag-special");
 
 	static std::add_pointer_t<void __fastcall(const char*, const char*)> setClanTag = reinterpret_cast<decltype(setClanTag)>(FindPattern("engine.dll", "53 56 57 8B DA 8B F9 FF 15"));
 

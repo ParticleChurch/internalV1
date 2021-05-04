@@ -38,7 +38,7 @@ float MiscVisuals::GetCameraBoomLength(float distance)
 
 void MiscVisuals::ThirdPerson_hkCamToFirstPeron()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-thirdperson");
+	static Config::CState* Enable = Config::GetState("visuals-misc-thirdperson");
 	if (Enable->Get())
 		return;
 	H::ohkCamToFirstPeron(I::input);
@@ -46,8 +46,8 @@ void MiscVisuals::ThirdPerson_hkCamToFirstPeron()
 
 void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-thirdperson");
-	static Config2::CFloat* Dist = Config2::GetFloat("visuals-misc-thirdperson-distance");
+	static Config::CState* Enable = Config::GetState("visuals-misc-thirdperson");
+	static Config::CFloat* Dist = Config::GetFloat("visuals-misc-thirdperson-distance");
 	if (I::engine->IsInGame() && G::LocalPlayer && G::LocalPlayerAlive) {
 		if (Enable->Get())
 		{
@@ -64,7 +64,7 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 
 void MiscVisuals::RankRevealer()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-revealranks");
+	static Config::CState* Enable = Config::GetState("visuals-misc-revealranks");
 	if (!Enable->Get()) return;
 	if (!(G::cmd->buttons & IN_SCORE)) return;
 
@@ -73,7 +73,7 @@ void MiscVisuals::RankRevealer()
 
 void MiscVisuals::GrenadePrediction()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-grenadeprediction");
+	static Config::CState* Enable = Config::GetState("visuals-misc-grenadeprediction");
 	static ConVar* nadeVar = I::cvar->FindVar("cl_grenadepreview");
 
 	nadeVar->onChangeCallbacks.size = 0;
@@ -82,7 +82,7 @@ void MiscVisuals::GrenadePrediction()
 
 void MiscVisuals::NoScope()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-noscope");
+	static Config::CState* Enable = Config::GetState("visuals-misc-noscope");
 
 	if (!G::LocalPlayerAlive)
 		return;
@@ -103,7 +103,7 @@ void MiscVisuals::NoScope()
 
 void MiscVisuals::NoFlash()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-noflash");
+	static Config::CState* Enable = Config::GetState("visuals-misc-noflash");
 
 	if (Enable->Get())
 		*(G::LocalPlayer->pGetFlashMaxAlpha()) = 0.f;
@@ -111,7 +111,7 @@ void MiscVisuals::NoFlash()
 
 void MiscVisuals::NoSmoke_DoPostScreenEffects()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-nosmoke");
+	static Config::CState* Enable = Config::GetState("visuals-misc-nosmoke");
 
 	if (!G::LocalPlayer)
 		return;
@@ -140,7 +140,7 @@ void MiscVisuals::NoSmoke_DoPostScreenEffects()
 void MiscVisuals::NoSmokeFSN()
 {
 	static int* smokecount = *(int**)(FindPattern("client.dll", "A3 ? ? ? ? 57 8B CB") + 0x1);
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-nosmoke");
+	static Config::CState* Enable = Config::GetState("visuals-misc-nosmoke");
 
 	if (Enable->Get()) *smokecount = 0;
 }
@@ -168,7 +168,7 @@ void MiscVisuals::ChangeViewModel()
 
 void MiscVisuals::ForceCrosshair()
 {
-	static Config2::CState* Enable = Config2::GetState("visuals-misc-forcecrosshair");
+	static Config::CState* Enable = Config::GetState("visuals-misc-forcecrosshair");
 
 	static ConVar* m_iCrosshairData = I::cvar->FindVar("weapon_debug_spread_show");
 

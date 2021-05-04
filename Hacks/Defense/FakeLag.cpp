@@ -27,8 +27,8 @@ void FakeLag::LagOnPeak()
 	if (!G::LocalPlayerAlive)
 		return;
 
-	static Config2::CFloat* FakeLagTrigDist = Config2::GetFloat("antiaim-fakelag-trigger-distance");
-	static Config2::CFloat* FakeLagTrigTick = Config2::GetFloat("antiaim-fakelag-trigger-tick");
+	static Config::CFloat* FakeLagTrigDist = Config::GetFloat("antiaim-fakelag-trigger-distance");
+	static Config::CFloat* FakeLagTrigTick = Config::GetFloat("antiaim-fakelag-trigger-tick");
 
 	// no point in autowalling/lagging... if values are too low
 	if (FakeLagTrigDist->Get() < 1 || FakeLagTrigTick->Get() < 1)
@@ -101,9 +101,9 @@ void FakeLag::LagOnPeak()
 
 void FakeLag::Start()
 {
-	static Config2::CState* FakeDuck = Config2::GetState("misc-movement-fakeduck");
-	static Config2::CFloat* FakeLagDist = Config2::GetFloat("antiaim-fakelag-distance");
-	static Config2::CFloat* FakeLagTicks = Config2::GetFloat("antiaim-fakelag-tick");
+	static Config::CState* FakeDuck = Config::GetState("misc-movement-fakeduck");
+	static Config::CFloat* FakeLagDist = Config::GetFloat("antiaim-fakelag-distance");
+	static Config::CFloat* FakeLagTicks = Config::GetFloat("antiaim-fakelag-tick");
 
 	// Fake duck exception
 	if (FakeDuck->Get())

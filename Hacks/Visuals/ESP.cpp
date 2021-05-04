@@ -49,7 +49,7 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 {
 	if (!ent) return;
 
-	static Config2::CColor* EnemyWeaponColor = Config2::GetColor("visuals-esp-enemy-weapon-color");
+	static Config::CColor* EnemyWeaponColor = Config::GetColor("visuals-esp-enemy-weapon-color");
 
 	Entity* weap = ent->GetActiveWeapon();
 	if (!weap) return;
@@ -289,33 +289,33 @@ void ESP::DrawIndicators(Entity* ent, Color clr)
 
 void ESP::Run_PaintTraverse()
 {
-	static Config2::CState* EnemyEnable			= Config2::GetState("visuals-esp-enemy-enable");
-	static Config2::CState* EnemyBox			= Config2::GetState("visuals-esp-enemy-bbox");
-	static Config2::CColor* EnemyBoxColor		= Config2::GetColor("visuals-esp-enemy-bbox-color");
-	static Config2::CState* EnemyName			= Config2::GetState("visuals-esp-enemy-name");
-	static Config2::CColor* EnemyNameColor		= Config2::GetColor("visuals-esp-enemy-name-color");
-	static Config2::CState* EnemyIndicator		= Config2::GetState("visuals-esp-enemy-indicator");
-	static Config2::CColor* EnemyIndicatorColor = Config2::GetColor("visuals-esp-enemy-indicator-color");
-	static Config2::CState* EnemySkeleton		= Config2::GetState("visuals-esp-enemy-skeleton");
-	static Config2::CColor* EnemySkeletonColor  = Config2::GetColor("visuals-esp-enemy-skeleton-color");
-	static Config2::CState* EnemyHealth			= Config2::GetState("visuals-esp-enemy-health");
-	static Config2::CColor* EnemyHealthFGColor	= Config2::GetColor("visuals-esp-enemy-health-color");
-	static Config2::CColor* EnemyHealthBGColor	= Config2::GetColor("visuals-esp-enemy-health-color-background");
-	static Config2::CState* EnemyResolver		= Config2::GetState("visuals-esp-enemy-resolverflags");
-	static Config2::CColor* EnemyResolverColor  = Config2::GetColor("visuals-esp-enemy-resolverflags-color");
-	static Config2::CState* EnemyWeapon			= Config2::GetState("visuals-esp-enemy-weapon");
+	static Config::CState* EnemyEnable			= Config::GetState("visuals-esp-enemy-enable");
+	static Config::CState* EnemyBox			= Config::GetState("visuals-esp-enemy-bbox");
+	static Config::CColor* EnemyBoxColor		= Config::GetColor("visuals-esp-enemy-bbox-color");
+	static Config::CState* EnemyName			= Config::GetState("visuals-esp-enemy-name");
+	static Config::CColor* EnemyNameColor		= Config::GetColor("visuals-esp-enemy-name-color");
+	static Config::CState* EnemyIndicator		= Config::GetState("visuals-esp-enemy-indicator");
+	static Config::CColor* EnemyIndicatorColor = Config::GetColor("visuals-esp-enemy-indicator-color");
+	static Config::CState* EnemySkeleton		= Config::GetState("visuals-esp-enemy-skeleton");
+	static Config::CColor* EnemySkeletonColor  = Config::GetColor("visuals-esp-enemy-skeleton-color");
+	static Config::CState* EnemyHealth			= Config::GetState("visuals-esp-enemy-health");
+	static Config::CColor* EnemyHealthFGColor	= Config::GetColor("visuals-esp-enemy-health-color");
+	static Config::CColor* EnemyHealthBGColor	= Config::GetColor("visuals-esp-enemy-health-color-background");
+	static Config::CState* EnemyResolver		= Config::GetState("visuals-esp-enemy-resolverflags");
+	static Config::CColor* EnemyResolverColor  = Config::GetColor("visuals-esp-enemy-resolverflags-color");
+	static Config::CState* EnemyWeapon			= Config::GetState("visuals-esp-enemy-weapon");
 	
 
-	static Config2::CState* FriendEnable			= Config2::GetState("visuals-esp-friend-enable");
-	static Config2::CState* FriendBox				= Config2::GetState("visuals-esp-friend-bbox");
-	static Config2::CColor* FriendBoxColor			= Config2::GetColor("visuals-esp-friend-bbox-color");
-	static Config2::CState* FriendName				= Config2::GetState("visuals-esp-friend-name");
-	static Config2::CColor* FriendNameColor			= Config2::GetColor("visuals-esp-friend-name-color");
-	static Config2::CState* FriendSkeleton			= Config2::GetState("visuals-esp-friend-skeleton");
-	static Config2::CColor* FriendSkeletonColor		= Config2::GetColor("visuals-esp-friend-skeleton-color");
-	static Config2::CState* FriendHealth			= Config2::GetState("visuals-esp-friend-health");
-	static Config2::CColor* FriendHealthFGColor		= Config2::GetColor("visuals-esp-friend-health-color");
-	static Config2::CColor* FriendHealthBGColor		= Config2::GetColor("visuals-esp-friend-health-color-background");
+	static Config::CState* FriendEnable			= Config::GetState("visuals-esp-friend-enable");
+	static Config::CState* FriendBox				= Config::GetState("visuals-esp-friend-bbox");
+	static Config::CColor* FriendBoxColor			= Config::GetColor("visuals-esp-friend-bbox-color");
+	static Config::CState* FriendName				= Config::GetState("visuals-esp-friend-name");
+	static Config::CColor* FriendNameColor			= Config::GetColor("visuals-esp-friend-name-color");
+	static Config::CState* FriendSkeleton			= Config::GetState("visuals-esp-friend-skeleton");
+	static Config::CColor* FriendSkeletonColor		= Config::GetColor("visuals-esp-friend-skeleton-color");
+	static Config::CState* FriendHealth			= Config::GetState("visuals-esp-friend-health");
+	static Config::CColor* FriendHealthFGColor		= Config::GetColor("visuals-esp-friend-health-color");
+	static Config::CColor* FriendHealthBGColor		= Config::GetColor("visuals-esp-friend-health-color-background");
 
 	antiaim->Visualize();
 	I::surface->DrawSetColor(Color(255.f, 255.f, 255.f, 255.f));
@@ -496,7 +496,7 @@ void ESP::RunFSN()
 
 void ESP::Run_GameEvent(GameEvent* event)
 {
-	static Config2::CState* VisTracers = Config2::GetState("visuals-misc-tracers");
+	static Config::CState* VisTracers = Config::GetState("visuals-misc-tracers");
 
 	switch (StrHash::HashRuntime(event->GetName())) {
 	case StrHash::Hash("bullet_impact"): //0
