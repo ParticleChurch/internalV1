@@ -141,6 +141,8 @@ namespace Config
 		TIME_POINT TimeChanged = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
 
 	public:
+		void(*OnChange)() = nullptr;
+
 		CState(int min, int max, int val)
 		{
 			this->Minimum = min;
@@ -164,6 +166,8 @@ namespace Config
 			this->LastValue = this->Value;
 			if (++this->Value > this->Maximum) this->Value = this->Minimum;
 			this->TimeChanged = Animation::now();
+
+			if (this->OnChange) this->OnChange();
 		}
 
 		void Invert()
@@ -171,6 +175,8 @@ namespace Config
 			this->LastValue = this->Value;
 			this->Value = this->Maximum - (this->Value - this->Minimum);
 			this->TimeChanged = Animation::now();
+
+			if (this->OnChange) this->OnChange();
 		}
 
 		int Get()
@@ -187,6 +193,8 @@ namespace Config
 			else if (value >= this->Maximum) this->Value = this->Maximum;
 			else this->Value = value;
 			this->TimeChanged = Animation::now();
+
+			if (this->OnChange) this->OnChange();
 		}
 	};
 	struct CTextInput
@@ -546,7 +554,7 @@ namespace Config
 
 		std::string Name;
 		std::string VisibleName;
-		std::string PermanentWarning = "";
+		std::string(*GetWarning)() = []() { return std::string(""); };
 
 		template <typename T>
 		Property(std::string Name, std::string VisibleName, T* Value) : Visible{}

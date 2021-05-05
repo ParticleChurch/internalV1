@@ -79,13 +79,13 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	static Config::CColor* FriendHidColor = Config::GetColor("visuals-chams-friend-hidden-color");
 	static Config::CState* FriendHidMaterial = Config::GetState("visuals-chams-friend-hidden-material");
 
-	static Config::CState* LocalPlayerRealEnable = Config::GetState("visuals-chams-localplayer-real-enable");
-	static Config::CColor* LocalPlayerRealColor = Config::GetColor("visuals-chams-localplayer-real-color");
-	static Config::CState* LocalPlayerRealMaterial = Config::GetState("visuals-chams-localplayer-real-material");
+	static Config::CState* LocalPlayerRealEnable = Config::GetState("visuals-chams-local-real-enable");
+	static Config::CColor* LocalPlayerRealColor = Config::GetColor("visuals-chams-local-real-color");
+	static Config::CState* LocalPlayerRealMaterial = Config::GetState("visuals-chams-local-real-material");
 
-	static Config::CState* LocalPlayerFakeEnable = Config::GetState("visuals-chams-localplayer-fake-enable");
-	static Config::CColor* LocalPlayerFakeColor = Config::GetColor("visuals-chams-localplayer-fake-color");
-	static Config::CState* LocalPlayerFakeMaterial = Config::GetState("visuals-chams-localplayer-fake-material");
+	static Config::CState* LocalPlayerFakeEnable = Config::GetState("visuals-chams-local-fake-enable");
+	static Config::CColor* LocalPlayerFakeColor = Config::GetColor("visuals-chams-local-fake-color");
+	static Config::CState* LocalPlayerFakeMaterial = Config::GetState("visuals-chams-local-fake-material");
 
 	static int tick_count = I::globalvars->m_tickCount;
 	bool NewTick = false;

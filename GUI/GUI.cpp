@@ -711,59 +711,32 @@ namespace ImGui
 	{
 		static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
 		static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
-
 		Config::CTextInput* Value = (Config::CTextInput*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
-		// MasterLocked = p->Master is a boolean that is false
-		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && ((Config::CBoolean*)p->Master->Value)->Value.Get() == 0;
+		// draw label
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-
-		// draw label 
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+		else
 		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
-
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else if (MasterLocked)
-			{
-				DrawWarningIcon(255, IconSize);
-				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + XOR("\"");
-			}
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
 			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
-
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
 		}
+
+		ImVec2 InputBasePos = GetCursorPos();
 
 		// draw input
 		{
-			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
+			SetCursorPos(InputBasePos + ImVec2(GUI::PropertyColumnPosition, 0));
 			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 			BeginChild((XOR("##entry-child-") + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
@@ -811,21 +784,21 @@ namespace ImGui
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
-		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-		bool MasterLocked =
-			Value->Value.Get() &&
-			p->Master && p->Master->Type == Config::PropertyType::BOOLEAN &&
-			!((Config::CBoolean*)p->Master->Value)->Value.Get();
-
 		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
 			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
-		else if (p->PermanentWarning != "")
-			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
 		else
-			DrawGeneralLabel(p);
+		{
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
+			else
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
+		}
 
 		// draw switch
 		double TimePassed = Value->Value.GetTimeSinceChange();
@@ -1022,15 +995,21 @@ namespace ImGui
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
-		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-
 		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
-		else if (p->PermanentWarning != "")
-			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
 		else
-			DrawGeneralLabel(p);
+		{
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
+			else
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
+		}
 
 		// draw bar
 		constexpr float SpaceAfterBar = 43.f;
@@ -1081,15 +1060,21 @@ namespace ImGui
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
-		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-
 		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
-		else if (p->PermanentWarning != "")
-			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
 		else
-			DrawGeneralLabel(p);
+		{
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
+			else
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
+		}
 
 		ImVec2 ColorButtonBase = GetCursorPos();
 
@@ -1180,15 +1165,21 @@ namespace ImGui
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
-		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-
 		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
-		else if (p->PermanentWarning != "")
-			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
 		else
-			DrawGeneralLabel(p);
+		{
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
+			else
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
+		}
 
 		ImVec2 DropdownPos = GetCursorPos();
 
@@ -1489,18 +1480,23 @@ namespace ImGui
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
-		bool PremiumLocked = p->IsPremium && !UserData::Premium;
-
 		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
-		else if (p->PermanentWarning != "")
-			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
 		else
-			DrawGeneralLabel(p);
+		{
+			std::string w = p->GetWarning();
+			if (w == "")
+				DrawGeneralLabel(p);
+			else
+				DrawGeneralLabel(p, PropertyIcon::Warning, w);
+		}
 
 		ImVec2 DropdownPos = GetCursorPos();
-
 
 		PushFont(Arial14);
 		PushStyleVar(ImGuiStyleVar_FrameRounding, 0.f);
