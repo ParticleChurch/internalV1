@@ -97,6 +97,7 @@ namespace Config
 
 					GetProperty("rageaim-" + wtype + "-baimiflethal")->IsPremium = true;
 					GetProperty("rageaim-" + wtype + "-override")->IsPremium = true;
+					GetProperty("rageaim-" + wtype + "-override-damage")->IsPremium = true;
 				}
 			}
 		}
@@ -398,6 +399,9 @@ namespace Config
 				(p = g->Add("misc-other-clantag", "Clantag Changer", new CBoolean()))->IsPremium = true;
 				g->Add("misc-other-clantag-input", "Clantag Text", new CTextInput(16))->Master = p;
 				//TODO - add dropdown to indicate what kind of clan tag animation they are using
+
+				GetProperty("misc-other-clantag-input")->IsPremium = true;
+				GetProperty("misc-other-killsay-input")->IsPremium = true;
 			}
 		}
 
@@ -1836,6 +1840,8 @@ namespace UserData
 			PremiumTimeRemaining = 0;
 			Premium = PremiumTimeRemaining > 0;
 			LastPingTime = Animation::now();
+			Config::GetState("misc-other-killsay")->Set(0);
+			Config::GetState("misc-other-clantag")->Set(0);
 		}
 		catch (std::exception& e)
 		{

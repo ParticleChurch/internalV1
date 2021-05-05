@@ -48,9 +48,12 @@ namespace TextService
 		};
 	};
 }
-#define XOR_MINSTRINGSIZE 5 // 4 chars + 1 null
-#define XORTAG(str) (TextService::StringEncoding::string(sizeof(str), 5, "!XOR!" str))
-#define XOR(string_literal) ((sizeof(string_literal) <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG(string_literal); return s.str;}()))
+//#define XOR_MINSTRINGSIZE 5 // 4 chars + 1 null
+//#define XORTAG(str) (TextService::StringEncoding::string(sizeof(str), 5, "!XOR!" str))
+//#define XOR(string_literal) ((sizeof(string_literal) <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG(string_literal); return s.str;}()))
+//
+//#define XORTAG_S(size, str) (TextService::StringEncoding::string(sizeof(str), 5 + sizeof(#size) - 1, "!XOR" #size "!" str))
+//#define XOR_S(string_size, string_literal) ((string_size <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG_S(string_size, string_literal); return s.str;}()))
 
-#define XORTAG_S(size, str) (TextService::StringEncoding::string(sizeof(str), 5 + sizeof(#size) - 1, "!XOR" #size "!" str))
-#define XOR_S(string_size, string_literal) ((string_size <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG_S(string_size, string_literal); return s.str;}()))
+#define XOR(x) x
+#define XOR_S(_, x) x 

@@ -736,7 +736,7 @@ namespace ImGui
 
 		// draw input
 		{
-			SetCursorPos(InputBasePos + ImVec2(GUI::PropertyColumnPosition, 0));
+			SetCursorPos(InputBasePos);
 			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 			BeginChild((XOR("##entry-child-") + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
@@ -747,7 +747,7 @@ namespace ImGui
 			bool IsTyping = ImGui::GetActiveID() == w->GetID((XOR("##entry-child-text") + p->Name).c_str()) || (Value->Data && Value->DataSize > 0 && Value->Data[0]);
 			SetCursorPos(ImVec2(5, 3));
 			SetNextItemWidth(w->Size.x - 10);
-			InputText((XOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize);
+			InputText((XOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize, PremiumLocked ? ImGuiInputTextFlags_ReadOnly : 0);
 
 			if (IsTyping)
 			{
