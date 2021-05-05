@@ -972,6 +972,7 @@ namespace ImGui
 				{
 					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
+					L::Log(p->VisibleName.c_str());
 				}
 				if (IsItemHovered())
 				{

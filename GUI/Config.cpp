@@ -116,13 +116,14 @@ namespace Config
 			}
 			{
 				Group* g = t->Add("Legit Antiaim");
-				g->Add("antiaim-legit-enable", "Enable", new CBoolean())->IsPremium = false;
+				g->Add("antiaim-legit-enable", "Enable", new CBoolean())->IsPremium = true;
 
 				g->BeginMaster(p);
 				p = g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
-				g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true));
+				g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true))->IsPremium = true;
 				g->EndMaster();
 
+				p->IsPremium = true;
 				p->GetWarning = []() {
 					static auto fakelagtick = GetProperty("antiaim-fakelag-tick");
 					static auto fakelagdistance = GetProperty("antiaim-fakelag-distance");
@@ -1842,6 +1843,8 @@ namespace UserData
 			LastPingTime = Animation::now();
 			Config::GetState("misc-other-killsay")->Set(true);
 			Config::GetState("misc-other-clantag")->Set(true);
+			for (std::string wtype : {"pistol", "smg", "heavy", "rifle", "sniper"})
+				Config::GetState("legitaim-" + wtype + "-smoothing")->Set(3);
 		}
 		catch (std::exception& e)
 		{
