@@ -647,7 +647,7 @@ namespace ImGui
 		Error
 	};
 
-	int DrawGeneralLabel(Config::Property* p, PropertyIcon icon = PropertyIcon::Info, std::string iconText = "Click for more info.")
+	void DrawGeneralLabel(Config::Property* p, PropertyIcon icon = PropertyIcon::Info, std::string iconText = "Click for more info.")
 	{
 		auto Window = ImGui::GetCurrentWindow();
 		ImVec2 Pos = GetCursorPos();
@@ -700,7 +700,6 @@ namespace ImGui
 
 		ImGui::SetCursorPos(Pos + ImVec2(6, (20 - ImGui::GetFontSize()) / 2));
 		ImGui::Text(p->VisibleName.c_str());
-
 		return 20;
 	}
 
@@ -803,32 +802,90 @@ namespace ImGui
 		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
 		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
 		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+
 		Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
-
-		bool MasterLocked = false;
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked =
+			Value->Value.Get() &&
+			p->Master && p->Master->Type == Config::PropertyType::BOOLEAN &&
+			!((Config::CBoolean*)p->Master->Value)->Value.Get();
 
-		// draw keybind shit
-		if (Value->Bindable)
+		// draw label
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, XOR("Upgrade to premium to access this feature."));
+		else if (MasterLocked)
+			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+		else if (p->PermanentWarning != "")
+			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else
+			DrawGeneralLabel(p);
+
+		// draw switch
+		double TimePassed = Value->Value.GetTimeSinceChange();
+		double AnimFactor = Animation::animate(TimePassed, 0.15f);
+		if (Value->Value.Get() == 0)
+			AnimFactor = 1.f - AnimFactor;
+		SetCursorPosY(GetCursorPosY() + 2);
+		ImVec2 SwitchPos = GetCursorPos();
+		bool Flipped = DrawBooleanSwitch(XOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
+
+		// switch behavior
+		if (Flipped && !PremiumLocked)
 		{
-			PushFont(Arial14);
+			GUI::WantMouse = true;
+			Config::SettingKeybindFor = nullptr;
+			Value->Value.Invert();
+			if (Value->BoundToKey >= 0)
+			{
+				if (Value->BindMode == Config::KeybindMode::HOLDTODISABLE)
+					Value->BindMode = Config::KeybindMode::HOLDTOENABLE;
+				else if (Value->BindMode == Config::KeybindMode::HOLDTOENABLE)
+					Value->BindMode = Config::KeybindMode::HOLDTODISABLE;
+			}
+		}
 
-			if (p == Config::SettingKeybindFor) // this is being set right now
+		// hover premium lock
+		if (IsItemHovered())
+		{
+			GUI::WantMouse = true;
+			if (PremiumLocked)
+			{
+				SetCursorPos(SwitchPos + ImVec2(15, 0));
+				ToolTip(XOR("Upgrade to premium to access this feature."), 20);
+			}
+		}
+
+		// draw keybind (only if premium not locked)
+		if (!PremiumLocked && Value->Bindable)
+		{
+			ImVec2 KeybindBase = SwitchPos + ImVec2(39, -2);
+			if (p == Config::SettingKeybindFor) // the bind is currently being set
 			{
 				PushFont(Arial12);
-				if (p->Name != XOR("show-menu"))
+
+				if (p->Name == XOR("show-menu"))
+				{
+					SetCursorPos(KeybindBase + ImVec2(0, (20 - 12) / 2));
+					Text(XOR("[PRESS A KEY]"));
+				}
+				else
 				{
 					const char* Prefix = XOR("MODE:");
 					ImVec2 PrefixSize = CalcTextSize(Prefix);
-					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39, (20 - PrefixSize.y) / 2));
-					Text(Prefix);
-					PopFont();
+					constexpr int BindModeOptionWidth = 60;
+					const char* Suffix = XOR("[PRESS A KEY]");
+					ImVec2 SuffixSize = CalcTextSize(Suffix);
 
+					// Prefix 
+					SetCursorPos(KeybindBase + ImVec2(0, (20 - PrefixSize.y) / 2));
+					Text(Prefix);
+
+					// [Toggle, Enable, Disable]
+					PushFont(Arial14);
 					PushStyleColor(ImGuiCol_Button, 0);
 					PushStyleColor(ImGuiCol_ButtonHovered, 0);
 					PushStyleColor(ImGuiCol_ButtonActive, 0);
@@ -836,68 +893,67 @@ namespace ImGui
 					PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 					PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
 					PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-
-					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39 + PrefixSize.x + 5, 0));
-					int ItemWidth = 60;
-					BeginChild((XOR("##bindmode-") + p->Name).c_str(), ImVec2(ItemWidth * 3, 20), true);
-					auto bruh_window = GetCurrentWindow();
-					auto bruh_dl = bruh_window->DrawList;
-					SetCursorPos(ImVec2(ItemWidth * (int)Value->BindMode, 0));
-					bruh_dl->AddRectFilled(bruh_window->DC.CursorPos, bruh_window->DC.CursorPos + ImVec2(ItemWidth, 20), *ButtonActive, 0, 0);
-					for (int i = 0; i < 3; i++)
+					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5, 0));
 					{
-						SetCursorPos(ImVec2(ItemWidth * i, 0));
-						if (Button((Config::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(ItemWidth, 20)))
+						BeginChild((XOR("##bindmode-") + p->Name).c_str(), ImVec2(BindModeOptionWidth * 3, 20), true);
 						{
-							Value->BindMode = (Config::KeybindMode)i;
+							auto ChildWindow = GetCurrentWindow();
+							auto ChildDrawList = ChildWindow->DrawList;
+
+							// current selection
+							SetCursorPos(ImVec2(BindModeOptionWidth * (int)Value->BindMode, 0));
+							ChildDrawList->AddRectFilled(ChildWindow->DC.CursorPos, ChildWindow->DC.CursorPos + ImVec2(BindModeOptionWidth, 20), *ButtonActive, 0, 0);
+
+							// other options
+							for (int i = 0; i < 3; i++)
+							{
+								SetCursorPos(ImVec2(BindModeOptionWidth * i, 0));
+								if (Button((Config::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(BindModeOptionWidth, 20)))
+								{
+									Value->BindMode = (Config::KeybindMode)i;
+								}
+								GUI::WantMouse |= IsItemHovered();
+							}
 						}
-						GUI::WantMouse |= IsItemHovered();
+						EndChild();
 					}
-					EndChild();
+					PopFont();
 					PopStyleColor(5);
 					PopStyleVar(2);
 
-					PushFont(Arial12);
-					const char* Suffix = XOR("[PRESS A KEY]");
-					ImVec2 SuffixSize = CalcTextSize(Suffix);
-					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39 + PrefixSize.x + 5 + ItemWidth * 3 + 5, (20 - SuffixSize.y) / 2));
+					// Suffix
+					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + BindModeOptionWidth * 3 + 5, (20 - SuffixSize.y) / 2));
 					Text(Suffix);
 				}
-				else
-				{
-					// this is the show menu boolean
-					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 39, (20 - 12) / 2));
-					Text(XOR("[PRESS A KEY]"));//
-				}
+
 				PopFont();
 			}
-			else if (Value->BoundToKey >= 0) // this key is already bound
+			else if (Value->BoundToKey >= 0) // already bound (click to rebind)
 			{
+				PushFont(Arial12);
+
 				const char* Prefix = Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("PRESS") : XOR("HOLD");
-				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+
 				const char* Suffix =
 					Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
 					Value->BindMode == Config::KeybindMode::HOLDTOENABLE ? XOR("TO ENABLE") : XOR("TO DISABLE");
-
-				PushFont(Arial12);
-				ImVec2 PrefixSize = CalcTextSize(Prefix);
 				ImVec2 SuffixSize = CalcTextSize(Suffix);
-				PopFont();
+
+				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
 				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
 
-				int x = GUI::PropertyColumnPosition + 39;
-				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
-				PushFont(Arial12);
+				// Prefix 
+				SetCursorPos(KeybindBase + ImVec2(0, (20 - PrefixSize.y) / 2));
 				Text(Prefix);
-				PopFont();
-				x += 5 + PrefixSize.x;
 
+				// [keyname]
+				PushFont(Arial14);
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-
-				SetCursorPos(Pos + ImVec2(x, 0));
+				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5, 0));
 				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
 					if (p->Name == XOR("show-menu"))
@@ -912,145 +968,45 @@ namespace ImGui
 						GUI::WantMouse = true;
 					}
 				}
-				else if (IsItemHovered())
+				if (IsItemHovered())
 				{
-					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
+					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
 					ToolTip(p->Name == XOR("show-menu") ? XOR("Click To Edit") : XOR("Click To Clear"), 20);
 					GUI::WantMouse = true;
 				}
-
+				PopFont();
 				PopStyleColor(2);
 				PopStyleVar(2);
-				x += KeyNameSize.x + 10 + 5;
 
-
-				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
-				PushFont(Arial12);
+				// Suffix
+				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + KeyNameSize.x + 10 + 5, (20 - PrefixSize.y) / 2));
 				Text(Suffix);
+
 				PopFont();
-
 			}
-			else if (!PremiumLocked) // the key is not bound & we are able to bind it
+			else if (Value->Bindable)
 			{
-
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 35, 0));
-
+				PushFont(Arial14);
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-
+				SetCursorPos(KeybindBase);
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
 				}
-				else if (IsItemHovered())
+				if (IsItemHovered())
 				{
 					GUI::WantMouse = true;
 				}
-
+				PopFont();
 				PopStyleColor(2);
 				PopStyleVar(2);
 			}
-
-			PopFont();
 		}
-
-		// draw switch
-		if (true) // here only because vs won't let me collapse it otherwise for some reason
-		{
-			if (p->Master && p->Master->Type == Config::PropertyType::BOOLEAN)
-			{
-				bool MasterAllows = ((Config::CBoolean*)p->Master->Value)->Value.Get() != 0;
-				bool ImEnabled = Value->Value.Get() != 0;
-
-				MasterLocked = ImEnabled && !MasterAllows;
-			}
-
-			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, (20 - 16) / 2));
-
-			double TimePassed = Value->Value.GetTimeSinceChange();
-			double AnimFactor = Animation::animate(TimePassed, 0.15f);
-			if (Value->Value.Get() == 0)
-				AnimFactor = 1.f - AnimFactor;
-
-			bool Flipped = DrawBooleanSwitch(XOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
-			if (Flipped)
-			{
-				GUI::WantMouse = true;
-				Config::SettingKeybindFor = nullptr;
-				if (!PremiumLocked)
-				{
-					Value->Value.Invert();
-					if (p->Name == XOR("rage-aim-enable") && Value->Value.Get() == 1)
-						Config::GetState(XOR("legit-aim-enable"))->Set(0);
-					else if (p->Name == XOR("legit-aim-enable") && Value->Value.Get() == 1)
-						Config::GetState(XOR("rage-aim-enable"))->Set(0);
-					if (p->Name == XOR("antiaim-rage-enable") && Value->Value.Get() == 1)
-						Config::GetState(XOR("antiaim-legit-enable"))->Set(0);
-					else if (p->Name == XOR("antiaim-legit-enable") && Value->Value.Get() == 1)
-						Config::GetState(XOR("antiaim-rage-enable"))->Set(0);
-					if (Value->BoundToKey >= 0)
-					{
-						if (Value->BindMode == Config::KeybindMode::HOLDTODISABLE)
-							Value->BindMode = Config::KeybindMode::HOLDTOENABLE;
-						else if (Value->BindMode == Config::KeybindMode::HOLDTOENABLE)
-							Value->BindMode = Config::KeybindMode::HOLDTODISABLE;
-					}
-				}
-			}
-
-			if (IsItemHovered())
-			{
-				GUI::WantMouse = true;
-				if (PremiumLocked)
-				{
-					SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 30 / 2, 0));
-					ToolTip(XOR("Premium users only"), 20);
-				}
-			}
-		}
-
-		// draw label 
-		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
-
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else if (MasterLocked)
-			{
-				DrawWarningIcon(255, IconSize);
-				ToolTipString = XOR("This property has no effect because it is controlled by \"") + p->Master->VisibleName + XOR("\"");
-			}
-			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
-
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		}
-
+		
 		return 20;
 	}
 

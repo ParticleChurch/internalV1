@@ -92,7 +92,7 @@ namespace Config
 
 				g->EndMaster();
 
-				
+
 			}
 			{
 				Group* g = t->Add("legit-Backtrack");
@@ -159,7 +159,7 @@ namespace Config
 				g->Add("rageaim-scout-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
 				g->Add("rageaim-scout-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
 				g->Add("rageaim-scout-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
-					
+
 				p = g->Add("rageaim-awp-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }));
 				CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), 5);
 				g->Add("rageaim-awp-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
@@ -190,7 +190,7 @@ namespace Config
 
 				g->Add("antiaim-fakelag-tick", "Amount", new CFloat(0, 16, 0, "TICKS"));
 				g->Add("antiaim-fakelag-distance", "Distance", new CFloat(0, 64, 1, "UNITS")); //4096	
-				
+
 				g->Add("antiaim-fakelag-trigger-tick", "Trigger Amount", new CFloat(0, 16, 0, "TICKS"));
 				g->Add("antiaim-fakelag-trigger-distance", "Trigger Distance", new CFloat(0, 64, 1, "UNITS")); //4096	
 			}
@@ -214,13 +214,13 @@ namespace Config
 				g->Add("visuals-rage-yawbase", "Base Yaw", new CVerticalState({ "180 from Original", "Closest to Crosshair", "Clostest Distance", "Freestanding" }));
 				g->Add("antiaim-rage-pitch", "Pitch", new CFloat(-89, 89, 1, "DEG"));
 
-				g->Add("antiaim-type", "", new CHorizontalState({ "Manual", "Custom"}));
+				g->Add("antiaim-type", "", new CHorizontalState({ "Manual", "Custom" }));
 
 				CONFIG_VIS(g->Add("antiaim-manual-left", "Left", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
 				CONFIG_VIS(g->Add("antiaim-manual-back", "Back", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
 				CONFIG_VIS(g->Add("antiaim-manual-right", "Right", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
 				CONFIG_VIS(g->Add("antiaim-manual-max", "Desync Delta", new CFloat(0, 100, 1, "%")), nullptr, GetState("antiaim-type"), 0);
-				
+
 				CONFIG_VIS(g->Add("antiaim-custom-real", "Real Offset", new CFloat(-180, 180, 1, "DEG")), nullptr, GetState("antiaim-type"), 1);
 				CONFIG_VIS(g->Add("antiaim-custom-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG")), nullptr, GetState("antiaim-type"), 1);
 				CONFIG_VIS(g->Add("antiaim-custom-fake", "Fake Offset", new CFloat(0, 100, 1, "%")), nullptr, GetState("antiaim-type"), 1);
@@ -236,7 +236,7 @@ namespace Config
 				Group* g = t->Add("Chams");
 
 				// sliders at the top
-				g->Add("chams-mode", "", new CHorizontalState({ "Enemies", "Friends", "Local"}));
+				g->Add("chams-mode", "", new CHorizontalState({ "Enemies", "Friends", "Local" }));
 
 				p = g->Add("chams-enemy-visibility", "", new CHorizontalState({ "Visible", "Hidden" }));
 				p->Visible.State = GetState("chams-mode");
@@ -303,7 +303,7 @@ namespace Config
 			}
 			{
 				Group* g = t->Add("ESP");
-				g->Add("esp-mode", "", new CHorizontalState({ "Enemies", "Friends"}));
+				g->Add("esp-mode", "", new CHorizontalState({ "Enemies", "Friends" }));
 
 				p = g->Add("visuals-esp-enemy-enable", "Enable", new CBoolean());
 				p->Visible.State = GetState("esp-mode");
@@ -374,7 +374,7 @@ namespace Config
 				Group* g = t->Add("Misc");
 				g->Add("visuals-misc-thirdperson", "Thirdperson", new CBoolean());
 				g->Add("visuals-misc-thirdperson-distance", "Thirdperson Distance", new CFloat(0, 150, 1, ""));
-				
+
 				g->Add("visuals-misc-revealranks", "Reveal Ranks", new CBoolean());
 				g->Add("visuals-misc-grenadeprediction", "Grenade Prediction", new CBoolean());
 				g->Add("visuals-misc-noscope", "No Scope", new CBoolean());
@@ -451,9 +451,9 @@ namespace Config
 			}
 		}
 
-		// DEV Features
+		// Experimental Features
 		{
-			Tab* t = new Tab("Dev");
+			Tab* t = new Tab("Experimental");
 			{
 				Group* g = t->Add("Tickbase Manipulation");
 				g->Add("tickbase-shift", "Shift Amount", new CFloat(0, 55, 0, "TICKS"));
@@ -578,7 +578,7 @@ namespace Config
 			}
 		}
 
-		
+
 
 		// CONFIG
 		{
@@ -1011,7 +1011,7 @@ namespace Config
 	bool ImportSingleProperty(const char* buffer, size_t bufferSize, size_t* nBytesUsed, bool checkPremium)
 	{
 		if (bufferSize < sizeof(size_t)) return false;
-		
+
 		// read value size
 		size_t valueSize = *(size_t*)buffer;
 		bufferSize -= sizeof(size_t);
@@ -1199,7 +1199,7 @@ namespace Config
 
 		memcpy(buffer, header, headerSize);
 		size += headerSize;
-		
+
 		for (size_t t = 0; t < Tabs.size(); t++)
 		{
 			Tab* tab = Tabs.at(t);
@@ -1387,7 +1387,7 @@ namespace Config
 			L::Verbose("_PromptImportThemeFile got filepath: ", "");
 			L::Verbose(filename);
 		}
-		
+
 		// open the file
 		L::Verbose("_PromptImportThemeFile opening file");
 		std::ifstream file(filename, std::ios::binary);
@@ -1696,7 +1696,7 @@ namespace UserData
 		try {
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
-			
+
 			if (!parsed["success"].get<bool>())
 			{
 				SetLoginError(parsed["error"].get<std::string>());
@@ -1764,7 +1764,7 @@ namespace UserData
 			L::Log(e.what());
 		}
 
-	//succeeded:
+		//succeeded:
 		if (response) { free(response); response = nullptr; }
 		LoginDebounce = false;
 		return 0;
@@ -1883,14 +1883,14 @@ namespace UserData
 	{
 		DWORD bytes = 0;
 		char* response = nullptr;
-		
+
 		// for some reason my brain isn't working right now
 		// this is the best way I can think of doing this
 		goto first;
-	retry: 
+	retry:
 		if (response) free(response);
 		Sleep(1000);
-		
+
 	first:
 		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected.php", "", &bytes);
 		if (bytes == 0 || !response) goto retry;

@@ -546,6 +546,7 @@ namespace Config
 
 		std::string Name;
 		std::string VisibleName;
+		std::string PermanentWarning = "";
 
 		template <typename T>
 		Property(std::string Name, std::string VisibleName, T* Value) : Visible{}
