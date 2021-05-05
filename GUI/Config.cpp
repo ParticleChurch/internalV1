@@ -38,19 +38,15 @@ namespace Config
 		//Tab* t;
 		//Group* g;
 		Property* p;
-		Property* p1;
 
 		// OFFENCE
 		{
-			// IDK WHY EVERYTHING IN OFFENSE DOESN"T WORK!
 			Tab* t = new Tab("Offence");
 			t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
 			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
 
-			/*
-				LEGIT PAGE
-			*/
+			// LEGIT
 			{
 				Group* g = t->Add("legit-Aimbot");
 
@@ -91,18 +87,13 @@ namespace Config
 #undef HITBOXES_CONFIG
 
 				g->EndMaster();
-
-
 			}
 			{
 				Group* g = t->Add("legit-Backtrack");
 				g->Add("legitaim-backtrack-time", "Backtrack TIme", new CFloat(0, 200, 1, "MS"));
 			}
 
-
-			/*
-				RAGE PAGE
-			*/
+			// RAGE
 			{
 				Group* g = t->Add("rage-Aimbot");
 
@@ -309,7 +300,7 @@ namespace Config
 				p->Visible.State = GetState("esp-mode");
 				p->Visible.StateEquals = 0;
 				g->BeginMaster(p);
-				(p1 = g->Add("visuals-esp-enemy-bbox", "Bounding Box", new CBoolean()))->VisibilityLinked = p;
+				g->Add("visuals-esp-enemy-bbox", "Bounding Box", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-enemy-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-bbox"), 1);
 				g->Add("visuals-esp-enemy-name", "Name", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-enemy-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-enemy-name"), 1);
@@ -330,7 +321,7 @@ namespace Config
 				p->Visible.State = GetState("esp-mode");
 				p->Visible.StateEquals = 1;
 				g->BeginMaster(p);
-				(p1 = g->Add("visuals-esp-friend-bbox", "Bounding Box", new CBoolean()))->VisibilityLinked = p;
+				g->Add("visuals-esp-friend-bbox", "Bounding Box", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-friend-bbox-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-bbox"), 1);
 				g->Add("visuals-esp-friend-name", "Name", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(g->Add("visuals-esp-friend-name-color", "Color", new CColor(true)), p, GetState("visuals-esp-friend-name"), 1);
@@ -426,12 +417,12 @@ namespace Config
 			Tab* t = new Tab("Misc");
 			{
 				Group* g = t->Add("Movement");
-				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean())->IsPremium = true;
+				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
 				g->Add("misc-movement-autostrafe", "Autostrafe", new CVerticalState({ "None", "Rage", "Legit" }));
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-autostop", "AutoStop", new CBoolean());
 				g->Add("misc-movement-slowwalk", "Slow Walk", new CBoolean());
-				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"))->IsPremium = true;
+				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-fastcrouch", "Fast Crouch", new CBoolean());
 				g->Add("misc-movement-fakeduck", "Fake Duck", new CBoolean());
 				g->Add("misc-movement-leg", "Leg Slide", new CBoolean());

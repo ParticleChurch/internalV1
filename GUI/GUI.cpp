@@ -87,7 +87,7 @@ namespace GUI
 	Animation::Anim* SearchAnimation = nullptr;
 
 	ImVec2 DefaultMenuSize = ImVec2(650, 330);
-	ImVec2 MinMenuSize = ImVec2(575, 222);
+	ImVec2 MinMenuSize = ImVec2(595, 245);
 	int PropertyColumnPosition = 200;
 
 	bool IsSearching = false;
@@ -1061,7 +1061,7 @@ namespace ImGui
 		// draw unit
 		{
 			PushFont(Arial12);
-			SetCursorPos(BarBase + ImVec2(BarLength, (20 - 12) / 2));
+			SetCursorPos(BarBase + ImVec2(BarLength + 5, (20 - 12) / 2));
 			TextEx(Value->Unit.c_str());
 			PopFont();
 		}
@@ -1080,47 +1080,21 @@ namespace ImGui
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
-		// draw label 
-		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+		// draw label
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+		else if (p->PermanentWarning != "")
+			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else
+			DrawGeneralLabel(p);
 
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
-
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		}
+		ImVec2 ColorButtonBase = GetCursorPos();
 
 		// draw color
 		{
-			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 			ImVec4 ImColor = *Value;
 
 			if (((int)Value->GetR() + (int)Value->GetG() + (int)Value->GetB()) < 127 * 3) // this is a dark color
@@ -1129,17 +1103,16 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 127));
 			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-			if (ColorButton((XOR("##color-button-") + p->Name).c_str(), ImColor, ImGuiColorEditFlags_NoTooltip, ImVec2(40, 20)))
+			if (ColorButton((XOR("##color-button-") + p->Name).c_str(), ImColor, ImGuiColorEditFlags_NoTooltip, ImVec2(40, 20)) && !PremiumLocked)
 				OpenPopup((XOR("##color-picker-") + p->Name).c_str());
 			else if (IsItemHovered())
 			{
 				GUI::WantMouse = true;
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 20, 0));
-				ToolTip(Value->Stringify(), 20);
+				SetCursorPos(ColorButtonBase + ImVec2(20, 0));
+				ToolTip(PremiumLocked ? PREMIUM_USERS_ONLY : Value->Stringify(), 20);
 			}
 			PopStyleVar(2);
 			PopStyleColor(1);
-			// ImGuiCol_ButtonActive, ImGuiCol_SliderGrabActive, ImGuiCol_FrameBgActive
 			PushStyleColor(ImGuiCol_PopupBg, (ImVec4)*EditorBase);
 			PushStyleColor(ImGuiCol_Text, (ImVec4)*EditorText);
 			PushStyleColor(ImGuiCol_Border, (ImVec4)*EditorBorder);
@@ -1151,9 +1124,10 @@ namespace ImGui
 			{
 				GUI::WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
+
 				PushFont(Arial16);
 				std::string Title = TruncateToEllipsis(p->VisibleName, 210 - 20);
-				ImVec2 Size = ImGui::CalcTextSize(Title.c_str());
+				ImVec2 Size = CalcTextSize(Title.c_str());
 				SetCursorPos(ImVec2(210 / 2, 13) - Size / 2);
 				Text(Title.c_str());
 				PopFont();
@@ -1205,43 +1179,18 @@ namespace ImGui
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
-		// draw label 
-		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+		// draw label
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+		else if (p->PermanentWarning != "")
+			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else
+			DrawGeneralLabel(p);
 
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
-
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		}
+		ImVec2 DropdownPos = GetCursorPos();
 
 		PushFont(Arial14);
 		PushStyleVar(ImGuiStyleVar_FrameRounding, 0.f);
@@ -1258,8 +1207,6 @@ namespace ImGui
 			// button/child thing
 			{
 				bool open = false;
-
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
@@ -1267,10 +1214,10 @@ namespace ImGui
 
 				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
 				// draw border manually
-				auto retard_Window = GetCurrentWindow();
-				auto retard_DrawList = Window->DrawList;
+				auto ChildWindow = GetCurrentWindow();
+				auto ChildDrawList = Window->DrawList;
 				if (DropdownBorderSize->Get() > 0.f)
-					retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, *DropdownBorder, 3.f, ImDrawCornerFlags_All, DropdownBorderSize->Get());
+					ChildDrawList->AddRect(ChildWindow->Pos, ChildWindow->Pos + ChildWindow->Size, *DropdownBorder, 3.f, ImDrawCornerFlags_All, DropdownBorderSize->Get());
 
 				SetCursorPos(ImVec2(5, 3));
 				Text(CurrentSelection.c_str());
@@ -1287,18 +1234,25 @@ namespace ImGui
 				// dummy button across whole child
 				{
 					SetCursorPos(ImVec2(0, 0));
-					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
+					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
 						GUI::WantMouse = true;
 						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
-				GUI::WantMouse |= IsItemHovered() || IsItemActive();
+				bool HoveringOverOpener = IsItemHovered();
+				GUI::WantMouse |= HoveringOverOpener;
 
 				EndChild();
 				PopStyleColor(1);
 				PopStyleVar(2);
+
+				if (PremiumLocked && HoveringOverOpener)
+				{
+					SetCursorPos(DropdownPos + ImVec2(100, 0));
+					ToolTip(PREMIUM_USERS_ONLY, 20);
+				}
 
 				if (open)
 					OpenPopup((XOR("##popup-") + p->Name).c_str());
@@ -1310,7 +1264,7 @@ namespace ImGui
 			PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)DropdownText->ModulateAlpha(0.2f));
 			// popup
 			{
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
+				SetCursorPos(DropdownPos);
 				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
 				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*DropdownBorder);
@@ -1345,98 +1299,95 @@ namespace ImGui
 		PopStyleVar(1);
 		PopStyleColor(1);
 
-		// keybind (yoinked from DrawBooleanProperty)
-		if (Value->Bindable)
+		// (yoinked from DrawBooleanProperty)
+		// draw keybind (only if premium not locked)
+		if (!PremiumLocked && Value->Bindable)
 		{
-			PushFont(Arial14);
-
-			if (p == Config::SettingKeybindFor) // this is being set right now
+			ImVec2 KeybindBase = DropdownPos + ImVec2(209, 0);
+			if (p == Config::SettingKeybindFor) // the bind is currently being set
 			{
 				PushFont(Arial12);
-				const char* Prefix = XOR("[PRESS A KEY]");
-				ImVec2 PrefixSize = CalcTextSize(Prefix);
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 209, (20 - PrefixSize.y) / 2));
-				Text(Prefix);
+
+				SetCursorPos(KeybindBase + ImVec2(0, (20 - 12) / 2));
+				Text(XOR("[PRESS A KEY]"));
+
 				PopFont();
 			}
-			else if (Value->BoundToKey >= 0) // this key is already bound
+			else if (Value->BoundToKey >= 0) // already bound (click to rebind)
 			{
-				const char* Prefix = XOR("PRESS");
-				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
-				const char* Suffix = XOR("TO LOOP");
-
 				PushFont(Arial12);
+
+				const char* Prefix = XOR("PRESS");
 				ImVec2 PrefixSize = CalcTextSize(Prefix);
+
+				const char* Suffix = XOR("TO LOOP");
 				ImVec2 SuffixSize = CalcTextSize(Suffix);
-				PopFont();
+
+				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
 				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
 
-				int x = GUI::PropertyColumnPosition + 209;
-				SetCursorPos(Pos + ImVec2(x, (20 - PrefixSize.y) / 2));
-				PushFont(Arial12);
+				// Prefix 
+				SetCursorPos(KeybindBase + ImVec2(0, (20 - PrefixSize.y) / 2));
 				Text(Prefix);
-				PopFont();
-				x += 5 + PrefixSize.x;
 
+				// [keyname]
+				PushFont(Arial14);
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-
-				SetCursorPos(Pos + ImVec2(x, 0));
+				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5, 0));
 				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
-					std::vector<void*>& vec = Keybind::Binds[Value->BoundToKey];
-					for (size_t i = 0; i < vec.size(); i++)
-						if (vec.at(i) == (void*)p)
-							vec.erase(vec.begin() + i--);
-
-					Value->BoundToKey = -1;
-					Config::SettingKeybindFor = nullptr;
-					GUI::WantMouse = true;
+					if (p->Name == XOR("show-menu"))
+					{
+						Config::SettingKeybindFor = p;
+						GUI::WantMouse = true;
+					}
+					else
+					{
+						Config::_BindToKey(p, -1);
+						Config::SettingKeybindFor = nullptr;
+						GUI::WantMouse = true;
+					}
 				}
-				else if (IsItemHovered())
+				if (IsItemHovered())
 				{
-					SetCursorPos(Pos + ImVec2(x + KeyNameSize.x / 2 + 5, 0));
+					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
 					ToolTip(XOR("Click To Clear"), 20);
 					GUI::WantMouse = true;
 				}
-
+				PopFont();
 				PopStyleColor(2);
 				PopStyleVar(2);
-				x += KeyNameSize.x + 10 + 5;
 
-
-				SetCursorPos(Pos + ImVec2(x, (20 - SuffixSize.y) / 2));
-				PushFont(Arial12);
+				// Suffix
+				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + KeyNameSize.x + 10 + 5, (20 - PrefixSize.y) / 2));
 				Text(Suffix);
+
 				PopFont();
-
 			}
-			else if (!PremiumLocked) // the key is not bound & we are able to bind it
+			else if (Value->Bindable)
 			{
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 205, 0));
-
+				PushFont(Arial14);
 				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
 				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-
+				SetCursorPos(KeybindBase);
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
 				}
-				else if (IsItemHovered())
+				if (IsItemHovered())
 				{
 					GUI::WantMouse = true;
 				}
-
+				PopFont();
 				PopStyleColor(2);
 				PopStyleVar(2);
 			}
-
-			PopFont();
 		}
 		return 20;
 	}
@@ -1537,63 +1488,35 @@ namespace ImGui
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
-		// draw label 
-		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
+		// draw label
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+		else if (p->PermanentWarning != "")
+			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else
+			DrawGeneralLabel(p);
 
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
+		ImVec2 DropdownPos = GetCursorPos();
 
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		}
 
 		PushFont(Arial14);
 		PushStyleVar(ImGuiStyleVar_FrameRounding, 0.f);
 		PushStyleColor(ImGuiCol_Text, (ImVec4)*DropdownText);
 		// draw property
 		{
-			const char* popupName = (XOR("##popup-") + p->Name).data();
-			bool alreadyOpen = IsPopupOpen(popupName);
+			bool alreadyOpen = IsPopupOpen((XOR("##popup-") + p->Name).c_str());
 			int nItems = Value->StateNames.size();
-			int selectedCount = Value->CountSelected();
-			std::string CurrentSelection = std::to_string(selectedCount) + XOR(" selected");
+			std::string CurrentSelection = std::to_string(Value->CountSelected()) + XOR(" selected");
 
-			PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-			PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+			PushStyleColor(ImGuiCol_Button, 0);
+			PushStyleColor(ImGuiCol_ButtonActive, 0);
+			PushStyleColor(ImGuiCol_ButtonHovered, 0);
 			// button/child thing
 			{
 				bool open = false;
-
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
@@ -1601,10 +1524,10 @@ namespace ImGui
 
 				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
 				// draw border manually
-				auto retard_Window = GetCurrentWindow();
-				auto retard_DrawList = Window->DrawList;
+				auto ChildWindow = GetCurrentWindow();
+				auto ChildDrawList = Window->DrawList;
 				if (DropdownBorderSize->Get() > 0.f)
-					retard_DrawList->AddRect(retard_Window->Pos, retard_Window->Pos + retard_Window->Size, *DropdownBorder, 3.f, ImDrawCornerFlags_All, DropdownBorderSize->Get());
+					ChildDrawList->AddRect(ChildWindow->Pos, ChildWindow->Pos + ChildWindow->Size, *DropdownBorder, 3.f, ImDrawCornerFlags_All, DropdownBorderSize->Get());
 
 				SetCursorPos(ImVec2(5, 3));
 				Text(CurrentSelection.c_str());
@@ -1620,24 +1543,29 @@ namespace ImGui
 
 				// dummy button across whole child
 				{
-
 					SetCursorPos(ImVec2(0, 0));
-					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)))
+					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
 						GUI::WantMouse = true;
 						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
-				GUI::WantMouse |= IsItemHovered() || IsItemActive();
-
+				bool HoveringOverOpener = IsItemHovered();
+				GUI::WantMouse |= HoveringOverOpener;
 
 				EndChild();
 				PopStyleColor(1);
 				PopStyleVar(2);
 
+				if (PremiumLocked && HoveringOverOpener)
+				{
+					SetCursorPos(DropdownPos + ImVec2(100, 0));
+					ToolTip(PREMIUM_USERS_ONLY, 20);
+				}
+
 				if (open)
-					OpenPopup(popupName);
+					OpenPopup((XOR("##popup-") + p->Name).c_str());
 			}
 			PopStyleColor(3);
 
@@ -1646,14 +1574,14 @@ namespace ImGui
 				ImVec4 HoverColor = DropdownText->ModulateAlpha(0.1f);
 				ImVec4 ActiveColor = DropdownText->ModulateAlpha(0.2f);
 
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
+				SetCursorPos(DropdownPos);
 				SetNextWindowPos(ImVec2(Window->DC.CursorPos + ImVec2(0, 25)));
 				SetNextWindowSize(ImVec2(200, min(nItems, 10) * 20));
 				PushStyleColor(ImGuiCol_Border, (ImVec4)*DropdownBorder);
 				PushStyleColor(ImGuiCol_PopupBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_PopupBorderSize, DropdownBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
-				if (BeginPopup(popupName))
+				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
 				{
 					GUI::WantMouse = true;
 					Config::SettingKeybindFor = nullptr;
