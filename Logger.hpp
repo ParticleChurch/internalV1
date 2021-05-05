@@ -14,7 +14,7 @@ namespace L
 		Both,
 	};
 	constexpr LogMode OutputMode = LogMode::None;
-	constexpr LogMode VerboseMode = LogMode::None;
+	constexpr LogMode VerboseMode = LogMode::Both;
 	extern std::string FilePath;
 	extern std::ofstream File;
 
