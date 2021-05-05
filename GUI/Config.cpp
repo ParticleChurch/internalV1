@@ -431,7 +431,7 @@ namespace Config
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-autostop", "AutoStop", new CBoolean());
 				g->Add("misc-movement-slowwalk", "Slow Walk", new CBoolean());
-				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"));
+				g->Add("misc-movement-slowwalk-speed", "Slow-Walk Speed", new CFloat(0, 100, 1, "%"))->IsPremium = true;
 				g->Add("misc-movement-fastcrouch", "Fast Crouch", new CBoolean());
 				g->Add("misc-movement-fakeduck", "Fake Duck", new CBoolean());
 				g->Add("misc-movement-leg", "Leg Slide", new CBoolean());

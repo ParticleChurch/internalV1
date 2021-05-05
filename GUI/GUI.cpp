@@ -1,5 +1,7 @@
 #include "../Include.hpp"
 
+#define PREMIUM_USERS_ONLY XOR("Upgrade to premium to access this feature.")
+
 ImFont* FontDefault;
 ImFont* Arial8;
 ImFont* Arial12;
@@ -591,8 +593,9 @@ namespace ImGui
 		return Clicked;
 	}
 
-	float DrawInputFloat(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float Factor = 0.5f, ImVec2 Size = ImVec2(100, 16))
+	float DrawInputFloat(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float Factor = 0.5f, ImVec2 Size = ImVec2(100, 16), bool* Active = nullptr)
 	{
+		if (Active) *Active = false;
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
 
@@ -625,6 +628,7 @@ namespace ImGui
 			if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 			{
 				Factor = (GImGui->IO.MousePos.x - (Window->DC.CursorPos.x + Size.y / 2.f)) / (Size.x - Size.y);
+				if (Active) *Active = true;
 			}
 			else
 			{
@@ -802,7 +806,6 @@ namespace ImGui
 		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
 		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
 		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
-
 		Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -816,7 +819,7 @@ namespace ImGui
 
 		// draw label
 		if (PremiumLocked)
-			DrawGeneralLabel(p, PropertyIcon::Error, XOR("Upgrade to premium to access this feature."));
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
 			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
 		else if (p->PermanentWarning != "")
@@ -855,7 +858,7 @@ namespace ImGui
 			if (PremiumLocked)
 			{
 				SetCursorPos(SwitchPos + ImVec2(15, 0));
-				ToolTip(XOR("Upgrade to premium to access this feature."), 20);
+				ToolTip(PREMIUM_USERS_ONLY, 20);
 			}
 		}
 
@@ -1018,74 +1021,47 @@ namespace ImGui
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
 		bool PremiumLocked = p->IsPremium && !UserData::Premium;
 
-		// draw label 
-		{
-			ImVec2 IconSize(14, 14);
-			std::string ToolTipString = XOR("Click for more info");
-			SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
-
-			if (PremiumLocked)
-			{
-				DrawErrorIcon(255, IconSize);
-				ToolTipString = XOR("Premium users only");
-			}
-			else
-			{
-				DrawInfoIcon(255, IconSize);
-			}
-
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
-			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
-			ItemAdd(BB, ID);
-			if (ItemHoverable(BB, ID))
-			{
-				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ToolTip(ToolTipString, IconSize.y);
-				GUI::WantMouse = true;
-				if (GImGui->IO.MouseClicked[0])
-				{
-					ShellExecute(0, 0, (XOR("http://a4g4.com/help/index.php#") + p->Name).c_str(), 0, 0, SW_SHOW);
-				}
-			}
-
-			SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
-			Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		}
+		// draw label
+		if (PremiumLocked)
+			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+		else if (p->PermanentWarning != "")
+			DrawGeneralLabel(p, PropertyIcon::Warning, p->PermanentWarning);
+		else
+			DrawGeneralLabel(p);
 
 		// draw bar
-		float SpaceAfterBar = 43;
-		float BarLength = Window->ContentRegionRect.GetWidth() - GUI::PropertyColumnPosition - Pos.x - SpaceAfterBar;
+		constexpr float SpaceAfterBar = 43.f;
+		float BarLength = Window->ContentRegionRect.GetWidth() - GetCursorPosX() - SpaceAfterBar;
+		ImVec2 BarBase = GetCursorPos();
 		{
-			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, (20 - 16) / 2));
+			SetCursorPos(BarBase + ImVec2(0, (20 - 16) / 2));
 
 			float DrawValue = Value->GetFactor();
-			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), *PropertyBase, *PropertyAccent, DrawValue, ImVec2(BarLength, 16));
+			bool Active = false;
+			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), *PropertyBase, *PropertyAccent, DrawValue, ImVec2(BarLength, 16), &Active);
 
-			if (DrawValue != UserSetValue)
+			if (!PremiumLocked && Active)
 			{
 				GUI::WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
-
-				if (!PremiumLocked)
-					Value->SetFactor(UserSetValue);
+				Value->SetFactor(UserSetValue);
 			}
 
-			if (IsItemHovered())
+			if (IsItemHovered() || Active)
 			{
 				GUI::WantMouse = true;
-				SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + 8.f + (BarLength - 16.f) * DrawValue, 0));
-				ToolTip(PremiumLocked ? XOR("Premium users only") : Value->Stringify(), 20);
+				SetCursorPos(BarBase + ImVec2((BarLength - 16.f) * DrawValue + 8.f, (20 - 16) / 2));
+				ToolTip(PremiumLocked ? PREMIUM_USERS_ONLY : Value->Stringify(), 20);
 			}
 		}
 
 		// draw unit
 		{
 			PushFont(Arial12);
-			SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition + BarLength + 5, (20 - GetFontSize()) / 2));
+			SetCursorPos(BarBase + ImVec2(BarLength, (20 - 12) / 2));
 			TextEx(Value->Unit.c_str());
 			PopFont();
 		}
