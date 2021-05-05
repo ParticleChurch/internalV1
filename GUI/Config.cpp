@@ -1840,8 +1840,8 @@ namespace UserData
 			PremiumTimeRemaining = 0;
 			Premium = PremiumTimeRemaining > 0;
 			LastPingTime = Animation::now();
-			Config::GetState("misc-other-killsay")->Set(0);
-			Config::GetState("misc-other-clantag")->Set(0);
+			Config::GetState("misc-other-killsay")->Set(true);
+			Config::GetState("misc-other-clantag")->Set(true);
 		}
 		catch (std::exception& e)
 		{
