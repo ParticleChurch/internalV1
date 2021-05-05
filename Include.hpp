@@ -33,27 +33,36 @@
 #include "Logger.hpp"            // logger
 #include "Utils/Utils.hpp"       //includes all utils...
 
+// Valve stuff
 #include "Valve/Valve.hpp"
 #include "Interfaces.hpp"
 #include "Netvars.hpp"
 
+// Semi-global variables for cheats
 #include "Globals.hpp"
 
-//MORE CUSTOM
+// Custom/Valve math
 #include "Utils/Math.hpp"
 
-// imgui
+// Multithreading definitions
+#define FORWARD_DECLARE_HANDLE(name) typedef struct name##__ *name
+FORWARD_DECLARE_HANDLE(ThreadHandle_t);
+typedef unsigned (*ThreadFunc_t)(void* pParam);
+
+// Imgui
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx9.h"
 #include "ImGui/imgui_impl_win32.h"
 
+// GUI
 #include "GUI/Keybind.hpp"
-
 #include "GUI/Config.hpp"
 #include "GUI/GUI.hpp"
 
+// Hacks
 #include "Hacks/Hacks.hpp"
 
+// Hooks
 #include "Hooks.hpp"            //hooking ingame functions
