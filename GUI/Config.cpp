@@ -417,7 +417,7 @@ namespace Config
 			// for reseting and iterating resolver
 			{
 				Group* g = t->Add("Cheat Specific");
-				g->Add("clantag-special", "Special Clantag", new CBoolean())->IsPremium;
+				g->Add("clantag-special", "Special Clantag", new CBoolean())->IsPremium = true;
 			}
 		}
 
