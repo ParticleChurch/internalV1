@@ -388,7 +388,6 @@ namespace Config
 				g->Add("misc-movement-fakeduck", "Fake Duck", new CBoolean());
 				g->Add("misc-movement-leg", "Leg Slide", new CBoolean())->IsPremium = true;
 				CONFIG_VIS(g->Add("misc-movement-leg-time", "Leg Slide Time", new CFloat(0, 2000, 1, "MS")), nullptr, GetState("misc-movement-leg"), 1);
-
 			}
 			{
 				Group* g = t->Add("Other");

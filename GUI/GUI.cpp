@@ -744,7 +744,7 @@ namespace ImGui
 			auto w = ImGui::GetCurrentWindow();
 
 			PushFont(Arial14);
-			bool IsTyping = ImGui::GetActiveID() == w->GetID((XOR("##entry-child-text") + p->Name).c_str()) || (Value->Data && Value->DataSize > 0 && Value->Data[0]);
+			bool IsTyping = ImGui::GetActiveID() == w->GetID((XOR("##entry-child-text") + p->Name).c_str());
 			SetCursorPos(ImVec2(5, 3));
 			SetNextItemWidth(w->Size.x - 10);
 			InputText((XOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize, PremiumLocked ? ImGuiInputTextFlags_ReadOnly : 0);
@@ -753,7 +753,7 @@ namespace ImGui
 			{
 				Config::SettingKeybindFor = nullptr;
 			}
-			else
+			else if (!Value->Data || Value->DataSize == 0 || Value->Data[0] == '\0')
 			{
 				SetCursorPos(ImVec2(5, 3));
 				PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
@@ -972,7 +972,6 @@ namespace ImGui
 				{
 					Config::SettingKeybindFor = p;
 					GUI::WantMouse = true;
-					L::Log(p->VisibleName.c_str());
 				}
 				if (IsItemHovered())
 				{
@@ -2022,6 +2021,7 @@ void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 
 		// draw properties
 		{
+			L::Log("\n\n===================================");
 			size_t nDrawnProps = 0;
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{
