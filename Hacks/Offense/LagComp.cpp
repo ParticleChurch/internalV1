@@ -92,6 +92,9 @@ void LagComp::Update()
 		PlayerList[UserId].Valid = true;
 		PlayerList[UserId].EyePos = ent->GetEyePos();
 		PlayerList[UserId].Origin = ent->GetVecOrigin();
+		PlayerList[UserId].AbsOrigin = ent->GetAbsOrigin();
+		PlayerList[UserId].obb_mins = ent->GetMins();
+		PlayerList[UserId].obb_maxs = ent->GetMaxs();
 		PlayerList[UserId].Dormant = ent->IsDormant();
 
 		// Clear records if dormant/dead
@@ -119,6 +122,11 @@ void LagComp::Update()
 			tick.Velocity = ent->GetVecVelocity();
 			// Origin
 			tick.Origin = PlayerList[UserId].Origin;
+			// Abs Origin
+			tick.AbsOrigin = PlayerList[UserId].AbsOrigin;
+			// obb_mins / obb_maxs
+			tick.obb_mins = PlayerList[UserId].obb_mins;
+			tick.obb_maxs = PlayerList[UserId].obb_maxs;
 			// HeadPos
 			tick.HeadPos = Vec(tick.Matrix[8][0][3], tick.Matrix[8][1][3], tick.Matrix[8][2][3]);
 			// EyeAng

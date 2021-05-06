@@ -220,6 +220,10 @@ std::vector<std::string> MiscVisuals::GetSpectators()
 		if (!SpecatedPlayer)
 			continue;
 
+		// if the spectated player isn't the localplayer, don't bother
+		if (SpecatedPlayer != G::LocalPlayer)
+			continue;
+
 		if (ent->IsAlive() || ent->IsDormant())
 			continue;
 

@@ -590,6 +590,311 @@ void Aimbot::SmoothFastToSlow(QAngle& Ang)
 	Ang = G::StartAngle + Delta;
 }
 
+
+static void CapsuleOverlay2(Entity* pPlayer, Color col, float duration, Matrix3x4 pBoneToWorldOut[128])
+{
+	if (!pPlayer)
+		return;
+
+	studiohdr_t* pStudioModel = I::modelinfo->GetStudioModel(pPlayer->GetModel());
+	if (!pStudioModel)
+		return;
+
+	mstudiohitboxset_t* pHitboxSet = pStudioModel->GetHitboxSet(0);
+	if (!pHitboxSet)
+		return;
+
+	auto VectorTransform2 = [](const Vec in1, Matrix3x4 in2, Vec& out)
+	{
+
+		out.x = DotProduct(in1, Vec(in2[0][0], in2[0][1], in2[0][2])) + in2[0][3];
+		out.y = DotProduct(in1, Vec(in2[1][0], in2[1][1], in2[1][2])) + in2[1][3];
+		out.z = DotProduct(in1, Vec(in2[2][0], in2[2][1], in2[2][2])) + in2[2][3];
+	};
+
+	for (int i = 0; i < pHitboxSet->numhitboxes; i++)
+	{
+		mstudiobbox_t* pHitbox = pHitboxSet->GetHitbox(i);
+		if (!pHitbox)
+			continue;
+
+		Vec vMin, vMax;
+		VectorTransform2(pHitbox->bbmin, pBoneToWorldOut[pHitbox->bone], vMin); //nullptr???
+		VectorTransform2(pHitbox->bbmax, pBoneToWorldOut[pHitbox->bone], vMax);
+
+		if (pHitbox->m_flRadius > -1)
+		{
+			I::debugoverlay->AddCapsuleOverlay(vMin, vMax, pHitbox->m_flRadius, col.r(), col.g(), col.b(), 255, duration);
+		}
+	}
+}
+void Aimbot::Rage()
+{
+	static Config::CState* Enable = Config::GetState("rage-aim-enable");
+	static Config::CState* Silent = Config::GetState("rage-aim-silent");
+	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
+	static Config::CState* FakeDuck = Config::GetState("misc-movement-fakeduck");
+
+	// Make sure it's a different tick
+	static int tickcount = G::cmd->tick_count;
+	if (tickcount == G::cmd->tick_count) return;
+	tickcount = G::cmd->tick_count;
+
+	// Is ragebot enabled
+	if (!Enable->Get()) return;
+
+	// If the player can shoot a weapon... 
+	if (!G::LocalPlayer->CanShoot()) return;
+
+	// Is the current weapon alright/Get config Values
+	if (!UpdateRageVal()) return;
+
+	// If we are lagging on peak...
+	if (fakelag->LaggingOnPeak) return;
+
+	// Sort players
+	SortPlayers(this->players);
+
+	// Scan through the players
+	if (ScanPlayers())
+	{
+		QAngle Angle = CalculateAngle(this->AimPoint);
+		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
+
+		// If not silent aim, adjust angles, otherwise do silent
+		if (!Silent->Get())
+			I::engine->SetViewAngles(Angle);
+		G::cmd->viewangles = Angle;
+
+		// If autoshoot.. FIRE!
+		if (AutoShoot->Get())
+		{
+			resolver->LogShot = true;
+			G::cmd->buttons |= IN_ATTACK;
+			G::cmd->tick_count = TargetTickCount;
+			CapsuleOverlay2(lagcomp->PlayerList[TargetUserID].ptrEntity, Color(255, 0, 0, 255), 2, TargetMatrix);
+		}
+
+		// only force send if not fakeducking... (as that will break fd)
+		if (G::pSendPacket && !FakeDuck->Get())
+			*G::pSendPacket = true;
+	} 
+}
+
+void Aimbot::SortPlayers(std::vector<std::pair<int, float>>& values)
+{
+	//update every .1 sec
+	static float LastTimeUpdate = I::globalvars->m_curTime;
+	if (fabsf(I::globalvars->m_curTime - LastTimeUpdate) < 0.1)
+		return;
+	LastTimeUpdate = I::globalvars->m_curTime;
+
+	values.clear();
+	values.resize(0);
+
+	Vec localorigin = G::LocalPlayer->GetVecOrigin();
+	for (auto a : lagcomp->PlayerList)
+	{
+		// If bad entity, continue
+		if (!lagcomp->ValidRecord(a.second))
+			continue;
+		
+		values.push_back(std::pair(a.first, (100 - a.second.Health) * 8 + 80000 / (a.second.Origin - localorigin).VecLength2D()));
+	}
+
+	//Trade secret sort struct for epic blazin fast aimbot
+	struct {
+		bool operator()(std::pair<int, float> a, std::pair<int, float> b) const
+		{
+			// otherwise sort by proper values
+			return a.second > b.second;
+		}
+	} targetSort;
+
+	// we do a bit of sortin
+	std::sort(values.begin(), values.end(), targetSort);
+}
+
+static ThreadHandle_t StartThread(ThreadFunc_t start, void* arg)
+{
+	using CreateSimpleThread_t = ThreadHandle_t(__cdecl*)(ThreadFunc_t, void*, SIZE_T);
+	static auto CreateSimpleThread = (CreateSimpleThread_t)GetProcAddress(GetModuleHandleA("tier0.dll"), "CreateSimpleThread");
+	return CreateSimpleThread(start, arg, 0);
+}
+
+bool Aimbot::ScanPlayers()
+{
+	int i = 1;
+	for (auto &a : this->players)
+	{
+		// scan players
+		if (ScanPlayer(a.first, this->AimPoint))
+			return true;
+		/*if (ScanPlayerBacktrack(a.first, this->AimPoint))
+			return true;*/
+		i++;
+
+		// check if done too many scans
+		if (i > maxplayerscan)
+			return false;
+	}
+
+	return false;
+}
+
+// need to implement the canhit floating point to get weird delay crap nonsense to work...
+bool Aimbot::ScanPlayer(int UserID, Vec& Point)
+{
+	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
+		return false;
+
+	if (!(lagcomp->PlayerList[UserID].ptrEntity)) // entity DOES NOT exist
+		return false;
+
+	if (!(lagcomp->PlayerList[UserID].Health > 0)) // entity is NOT alive
+		return false;
+
+	if (lagcomp->PlayerList[UserID].Team == G::LocalPlayerTeam) // Entity is on same team
+		return false;
+
+	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
+		return false;
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
+	if (!StudioModel) return false; //if cant get the model
+
+	float damage = 0.f;
+
+	for (auto HITBOX : rage.hitboxes)
+	{
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+		if (!StudioBox) continue;	//if cant get the hitbox...
+		int HitGroup = GetHitGroup(HITBOX);
+
+		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Records.front().Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Records.front().Matrix[StudioBox->bone]);
+		Vec mid = (max + min) / 2;
+
+		// Calc Mid Angle
+		QAngle MidAngle = CalculateAngle(mid);
+
+		// Calc Mid Hitchance
+		float MidHitchance = CalculateHitchance(MidAngle, mid, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
+		
+		// If the left hitchance is up to snuff...
+		if (MidHitchance >= rage.hitchance)
+		{
+			// if the point is visible
+			bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[UserID].ptrEntity);
+
+			// no need to autowall if visible...
+			damage = autowall->Damage(mid, HITBOX, true);
+			if (visible && damage >= rage.vis_mindam)
+			{
+				this->TargetUserID = UserID;
+				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].Records.front().SimulationTime + GetLerp());
+				
+				Point = mid;
+				return true;
+			}
+			else if (damage >= rage.hid_mindam)
+			{
+				this->TargetUserID = UserID;
+				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].Records.front().SimulationTime + GetLerp());
+
+				Point = mid;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+//https://github.com/sstokic-tgm/Gladiatorcheatz-v2/blob/master/features/LagCompensation.cpp 
+// need to fight with FinishLagCompensation function to see how to rage backtrack
+// STILL IN PROGRESS!
+bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
+{
+	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
+		return false;
+
+	if (!(lagcomp->PlayerList[UserID].ptrEntity)) // entity DOES NOT exist
+		return false;
+
+	if (!(lagcomp->PlayerList[UserID].Health > 0)) // entity is NOT alive
+		return false;
+
+	if (lagcomp->PlayerList[UserID].Team == G::LocalPlayerTeam) // Entity is on same team
+		return false;
+
+	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
+		return false;
+
+	//scan fastest vel tick
+	Tick TargetTick = lagcomp->PlayerList[UserID].Records.back();
+	/*float bestVel = 0.f;
+	for (auto& a : lagcomp->PlayerList[UserID].Records)
+	{
+		if (a.Velocity.VecLength2D() > bestVel)
+		{
+			bestVel = a.Velocity.VecLength2D();
+			TargetTick = a;
+		}
+	}*/
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
+	if (!StudioModel) return false; //if cant get the model
+
+	float damage = 0.f;
+
+	for (auto HITBOX : rage.hitboxes)
+	{
+		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
+		if (!StudioBox) continue;	//if cant get the hitbox...
+		int HitGroup = GetHitGroup(HITBOX);
+
+		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
+		Vec mid = (max + min) / 2;
+
+		// Calc Mid Angle
+		QAngle MidAngle = CalculateAngle(mid);
+
+		// Calc Mid Hitchance
+		float MidHitchance = CalculatePsudoHitchance();
+
+		// If the left hitchance is up to snuff...
+		if (MidHitchance >= rage.hitchance)
+		{
+			// if the point is visible
+			bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[UserID].ptrEntity);
+
+			damage = autowall->CanHitFloatingPoint(mid, true) ? 1000 : 0.f;
+			if (visible && damage >= rage.vis_mindam)
+			{
+				this->TargetUserID = UserID;
+				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));
+				TargetTickCount = TimeToTicks(TargetTick.SimulationTime + GetLerp());
+
+				Point = mid;
+				return true;
+			}
+			else if (damage >= rage.hid_mindam)
+			{
+				this->TargetUserID = UserID;
+				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));
+				TargetTickCount = TimeToTicks(TargetTick.SimulationTime + GetLerp());
+
+				Point = mid;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool Aimbot::UpdateRageVal()
 {
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
@@ -949,7 +1254,6 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 void Aimbot::Run()
 {
 	Legit();
-	/*Legit();
-	Rage();*/
+	Rage();
 }
 

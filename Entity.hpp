@@ -75,6 +75,18 @@ public:
 	{
 		return I::entitylist->GetClientEntityFromHandle(m_hObserverTarget());
 	}
+
+	Vec& GetMins()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_vecMins");
+		return *(Vec*)((DWORD)this + offset);
+	}
+
+	Vec& GetMaxs()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseEntity", "m_vecMaxs");
+		return *(Vec*)((DWORD)this + offset);
+	}
 	
 
 	int* GetObserverMode()
@@ -178,6 +190,12 @@ public:
 		return *(int*)((DWORD)this + offset);
 	}
 
+	Matrix3x4& BoneCache()
+	{
+		static DWORD offset = 0x2910;
+		return *(Matrix3x4*)((DWORD)this + offset);
+	}
+
 	bool SetupBones(Matrix3x4* pBoneToWorldOut, int nMaxBones, int boneMask, float currentTime = 0)
 	{
 		__asm
@@ -200,7 +218,7 @@ public:
 		return Vec(0,0,0);
 	}
 
-	Vec GetVecOrigin()
+	Vec& GetVecOrigin()
 	{
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_vecOrigin");
 		return *(Vec*)((DWORD)this + offset);

@@ -188,6 +188,9 @@ float Autowall::Damage(Vec start, const Vec& point, bool AllowFriendlyFire)
     return 0.f;
 }
 
+//https://github.com/sstokic-tgm/Gladiatorcheatz-v2/blob/master/features/LagCompensation.cpp 
+// need to fight with FinishLagCompensation function to see how to rage backtrack
+// STILL IN PROGRESS!
 bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 {
     if (!G::LocalPlayer) return false;
@@ -216,7 +219,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
         if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
             H::console.push_back("trace fraction 1");
-            return true;
+            return false;
         }
             
 

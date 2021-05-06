@@ -79,7 +79,7 @@ void Backtrack::run()
 {
 	static Config::CState* RageAimbot = Config::GetState("rage-aim-enable");
 
-	// If we are using rage aimbot, don't try to legit backtrack lol
+	// If we are using rage aimbot, don't try to legit backtrack lol (rn forcing it cuz im dumb i think
 	if (RageAimbot->Get()) return;
 
 	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {

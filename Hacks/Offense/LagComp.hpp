@@ -10,8 +10,11 @@ struct Tick
 	bool Dormant;			// Is player dormant
 	Vec Velocity;			// Players velocity
 	Vec Origin;				// Where is player
+	Vec AbsOrigin;			// where is player abs
 	Vec HeadPos;			// Head position
 	Vec EyeAng;				// Eye Angles at current record
+	Vec obb_mins;			// idek
+	Vec obb_maxs;			// idek
 	float SimulationTime;	// Sim time
 	int TickCount;			// current tick count
 	float Duck;				// How much duck
@@ -41,6 +44,9 @@ struct Player
 	player_info_t info;		// UserInfo
 	bool Valid;				// Valid updated player
 	Vec Origin;				// Current Origin
+	Vec AbsOrigin;			// where is player abs
+	Vec obb_mins;			// idek
+	Vec obb_maxs;			// idek
 	Vec EyePos;				// Current EyePos
 	bool Dormant;			// If entity is dormant
 	int ShotsMissed;		// Shots missed
