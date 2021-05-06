@@ -703,14 +703,14 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		{
 			L::Verbose("H::FrameStageNotifyHook - ClearRecords");
-			backtrack->ClearRecords();
+			lagcomp->ClearRecords();
 			return oFrameStageNotify(stage);
 		}
 	}
 	else
 	{
 		L::Verbose("H::FrameStageNotifyHook - G::EntList.clear()");
-		G::EntList.clear();
+		lagcomp->ClearPlayerList();
 		G::LocalPlayerAlive = false;
 		G::LocalPlayer = nullptr;
 		G::LocalPlayerIndex = 0;
@@ -748,14 +748,10 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 
 		animfix->UpdateReal();
 
-		L::Verbose("H::FrameStageNotifyHook - UpdateEntities");
-		// update our local entlist
-		G::UpdateEntities();
-
-		// third person
-		if (ThirdPerson->Get()) *(Vec*)((DWORD)G::LocalPlayer + deadflagOffset + 4) = antiaim->real;
+		
 
 		// bones out of view
+		L::Verbose("H::FrameStageNotifyHook - OutOfViewBoneSetup");
 		Entity* entity;
 		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 			if (i == G::LocalPlayerIndex || !(entity = I::entitylist->GetClientEntity(i)) || entity->IsDormant() || entity->GetHealth() <= 0) continue;
@@ -764,8 +760,14 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 			*(int*)(entity + 0xA28) = 0; ///clear occlusion flags --> should be zero ig (normally set to 1 in my code ig? idk am retar)
 		}
 
+		// update our local entlist
+		L::Verbose("H::FrameStageNotifyHook - UpdateEntities");
+		lagcomp->Update();
+
+		// third person
+		if (ThirdPerson->Get()) *(Vec*)((DWORD)G::LocalPlayer + deadflagOffset + 4) = antiaim->real;
+
 		esp->RunFSN();
-		backtrack->RunFSN();
 		world->RunFSN();
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:

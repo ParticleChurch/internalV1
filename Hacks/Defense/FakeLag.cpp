@@ -47,24 +47,24 @@ void FakeLag::LagOnPeak()
 	bool DamageOutgoing = false;
 
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
-		if (it->second.index == G::LocalPlayerIndex) // entity is Localplayer
+		if (it->second.Index == G::LocalPlayerIndex) // entity is Localplayer
 			continue;
 
-		if (!(it->second.entity)) // entity DOES NOT exist
+		if (!(it->second.ptrEntity)) // entity DOES NOT exist
 			continue;
 
-		if (!(it->second.health > 0)) // entity is NOT alive
+		if (!(it->second.Health > 0)) // entity is NOT alive
 			continue;
 
-		if (it->second.team == G::LocalPlayerTeam) // Entity is on same team
+		if (it->second.Team == G::LocalPlayerTeam) // Entity is on same team
 			continue;
 
-		if (it->second.dormant)	// Entity is dormant
+		if (it->second.Dormant)	// Entity is dormant
 			continue;
 
-		if (!ValidSimTime(it->second.CurSimTime)) // if not valid simtime
+		if (!ValidSimTime(it->second.Records.front().SimulationTime)) // if not valid simtime
 			continue;
 
 		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
@@ -75,7 +75,7 @@ void FakeLag::LagOnPeak()
 	}
 
 
-	
+
 	static bool ChokeOnce = false;
 
 	// If there is damage incoming, we are about to send packets, and we have not choked before
@@ -84,18 +84,18 @@ void FakeLag::LagOnPeak()
 		ChokeOnce = true;				// We have choked once
 		LaggingOnPeak = true;
 	}
-	else if(!DamageOutgoing && ChokeOnce) // no damage incoming, reset the choke once
+	else if (!DamageOutgoing && ChokeOnce) // no damage incoming, reset the choke once
 	{
 		ChokeOnce = false;
 	}
 
-	
+
 
 	// If there we should lag on peak... 
 	if (LaggingOnPeak)
 	{
 		TrigDistance = FakeLagTrigDist->Get();
-		TrigTicks = FakeLagTrigTick->Get(); 
+		TrigTicks = FakeLagTrigTick->Get();
 	}
 }
 
@@ -116,11 +116,11 @@ void FakeLag::Start()
 
 	// Get Defualt Limits
 	TrigDistance = FakeLagDist->Get();
-	TrigTicks = FakeLagTicks->Get(); 
+	TrigTicks = FakeLagTicks->Get();
 
 	// Update Velocity
 	Vec velocity = G::LocalPlayer->GetVecVelocity();
-	velocity *= (I::globalvars->m_intervalPerTick * 2); 
+	velocity *= (I::globalvars->m_intervalPerTick * 2);
 	//velocity now holds our distance to move (doubled for safety)
 
 	// Updating our next position
@@ -134,7 +134,7 @@ void FakeLag::Start()
 
 	// If breaking distance or time --> Send packets
 	PredictedVal = DistanceBreaker() || TimeBreaker();
-	
+
 	if (PredictedVal)
 		PrevPos = G::LocalPlayer->GetEyePos();
 

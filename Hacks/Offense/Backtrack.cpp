@@ -2,31 +2,16 @@
 
 Backtrack* backtrack = new Backtrack();
 
-bool Backtrack::ValidPlayer(Player player)
-{
-	if (!player.Valid)
-		return false;
-	if (player.index == G::LocalPlayerIndex)
-		return false;
-	if (!(player.health > 0))
-		return false;
-	if (player.team == G::LocalPlayerTeam)
-		return false;
-	if (player.dormant)
-		return false;
-	return true;
-}
-
 void Backtrack::GetClosestEntity(int& RecordUserID)
 {
 	float CrossEntDist = FLT_MAX;
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		Player player = it->second;
-		if (it->second.BacktrackRecords.empty())
+		if (it->second.Records.empty())
 			continue;
-		Vec Angle = aimbot->CalculateAngle(it->second.BacktrackRecords.back().Bone(8));
+		Vec Angle = aimbot->CalculateAngle(it->second.Records.back().HeadPos);
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossEntDist)
 		{
@@ -39,59 +24,15 @@ void Backtrack::GetClosestEntity(int& RecordUserID)
 void Backtrack::GetClosestTick(int RecordUserID, int& BestTickCount)
 {
 	float CrossTickDist = FLT_MAX;
-	TragetTick = G::EntList[RecordUserID].BacktrackRecords.front();
-	for (Player::Tick tick : G::EntList[RecordUserID].BacktrackRecords)
+	for (Tick tick : lagcomp->PlayerList[RecordUserID].Records)
 	{
-		Vec Angle = aimbot->CalculateAngle(tick.Bone(8));
+		Vec Angle = aimbot->CalculateAngle(tick.HeadPos);
 		float CrossDist = aimbot->CrosshairDist(Angle);
 		if (CrossDist < CrossTickDist)
 		{
-			BestTickCount = TimeToTicks(tick.SimulationTime - GetLerp()) + 4;
+			TargetTick = tick;
+			BestTickCount = TimeToTicks(tick.SimulationTime + GetLerp());
 			CrossTickDist = CrossDist;
-			TragetTick = tick;
-		}
-	}
-}
-
-void Backtrack::ClearRecords()
-{
-	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-		it->second.BacktrackRecords.clear();
-}
-
-void Backtrack::RunFSN()
-{
-	static Config::CFloat* BacktrackTime = Config::GetFloat("legitaim-backtrack-time");
-
-	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-	{
-		if (!ValidPlayer(it->second))
-		{
-			it->second.BacktrackRecords.clear();
-			continue;
-		}
-
-		if (!it->second.BacktrackRecords.empty() && it->second.BacktrackRecords.front().SimulationTime == it->second.CurSimTime)
-			continue;
-
-		Player::Tick tick;
-		tick.SimulationTime = it->second.CurSimTime;
-		it->second.entity->SetupBones(tick.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);// I::globalvars->m_curTime);
-		tick.priority = resolver->GetPriority(it->first);
-
-		it->second.BacktrackRecords.push_front(tick);
-
-		unsigned int Ticks = TimeToTicks(BacktrackTime->Get() / 1000.f);
-		while (it->second.BacktrackRecords.size() > 3 && it->second.BacktrackRecords.size() > Ticks) {
-			it->second.BacktrackRecords.pop_back();
-		}
-
-		for (size_t j = 0; j < it->second.BacktrackRecords.size(); j++)
-		{
-			if (!ValidSimTime(it->second.BacktrackRecords[j].SimulationTime))
-				it->second.BacktrackRecords.erase(it->second.BacktrackRecords.begin() + j);
 		}
 	}
 }
@@ -138,10 +79,8 @@ void Backtrack::run()
 {
 	static Config::CState* RageAimbot = Config::GetState("rage-aim-enable");
 
+	// If we are using rage aimbot, don't try to legit backtrack lol
 	if (RageAimbot->Get()) return;
-
-	// If we are using rage aimbot, don't try to legit aimbot lol
-	/*if (Config::GetBool("rage-aim-enable")) return;*/
 
 	if (!I::engine->IsInGame() || !G::LocalPlayer || !G::LocalPlayerAlive) {
 		return;
@@ -170,5 +109,8 @@ void Backtrack::run()
 		return;
 
 	G::cmd->tick_count = BestTickCount;
+
+	//CapsuleOverlay2(lagcomp->PlayerList[RecordUserID].ptrEntity, Color(255, 125, 125, 255), 4.f, TargetTick.Matrix);
+
 }
 

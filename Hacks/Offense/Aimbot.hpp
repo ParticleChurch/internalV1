@@ -26,12 +26,12 @@ private:
 	float CalculatePsudoHitchance();
 	bool ValidPlayer(Player player);
 	int GetHitGroup(int Hitbox);
-	void GetClosestEntity(int& RecordUserID, float& Distance);
 
 	// Legit Functions
 	void Legit();
 	bool UpdateLegitVal();
 	void GetLegitHitboxes(int gun);
+	void GetClosestEntity(int& RecordUserID, float& Distance);
 	QAngle GetClosestAng(int RecordUserID, bool& valid);
 	void Smooth(QAngle& Ang);
 	void SmoothLinear(QAngle& Ang);
@@ -40,14 +40,8 @@ private:
 
 	// Rage Functions/var
 	std::vector<int> PlayersScanned = { };
-	void Rage();
 	bool UpdateRageVal();
-	bool TryOnShot();
 	void GetRageHitboxes(int gun);
-	void HandleBaimConditions(int RecordUserID);
-	void GetClosestEntityNotScanned(int& RecordUserID, float& Distance);
-	bool ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count);
-	bool ScanPlayer(int RecordUserID, Vec& Point);
 
 public:
 	int maxplayerscan = 1;

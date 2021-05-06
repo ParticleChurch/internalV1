@@ -8,7 +8,6 @@ private:
 	void DrawIndicators(Entity* ent, Color clr);
 	void DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg);
 	void DrawSkeleton(Entity*);
-	void DrawBacktrackingDots();
 	void GetBounds(Entity* ent, Vec& TL, Vec& BR);
 
 	

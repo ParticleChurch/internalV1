@@ -2,14 +2,11 @@
 
 class Backtrack {
 private:
-    bool ValidPlayer(Player player);
     void GetClosestEntity(int& RecordUserID);
     void GetClosestTick(int RecordUserID, int& BestTickCount);
 public:
-    Player::Tick TragetTick;
-    void ClearRecords();
-    void RunFSN();
+    Tick TargetTick;
     void run();
 };
 
-extern Backtrack* backtrack; 
+extern Backtrack* backtrack;

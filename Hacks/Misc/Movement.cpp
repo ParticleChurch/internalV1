@@ -82,9 +82,9 @@ void Movement::RageAutoStrafe()
 	if (fabsf(Delta) > 10.f)
 	{
 		// Calculate a step thing
-		float sin_rot = sinf(DEG2RAD(VelDir + looking+1));
-		float cos_rot = cosf(DEG2RAD(VelDir + looking+1));
-		
+		float sin_rot = sinf(DEG2RAD(VelDir + looking + 1));
+		float cos_rot = cosf(DEG2RAD(VelDir + looking + 1));
+
 		// turning left
 		if (Delta < 0)
 		{
@@ -139,11 +139,11 @@ void Movement::LegitAutoStrafe()
 
 	if (G::cmd->mousedx < -5)
 		G::cmd->sidemove = -450;
-	else if(G::cmd->mousedx > 5)
+	else if (G::cmd->mousedx > 5)
 		G::cmd->sidemove = 450;
 }
 
-void Movement::SlowWalk() 
+void Movement::SlowWalk()
 {
 
 	static Config::CState* Enabled = Config::GetState("misc-movement-slowwalk");
@@ -188,7 +188,7 @@ void Movement::FakeDuck()
 
 	// If FakeDuck is NOT enabled in config...
 	if (!Enabled->Get()) return;
-	
+
 	// FAKEDUCK
 	G::cmd->buttons |= IN_BULLRUSH;
 	if (I::engine->GetNetChannelInfo()->ChokedPackets > (14 / 2))
@@ -218,7 +218,7 @@ void Movement::LegSlide()
 		switcher = !switcher;
 	}
 
-	if(switcher)
+	if (switcher)
 		G::cmd->buttons ^= IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
 }
 
@@ -279,21 +279,21 @@ void Movement::AutoStop()
 	bool PossibleDamage = false;
 
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
-		if (it->second.index == G::LocalPlayerIndex) // entity is Localplayer
+		if (it->second.Index == G::LocalPlayerIndex) // entity is Localplayer
 			continue;
 
-		if (!(it->second.entity)) // entity DOES NOT exist
+		if (!(it->second.ptrEntity)) // entity DOES NOT exist
 			continue;
 
-		if (!(it->second.health > 0)) // entity is NOT alive
+		if (!(it->second.Health > 0)) // entity is NOT alive
 			continue;
 
-		if (it->second.team == G::LocalPlayerTeam) // Entity is on same team
+		if (it->second.Team == G::LocalPlayerTeam) // Entity is on same team
 			continue;
 
-		if (it->second.dormant)	// Entity is dormant
+		if (it->second.Dormant)	// Entity is dormant
 			continue;
 
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
@@ -345,7 +345,7 @@ void Movement::AutoStop()
 	// if scoped weapon
 	if (WeapIndex <= 34 && WeapIndex >= 29)
 		G::cmd->buttons |= IN_ATTACK2;
-		
+
 }
 
 void Movement::FastStop()

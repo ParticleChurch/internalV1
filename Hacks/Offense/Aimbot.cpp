@@ -195,13 +195,13 @@ bool Aimbot::ValidPlayer(Player player)
 {
 	if (!player.Valid)
 		return false;
-	if (player.index == G::LocalPlayerIndex)
+	if (player.Index == G::LocalPlayerIndex)
 		return false;
-	if (!(player.health > 0))
+	if (!(player.Health > 0))
 		return false;
-	if (player.team == G::LocalPlayerTeam)
+	if (player.Team == G::LocalPlayerTeam)
 		return false;
-	if (player.dormant)
+	if (player.Dormant)
 		return false;
 	return true;
 }
@@ -245,7 +245,7 @@ void Aimbot::GetClosestEntity(int& RecordUserID, float& Distance)
 {
 	float CrossEntDist = FLT_MAX;
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		Player player = it->second;
 		if (!ValidPlayer(player)) continue;
@@ -264,12 +264,17 @@ void Aimbot::Legit()
 {
 	static Config::CState* Enable = Config::GetState("legit-aim-enable"); // terrible property name btw
 
-	// Is legitbot enabled
-	if (!Enable->Get()) return;
+	// Is legitbot enabled (if they are left clicking and bound mouse1, assume it's enabled lol
+	if (!Enable->Get() && Config::GetKeybind("legit-aim-enable") != VK_LBUTTON) return;
+
+	// If it's bound, and we aren't attacking, return
+	if (Config::GetKeybind("legit-aim-enable") == VK_LBUTTON && !(G::cmd->buttons & IN_ATTACK))
+		return;
 
 	// Make sure it's a different tick
 	static int tickcount = G::cmd->tick_count;
-	if (tickcount == G::cmd->tick_count) return;
+	if (tickcount == G::cmd->tick_count)
+		return;
 
 	// If the player is pulling out a weapon...
 	if (!G::LocalPlayer->CanShoot2()) return;
@@ -288,19 +293,50 @@ void Aimbot::Legit()
 	// If it isn't within FOV...
 	if (Distance > legit.fov) return;
 
+	// If it is, remove attack 
+	if (G::LocalPlayerWeapon &&
+		// it is sniper
+		(G::LocalPlayerWeapon->GetWeaponId() == WeaponId::SSG08 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::SCAR20 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::G3SG1 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::AWP ||
+			// it is pistol
+			GetWeaponClass(G::LocalPlayerWeapon->GetWeaponId()) == 35) &&
+		// bound left click and distance is out of fov...
+		Config::GetKeybind("legit-aim-enable") == VK_LBUTTON && G::cmd->buttons & IN_ATTACK)
+	{
+		G::cmd->buttons &= ~IN_ATTACK; // remove attack
+	}
+
 	// Get Closest Hitbox
 	bool valid;
 	QAngle Ang = GetClosestAng(RecordUserID, valid);
 	if (!valid) return;
 
 	// If more than a 1 tap... start doing aimpunch
-	if(G::LocalPlayer->GetShotsFired() > 1)
+	if (G::LocalPlayer->GetShotsFired() > 1)
 		Ang -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
 	// We have found a valid angle to target and go towards
 	Smooth(Ang);
 
 	I::engine->SetViewAngles(Ang);
+
+	// If within .6 degrees, and we are using sniper
+	float NewDist = aimbot->CrosshairDist(Ang);
+	if (G::LocalPlayerWeapon &&
+		// it is sniper
+		(G::LocalPlayerWeapon->GetWeaponId() == WeaponId::SSG08 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::SCAR20 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::G3SG1 ||
+			G::LocalPlayerWeapon->GetWeaponId() == WeaponId::AWP ||
+		// it is pistol
+		GetWeaponClass(G::LocalPlayerWeapon->GetWeaponId()) == 35) &&
+		// bound left click and distance is out of fov...
+		NewDist <= 0.6 && Config::GetKeybind("legit-aim-enable") == VK_LBUTTON)
+	{
+		G::cmd->buttons |= IN_ATTACK; // add attack back on YEET
+	}
 }
 
 bool Aimbot::UpdateLegitVal()
@@ -463,7 +499,7 @@ QAngle Aimbot::GetClosestAng(int RecordUserID, bool& valid)
 	Vec BestAng;
 	valid = false;
 	
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[RecordUserID].ptrModel);
 	if (!StudioModel) return BestAng; //if cant get the model
 
 	for (auto HITBOX : legit.hitboxes)
@@ -472,12 +508,12 @@ QAngle Aimbot::GetClosestAng(int RecordUserID, bool& valid)
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
 
-		Vec min = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
+		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[RecordUserID].Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[RecordUserID].Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
 
 		// no need to "visible autowall" if not visible
-		bool visible = autowall->IsVisible(mid, G::EntList[RecordUserID].entity);
+		bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[RecordUserID].ptrEntity);
 
 		// if not visible, continue
 		if (!visible)
@@ -552,141 +588,6 @@ void Aimbot::SmoothFastToSlow(QAngle& Ang)
 	Delta.NormalizeAngle();
 	Delta *= (100.f - legit.smoothing_amount) / 100.f;
 	Ang = G::StartAngle + Delta;
-}
-
-void Aimbot::Rage()
-{
-	static Config::CState* Enable = Config::GetState("rage-aim-enable"); 
-	static Config::CState* Silent = Config::GetState("rage-aim-silent");
-	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
-	static Config::CState* FakeDuck = Config::GetState("misc-movement-fakeduck");
-
-	// Make sure it's a different tick
-	static int tickcount = G::cmd->tick_count;
-	if (tickcount == G::cmd->tick_count) return;
-	tickcount = G::cmd->tick_count;
-
-	// Is ragebot enabled
-	if (!Enable->Get()) return;
-
-	// If the player can shoot a weapon... 
-	if (!G::LocalPlayer->CanShoot()) return;
-
-	// Is the current weapon alright/Get config Values
-	if (!UpdateRageVal()) return;
-
-	// If we are lagging on peak...
-	if (fakelag->LaggingOnPeak) return;
-
-	// If succeed with our onshot...
-	/*if (TryOnShot()) return;*/
-
-	// if force on shot, for testing ill be always doing this
-
-	/*
-	The IDEA is we get the order of entitys in closest to greatest from crosshair.
-	We scan from there onward, so if someone is behind us itll be the last person
-	we scan, but if we can hit them at least we will try. If we find someone closest
-	to our crosshair that we can hit, then it will target that instead, as well as
-	try and backtrack them if possible, as that will decrease the amount of autowall 
-	parses we have to do. This (in the future) might be able to lead to half/full scans. 
-
-	For now, we are checking the person closest to our crosshair (no backtrack!), then 
-	checking everyone else. Not suuuper efficient, but it will do XD.
-	*/
-
-	/*
-	Another idea is to parse the entites and immediately try and shoot once we find one 
-	that fits the conditions to shoot. Sorting the enemies by distance/FOV would be an
-	effective way of determining who we want to shoot
-	*/
-
-	int RecordID = -1;
-	float Dist = FLT_MAX;
-	L::Verbose("GetClosestEntity");
-	GetClosestEntity(RecordID, Dist);
-	
-
-	// Aimpoint
-	Vec AimPoint;
-	// tick_count
-	int tick_count = G::cmd->tick_count;
-
-	// if the recordID is proper, and the closest player is hittable
-	// under the users standerds (hitchance etc...)
-	if (RecordID != -1 && ScanPlayer(RecordID, AimPoint))
-	{
-		resolver->UserID = RecordID;
-		L::Verbose("go brrrr2");
-		// Get Angle and do recoil
-		QAngle Angle = CalculateAngle(AimPoint);
-		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
-
-		// If not silent aim, adjust angles, otherwise do silent
-		if (!Silent->Get())
-			I::engine->SetViewAngles(Angle);
-		G::cmd->viewangles = Angle;
-
-		// If autoshoot.. FIRE!
-		if (AutoShoot->Get()) 
-		{
-			resolver->LogShot = true;
-			G::cmd->buttons |= IN_ATTACK;
-			G::cmd->tick_count = tick_count;
-		}
-			
-		// only force send if not fakeducking... (as that will break fd)
-		if (G::pSendPacket && !FakeDuck->Get())
-			*G::pSendPacket = true;
-		return;
-	}
-	// Otherwise do a less detailed backtrack scan of all of the players
-	else
-	{
-		// Clear up the playerscanlist (trying to scan closest player + whatever)
-		PlayersScanned.clear();
-		PlayersScanned.resize(0);
-
-		int max = maxplayerscan;
-		for (auto &a : G::EntList)
-		{	
-			if (max <= 0) // only allow 2 additional scans (any more and lots of lag maen
-				return;
-			max--;
-			Dist = FLT_MAX;
-			RecordID = -1;
-			L::Verbose("GetClosestEntityNotScanned");
-			GetClosestEntityNotScanned(RecordID, Dist);
-			PlayersScanned.push_back(RecordID); // we have scanned it...
-			L::Verbose("ScanPlayerBacktrack");
-			if (RecordID != -1 && ScanPlayerBacktrack(RecordID, AimPoint, tick_count))
-			{
-				resolver->UserID = RecordID;
-				L::Verbose("go brrrr");
-				// Get Angle and do recoil
-				QAngle Angle = CalculateAngle(AimPoint);
-				Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
-
-				// If not silent aim, adjust angles, otherwise do silent
-				if (!Silent->Get())
-					I::engine->SetViewAngles(Angle);
-				G::cmd->viewangles = Angle;
-
-				// If autoshoot.. FIRE!
-				if (AutoShoot->Get())
-				{
-					G::cmd->buttons |= IN_ATTACK;
-					G::cmd->tick_count = tick_count;
-				}
-					
-				// only force send if not fakeducking... (as that will break fd)
-				if (G::pSendPacket && !FakeDuck->Get())
-					*G::pSendPacket = true;
-				return;
-			} 
-		}
-		return;
-	}
 }
 
 bool Aimbot::UpdateRageVal()
@@ -877,63 +778,6 @@ bool Aimbot::UpdateRageVal()
 		return false;
 }
 
-bool Aimbot::TryOnShot()
-{
-	static Config::CState* Silent = Config::GetState("rage-aim-silent");
-	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
-
-	float lerp = GetLerp();
-	std::map<int, Player>::iterator it;
-	static Matrix3x4 OsMatrix[128];
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-	{
-		if (!ValidPlayer(it->second)) continue;
-		
-		// if within good bt onshot range... 
-		// (should be 200.f but reducing for reliability to 150.f)
-		if (I::globalvars->m_curTime - it->second.LastShotTime < 180.f)
-		{
-			int shot_tick = TimeToTicks(it->second.LastShotTime - lerp);
-			// find the matrix
-			
-			
-			for (auto& a : it->second.BacktrackRecords)
-			{
-				// WE HAVE FOUND A GOOD ONE!
-				if (TimeToTicks(a.SimulationTime - lerp) == shot_tick)
-				{
-
-					Vec head = a.Bone(8);
-					// if we can't hit it...
-					if (!autowall->CanHitFloatingPoint(head, false))
-						goto SKIP; // go on to another entity
-
-					QAngle Angle = CalculateAngle(head);
-					Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
-
-					// If not silent aim, adjust angles, otherwise do silent
-					if (!Silent->Get())
-						I::engine->SetViewAngles(Angle);
-					G::cmd->viewangles = Angle;
-
-					// If autoshoot.. FIRE!
-					if (AutoShoot->Get())
-						G::cmd->buttons |= IN_ATTACK;
-
-					if (G::pSendPacket)
-						*G::pSendPacket = true;
-
-					G::cmd->tick_count = shot_tick;
-					return true;
-				}
-			}	
-		}
-		SKIP:
-			continue;
-	}
-	return false;
-}
-
 void Aimbot::GetRageHitboxes(int gun)
 {
 	uint16_t selection = 0;
@@ -1024,6 +868,7 @@ void Aimbot::GetRageHitboxes(int gun)
 	}
 }
 
+/*
 void Aimbot::HandleBaimConditions(int RecordUserID)
 {
 	// If not enabled
@@ -1054,271 +899,7 @@ void Aimbot::HandleBaimConditions(int RecordUserID)
 		rage.hitboxes.push_back(HITBOX_PELVIS);
 	}
 }
-
-void Aimbot::GetClosestEntityNotScanned(int& RecordUserID, float& Distance)
-{
-	float CrossEntDist = FLT_MAX;
-	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-	{
-		bool skip = false;
-		for (auto a : PlayersScanned)
-		{
-			if (a == it->first)
-				skip = true;
-		}
-		if (skip) continue;
-		Player player = it->second;
-		if (!ValidPlayer(player)) continue;
-		Vec Angle = aimbot->CalculateAngle(it->second.EyePos);
-		float CrossDist = aimbot->CrosshairDist(Angle);
-		if (CrossDist < CrossEntDist)
-		{
-			Distance = CrossDist;
-			RecordUserID = it->first;
-			CrossEntDist = CrossDist;
-		}
-	}
-}
-
-static float LerpTime2() // GLAD https://github.com/sstokic-tgm/Gladiatorcheatz-v2.1/blob/eaa88bbb4eca71f8aebfed32a5b86300df8ce6a3/features/LagCompensation.cpp
-{
-	static ConVar* UpdateRate = I::cvar->FindVar("cl_updaterate");
-	int updaterate = UpdateRate->GetInt();
-	static ConVar* minupdate = I::cvar->FindVar("sv_minupdaterate");
-	static ConVar* maxupdate = I::cvar->FindVar("sv_maxupdaterate");
-
-	if (minupdate && maxupdate)
-		updaterate = maxupdate->GetInt();
-
-	static ConVar* interpratio = I::cvar->FindVar("cl_interp_ratio");
-	float ratio = interpratio->GetFloat();
-
-	if (ratio == 0)
-		ratio = 1.0f;
-
-	static ConVar* lerpcvar = I::cvar->FindVar("cl_interp");
-	float lerp = lerpcvar->GetFloat();
-	static ConVar* cmin = I::cvar->FindVar("sv_client_min_interp_ratio");
-	static ConVar* cmax = I::cvar->FindVar("sv_client_max_interp_ratio");
-
-	if (cmin && cmax && cmin->GetFloat() != 1)
-		ratio = std::clamp(ratio, cmin->GetFloat(), cmax->GetFloat());
-
-	return max(lerp, (ratio / updaterate));
-}
-
-/*
-This scans midpoints and sees if they are hitable with autowall. It cycles through to try to hit the oldest
-tick, which might not always be the best idea. Probably alright for baim cfgs
 */
-bool Aimbot::ScanPlayerBacktrack(int RecordUserID, Vec& Point, int& tick_count)
-{
-	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
-		return false;
-
-	if (!(G::EntList[RecordUserID].entity)) // entity DOES NOT exist
-		return false;
-
-	if (!(G::EntList[RecordUserID].health > 0)) // entity is NOT alive
-		return false;
-
-	if (G::EntList[RecordUserID].team == G::LocalPlayerTeam) // Entity is on same team
-		return false;
-
-	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
-		return false;
-
-	if (G::EntList[RecordUserID].BacktrackRecords.empty()) // no backtrack records...
-		return false;
-
-	L::Verbose("StudioModel");
-
-	// Make sure correct studio model
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
-	if (!StudioModel) return false; //if cant get the model
-
-	L::Verbose("psudo hitchance");
-
-	// Do psudo hitchance (because backtrack, basically how relatively a weapon is)
-	float hitchance = CalculatePsudoHitchance();
-	if (!(hitchance >= rage.hitchance))
-		return false;
-
-	L::Verbose("BacktrackRecords.back()");
-	// Find Best Tick (back is the oldest tick, or the shot one)
-	Player::Tick TargetTick = G::EntList[RecordUserID].BacktrackRecords.back();
-	
-	L::Verbose("Through Hitboxes");
-	// go through those hitboxes and see if I can shoot them :D
-	for (auto HITBOX : rage.hitboxes)
-	{
-		L::Verbose("StudioBox");
-		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
-		if (!StudioBox) continue;	//if cant get the hitbox...
-		int HitGroup = GetHitGroup(HITBOX);
-
-		L::Verbose("min, max, mid");
-		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
-		Vec mid = (max + min) / 2;
-
-		// Make sure Damage is good
-		L::Verbose("CanHitFloatingPoint");
-		if (autowall->CanHitFloatingPoint(mid))
-		{
-			
-			Point = mid;
-			tick_count = TimeToTicks(TargetTick.SimulationTime + LerpTime2());
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/*
-In this case we are doing a full scan to try and grab the points in which damage possible. This 
-is quite laggy. It return once it has found points that are good. It's like multipoint but only
-for closest entity. NOTE: Only does multipoint on UPPER_CHEST, HEAD, and PELVIS
-// might be able to do multithreading w/
-https://www.unknowncheats.me/forum/counterstrike-global-offensive/335391-fixing-tls-multithreaded-engine-calls.html
-*/
-
-bool Aimbot::ScanPlayer(int RecordUserID, Vec& Point)
-{
-	L::Verbose("ScanPlayer");
-	if (G::EntList[RecordUserID].index == G::LocalPlayerIndex) // entity is Localplayer
-		return false;
-
-	if (!(G::EntList[RecordUserID].entity)) // entity DOES NOT exist
-		return false;
-
-	if (!(G::EntList[RecordUserID].health > 0)) // entity is NOT alive
-		return false;
-
-	if (G::EntList[RecordUserID].team == G::LocalPlayerTeam) // Entity is on same team
-		return false;
-
-	if (G::EntList[RecordUserID].dormant)	// Entity is dormant
-		return false;
-
-	if (!ValidSimTime(G::EntList[RecordUserID].CurSimTime)) // if not valid simtime
-		return false;
-
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(G::EntList[RecordUserID].model);
-	if (!StudioModel) return false; //if cant get the model
-
-	float damage = 0.f;
-
-	// Deal with baim crap
-	HandleBaimConditions(RecordUserID);
-
-	// Hitboxes
-	for (auto HITBOX : rage.hitboxes)
-	{
-		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
-		if (!StudioBox) continue;	//if cant get the hitbox...
-		int HitGroup = GetHitGroup(HITBOX);
-
-		Vec min = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(G::EntList[RecordUserID].Matrix[StudioBox->bone]);
-		Vec mid = (max + min) / 2;
-
-		// Dont do multipoint for arms, legs, or feet :D (reduce lag!)
-		if (HITBOX != HITBOX_UPPER_CHEST && HITBOX != HITBOX_HEAD && HITBOX != HITBOX_PELVIS)
-		{
-			// Calc Mid Angle
-			QAngle MidAngle = CalculateAngle(mid);
-
-			// Calc Left Hitchance
-			float MidHitchance = CalculateHitchance(MidAngle, mid, G::EntList[RecordUserID].entity, HITBOX);
-
-			// If the left hitchance is up to snuff...
-			if (MidHitchance >= rage.hitchance)
-			{
-				// if the point is visible
-				bool visible = autowall->IsVisible(mid, G::EntList[RecordUserID].entity);
-
-				// no need to autowall if visible...
-				damage = autowall->Damage(mid, HITBOX, true);
-				if (visible && damage >= rage.vis_mindam)
-				{
-					Point = mid;
-					return true;
-				}
-				else if(damage >= rage.hid_mindam)
-				{
-					Point = mid;
-					return true;
-				}
-			}
-			continue;
-		}
-
-		float radius = StudioBox->m_flRadius * (1-rage.hitchance);
-
-		// Calc Left Point
-		Vec left = G::EntList[RecordUserID].entity->GetLeft(mid, radius, G::LocalPlayer);
-
-		// Calc Left Angle
-		QAngle LeftAngle = CalculateAngle(left);
-
-		// Calc Left Hitchance
-		float LeftHitChance = CalculateHitchance(LeftAngle, left, G::EntList[RecordUserID].entity, HITBOX);
-
-		// If the left hitchance is up to snuff...
-		if (LeftHitChance >= rage.hitchance)
-		{
-			// if the point is visible
-			bool visible = autowall->IsVisible(left, G::EntList[RecordUserID].entity);
-
-			// no need to autowall if visible...
-			damage = autowall->Damage(left, HITBOX, true);
-			if (visible && damage >= rage.vis_mindam)
-			{
-				Point = left;
-				return true;
-			}
-			else if(damage >= rage.hid_mindam)
-			{
-				Point = left;
-				return true;
-			}
-		}
-
-
-		// Calc Right Point
-		Vec right = G::EntList[RecordUserID].entity->GetRight(mid, radius, G::LocalPlayer);
-
-		// Calc Right Angle
-		QAngle RightAngle = CalculateAngle(right);
-
-		// Calc Right Hitchance
-		float RightHitChance = CalculateHitchance(RightAngle, right, G::EntList[RecordUserID].entity, HITBOX);
-
-		// If the left hitchance is up to snuff...
-		if (RightHitChance >= rage.hitchance)
-		{
-			// if the point is visible
-			bool visible = autowall->IsVisible(right, G::EntList[RecordUserID].entity);
-
-			// no need to autowall if visible...
-			damage = autowall->Damage(right, HITBOX, true);
-			if (visible && damage >= rage.vis_mindam)
-			{
-				Point = right;
-				return true;
-			}
-			else if(damage >= rage.hid_mindam)
-			{
-				Point = right;
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 Vec Aimbot::CalculateAngle(Vec Target)
 {
@@ -1368,6 +949,7 @@ float Aimbot::CrosshairDist(Vec TargetAngle)
 void Aimbot::Run()
 {
 	Legit();
-	Rage();
+	/*Legit();
+	Rage();*/
 }
 

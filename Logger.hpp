@@ -13,8 +13,8 @@ namespace L
 		Console,
 		Both,
 	};
-	constexpr LogMode OutputMode = LogMode::None;
-	constexpr LogMode VerboseMode = LogMode::Both;
+	constexpr LogMode OutputMode = LogMode::Console;
+	constexpr LogMode VerboseMode = LogMode::File;
 	extern std::string FilePath;
 	extern std::ofstream File;
 

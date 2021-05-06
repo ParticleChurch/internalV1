@@ -1,4 +1,9 @@
 #pragma once
+
+#define FLOW_OUTGOING	0
+#define FLOW_INCOMING	1
+#define MAX_FLOWS		2		// in & out
+
 class NetChannel {
 public:
 	//VIRTUAL_METHOD(float, getLatency, 9, (int flow), (this, flow))

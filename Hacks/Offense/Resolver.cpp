@@ -290,13 +290,9 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::Resolve()
 {
-	static Config::CState* RageEnable = Config::GetState("rage-aim-enable");
-	static Config::CState* LegitEnable = Config::GetState("legit-aim-enable");
 	static Config::CState* LogEnable = Config::GetState("misc-other-logs");
-	
 
 	if (!G::LocalPlayerAlive) return;
-	if (!RageEnable->Get() && !LegitEnable->Get()) return;
 
 	static int tick_count = I::globalvars->m_tickCount;
 	if (I::globalvars->m_tickCount == tick_count)
@@ -374,6 +370,11 @@ void Resolver::Resolve()
 
 void Resolver::ResolveEnt(Entity* entity, int Index)
 {
+	static Config::CState* ResolverEnabled = Config::GetState("resolver");
+
+	// If resolver isn't enabled...
+	if (!ResolverEnabled->Get()) return;
+
 	player_info_t info;
 	if (!I::engine->GetPlayerInfo(Index, &info))
 		return;

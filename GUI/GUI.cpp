@@ -2021,7 +2021,7 @@ void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 
 		// draw properties
 		{
-			L::Log("\n\n===================================");
+			//L::Log("\n\n===================================");
 			size_t nDrawnProps = 0;
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{

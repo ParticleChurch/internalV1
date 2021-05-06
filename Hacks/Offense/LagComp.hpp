@@ -1,39 +1,67 @@
 #pragma once
+// Structs
+struct Tick
+{
+	// Matrixes
+	Matrix3x4 Matrix[256];			// Original Matrix
+	Matrix3x4 ResolvedMatrix[256];	// Resolved Matrix
+
+	// Facts
+	bool Dormant;			// Is player dormant
+	Vec Velocity;			// Players velocity
+	Vec Origin;				// Where is player
+	Vec HeadPos;			// Head position
+	Vec EyeAng;				// Eye Angles at current record
+	float SimulationTime;	// Sim time
+	int TickCount;			// current tick count
+	float Duck;				// How much duck
+	float LBY;				// LowerBodyYawTarget
+	float LastShotTIme;		// Last shot time
+	float SpawnTime;		// When did they spawn
+	int Flags;				// Where are they
+	int Choked;				// How many ticks choked
+	bool Shot;				// Is player shooting this tick
+
+	// Animstate crap
+	AnimationLayer layers[15];		// Onions like layers
+	std::array<float, 24> poses;		// Player poses
+	AnimState animstate;			// Animstate crap
+};
+struct Player
+{
+	// Big facts
+	Entity* ptrEntity;		// Entity ptr
+	Matrix3x4 Matrix[256];	// Original Matrix
+	Entity* ptrWeap;		// Active weapon
+	Model* ptrModel;		// Get model
+	int Index;				// Index
+	int Health;				// Health
+	float SimulationTime;	// SimulationTime
+	int Team;				// Team
+	player_info_t info;		// UserInfo
+	bool Valid;				// Valid updated player
+	Vec Origin;				// Current Origin
+	Vec EyePos;				// Current EyePos
+	bool Dormant;			// If entity is dormant
+	int ShotsMissed;		// Shots missed
+
+
+	std::deque<Tick> Records; // LagComp Records
+};
+
 class LagComp
 {
+private:
+	bool ValidSimulationTime(float SimTime);
 public:
-	struct Tick
-	{
-		// Matrixes
-		Matrix3x4 Matrix[256];			// Original Matrix
-		Matrix3x4 ResolvedMatrix[256];	// Resolved Matrix
+	// Vars
+	std::map<int, Player> PlayerList;
 
-		// Big facts
-		bool Dormant;			// Is player dormant
-		Vec Velocity;			// Players velocity
-		Vec Origin;				// Where is player
-		Vec AbsOrigin;			// ABS where is player
-		Vec VecMins;			// Min loc
-		Vec VecMaxs;			// Max loc
-		float SimulationTime;	// Sim time
-		float InterpTime;		// InterpTime
-		float Duck;				// How much duck
-		float LBY;				// LowerBodyYawTarget
-		float LastShotTIme;		// Last shot time
-		float SpawnTime;		// When did they spawn
-		int Flags;				// Where are they
-		int EFlags;				// IDK weird animstate crap
-		int Effects;			// IDK weird animstate crap
-		int Choked;				// How many ticks choked
-		bool Shot;				// Is player shooting this tick
-
-		// Animstate crap
-		AnimationLayer layers[13];	// Onions like layers
-		float poses[24];			// Player poses
-		AnimState* animstate;		// Animstate crap
-	};
-
-	void PostPlayerUpdate();
+	// Funcs
+	bool ValidRecord(Player player);
+	void Update();
+	void ClearRecords();
+	void ClearPlayerList();
 };
 
 extern LagComp* lagcomp;

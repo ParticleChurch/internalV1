@@ -52,7 +52,7 @@ float AntiAim::AtCrosshair()
 
 	/*
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		//it->first is key	  (User Id)
 		//it->second is value (Player struct)
@@ -60,23 +60,23 @@ float AntiAim::AtCrosshair()
 	*/
 
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		auto a = it->second;
 
-		if (a.index == G::LocalPlayerIndex)
+		if (a.Index == G::LocalPlayerIndex)
 			continue;
 
-		if (!a.entity)
+		if (!a.ptrEntity)
 			continue;
 
-		if (!(a.health > 0))
+		if (!(a.Health > 0))
 			continue;
 
-		if (a.dormant)
+		if (a.Dormant)
 			continue;
 
-		if (a.team == G::LocalPlayerTeam)
+		if (a.Team == G::LocalPlayerTeam)
 			continue;
 
 		QAngle AngToTarg = aimbot->CalculateAngle(a.EyePos);
@@ -102,7 +102,7 @@ float AntiAim::AtDistance()
 
 	/*
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		//it->first is key	  (User Id)
 		//it->second is value (Player struct)
@@ -111,23 +111,23 @@ float AntiAim::AtDistance()
 
 
 	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
+	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		auto a = it->second;
 
-		if (a.index == G::LocalPlayerIndex)
+		if (a.Index == G::LocalPlayerIndex)
 			continue;
 
-		if (!a.entity)
+		if (!a.ptrEntity)
 			continue;
 
-		if (!(a.health > 0))
+		if (!(a.Health > 0))
 			continue;
 
-		if (a.dormant)
+		if (a.Dormant)
 			continue;
 
-		if (a.team == G::LocalPlayerTeam)
+		if (a.Team == G::LocalPlayerTeam)
 			continue;
 
 		QAngle AngToTarg = aimbot->CalculateAngle(a.EyePos);
@@ -148,12 +148,12 @@ float AntiAim::AtFreestanding()
 	float Distance = AtDistance();
 	float Crosshair = AtCrosshair();
 	float Delta = fabsf(Distance - Crosshair);
-	
+
 	// we could either prioritize crosshair, or distance. 
 	// I'm assuming the user has a better idea so...
 	float OptimalAngle = Crosshair;
 	NormalizeYaw(OptimalAngle);
-	
+
 	// If they are close together (within 60 deg)
 	if (Delta < 60)
 	{
@@ -167,7 +167,7 @@ float AntiAim::AtFreestanding()
 	{
 		NormalizeYaw(BestHeadAng.y);
 		Delta = fabsf(OptimalAngle - BestHeadAng.y);
-		
+
 
 		// If they are close together (within 120 deg)
 		if (Delta < 120) {

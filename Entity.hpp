@@ -528,6 +528,12 @@ public:
 		return a;
 	}
 
+	float GetDuckAmount()
+	{
+		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_flDuckAmount");
+		return *(float*)((DWORD)this + offset);
+	}
+
 	Vec* PGetEyeAngles() //GetEyeAngles
 	{
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_angEyeAngles[0]");

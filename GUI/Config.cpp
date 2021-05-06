@@ -418,6 +418,7 @@ namespace Config
 			{
 				Group* g = t->Add("Cheat Specific");
 				g->Add("clantag-special", "Special Clantag", new CBoolean())->IsPremium = true;
+				g->Add("resolver", "Resolver", new CBoolean())->IsPremium = true;
 			}
 		}
 

@@ -131,48 +131,6 @@ void ESP::DrawSkeleton(Entity* Ent)
 	}
 }
 
-void ESP::DrawBacktrackingDots()
-{
-	std::map<int, Player>::iterator it;
-	for (it = G::EntList.begin(); it != G::EntList.end(); it++)
-	{
-		if (it->second.BacktrackRecords.empty())
-			continue;
-		static bool start = true;
-		start = true;
-		for (auto tick : it->second.BacktrackRecords)
-		{
-			static Vec LastScreen;
-			if (start) {
-				Vec screen;
-				Vec loc = tick.Bone(8);
-				if (WorldToScreen(loc, screen))
-				{
-					start = false;
-					LastScreen = screen;
-				}
-			}
-			else
-			{
-				Vec screen;
-				Vec loc = tick.Bone(8);
-				if (WorldToScreen(loc, screen) &&
-					LastScreen.x > 0 && LastScreen.x < 1920
-					&& LastScreen.y > 0 && LastScreen.y < 1080)
-				{
-					//if (!tick.Shooting)
-					//	I::surface->DrawSetColor(Color(255, 255, 255, 255));
-					//else
-					I::surface->DrawSetColor(Color(255, 0, 0, 255));
-					I::surface->DrawLine(screen.x, screen.y, LastScreen.x, LastScreen.y);
-					LastScreen = screen;
-				}
-			}
-		}
-	}
-	
-}
-
 void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 {
 	int xSize;
