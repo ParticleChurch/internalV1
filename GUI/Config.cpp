@@ -115,7 +115,7 @@ namespace Config
 				g->Add("antiaim-fakelag-trigger-distance", "Trigger Distance", new CFloat(0, 64, 1, "UNITS")); //4096	
 			}
 			{
-				Group* g = t->Add("Legit Antiaim");
+				Group* g = t->Add("Legit Anti-Aim");
 				g->Add("antiaim-legit-enable", "Enable", new CBoolean())->IsPremium = true;
 
 				g->BeginMaster(p);
@@ -135,7 +135,7 @@ namespace Config
 				};
 			}
 			{
-				Group* g = t->Add("Rage Antiaim");
+				Group* g = t->Add("Rage Anti-Aim");
 				p = g->Add("antiaim-rage-enable", "Enable", new CBoolean());
 
 				g->BeginMaster(p);
@@ -458,7 +458,7 @@ namespace Config
 			}
 
 			{
-				Group* g = t->Add("General Properties");
+				Group* g = t->Add("Switches, Sliders, and Text");
 
 				g->Add("theme-property-example1", "Example Reference 1", new CBoolean());
 				g->Add("theme-property-example2", "Example Reference 2", new CFloat(69.f, 420.f, 2, "UNIT"));
@@ -484,7 +484,7 @@ namespace Config
 			}
 
 			{
-				Group* g = t->Add("Slide-Select & Dropdowns");
+				Group* g = t->Add("Slide-Selects and Dropdowns");
 
 				g->Add("theme-property-example5", "Slide-Select Reference", new CHorizontalState({ "Here", "Are", "Some", "Options" }));
 				g->Add("theme-property-example3", "Dropdown Reference 1", new CMultiSelect({ "Never", "Gonna", "Give", "You", "Up" }));
@@ -501,7 +501,7 @@ namespace Config
 			}
 
 			{
-				Group* g = t->Add("Color Editor");
+				Group* g = t->Add("Color Pickers");
 
 				g->Add("theme-color-editor-background", "Background", new CColor(false));
 				g->Add("theme-color-editor-text", "Text", new CColor(true));
@@ -510,7 +510,7 @@ namespace Config
 			}
 
 			{
-				Group* g = t->Add("Legit/Rage Switch For Offence & Defence");
+				Group* g = t->Add("Legit/Rage Switch");
 
 				g->Add("theme-legit-rage-switch-text", "Text", new CColor(true));
 				g->Add("theme-legit-rage-switch-background", "Background", new CColor(true));
