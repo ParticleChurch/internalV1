@@ -208,6 +208,12 @@ public:
 		return Vec(this->Dot(a) + m.c[0][3], this->Dot(b) + m.c[1][3], this->Dot(d) + m.c[2][3]);
 	}
 
+	void operator = (const Vec b) {
+		this->x = b.x;
+		this->y = b.y;
+		this->z = b.z;
+	}
+
 	void operator = (const int b) {
 		this->x = (float)b;
 		this->y = (float)b;

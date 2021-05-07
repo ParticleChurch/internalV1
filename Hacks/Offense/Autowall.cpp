@@ -219,7 +219,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
         if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
             H::console.push_back("trace fraction 1");
-            return false;
+            return true;
         }
             
 

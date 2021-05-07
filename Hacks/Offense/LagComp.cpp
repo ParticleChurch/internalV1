@@ -63,7 +63,7 @@ void LagComp::Update()
 
 		// Update Player Crap
 		PlayerList[UserId].ptrEntity = ent;
-		ent->SetupBones(PlayerList[UserId].Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);
+		ent->SetupBones(PlayerList[UserId].Matrix, 256, BONE_USED_BY_ANYTHING, 0.f);
 		PlayerList[UserId].ptrWeap = ent->GetActiveWeapon();
 		// Weird model stuff
 		Model* model = ent->GetModel();
@@ -96,6 +96,12 @@ void LagComp::Update()
 		PlayerList[UserId].obb_mins = ent->GetMins();
 		PlayerList[UserId].obb_maxs = ent->GetMaxs();
 		PlayerList[UserId].Dormant = ent->IsDormant();
+		if (ent->GetAnimOverlays())
+			std::memcpy(PlayerList[UserId].layers, ent->GetAnimOverlays(), 15 * sizeof(AnimationLayer));
+		if (ent->poseParameter())
+			PlayerList[UserId].poses = ent->m_flPoseParameter();
+		if (ent->GetAnimstate())
+			std::memcpy(&PlayerList[UserId].animstate, ent->GetAnimstate(), sizeof(AnimState));
 
 		// Clear records if dormant/dead
 		if (!ValidRecord(PlayerList[UserId]))
@@ -115,7 +121,7 @@ void LagComp::Update()
 			// Create Tick :D
 			Tick tick;
 			// Matrix
-			ent->SetupBones(tick.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);
+			std::memcpy(tick.Matrix, PlayerList[UserId].Matrix, 256 * sizeof(Matrix3x4));
 			// Dormant
 			tick.Dormant = PlayerList[UserId].Dormant;
 			// Velocity
@@ -150,10 +156,11 @@ void LagComp::Update()
 			// Shot
 			tick.Shot = false; // will aslo figure out later
 
+
 			// Animstate crap
-			if(ent->GetAnimOverlays())
-				std::memcpy(tick.layers, ent->GetAnimOverlays(), 15 * sizeof(AnimationLayer));
-			tick.poses = ent->m_flPoseParameter();
+			std::memcpy(tick.layers, PlayerList[UserId].layers, 15 * sizeof(AnimationLayer));
+			if(ent->poseParameter())
+				tick.poses = ent->m_flPoseParameter();
 			if(ent->GetAnimstate())
 				std::memcpy(&tick.animstate, ent->GetAnimstate(), sizeof(AnimState));
 

@@ -658,6 +658,9 @@ void Aimbot::Rage()
 	// Scan through the players
 	if (ScanPlayers())
 	{
+		esp->points.clear();
+		esp->points.resize(0);
+		esp->points.push_back(this->AimPoint);
 		QAngle Angle = CalculateAngle(this->AimPoint);
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
@@ -724,21 +727,23 @@ static ThreadHandle_t StartThread(ThreadFunc_t start, void* arg)
 
 bool Aimbot::ScanPlayers()
 {
+	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
 	for (auto &a : this->players)
 	{
 		// scan players
 		if (ScanPlayer(a.first, this->AimPoint))
 			return true;
-		/*if (ScanPlayerBacktrack(a.first, this->AimPoint))
-			return true;*/
+		// scan backtrack of players
+		if (ScanPlayerBacktrack(a.first, this->AimPoint))
+			return true;
+		
 		i++;
 
 		// check if done too many scans
 		if (i > maxplayerscan)
 			return false;
 	}
-
 	return false;
 }
 
@@ -760,7 +765,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
 		return false;
 
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrEntity->GetModel());
 	if (!StudioModel) return false; //if cant get the model
 
 	float damage = 0.f;
@@ -771,8 +776,8 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
 
-		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Records.front().Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Records.front().Matrix[StudioBox->bone]);
+		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
 
 		// Calc Mid Angle
@@ -793,7 +798,9 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			{
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].Records.front().SimulationTime + GetLerp());
+
+				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
+				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
 				
 				Point = mid;
 				return true;
@@ -802,7 +809,9 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			{
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].Records.front().SimulationTime + GetLerp());
+
+				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
+				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
 
 				Point = mid;
 				return true;
@@ -868,20 +877,7 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
-			// if the point is visible
-			bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[UserID].ptrEntity);
-
-			damage = autowall->CanHitFloatingPoint(mid, true) ? 1000 : 0.f;
-			if (visible && damage >= rage.vis_mindam)
-			{
-				this->TargetUserID = UserID;
-				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));
-				TargetTickCount = TimeToTicks(TargetTick.SimulationTime + GetLerp());
-
-				Point = mid;
-				return true;
-			}
-			else if (damage >= rage.hid_mindam)
+			if (autowall->CanHitFloatingPoint(mid, true))
 			{
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));

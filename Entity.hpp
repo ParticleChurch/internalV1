@@ -3,8 +3,8 @@
 class Collideable {
 public:
 	virtual void* pad() = 0;
-	virtual const Vec& obbMins() = 0;
-	virtual const Vec& obbMaxs() = 0;
+	virtual Vec& obbMins() const = 0;
+	virtual Vec& obbMaxs() const = 0;
 	int get_solid()
 	{
 		typedef int(__thiscall* oget_solid)(void*);
@@ -19,6 +19,13 @@ public:
 	Matrix3x4* m_pBones;
 	int        m_ReadableBones;
 	int        m_WritableBones;
+};
+
+class CBoneCache {
+public:
+	Matrix3x4* m_pCachedBones;
+	std::byte pad[0x8];
+	int        m_CachedBoneCount;
 };
 
 using CBaseHandle = uint32_t;
@@ -188,6 +195,12 @@ public:
 	int GetMoveType() {
 		static DWORD offset = N::GetOffset("DT_CSPlayer", "m_nRenderMode") + 1;
 		return *(int*)((DWORD)this + offset);
+	}
+
+	CBoneCache& m_BoneCache()
+	{
+		static DWORD offset = 0x2910;
+		return *(CBoneCache*)((DWORD)this + offset);
 	}
 
 	Matrix3x4& BoneCache()
@@ -615,6 +628,12 @@ public:
 	{
 		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
 		return *reinterpret_cast<std::array<float, 24>*>(reinterpret_cast<uintptr_t>(this) + offset);
+	}
+
+	std::array<float, 24>* poseParameter()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flPoseParameter");
+		return reinterpret_cast<std::array<float, 24>*>(reinterpret_cast<uintptr_t>(this) + offset);
 	}
 
 	AnimationLayer* GetAnimOverlays()
