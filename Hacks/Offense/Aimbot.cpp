@@ -727,6 +727,7 @@ static ThreadHandle_t StartThread(ThreadFunc_t start, void* arg)
 
 bool Aimbot::ScanPlayers()
 {
+	L::Verbose("ScanPlayers");
 	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
 	for (auto &a : this->players)
@@ -750,6 +751,7 @@ bool Aimbot::ScanPlayers()
 // need to implement the canhit floating point to get weird delay crap nonsense to work...
 bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 {
+	L::Verbose("ScanPlayer");
 	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
 
@@ -826,6 +828,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 // STILL IN PROGRESS!
 bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 {
+	L::Verbose("ScanPlayerBacktrack");
 	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
 
@@ -839,6 +842,9 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		return false;
 
 	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
+		return false;
+	
+	if (lagcomp->PlayerList[UserID].Records.empty()) // If no records...
 		return false;
 
 	//scan fastest vel tick
@@ -881,7 +887,7 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 			{
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));
-				TargetTickCount = TimeToTicks(TargetTick.SimulationTime + GetLerp());
+				TargetTickCount = /*TimeToTicks*/(TargetTick.SimulationTime + GetLerp()) / I::globalvars->m_intervalPerTick;
 
 				Point = mid;
 				return true;

@@ -669,7 +669,9 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		if (!G::LocalPlayer || !I::engine->IsInGame())
 			return;
 
+		L::Verbose("H::PaintTraverseHook - miscvisuals");
 		miscvisuals->NoScope();
+		L::Verbose("H::PaintTraverseHook - Run_PaintTraverse");
 		esp->Run_PaintTraverse();
 	}
 

@@ -24,11 +24,6 @@ struct Tick
 	int Flags;				// Where are they
 	int Choked;				// How many ticks choked
 	bool Shot;				// Is player shooting this tick
-
-	// Animstate crap
-	AnimationLayer layers[15];			// Onions like layers
-	std::array<float, 24> poses;		// Player poses
-	AnimState animstate;				// Animstate crap
 };
 struct Player
 {
@@ -50,10 +45,6 @@ struct Player
 	Vec EyePos;				// Current EyePos
 	bool Dormant;			// If entity is dormant
 	int ShotsMissed;		// Shots missed
-
-	AnimationLayer layers[15];			// Onions like layers
-	std::array<float, 24> poses;		// Player poses
-	AnimState animstate;				// Animstate crap
 
 	std::deque<Tick> Records; // LagComp Records
 };

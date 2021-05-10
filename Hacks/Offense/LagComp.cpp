@@ -61,6 +61,7 @@ void LagComp::Update()
 			PlayerList.insert(std::pair<int, Player>(UserId, NewPlayer));
 		}
 
+		L::Verbose("Update Player Crap");
 		// Update Player Crap
 		PlayerList[UserId].ptrEntity = ent;
 		ent->SetupBones(PlayerList[UserId].Matrix, 256, BONE_USED_BY_ANYTHING, 0.f);
@@ -83,6 +84,7 @@ void LagComp::Update()
 		{
 			free(PlayerList[UserId].ptrModel);
 		}
+		L::Verbose("Continue update");
 		// O.W. Continue
 		PlayerList[UserId].Index = i;
 		PlayerList[UserId].Health = ent->GetHealth();
@@ -96,13 +98,8 @@ void LagComp::Update()
 		PlayerList[UserId].obb_mins = ent->GetMins();
 		PlayerList[UserId].obb_maxs = ent->GetMaxs();
 		PlayerList[UserId].Dormant = ent->IsDormant();
-		if (ent->GetAnimOverlays())
-			std::memcpy(PlayerList[UserId].layers, ent->GetAnimOverlays(), 15 * sizeof(AnimationLayer));
-		if (ent->poseParameter())
-			PlayerList[UserId].poses = ent->m_flPoseParameter();
-		if (ent->GetAnimstate())
-			std::memcpy(&PlayerList[UserId].animstate, ent->GetAnimstate(), sizeof(AnimState));
 
+		L::Verbose("Clear records if bad");
 		// Clear records if dormant/dead
 		if (!ValidRecord(PlayerList[UserId]))
 		{
@@ -110,6 +107,7 @@ void LagComp::Update()
 			continue;
 		}
 
+		L::Verbose("Update record?");
 		// Determine if we even need to update
 		// (if last sim time is this sim time AND the records aren't empty
 		if (!PlayerList[UserId].Records.empty() && PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime)
@@ -118,56 +116,69 @@ void LagComp::Update()
 		// If we need to add the current tick for a record
 		if (ValidSimulationTime(PlayerList[UserId].SimulationTime))
 		{
+			L::Verbose("Adding Tick");
 			// Create Tick :D
 			Tick tick;
 			// Matrix
-			std::memcpy(tick.Matrix, PlayerList[UserId].Matrix, 256 * sizeof(Matrix3x4));
+			L::Verbose("Matrix");
+			if(PlayerList[UserId].Matrix)
+				std::memcpy(tick.Matrix, PlayerList[UserId].Matrix, 256 * sizeof(Matrix3x4));
 			// Dormant
+			L::Verbose("Dormant");
 			tick.Dormant = PlayerList[UserId].Dormant;
 			// Velocity
+			L::Verbose("Velocity");
 			tick.Velocity = ent->GetVecVelocity();
 			// Origin
+			L::Verbose("Origin");
 			tick.Origin = PlayerList[UserId].Origin;
 			// Abs Origin
+			L::Verbose("AbsOrigin");
 			tick.AbsOrigin = PlayerList[UserId].AbsOrigin;
 			// obb_mins / obb_maxs
+			L::Verbose("obb_mins/maxs");
 			tick.obb_mins = PlayerList[UserId].obb_mins;
 			tick.obb_maxs = PlayerList[UserId].obb_maxs;
 			// HeadPos
-			tick.HeadPos = Vec(tick.Matrix[8][0][3], tick.Matrix[8][1][3], tick.Matrix[8][2][3]);
+			L::Verbose("HeadPos");
+			if(tick.Matrix)
+				tick.HeadPos = Vec(tick.Matrix[8][0][3], tick.Matrix[8][1][3], tick.Matrix[8][2][3]);
 			// EyeAng
+			L::Verbose("EyeAng");
 			tick.EyeAng = ent->GetEyeAngles();
 			// Sim Time
+			L::Verbose("SimulationTime");
 			tick.SimulationTime = PlayerList[UserId].SimulationTime;
 			// TickCount
+			L::Verbose("TickCount");
 			tick.TickCount = G::cmd->tick_count;
 			// Duck
+			L::Verbose("GetDuckAmount");
 			tick.Duck = ent->GetDuckAmount();
 			// LBY
+			L::Verbose("GetLBY");
 			tick.LBY = ent->GetLBY();
 			// LastShotTIme
+			L::Verbose("LastShotTIme");
 			tick.LastShotTIme = PlayerList[UserId].ptrWeap ? PlayerList[UserId].ptrWeap->GetLastShotTime() : 0.f;
 			// SpawnTime
+			L::Verbose("SpawnTime");
 			tick.SpawnTime = ent->m_flSpawnTime();
 			// Flags
+			L::Verbose("Flags");
 			tick.Flags = ent->GetFlags();
 			// Choked
+			L::Verbose("Choked");
 			tick.Choked = 0.f;//will figure out later :D
 			// Shot
+			L::Verbose("Shot");
 			tick.Shot = false; // will aslo figure out later
-
-
-			// Animstate crap
-			std::memcpy(tick.layers, PlayerList[UserId].layers, 15 * sizeof(AnimationLayer));
-			if(ent->poseParameter())
-				tick.poses = ent->m_flPoseParameter();
-			if(ent->GetAnimstate())
-				std::memcpy(&tick.animstate, ent->GetAnimstate(), sizeof(AnimState));
 
 			// Push tick forward
 			PlayerList[UserId].Records.push_front(tick);
 		}
 
+		L::Verbose("Deal with too many records");
 		// Deal with too many records (anything above 200ms just forget about it :D)
 		unsigned int Ticks = TimeToTicks(.2f);
 		while (PlayerList[UserId].Records.size() > 3 && PlayerList[UserId].Records.size() > Ticks) {
@@ -175,6 +186,7 @@ void LagComp::Update()
 		}
 
 		// Deal with Bad Sim Times (:D)
+		L::Verbose("Deal with Bad Sim Times");
 		for (size_t j = 0; j < PlayerList[UserId].Records.size(); j++)
 		{
 			if (!ValidSimTime(PlayerList[UserId].Records[j].SimulationTime))
