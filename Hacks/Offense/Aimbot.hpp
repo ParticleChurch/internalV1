@@ -25,7 +25,7 @@ private:
 	float CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox);
 	float CalculatePsudoHitchance();
 	bool ValidPlayer(Player player);
-	int GetHitGroup(int Hitbox);
+	
 
 	// Legit Functions
 	void Legit();
@@ -61,6 +61,9 @@ private:
 	bool ScanPlayerBacktrack(int UserID, Vec& Point);
 
 public:
+	int GetHitGroup(int Hitbox);
+
+
 	int maxplayerscan = 5;
 	// General Public Functions
 	Vec CalculateAngle(Vec Target);

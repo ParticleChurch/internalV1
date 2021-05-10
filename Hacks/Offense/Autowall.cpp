@@ -118,9 +118,12 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
         if (Trace.Fraction == 1.0f)
             break;
 
-        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
-            && Trace.hitbox == hitbox
+        if (Trace.Entity 
+            && Trace.Entity->IsPlayer()
+            && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
+            && Trace.Hitgroup == aimbot->GetHitGroup(hitbox)
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
+
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
 
             float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
@@ -130,8 +133,10 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
             return Damage;
         }
         // if its some other hitbox, say you can do zero damage to the targeted hitbox
-        else if (Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
-            && Trace.hitbox != hitbox
+        else if (Trace.Entity
+            && Trace.Entity->IsPlayer()
+            && Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
+            && Trace.Hitgroup != aimbot->GetHitGroup(hitbox)
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
         {
             return 0.f;
