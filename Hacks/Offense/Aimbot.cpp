@@ -907,6 +907,8 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 	if (lagcomp->PlayerList[UserID].Records.empty()) // If no records...
 		return false;
 
+	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
+
 	//scan fastest vel tick
 	Tick TargetTick = lagcomp->PlayerList[UserID].Records.back();
 	for (auto& a : lagcomp->PlayerList[UserID].Records)
@@ -917,7 +919,9 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 			TargetTick = a;
 		}
 	}
-	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
+	
+	// dont bother autowalling unless they are moving sufficeintly fast enough
+	if (TargetTick.Velocity.VecLength2D() < 100) return false;
 
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
 	if (!StudioModel) return false; //if cant get the model
