@@ -31,9 +31,11 @@ void Resolver::LogWeaponFire(GameEvent* event)
 {
 	// Get UserID
 	int UserID = event->GetInt("userid");
-	// If it's the localplayer, return
+	// If it's NOT the localplayer, return
 	if (I::engine->GetPlayerForUserID(UserID) != G::LocalPlayerIndex)
 		return;
+	
+	LogPredError = true;
 
 	// If it isnt in the list... add it!
 	if (PlayerInfo.find(UserID) == PlayerInfo.end())
@@ -138,12 +140,17 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 			ConsoleColorMsg(Color(255, 255, 255), " in the ");
 			ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
 			PlayerInfo[ImpactEndUserID].ShotsMissed--;
+
+			LogPredError = false; // no prediction error cuz we hit them
+			LogShot = false; // dont log anything more cuz we hit the shot
 		}	
 	}
-	else if(LogEnable->Get())
+	else if(LogEnable->Get() && !BacktrackShot)
 	{
-		// LUCKY shot (wasn't going t hit but did)
+		// LUCKY shot (wasn't going t hit but did + not backtrack shot...)
 		PlayerInfo[ImpactEndUserID].ShotsMissed++;
+
+		ConsoleColorMsg(Color(255, 69, 0), "Prediction Error: ");
 		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
 		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
 		ConsoleColorMsg(Color(255, 255, 255), " for ");
@@ -151,7 +158,22 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
 		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
 
+		LogPredError = false;
 		LogShot = false; // dont log missed to spread (cuz luckily hit entity)
+	}
+	else if (LogEnable->Get() && BacktrackShot)
+	{
+		// Backtrack shot - if it hits we assume resolver is good @ current state
+		ConsoleColorMsg(Color(255, 192, 203), "Backtrack Shot ");
+		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
+		ConsoleColorMsg(Color(255, 255, 255), " for ");
+		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
+		ConsoleColorMsg(Color(255, 255, 255), " in the ");
+		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
+		PlayerInfo[ImpactEndUserID].ShotsMissed--;
+
+		LogPredError = false; // no prediction error cuz backtrack
+		LogShot = false; // dont log anything more cuz we hit the shot
 	}
 }
 
@@ -290,6 +312,7 @@ void Resolver::AnimationFix(Entity* entity)
 
 void Resolver::Resolve()
 {
+	//
 	static Config::CState* LogEnable = Config::GetState("misc-other-logs");
 
 	if (!G::LocalPlayerAlive) return;
@@ -302,32 +325,8 @@ void Resolver::Resolve()
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
 
-	if (LogShot && LogEnable->Get() && !BacktrackShot)
-	{
-		player_info_t info;
-		if (!I::engine->GetPlayerInfo(UserID, &info))
-		{
-			ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to");
-			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
-		}
-		else
-		{
-			ConsoleColorMsg(Color(255, 255, 255), "Missed shot on");
-			ConsoleColorMsg(Color(255, 0, 0), "[%s]", info.name);
-			ConsoleColorMsg(Color(255, 255, 255), "  due to ");
-			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
-		}
-	}
-	else if(LogEnable->Get() && BacktrackShot)
-	{
-		ConsoleColorMsg(Color(123, 123, 123), "Backtrack Shot --> Unknown");
-		BacktrackShot = false;
-	}
-	LogShot = false;
-
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
-
 		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
 		if (!(ent = I::entitylist->GetClientEntity(i))
 			|| ent == G::LocalPlayer
@@ -354,17 +353,38 @@ void Resolver::Resolve()
 
 
 		// If it's different and we haven't logged the shot
-		if (LogEnable->Get() && PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
+		// and we haven't already logged prediction error...
+		if (LogPredError && LogEnable->Get() && PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
 		{
 			PlayerInfo[UserID].LogShot = true;
-			ConsoleColorMsg(Color(255, 69, 0), "Missed shot at ");
-			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
-			ConsoleColorMsg(Color(255, 69, 0), " due to prediction error\n");
+			ConsoleColorMsg(Color(255, 69, 0), "Prediction Error: ");
+			ConsoleColorMsg(Color(255, 0, 0), "Missed shot at ");
+			ConsoleColorMsg(Color(0, 255, 0), "[%s]\n", info.name);
+			LogPredError = false;
+			LogShot = false; // dont wanna log spread error if it is a prediction error
 		}
 
 		ResolveEnt(ent, i);
-
 	}
+
+	// if we are aimboting, and have logs enabled...
+	if (LogShot && LogEnable->Get())
+	{
+		player_info_t info;
+		if (!I::engine->GetPlayerInfo(UserID, &info))
+		{
+			ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to");
+			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
+		}
+		else
+		{
+			ConsoleColorMsg(Color(255, 255, 255), "Missed shot on");
+			ConsoleColorMsg(Color(255, 0, 0), "[%s]", info.name);
+			ConsoleColorMsg(Color(255, 255, 255), "  due to ");
+			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
+		}
+	}
+	LogShot = false;
 	L::Verbose("Resolver::Resolve - done");
 }
 
@@ -392,7 +412,7 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 	}
 
 	// If Desyncing... RESOLVE!
-	if (record.IsDesyncing)
+	if (true/* record.IsDesyncing*/)
 	{
 		PlayerInfo[UserID].ResolverFlag = std::to_string(PlayerInfo[UserID].ShotsMissed) + "|";
 

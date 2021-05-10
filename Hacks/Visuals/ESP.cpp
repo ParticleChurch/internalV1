@@ -65,7 +65,7 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+		I::surface->SetFontGlyphSet(FONT, "Counter-Strike", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_DROPSHADOW);
 	}
 
 	std::string TEXT = name;

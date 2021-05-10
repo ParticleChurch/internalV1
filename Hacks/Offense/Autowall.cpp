@@ -118,7 +118,7 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
         if (Trace.Fraction == 1.0f)
             break;
 
-        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG 
+        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
             && Trace.hitbox == hitbox
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
@@ -128,6 +128,13 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
                 Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
 
             return Damage;
+        }
+        // if its some other hitbox, say you can do zero damage to the targeted hitbox
+        else if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
+            && Trace.hitbox != hitbox
+            && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
+        {
+            return 0.f;
         }
 
         const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
@@ -218,7 +225,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
         L::Verbose("Checking trace fraction 1");
         if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
-            H::console.push_back("trace fraction 1");
+            // if reached end of ray, and the trace entity isn't on our team/doesnt exist...
             return true;
         }
             

@@ -658,6 +658,8 @@ void Aimbot::Rage()
 	// Scan through the players
 	if (ScanPlayers())
 	{
+		L::Verbose("ScanPlayer - shooting at players");
+
 		esp->points.clear();
 		esp->points.resize(0);
 		esp->points.push_back(this->AimPoint);
@@ -672,6 +674,7 @@ void Aimbot::Rage()
 		// If autoshoot.. FIRE!
 		if (AutoShoot->Get())
 		{
+			resolver->BacktrackShot = backtrackaim ? true : false;
 			resolver->LogShot = true;
 			G::cmd->buttons |= IN_ATTACK;
 			G::cmd->tick_count = TargetTickCount;
@@ -730,6 +733,7 @@ bool Aimbot::ScanPlayers()
 	L::Verbose("ScanPlayers");
 	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
+	backtrackaim = false;
 	for (auto &a : this->players)
 	{
 		// scan players
@@ -737,7 +741,11 @@ bool Aimbot::ScanPlayers()
 			return true;
 		// scan backtrack of players
 		if (ScanPlayerBacktrack(a.first, this->AimPoint))
+		{
+			backtrackaim = true;
 			return true;
+		}
+			
 		
 		i++;
 
@@ -752,23 +760,49 @@ bool Aimbot::ScanPlayers()
 bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 {
 	L::Verbose("ScanPlayer");
+	if (lagcomp->PlayerList.empty())
+		return false;
+
+	/*L::Verbose("ScanPlayer - notempty");*/
+
+	if (lagcomp->PlayerList.find(UserID) == lagcomp->PlayerList.end())
+		return false;
+
+	/*L::Verbose("ScanPlayer - notend");*/
+
 	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
+
+	/*L::Verbose("ScanPlayer - passedindexcheck");*/
 
 	if (!(lagcomp->PlayerList[UserID].ptrEntity)) // entity DOES NOT exist
 		return false;
 
+	/*L::Verbose("ScanPlayer - passedptrEntitycheck");*/
+
 	if (!(lagcomp->PlayerList[UserID].Health > 0)) // entity is NOT alive
 		return false;
+
+	/*L::Verbose("ScanPlayer - passedhealthcheck");*/
 
 	if (lagcomp->PlayerList[UserID].Team == G::LocalPlayerTeam) // Entity is on same team
 		return false;
 
+	/*L::Verbose("ScanPlayer - passedteamcheck");*/
+
 	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
 		return false;
 
-	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrEntity->GetModel());
+	/*L::Verbose("ScanPlayer - passeddormantcheck");*/
+
+	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
+
+	//L::Verbose("ScanPlayer - passedmodelcheck");
+
+	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
 	if (!StudioModel) return false; //if cant get the model
+
+	L::Verbose("ScanPlayer - passed checks");
 
 	float damage = 0.f;
 
@@ -778,31 +812,37 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
 
+		L::Verbose("ScanPlayer - got hitbox");
+
 		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
 
 		// Calc Mid Angle
+		L::Verbose("ScanPlayer - CalculateAngle");
 		QAngle MidAngle = CalculateAngle(mid);
 
 		// Calc Mid Hitchance
+		L::Verbose("ScanPlayer - CalculateHitchance");
 		float MidHitchance = CalculateHitchance(MidAngle, mid, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 		
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
 			// if the point is visible
+			L::Verbose("ScanPlayer - IsVisible");
 			bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[UserID].ptrEntity);
 
 			// no need to autowall if visible...
+			L::Verbose("ScanPlayer - Damage");
 			damage = autowall->Damage(mid, HITBOX, true);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
+				L::Verbose("ScanPlayer - memcpy");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
+				TargetTickCount =/* TimeToTicks*/(lagcomp->PlayerList[UserID].SimulationTime) / I::globalvars->m_intervalPerTick;
 				
 				Point = mid;
 				return true;
@@ -810,10 +850,11 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			else if (damage >= rage.hid_mindam)
 			{
 				this->TargetUserID = UserID;
+				L::Verbose("ScanPlayer - memcpy");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
 
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
+				TargetTickCount = /*TimeToTicks*/(lagcomp->PlayerList[UserID].SimulationTime) / I::globalvars->m_intervalPerTick;
 
 				Point = mid;
 				return true;
@@ -849,15 +890,15 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 
 	//scan fastest vel tick
 	Tick TargetTick = lagcomp->PlayerList[UserID].Records.back();
-	/*float bestVel = 0.f;
 	for (auto& a : lagcomp->PlayerList[UserID].Records)
 	{
-		if (a.Velocity.VecLength2D() > bestVel)
+		// attempt to onshot...
+		if (a.Shot)
 		{
-			bestVel = a.Velocity.VecLength2D();
 			TargetTick = a;
 		}
-	}*/
+	}
+	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
 
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
 	if (!StudioModel) return false; //if cant get the model
@@ -888,7 +929,6 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, TargetTick.Matrix, 256 * sizeof(Matrix3x4));
 				TargetTickCount = /*TimeToTicks*/(TargetTick.SimulationTime + GetLerp()) / I::globalvars->m_intervalPerTick;
-
 				Point = mid;
 				return true;
 			}

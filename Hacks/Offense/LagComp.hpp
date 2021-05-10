@@ -19,7 +19,7 @@ struct Tick
 	int TickCount;			// current tick count
 	float Duck;				// How much duck
 	float LBY;				// LowerBodyYawTarget
-	float LastShotTIme;		// Last shot time
+	float LastShotTime;		// Last shot time
 	float SpawnTime;		// When did they spawn
 	int Flags;				// Where are they
 	int Choked;				// How many ticks choked

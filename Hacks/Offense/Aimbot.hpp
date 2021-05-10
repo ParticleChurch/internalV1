@@ -41,6 +41,7 @@ private:
 	// Rage Functions/var
 	void Rage();
 	Vec AimPoint;
+	bool backtrackaim = false;
 	Matrix3x4 TargetMatrix[265];
 	int TargetUserID = -1;
 	int TargetTickCount = -1;

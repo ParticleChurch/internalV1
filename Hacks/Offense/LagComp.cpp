@@ -151,16 +151,14 @@ void LagComp::Update()
 			tick.SimulationTime = PlayerList[UserId].SimulationTime;
 			// TickCount
 			L::Verbose("TickCount");
-			tick.TickCount = G::cmd->tick_count;
+			if(G::cmd)
+				tick.TickCount = G::cmd->tick_count;
 			// Duck
 			L::Verbose("GetDuckAmount");
 			tick.Duck = ent->GetDuckAmount();
 			// LBY
 			L::Verbose("GetLBY");
 			tick.LBY = ent->GetLBY();
-			// LastShotTIme
-			L::Verbose("LastShotTIme");
-			tick.LastShotTIme = PlayerList[UserId].ptrWeap ? PlayerList[UserId].ptrWeap->GetLastShotTime() : 0.f;
 			// SpawnTime
 			L::Verbose("SpawnTime");
 			tick.SpawnTime = ent->m_flSpawnTime();
@@ -170,9 +168,28 @@ void LagComp::Update()
 			// Choked
 			L::Verbose("Choked");
 			tick.Choked = 0.f;//will figure out later :D
+			// LastShotTIme
+			L::Verbose("LastShotTIme");
+			tick.LastShotTime = PlayerList[UserId].ptrWeap ? PlayerList[UserId].ptrWeap->GetLastShotTime() : 0.f;
 			// Shot
 			L::Verbose("Shot");
-			tick.Shot = false; // will aslo figure out later
+			if (!PlayerList[UserId].Records.empty())
+			{
+				if (PlayerList[UserId].ptrWeap)
+				{
+					if (tick.LastShotTime != PlayerList[UserId].Records.front().LastShotTime)
+					{
+						// If last record time diff from this one, and weapon exists,--> SHOT DONE!
+						tick.Shot = true;
+					}
+					else
+						tick.Shot = false;
+				}
+				else
+					tick.Shot = false;
+			}
+			else
+				tick.Shot = false;
 
 			// Push tick forward
 			PlayerList[UserId].Records.push_front(tick);

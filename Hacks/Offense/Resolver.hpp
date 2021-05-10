@@ -43,6 +43,8 @@ private:
 	// Deal with PlayerHurt
 	void LogPlayerHurt(GameEvent* event);
 public:
+	// for logging pred error
+	bool LogPredError = false;
 	// For logging spread
 	bool LogShot = false;
 	bool BacktrackShot = false;
