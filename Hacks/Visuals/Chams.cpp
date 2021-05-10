@@ -110,16 +110,20 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
 		{	
+			
 			if ((LegitAA->Get() || RageAA->Get())
 				&& LocalPlayerFakeEnable->Get()
 				&& ThirdPerson->Get())
 			{
 				if(NewTick && G::pSendPacket && *G::pSendPacket && !fakelag->LaggingOnPeak)
 					RotateBoneMatrix(Vec(0, (antiaim->fake.y - antiaim->real.y), 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
+				
+				float alpha = LocalPlayerFakeColor->GetA() / 255.f;
+				alpha = G::LocalPlayer->IsScoped() ? alpha / 2 : alpha;
 				OverideMat(
 						false,	//viz thru wall?
 						LocalPlayerFakeMaterial->Get(),		// material
-						LocalPlayerFakeColor->GetA() / 255.f,	//transparent?
+						alpha,	//transparent?
 						Color(LocalPlayerFakeColor->GetR(), LocalPlayerFakeColor->GetG(), LocalPlayerFakeColor->GetB()),
 						thisptr, ctx, state, info, antiaim->FakeMatrix);
 				H::oDrawModelExecute(thisptr, ctx, state, info, antiaim->FakeMatrix);
@@ -128,10 +132,12 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 
 			if (LocalPlayerRealEnable->Get())
 			{
+				float alpha = LocalPlayerRealColor->GetA() / 255.f;
+				alpha = G::LocalPlayer->IsScoped() ? alpha / 2 : alpha;
 				OverideMat(
 					false,	//viz thru wall?
 					LocalPlayerRealMaterial->Get(),	//wireframe?
-					LocalPlayerRealColor->GetA() / 255.f,	//transparent?
+					alpha,	//transparent?
 					Color(LocalPlayerRealColor->GetR(), LocalPlayerRealColor->GetG(), LocalPlayerRealColor->GetB()),
 					thisptr, ctx, state, info, customBoneToWorld);
 			}
