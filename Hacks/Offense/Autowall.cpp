@@ -113,7 +113,7 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
         I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
 
         if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
-            return false;
+            return 0.f;
 
         if (Trace.Fraction == 1.0f)
             break;
@@ -130,7 +130,7 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
             return Damage;
         }
         // if its some other hitbox, say you can do zero damage to the targeted hitbox
-        else if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
+        else if (Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
             && Trace.hitbox != hitbox
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
         {

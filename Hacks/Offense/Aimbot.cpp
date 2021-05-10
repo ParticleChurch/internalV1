@@ -660,9 +660,9 @@ void Aimbot::Rage()
 	{
 		L::Verbose("ScanPlayer - shooting at players");
 
-		esp->points.clear();
+		/*esp->points.clear();
 		esp->points.resize(0);
-		esp->points.push_back(this->AimPoint);
+		esp->points.push_back(this->AimPoint);*/
 		QAngle Angle = CalculateAngle(this->AimPoint);
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
@@ -811,31 +811,50 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
+		float radius = StudioBox->m_flRadius * 0.85;
 
 		L::Verbose("ScanPlayer - got hitbox");
 
 		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
-		Vec mid = (max + min) / 2;
+		Vec max = StudioBox->bbmax.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
+
+		Vec point = min.z > max.z ? min : max;
+		if (HITBOX == HITBOX_HEAD)
+		{
+			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
+			// this is to hopefully de-lag, though we can potentially do bad by 1 tick.
+			// this is counter by the fact that, because we aren't lagging, we will be most up to date
+			// maybe I'll add 2 implementations, with the user deciding which one to use
+			switch (G::cmd->tick_count % 3)
+			{
+			case 0: // target top left
+				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopLeft(point, radius, G::LocalPlayer);
+				break;
+			case 1: // target top right
+				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopRight(point, radius, G::LocalPlayer);
+				break; // target very top/forehead
+				point.z += radius;
+			}	
+		}
 
 		// Calc Mid Angle
 		L::Verbose("ScanPlayer - CalculateAngle");
-		QAngle MidAngle = CalculateAngle(mid);
+		QAngle MidAngle = CalculateAngle(point);
 
 		// Calc Mid Hitchance
 		L::Verbose("ScanPlayer - CalculateHitchance");
-		float MidHitchance = CalculateHitchance(MidAngle, mid, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
+		float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 		
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
 			// if the point is visible
 			L::Verbose("ScanPlayer - IsVisible");
-			bool visible = autowall->IsVisible(mid, lagcomp->PlayerList[UserID].ptrEntity);
+			bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 			// no need to autowall if visible...
 			L::Verbose("ScanPlayer - Damage");
-			damage = autowall->Damage(mid, HITBOX, true);
+			damage = autowall->Damage(point, HITBOX, true);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
@@ -844,7 +863,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount =/* TimeToTicks*/(lagcomp->PlayerList[UserID].SimulationTime) / I::globalvars->m_intervalPerTick;
 				
-				Point = mid;
+				Point = point;
 				return true;
 			}
 			else if (damage >= rage.hid_mindam)
@@ -856,7 +875,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = /*TimeToTicks*/(lagcomp->PlayerList[UserID].SimulationTime) / I::globalvars->m_intervalPerTick;
 
-				Point = mid;
+				Point = point;
 				return true;
 			}
 		}
@@ -912,7 +931,7 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		int HitGroup = GetHitGroup(HITBOX);
 
 		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
-		Vec max = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
+		Vec max = StudioBox->bbmax.Transform(TargetTick.Matrix[StudioBox->bone]);
 		Vec mid = (max + min) / 2;
 
 		// Calc Mid Angle

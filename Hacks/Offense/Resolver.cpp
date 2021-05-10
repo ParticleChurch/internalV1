@@ -139,7 +139,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 			ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 			ConsoleColorMsg(Color(255, 255, 255), " in the ");
 			ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
-			PlayerInfo[ImpactEndUserID].ShotsMissed--;
+			if(!BacktrackShot)
+				PlayerInfo[ImpactEndUserID].ShotsMissed--;
 
 			LogPredError = false; // no prediction error cuz we hit them
 			LogShot = false; // dont log anything more cuz we hit the shot
@@ -170,7 +171,7 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
 		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
-		PlayerInfo[ImpactEndUserID].ShotsMissed--;
+		//PlayerInfo[ImpactEndUserID].ShotsMissed--;
 
 		LogPredError = false; // no prediction error cuz backtrack
 		LogShot = false; // dont log anything more cuz we hit the shot
@@ -368,7 +369,7 @@ void Resolver::Resolve()
 	}
 
 	// if we are aimboting, and have logs enabled...
-	if (LogShot && LogEnable->Get())
+	if (LogShot && LogEnable->Get() && !BacktrackShot)
 	{
 		player_info_t info;
 		if (!I::engine->GetPlayerInfo(UserID, &info))
@@ -383,6 +384,11 @@ void Resolver::Resolve()
 			ConsoleColorMsg(Color(255, 255, 255), "  due to ");
 			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
 		}
+	}
+	else if(LogShot && LogEnable->Get() && BacktrackShot) // if we miss backtrack shot...
+	{
+		ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to");
+		ConsoleColorMsg(Color(0, 0, 255), " backtrack miscalculation\n");
 	}
 	LogShot = false;
 	L::Verbose("Resolver::Resolve - done");

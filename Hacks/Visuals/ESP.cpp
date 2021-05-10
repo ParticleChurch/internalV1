@@ -286,17 +286,6 @@ void ESP::Run_PaintTraverse()
 		Once = false;
 		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
-
-	for (auto a : this->points)
-	{
-		int xSize;
-		int ySize;
-		I::engine->GetScreenSize(xSize, ySize);
-		Vec out;
-		if(WorldToScreen(a, out))
-			I::surface->DrawLine(xSize / 2, ySize, out.x, out.y);
-	}
-
 	
 
 	for (int i = 0; i < I::entitylist->GetHighestEntityIndex(); i++)
@@ -448,7 +437,7 @@ void ESP::RunFSN()
 	for (size_t i = 0; i < points.size(); i++)
 	{
 		// cube at the position
-		I::debugoverlay->AddBoxOverlay(points.at(i), Vec(-2, -2, -2), Vec(2, 2, 2), Vec(0, 0, 0), 0, 255, 255, 127, -1.f);
+		I::debugoverlay->AddBoxOverlay(points.at(i), Vec(-1, -1, -1), Vec(1, 1, 1), Vec(0, 0, 0), 0, 255, 255, 127, -1.f);
 	}
 }
 

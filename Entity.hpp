@@ -833,4 +833,24 @@ public:
 
 		return Vec(C.x - radius * cosf(gamma - beta), C.y - radius * sinf(gamma - beta), C.z);
 	}
+
+	Vec GetTopLeft(Vec C, float radius, Entity* ent)
+	{
+		Vec P = ent->GetEyePos();	//player
+		float gamma = (M_PI / 2.f) + atan2f(C.y - P.y, C.x - P.x);
+		float distance = sqrtf(pow((C.x - P.x), 2) + pow((C.y - P.y), 2));
+		float beta = asin(radius / distance);
+
+		return Vec(C.x + .7071 * radius * cosf(gamma + beta), C.y + .7071 * radius * sinf(gamma + beta), C.z + radius * .7071);
+	}
+
+	Vec GetTopRight(Vec C, float radius, Entity* ent)
+	{
+		Vec P = ent->GetEyePos();	//player
+		float gamma = (M_PI / 2.f) + atan2f(C.y - P.y, C.x - P.x);
+		float distance = sqrtf(pow((C.x - P.x), 2) + pow((C.y - P.y), 2));
+		float beta = asin(radius / distance);
+
+		return Vec(C.x - .7071 * radius * cosf(gamma + beta), C.y - .7071 * radius * sinf(gamma + beta), C.z + radius * .7071);
+	}
 };
