@@ -39,6 +39,7 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 	static std::wstring wide_string;
 	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 	
+	//vgui_spew_fonts TYPE THAT IN CONSOLE TO GET ALL FONTS
 	I::surface->DrawSetTextFont(FONT);
 	I::surface->DrawSetTextColor(clr);
 	I::surface->DrawSetTextPos(TL.x, TL.y - 14);
@@ -54,35 +55,25 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	Entity* weap = ent->GetActiveWeapon();
 	if (!weap) return;
 
-	WeaponData* weapData = weap->GetWeaponData();
-	if (!weapData) return;
+	WeaponId id = weap->GetWeaponId();
 
-	char* name = weapData->Name;
-	if (!name) return;
+	// FOR NOW
+	if (WeapIcon.find(id) == WeapIcon.end())
+		return;
 
+	wchar_t icon[2] = { (wchar_t)WeapIcon[id], 0 };
 	static DWORD FONT = I::surface->FontCreate();
 	static bool Once = true;
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(FONT, "Counter-Strike", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_DROPSHADOW);
+		I::surface->SetFontGlyphSet(FONT, "Counter-Strike", 30, 300, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_DROPSHADOW);
 	}
-
-	std::string TEXT = name;
-	if (TEXT.length() > 13)
-	{
-		TEXT = TEXT.substr(13);
-	}
-	else // if potentially bad text, lets just return
-		return;
-
-	static std::wstring wide_string;
-	wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
 	I::surface->DrawSetTextFont(FONT);
 	I::surface->DrawSetTextColor(Color(EnemyWeaponColor->GetR(), EnemyWeaponColor->GetG(), EnemyWeaponColor->GetB(), EnemyWeaponColor->GetA()));
 	I::surface->DrawSetTextPos(TL.x, BR.y + 7);
-	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
+	I::surface->DrawPrintText(icon, 1);
 }
 
 void ESP::DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg)

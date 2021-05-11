@@ -56,7 +56,7 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 		Ray_t Ray(eyepos, trace_end);
 		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &Trace);
 
-		if (Trace.Entity == player && hbox == Trace.hitbox) // eg. in head
+		if (Trace.Entity == player /*&& hbox == Trace.hitbox*/) // eg. in head
 			hits++;
 
 		i++;
@@ -811,7 +811,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
-		float radius = StudioBox->m_flRadius * 0.85;
+		float radius = StudioBox->m_flRadius * 0.66;
 
 		L::Verbose("ScanPlayer - got hitbox");
 
@@ -822,19 +822,37 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		if (HITBOX == HITBOX_HEAD)
 		{
 			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
-			// this is to hopefully de-lag, though we can potentially do bad by 1 tick.
+			// this is to hopefully de-lag, though we can potentially do bad by 2 tick.
 			// this is counter by the fact that, because we aren't lagging, we will be most up to date
 			// maybe I'll add 2 implementations, with the user deciding which one to use
-			switch (G::cmd->tick_count % 3)
+			
+			// if the player is moving slow enough, use these, otherwise aim for center of head obv
+			if (lagcomp->PlayerList[UserID].ptrEntity->GetVecVelocity().VecLength2D() < 120)
 			{
-			case 0: // target top left
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopLeft(point, radius, G::LocalPlayer);
-				break;
-			case 1: // target top right
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopRight(point, radius, G::LocalPlayer);
-				break; // target very top/forehead
-				point.z += radius;
-			}	
+				radius += 0.1;
+				switch (G::cmd->tick_count % 2)
+				{
+				case 0: // target top left
+					point = lagcomp->PlayerList[UserID].ptrEntity->GetTopLeft(point, radius, G::LocalPlayer);
+					break;
+				case 1: // target top right
+					point = lagcomp->PlayerList[UserID].ptrEntity->GetTopRight(point, radius, G::LocalPlayer);
+					break;
+				}
+			}
+			else
+			{
+				switch (G::cmd->tick_count % 2)
+				{
+				case 0: // target top left
+					point = lagcomp->PlayerList[UserID].ptrEntity->GetLeft(point, radius, G::LocalPlayer);
+					break;
+				case 1: // target top right
+					point = lagcomp->PlayerList[UserID].ptrEntity->GetRight(point, radius, G::LocalPlayer);
+					break;
+				}
+			}
+			
 		}
 
 		// Calc Mid Angle
@@ -910,7 +928,9 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
 
 	//scan fastest vel tick
-	Tick TargetTick = lagcomp->PlayerList[UserID].Records.back();
+	int size = lagcomp->PlayerList[UserID].Records.size();
+	// take center tick, not too far back, yet not too far forward to be useless
+	Tick TargetTick = lagcomp->PlayerList[UserID].Records[size/2];
 	for (auto& a : lagcomp->PlayerList[UserID].Records)
 	{
 		// attempt to onshot...

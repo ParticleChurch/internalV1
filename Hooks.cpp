@@ -359,6 +359,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		
 		//debugger console
 		ImGui::Begin("console");
+
 		if (ImGui::Button("Clear Console"))
 		{
 			H::console.clear();
