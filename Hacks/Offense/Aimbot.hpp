@@ -20,10 +20,10 @@ private:
 		float hitchance;
 		// If lethal, then baim!
 		bool BaimIfLethal;
-		std::deque<Hitboxes> baimboxes = { HITBOX_PELVIS, HITBOX_UPPER_CHEST, HITBOX_STOMACH, HITBOX_LOWER_CHEST };
+		std::deque<Hitboxes> baimboxes = { HITBOX_STOMACH, HITBOX_PELVIS, HITBOX_UPPER_CHEST, HITBOX_LOWER_CHEST };
 		// how far out from center aimbot will shoot for...
 		// for now will only be applied to pelvis, head, and upperchest
-		float multipoint; 
+		float multipoint = 0.f; 
 		
 	}rage;
 

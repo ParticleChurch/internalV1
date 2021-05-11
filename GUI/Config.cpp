@@ -90,6 +90,7 @@ namespace Config
 					g->Add("rageaim-" + wtype + "-mindamage-visible", "Visible Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-mindamage-hidden", "Hidden Min Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-hitchance", "Min Hitchance", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+					g->Add("rageaim-" + wtype + "-multipoint", "Multipoint Scale", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;

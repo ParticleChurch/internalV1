@@ -120,7 +120,7 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
 
         if (Trace.Entity 
             && Trace.Entity->IsPlayer()
-            && Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
+            && Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
             && Trace.Hitgroup == aimbot->GetHitGroup(hitbox)
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
 
@@ -132,14 +132,21 @@ float Autowall::Damage(const Vec& point, int hitbox, bool AllowFriendlyFire)
 
             return Damage;
         }
-        // if its some other hitbox, say you can do zero damage to the targeted hitbox
+        // if its some other hitbox, say you can do TINY damage to the targeted hitbox
         else if (Trace.Entity
             && Trace.Entity->IsPlayer()
             && Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG
             && Trace.Hitgroup != aimbot->GetHitGroup(hitbox)
             && Trace.Entity->GetTeam() != G::LocalPlayerTeam)
         {
-            return 0.f;
+            Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
+
+            float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+            if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
+                Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+            // if we are aiming for head, we DEF dont wanna shoot unless we ABSOLUTELY see head
+            return aimbot->GetHitGroup(hitbox) == HITGROUP_HEAD ? Damage / 2 : Damage;
         }
 
         const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);

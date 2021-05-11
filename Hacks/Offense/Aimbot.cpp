@@ -56,7 +56,7 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 		Ray_t Ray(eyepos, trace_end);
 		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &Trace);
 
-		if (Trace.Entity == player /*&& hbox == Trace.hitbox*/) // eg. in head
+		if (Trace.Entity == player && GetHitGroup(hbox) == GetHitGroup(Trace.hitbox)) // eg. in head
 			hits++;
 
 		i++;
@@ -678,7 +678,7 @@ void Aimbot::Rage()
 			resolver->LogShot = true;
 			G::cmd->buttons |= IN_ATTACK;
 			G::cmd->tick_count = TargetTickCount;
-			CapsuleOverlay2(lagcomp->PlayerList[TargetUserID].ptrEntity, Color(255, 0, 0, 255), 2, TargetMatrix);
+			CapsuleOverlay2(lagcomp->PlayerList[TargetUserID].ptrEntity, Color(255, 0, 0, 255), 0.5, TargetMatrix);
 		}
 
 		// only force send if not fakeducking... (as that will break fd)
@@ -731,6 +731,7 @@ static ThreadHandle_t StartThread(ThreadFunc_t start, void* arg)
 bool Aimbot::ScanPlayers()
 {
 	L::Verbose("ScanPlayers");
+
 	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
 	backtrackaim = false;
@@ -808,15 +809,26 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 	bool DoBaim = false;
 	if (G::LocalPlayerWeaponData && rage.BaimIfLethal)
 	{
-		float Damage = G::LocalPlayerWeaponData->Damage * powf(G::LocalPlayerWeaponData->RangeModifier, G::LocalPlayerWeaponData->Range / 500.0f);
-
+		
+		float Damage = G::LocalPlayerWeaponData->Damage;
+		Damage = autowall->GetDamageMultiplier(HITGROUP_STOMACH) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, 0.99 * G::LocalPlayerWeaponData->Range / 500.0f);
 		float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
-		float armorval = lagcomp->PlayerList[UserID].ptrEntity->ArmorVal();
-		Damage -= (armorval < Damage* ArmorRatio / 2.0f ? armorval * 4.0f : Damage) * (1.0f - ArmorRatio);
+		if (autowall->IsArmored(HITGROUP_STOMACH, lagcomp->PlayerList[UserID].ptrEntity->HasHelmet()))
+			Damage -= (lagcomp->PlayerList[UserID].ptrEntity->ArmorVal() < Damage * ArmorRatio / 2.0f ? lagcomp->PlayerList[UserID].ptrEntity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
 
-		// if we can damage enough by baiming... (by a margin of 10hp...)
-		if (lagcomp->PlayerList[UserID].Health < Damage - 10)
+		// if we can damage enough by baiming...
+		if (lagcomp->PlayerList[UserID].Health <= Damage + 25) // make it MUCH more likely to baim :D
+		{
 			DoBaim = true;
+
+			// not quite proper as if we dont find a baimable spot, and check another player...
+			// we might shoot when we shouldn't...
+			rage.hid_mindam /= 2.f;
+			rage.vis_mindam /= 2.f;
+			rage.hid_mindam += 1;
+			rage.vis_mindam += 1;
+		}
+			
 	}
 
 	float damage = 0.f;
@@ -826,16 +838,20 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
-		float radius = StudioBox->m_flRadius * 0.66;
+		float radius = StudioBox->m_flRadius * rage.multipoint;
 
 		L::Verbose("ScanPlayer - got hitbox");
 
 		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmax.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 
-		Vec point = min.z > max.z ? min : max;
-		if (HITBOX == HITBOX_HEAD)
+		Vec point = (min + max) / 2.f; 
+		// do secial head multipoint stuff (assuming any multipoint enabled...)
+		if (HITBOX == HITBOX_HEAD && rage.multipoint > 0.01f)
 		{
+			//scratch that go for upper echelons of hittin head
+			point = min.z > max.z ? min : max;
+			
 			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
 			// this is to hopefully de-lag, though we can potentially do bad by 2 tick.
 			// this is counter by the fact that, because we aren't lagging, we will be most up to date
@@ -844,7 +860,11 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			// if the player is moving slow enough, use these, otherwise aim for center of head obv
 			if (lagcomp->PlayerList[UserID].ptrEntity->GetVecVelocity().VecLength2D() < 120)
 			{
-				radius += 0.1f;
+				//clamp to max of .75, anything more is just dumb and reckless
+				/*if (radius < 0)
+					radius = 0.f;
+				if (radius > 0.75f)
+					radius = 0.75f;*/
 				switch (G::cmd->tick_count % 2)
 				{
 				case 0: // target top left
@@ -857,6 +877,11 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			}
 			else
 			{
+				//clamp to max of .5, anything more is just dumb and reckless
+				/*if (radius < 0)
+					radius = 0.f;
+				if (radius > 0.5f)
+					radius = 0.5f;*/
 				switch (G::cmd->tick_count % 2)
 				{
 				case 0: // target top left
@@ -868,6 +893,28 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 				}
 			}
 			
+		}
+		// do regular multipoint stuff
+		else if ((HITBOX == HITBOX_STOMACH || HITBOX == HITBOX_PELVIS || HITBOX == HITBOX_UPPER_CHEST || HITBOX == HITBOX_LOWER_CHEST) && rage.multipoint > 0.01f)
+		{
+			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
+			// this is to hopefully de-lag, though we can potentially do bad by 2 tick.
+			// this is counter by the fact that, because we aren't lagging, we will be most up to date
+			// maybe I'll add 2 implementations, with the user deciding which one to use
+
+			if (radius < 0)
+				radius = 0.f;
+			if (radius > 1.f)
+				radius = 1.f;
+			switch (G::cmd->tick_count % 2)
+			{
+			case 0: // target left
+				point = lagcomp->PlayerList[UserID].ptrEntity->GetLeft(point, radius, G::LocalPlayer);
+				break;
+			case 1: // target right
+				point = lagcomp->PlayerList[UserID].ptrEntity->GetRight(point, radius, G::LocalPlayer);
+				break;
+			}
 		}
 
 		// Calc Mid Angle
@@ -954,6 +1001,10 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 			TargetTick = a;
 		}
 	}
+
+	// if not moving fast enough at ALL
+	if (TargetTick.Velocity.VecLength2D() < 50)
+		return false;
 	
 	
 
@@ -964,15 +1015,19 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 	bool DoBaim = false;
 	if (G::LocalPlayerWeaponData && rage.BaimIfLethal)
 	{
-		float Damage = G::LocalPlayerWeaponData->Damage * powf(G::LocalPlayerWeaponData->RangeModifier, G::LocalPlayerWeaponData->Range / 500.0f);
 
+		float Damage = G::LocalPlayerWeaponData->Damage;
+		Damage = autowall->GetDamageMultiplier(HITGROUP_STOMACH) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, 0.99 * G::LocalPlayerWeaponData->Range / 500.0f);
 		float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
-		float armorval = lagcomp->PlayerList[UserID].ptrEntity->ArmorVal();
-		Damage -= (armorval < Damage* ArmorRatio / 2.0f ? armorval * 4.0f : Damage) * (1.0f - ArmorRatio);
+		if (autowall->IsArmored(HITGROUP_STOMACH, lagcomp->PlayerList[UserID].ptrEntity->HasHelmet()))
+			Damage -= (lagcomp->PlayerList[UserID].ptrEntity->ArmorVal() < Damage * ArmorRatio / 2.0f ? lagcomp->PlayerList[UserID].ptrEntity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
 
-		// if we can damage enough by baiming... (by a margin of 10hp...)
-		if (lagcomp->PlayerList[UserID].Health < Damage - 10)
+		// if we can damage enough by baiming...
+		if (lagcomp->PlayerList[UserID].Health <= Damage + 25) // make it MUCH more likely to baim :D
+		{
 			DoBaim = true;
+		}
+
 	}
 
 	float damage = 0.f;
@@ -1025,17 +1080,19 @@ bool Aimbot::UpdateRageVal()
 
 	static Config::CFloat* Pistol_VisMin		= Config::GetFloat("rageaim-pistol-mindamage-visible");
 	static Config::CFloat* Pistol_HidMin		= Config::GetFloat("rageaim-pistol-mindamage-hidden");
-	static Config::CFloat* Pistol_HitChance	= Config::GetFloat("rageaim-pistol-hitchance");
+	static Config::CFloat* Pistol_HitChance		= Config::GetFloat("rageaim-pistol-hitchance");
 	static Config::CState* Pistol_BaimIfLethal	= Config::GetState("rageaim-pistol-baimiflethal");
 	static Config::CState* Pistol_Override		= Config::GetState("rageaim-pistol-override");
-	static Config::CFloat* Pistol_OverrideDam  = Config::GetFloat("rageaim-pistol-override-damage");
+	static Config::CFloat* Pistol_OverrideDam	= Config::GetFloat("rageaim-pistol-override-damage");
+	static Config::CFloat* Pistol_Multipoint	= Config::GetFloat("rageaim-pistol-multipoint");
 
 	static Config::CFloat* Smg_VisMin			= Config::GetFloat("rageaim-smg-mindamage-visible");
 	static Config::CFloat* Smg_HidMin			= Config::GetFloat("rageaim-smg-mindamage-hidden");
 	static Config::CFloat* Smg_HitChance		= Config::GetFloat("rageaim-smg-hitchance");
-	static Config::CState* Smg_BaimIfLethal	= Config::GetState("rageaim-smg-baimiflethal");
-	static Config::CState* Smg_Override		= Config::GetState("rageaim-smg-override");
+	static Config::CState* Smg_BaimIfLethal		= Config::GetState("rageaim-smg-baimiflethal");
+	static Config::CState* Smg_Override			= Config::GetState("rageaim-smg-override");
 	static Config::CFloat* Smg_OverrideDam		= Config::GetFloat("rageaim-smg-override-damage");
+	static Config::CFloat* Smg_Multipoint		= Config::GetFloat("rageaim-smg-multipoint");
 
 	static Config::CFloat* Heavy_VisMin		= Config::GetFloat("rageaim-heavy-mindamage-visible");
 	static Config::CFloat* Heavy_HidMin		= Config::GetFloat("rageaim-heavy-mindamage-hidden");
@@ -1043,34 +1100,39 @@ bool Aimbot::UpdateRageVal()
 	static Config::CState* Heavy_BaimIfLethal	= Config::GetState("rageaim-heavy-baimiflethal");
 	static Config::CState* Heavy_Override		= Config::GetState("rageaim-heavy-override");
 	static Config::CFloat* Heavy_OverrideDam	= Config::GetFloat("rageaim-heavy-override-damage");
+	static Config::CFloat* Heavy_Multipoint		= Config::GetFloat("rageaim-heavy-multipoint");
 
-	static Config::CFloat* Scout_VisMin		= Config::GetFloat("rageaim-scout-mindamage-visible");
-	static Config::CFloat* Scout_HidMin		= Config::GetFloat("rageaim-scout-mindamage-hidden");
+	static Config::CFloat* Scout_VisMin			= Config::GetFloat("rageaim-scout-mindamage-visible");
+	static Config::CFloat* Scout_HidMin			= Config::GetFloat("rageaim-scout-mindamage-hidden");
 	static Config::CFloat* Scout_HitChance		= Config::GetFloat("rageaim-scout-hitchance");
 	static Config::CState* Scout_BaimIfLethal	= Config::GetState("rageaim-scout-baimiflethal");
 	static Config::CState* Scout_Override		= Config::GetState("rageaim-scout-override");
 	static Config::CFloat* Scout_OverrideDam	= Config::GetFloat("rageaim-scout-override-damage");
+	static Config::CFloat* Scout_Multipoint		= Config::GetFloat("rageaim-scout-multipoint");
 
 	static Config::CFloat* AWP_VisMin			= Config::GetFloat("rageaim-awp-mindamage-visible");
 	static Config::CFloat* AWP_HidMin			= Config::GetFloat("rageaim-awp-mindamage-hidden");
 	static Config::CFloat* AWP_HitChance		= Config::GetFloat("rageaim-awp-hitchance");
-	static Config::CState* AWP_BaimIfLethal	= Config::GetState("rageaim-awp-baimiflethal");
-	static Config::CState* AWP_Override		= Config::GetState("rageaim-awp-override");
+	static Config::CState* AWP_BaimIfLethal		= Config::GetState("rageaim-awp-baimiflethal");
+	static Config::CState* AWP_Override			= Config::GetState("rageaim-awp-override");
 	static Config::CFloat* AWP_OverrideDam		= Config::GetFloat("rageaim-awp-override-damage");
+	static Config::CFloat* AWP_Multipoint		= Config::GetFloat("rageaim-awp-multipoint");
 
 	static Config::CFloat* Auto_VisMin			= Config::GetFloat("rageaim-auto-mindamage-visible");
 	static Config::CFloat* Auto_HidMin			= Config::GetFloat("rageaim-auto-mindamage-hidden");
 	static Config::CFloat* Auto_HitChance		= Config::GetFloat("rageaim-auto-hitchance");
 	static Config::CState* Auto_BaimIfLethal	= Config::GetState("rageaim-auto-baimiflethal");
 	static Config::CState* Auto_Override		= Config::GetState("rageaim-auto-override");
-	static Config::CFloat* Auto_OverrideDam	= Config::GetFloat("rageaim-auto-override-damage");
+	static Config::CFloat* Auto_OverrideDam		= Config::GetFloat("rageaim-auto-override-damage");
+	static Config::CFloat* Auto_Multipoint		= Config::GetFloat("rageaim-auto-multipoint");
 
-	static Config::CFloat* Rifle_VisMin		= Config::GetFloat("rageaim-rifle-mindamage-visible");
-	static Config::CFloat* Rifle_HidMin		= Config::GetFloat("rageaim-rifle-mindamage-hidden");
+	static Config::CFloat* Rifle_VisMin			= Config::GetFloat("rageaim-rifle-mindamage-visible");
+	static Config::CFloat* Rifle_HidMin			= Config::GetFloat("rageaim-rifle-mindamage-hidden");
 	static Config::CFloat* Rifle_HitChance		= Config::GetFloat("rageaim-rifle-hitchance");
 	static Config::CState* Rifle_BaimIfLethal	= Config::GetState("rageaim-rifle-baimiflethal");
 	static Config::CState* Rifle_Override		= Config::GetState("rageaim-rifle-override");
 	static Config::CFloat* Rifle_OverrideDam	= Config::GetFloat("rageaim-rifle-override-damage");
+	static Config::CFloat* Rifle_Multipoint = Config::GetFloat("rageaim-rifle-multipoint");
 	
 
 	// I could use a switch case for this meh
@@ -1088,6 +1150,7 @@ bool Aimbot::UpdateRageVal()
 		}
 		rage.hitchance = Pistol_HitChance->Get() / 100.f;
 		rage.BaimIfLethal = Pistol_BaimIfLethal->Get();
+		rage.multipoint = Pistol_Multipoint->Get() / 100.f;
 		GetRageHitboxes(0);
 		return true;
 	}
@@ -1105,6 +1168,7 @@ bool Aimbot::UpdateRageVal()
 		}
 		rage.hitchance = Smg_HitChance->Get() / 100.f;
 		rage.BaimIfLethal = Smg_BaimIfLethal->Get();
+		rage.multipoint = Smg_Multipoint->Get() / 100.f;
 		GetRageHitboxes(1);
 		return true;
 	}
@@ -1122,6 +1186,7 @@ bool Aimbot::UpdateRageVal()
 		}
 		rage.hitchance = Heavy_HitChance->Get() / 100.f;
 		rage.BaimIfLethal = Heavy_BaimIfLethal->Get();
+		rage.multipoint = Heavy_Multipoint->Get() / 100.f;
 		GetRageHitboxes(2);
 		return true;
 	}
@@ -1141,6 +1206,7 @@ bool Aimbot::UpdateRageVal()
 			}
 			rage.hitchance = Scout_HitChance->Get() / 100.f;
 			rage.BaimIfLethal = Scout_BaimIfLethal->Get();
+			rage.multipoint = Scout_Multipoint->Get() / 100.f;
 			GetRageHitboxes(3);
 			return true;
 		}
@@ -1158,6 +1224,7 @@ bool Aimbot::UpdateRageVal()
 			}
 			rage.hitchance = AWP_HitChance->Get() / 100.f;
 			rage.BaimIfLethal = AWP_BaimIfLethal->Get();
+			rage.multipoint = AWP_Multipoint->Get() / 100.f;
 			GetRageHitboxes(4);
 			return true;
 		}
@@ -1175,6 +1242,7 @@ bool Aimbot::UpdateRageVal()
 			}
 			rage.hitchance = Auto_VisMin->Get() / 100.f;
 			rage.BaimIfLethal = Auto_VisMin->Get();
+			rage.multipoint = Auto_Multipoint->Get() / 100.f;
 			GetRageHitboxes(5);
 			return true;
 		}
@@ -1192,6 +1260,7 @@ bool Aimbot::UpdateRageVal()
 			}
 			rage.hitchance = Rifle_HitChance->Get() / 100.f;
 			rage.BaimIfLethal = Rifle_BaimIfLethal->Get();
+			rage.multipoint = Rifle_Multipoint->Get() / 100.f;
 			GetRageHitboxes(6);
 			return true;
 		}
