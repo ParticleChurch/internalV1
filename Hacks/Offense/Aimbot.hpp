@@ -18,7 +18,13 @@ private:
 		int hid_mindam; // hidden min damage
 		int vis_mindam; // visible min damage
 		float hitchance;
+		// If lethal, then baim!
 		bool BaimIfLethal;
+		std::deque<Hitboxes> baimboxes = { HITBOX_PELVIS, HITBOX_UPPER_CHEST, HITBOX_STOMACH, HITBOX_LOWER_CHEST };
+		// how far out from center aimbot will shoot for...
+		// for now will only be applied to pelvis, head, and upperchest
+		float multipoint; 
+		
 	}rage;
 
 	// General Private Functions

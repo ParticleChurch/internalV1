@@ -804,9 +804,24 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 
 	L::Verbose("ScanPlayer - passed checks");
 
+	// Handle baim stuff :D
+	bool DoBaim = false;
+	if (G::LocalPlayerWeaponData && rage.BaimIfLethal)
+	{
+		float Damage = G::LocalPlayerWeaponData->Damage * powf(G::LocalPlayerWeaponData->RangeModifier, G::LocalPlayerWeaponData->Range / 500.0f);
+
+		float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+		float armorval = lagcomp->PlayerList[UserID].ptrEntity->ArmorVal();
+		Damage -= (armorval < Damage* ArmorRatio / 2.0f ? armorval * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+		// if we can damage enough by baiming... (by a margin of 10hp...)
+		if (lagcomp->PlayerList[UserID].Health < Damage - 10)
+			DoBaim = true;
+	}
+
 	float damage = 0.f;
 
-	for (auto HITBOX : rage.hitboxes)
+	for (auto HITBOX : DoBaim ? rage.baimboxes : rage.hitboxes)
 	{
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
@@ -829,7 +844,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			// if the player is moving slow enough, use these, otherwise aim for center of head obv
 			if (lagcomp->PlayerList[UserID].ptrEntity->GetVecVelocity().VecLength2D() < 120)
 			{
-				radius += 0.1;
+				radius += 0.1f;
 				switch (G::cmd->tick_count % 2)
 				{
 				case 0: // target top left
@@ -940,19 +955,36 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		}
 	}
 	
-	// dont bother autowalling unless they are moving sufficeintly fast enough
-	if (TargetTick.Velocity.VecLength2D() < 100) return false;
+	
 
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
 	if (!StudioModel) return false; //if cant get the model
 
+	// Handle baim stuff :D
+	bool DoBaim = false;
+	if (G::LocalPlayerWeaponData && rage.BaimIfLethal)
+	{
+		float Damage = G::LocalPlayerWeaponData->Damage * powf(G::LocalPlayerWeaponData->RangeModifier, G::LocalPlayerWeaponData->Range / 500.0f);
+
+		float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
+		float armorval = lagcomp->PlayerList[UserID].ptrEntity->ArmorVal();
+		Damage -= (armorval < Damage* ArmorRatio / 2.0f ? armorval * 4.0f : Damage) * (1.0f - ArmorRatio);
+
+		// if we can damage enough by baiming... (by a margin of 10hp...)
+		if (lagcomp->PlayerList[UserID].Health < Damage - 10)
+			DoBaim = true;
+	}
+
 	float damage = 0.f;
 
-	for (auto HITBOX : rage.hitboxes)
+	for (auto HITBOX : DoBaim ? rage.baimboxes : rage.hitboxes)
 	{
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
+
+		// dont bother autowalling for head unless they are moving sufficeintly fast enough
+		if (HITBOX == HITBOX_HEAD && TargetTick.Velocity.VecLength2D() < 100) continue;
 
 		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmax.Transform(TargetTick.Matrix[StudioBox->bone]);
@@ -1257,6 +1289,7 @@ void Aimbot::GetRageHitboxes(int gun)
 		rage.hitboxes.push_back(HITBOX_LEFT_FOOT);
 	}
 }
+
 
 /*
 void Aimbot::HandleBaimConditions(int RecordUserID)
