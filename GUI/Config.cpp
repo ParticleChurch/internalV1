@@ -154,9 +154,9 @@ namespace Config
 				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 0);
 
 				p = g->Add("antiaim-custom-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"));
-				g->Add("antiaim-custom-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"))->VisibilityLinked = p;
+				g->Add("antiaim-custom-real-jitter", "Real Jitter", new CFloat(-180, 180, 1, "DEG"))->VisibilityLinked = p;
 				g->Add("antiaim-custom-fake", "Fake Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
-				g->Add("antiaim-custom-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-custom-fake-jitter", "Fake Jitter", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				g->Add("antiaim-custom-fake-invert", "Invert on Hit", new CBoolean())->VisibilityLinked = p;
 				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 1);
 
