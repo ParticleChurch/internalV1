@@ -150,7 +150,7 @@ namespace Config
 				p = g->Add("antiaim-manual-left", "Left", new CBoolean());
 				g->Add("antiaim-manual-back", "Back", new CBoolean())->VisibilityLinked = p;
 				g->Add("antiaim-manual-right", "Right", new CBoolean())->VisibilityLinked = p;
-				g->Add("antiaim-manual-max", "Desync Delta", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-manual-max", "Desync Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 0);
 
 				p = g->Add("antiaim-custom-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"));
