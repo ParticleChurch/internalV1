@@ -120,7 +120,7 @@ namespace Config
 				g->Add("antiaim-legit-enable", "Enable", new CBoolean())->IsPremium = true;
 
 				g->BeginMaster(p);
-				p = g->Add("antiaim-legit-max-angle", "Max Desync Angle", new CFloat(0, 100, 1, "%"));
+				p = g->Add("antiaim-legit-max-angle", "Desync Amount", new CFloat(0, 100, 1, "%"));
 				g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true))->IsPremium = true;
 				g->EndMaster();
 
