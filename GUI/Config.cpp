@@ -140,22 +140,26 @@ namespace Config
 				p = g->Add("antiaim-rage-enable", "Enable", new CBoolean());
 
 				g->BeginMaster(p);
+
 				g->Add("antiaim-rage-invert", "Invert Fake/Real", new CBoolean());
 				g->Add("visuals-rage-yawbase", "Base Yaw", new CVerticalState({ "180 from Original", "Closest to Crosshair", "Clostest Distance", "Freestanding" }));
 				g->Add("antiaim-rage-pitch", "Pitch", new CFloat(-89, 89, 1, "DEG"));
 
 				g->Add("antiaim-type", "", new CHorizontalState({ "Manual", "Custom" }));
 
-				CONFIG_VIS(g->Add("antiaim-manual-left", "Left", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
-				CONFIG_VIS(g->Add("antiaim-manual-back", "Back", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
-				CONFIG_VIS(g->Add("antiaim-manual-right", "Right", new CBoolean()), nullptr, GetState("antiaim-type"), 0);
-				CONFIG_VIS(g->Add("antiaim-manual-max", "Desync Delta", new CFloat(0, 100, 1, "%")), nullptr, GetState("antiaim-type"), 0);
+				p = g->Add("antiaim-manual-left", "Left", new CBoolean());
+				g->Add("antiaim-manual-back", "Back", new CBoolean())->VisibilityLinked = p;
+				g->Add("antiaim-manual-right", "Right", new CBoolean())->VisibilityLinked = p;
+				g->Add("antiaim-manual-max", "Desync Delta", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 0);
 
-				CONFIG_VIS(g->Add("antiaim-custom-real", "Real Offset", new CFloat(-180, 180, 1, "DEG")), nullptr, GetState("antiaim-type"), 1);
-				CONFIG_VIS(g->Add("antiaim-custom-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG")), nullptr, GetState("antiaim-type"), 1);
-				CONFIG_VIS(g->Add("antiaim-custom-fake", "Fake Offset", new CFloat(0, 100, 1, "%")), nullptr, GetState("antiaim-type"), 1);
-				CONFIG_VIS(g->Add("antiaim-custom-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%")), nullptr, GetState("antiaim-type"), 1);
-				CONFIG_VIS(g->Add("antiaim-custom-fake-invert", "Invert on Hit", new CBoolean()), nullptr, GetState("antiaim-type"), 1);
+				p = g->Add("antiaim-custom-real", "Real Offset", new CFloat(-180, 180, 1, "DEG"));
+				g->Add("antiaim-custom-real-jitter", "Real Jitter Offset", new CFloat(-180, 180, 1, "DEG"))->VisibilityLinked = p;
+				g->Add("antiaim-custom-fake", "Fake Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-custom-fake-jitter", "Fake Jitter Offset", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
+				g->Add("antiaim-custom-fake-invert", "Invert on Hit", new CBoolean())->VisibilityLinked = p;
+				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 1);
+
 				g->EndMaster();
 
 				GetProperty("antiaim-manual-max")->GetWarning = []() {
