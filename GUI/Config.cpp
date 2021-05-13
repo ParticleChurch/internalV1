@@ -826,19 +826,16 @@ namespace Config
 			// unbind if already bound
 			if (((CVerticalState*)p->Value)->BoundToKey >= 0)
 			{
-				std::vector<void*>& vec = Keybind::Binds[((CBoolean*)p->Value)->BoundToKey];
-				for (size_t i = 0; i < vec.size(); i++)
+				std::vector<void*>& vec = Keybind::Binds[((CVerticalState*)p->Value)->BoundToKey];
+				for (int64_t i = vec.size() - 1; i >= 0; i--)
 					if (vec.at(i) == (void*)p)
-						vec.erase(vec.begin() + i--);
-				((CVerticalState*)p->Value)->BoundToKey = -1;
+						vec.erase(vec.begin() + i);
 			}
+			((CVerticalState*)p->Value)->BoundToKey = index;
 
-			// bind if wants us to
 			if (index >= 0)
-			{
-				((CVerticalState*)p->Value)->BoundToKey = index;
 				Keybind::Binds[index].push_back(p);
-			}
+
 			ForceUpdate = false;
 		} break;
 		case PropertyType::HSTATEFUL:
@@ -860,7 +857,7 @@ namespace Config
 				Keybind::Binds[index].push_back(p);
 			}
 			ForceUpdate = false;
-		}
+		} break;
 		default:
 			L::Log((XOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
 			return;
