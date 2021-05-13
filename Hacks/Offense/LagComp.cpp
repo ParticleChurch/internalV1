@@ -186,10 +186,10 @@ void LagComp::Update()
 						{
 							tick.Shot = true;
 						}
-							
+
 					}
 					else
-						tick.Shot = resolver->PlayerInfo[UserId].Shot;
+						tick.Shot = false;
 				}
 				else
 					tick.Shot = false;

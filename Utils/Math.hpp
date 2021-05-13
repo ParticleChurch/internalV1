@@ -333,3 +333,8 @@ inline float NormalizeYaw(float a)
 		a += 360;
 	return a;
 }
+
+bool inline IsNearEqual(float v1, float v2, float Tolerance)
+{
+	return std::abs(v1 - v2) <= std::abs(Tolerance);
+};

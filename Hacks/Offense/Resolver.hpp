@@ -1,30 +1,37 @@
 #pragma once
 
+#define BRUTE_FORCE 0
+#define JITTER_METHOD 1
+#define BACK_METHOD 2
+
 struct PlayerRes
 {
 	// Log Shots
 	int OldShotsMissed = 0;
 	int ShotsMissed = 0;
 	bool LogShot = false;
-	// Resolver Specific
-	float SimTime = 0;
-	float OldSimTime = 0;
-	bool IsDesyncing = false;
+
+	// Dumb Esp Tag
 	std::string ResolverFlag;
-	// Hitting ONSHOT
-	bool Shot = false;
-	float ShotTime = 0.f;
-	float LookAtLocalAng = 0.f;
-	QAngle PrevAng;
-	int LagTime = 0;
-	//bool IsDormant = true;
-	//bool IsMoving = false;
-	//bool IsOnGround = false;
-	//bool IsInAir = false;
 
-	// Aimbot
-	int priority = 0;
+	// Resolver Specific
+	int LagTime = 0;			// How many ticks does user lag
+	float SimTime = 0;			// Cur Sim time
+	float OldSimTime = 0;		// Old Sim Time
+	bool IsDesyncing = false;	// Are they desyncing
+	
 
+	// Resolve stuff
+	float OffsetAngle = 0.f;
+	// shots missed before we changed method of resolving
+	int BeforeShotMissed = 0;
+	int ResolveMethod = BRUTE_FORCE; //default to brute force
+	//Jitter
+	int FreestandSide;
+	float LastAngle;
+	float LastBrute;
+	float Switch;
+	float LastUpdateTime;
 };
 
 class Resolver
@@ -48,29 +55,19 @@ public:
 	// For logging spread
 	bool LogShot = false;
 	bool BacktrackShot = false;
-	int UserID = -1;
+	int AimbotUserID = -1;
 
 	//userid, PlayerRes
 	std::map<int, PlayerRes> PlayerInfo;
-
-	// Gets priority for a given userid
-	int GetPriority(int UserID)
-	{
-		if (PlayerInfo.find(UserID) == PlayerInfo.end())
-			return 0;
-		return PlayerInfo[UserID].priority;
-	}
-
-	int TargetIndex = 0;
 	void LogShots(GameEvent* event);
 	void AnimationFix(Entity* entity);
 
 	void Resolve();
 
 	void ResolveEnt(Entity* entity, int Index);
-	void FindShot(Entity* entity, int UserID);
-	float GetBackwardYaw(Entity* entity);
-	void DetectSide(Entity* entity, int* side);
+	bool DoesHaveJitter(Entity* entity, int UserID, int& newside);
+	float GetBackwardsYaw(Entity* entity);
+	// Specific to entities
 
 };
 

@@ -678,7 +678,7 @@ void Aimbot::Rage()
 			resolver->LogShot = true;
 			G::cmd->buttons |= IN_ATTACK;
 			G::cmd->tick_count = TargetTickCount;
-			CapsuleOverlay2(lagcomp->PlayerList[TargetUserID].ptrEntity, Color(255, 0, 0, 255), 0.5, TargetMatrix);
+			CapsuleOverlay2(lagcomp->PlayerList[TargetUserID].ptrEntity, Color(255, 0, 0, 255), 4, TargetMatrix);
 		}
 
 		// only force send if not fakeducking... (as that will break fd)
@@ -743,11 +743,11 @@ bool Aimbot::ScanPlayers()
 		if (ScanPlayer(a.first, this->AimPoint))
 			return true;
 		// scan backtrack of players
-		if (ScanPlayerBacktrack(a.first, this->AimPoint))
+		/*if (ScanPlayerBacktrack(a.first, this->AimPoint))
 		{
 			backtrackaim = true;
 			return true;
-		}
+		}*/
 			
 		
 		i++;
@@ -855,43 +855,45 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			esp->points.push_back(point);
 
 			// Calc Mid Angle
-			L::Verbose("ScanPlayer - CalculateAngle");
+			L::Verbose("ScanPlayer - CalculateAngle spook");
 			QAngle MidAngle = CalculateAngle(point);
 
 			// Calc Mid Hitchance
-			L::Verbose("ScanPlayer - CalculateHitchance");
+			L::Verbose("ScanPlayer - CalculateHitchance spook");
 			float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 
 			// If the left hitchance is up to snuff...
 			if (MidHitchance >= rage.hitchance)
 			{
 				// if the point is visible
-				L::Verbose("ScanPlayer - IsVisible");
+				L::Verbose("ScanPlayer - IsVisible spook");
 				bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 				// no need to autowall if visible...
-				L::Verbose("ScanPlayer - Damage");
+				L::Verbose("ScanPlayer - Damage spook");
 				damage = autowall->Damage(point, HITBOX, true);
 				if (visible && damage >= rage.vis_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy");
+					L::Verbose("ScanPlayer - memcpy spook");
 					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
+					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime + GetLerp());
 
+					resolver->AimbotUserID = UserID;
 					Point = point;
 					return true;
 				}
 				else if (damage >= rage.hid_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy");
+					L::Verbose("ScanPlayer - memcpy spook");
 					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
 
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
+					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime + GetLerp());
 
+					resolver->AimbotUserID = UserID;
 					Point = point;
 					return true;
 				}
@@ -943,43 +945,45 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		esp->points.push_back(point);
 
 		// Calc Mid Angle
-		L::Verbose("ScanPlayer - CalculateAngle");
+		L::Verbose("ScanPlayer - CalculateAngle Default");
 		QAngle MidAngle = CalculateAngle(point);
 
 		// Calc Mid Hitchance
-		L::Verbose("ScanPlayer - CalculateHitchance");
+		L::Verbose("ScanPlayer - CalculateHitchance Default");
 		float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 		
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
 			// if the point is visible
-			L::Verbose("ScanPlayer - IsVisible");
+			L::Verbose("ScanPlayer - IsVisible Default");
 			bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 			// no need to autowall if visible...
-			L::Verbose("ScanPlayer - Damage");
+			L::Verbose("ScanPlayer - Damage Default");
 			damage = autowall->Damage(point, HITBOX, true);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy");
+				L::Verbose("ScanPlayer - memcpy Default");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
 				
+				resolver->AimbotUserID = UserID;
 				Point = point;
 				return true;
 			}
 			else if (damage >= rage.hid_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy");
+				L::Verbose("ScanPlayer - memcpy Default2");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
 
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
 
+				resolver->AimbotUserID = UserID;
 				Point = point;
 				return true;
 			}
@@ -1045,17 +1049,19 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		}
 
 	}
+	// Force baim backtrack if only head is selected
+	else if(rage.hitboxes.size() == 1 && rage.hitboxes[0] == HITBOX_HEAD)
+		DoBaim = true;
 
 	float damage = 0.f;
 
 	for (auto HITBOX : DoBaim ? rage.baimboxes : rage.hitboxes)
 	{
+
 		mstudiobbox_t* StudioBox = StudioModel->GetHitboxSet(0)->GetHitbox(HITBOX);
 		if (!StudioBox) continue;	//if cant get the hitbox...
 		int HitGroup = GetHitGroup(HITBOX);
 
-		// dont bother autowalling for head unless they are moving sufficeintly fast enough
-		if (HITBOX == HITBOX_HEAD && TargetTick.Velocity.VecLength2D() < 100) continue;
 
 		Vec min = StudioBox->bbmin.Transform(TargetTick.Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmax.Transform(TargetTick.Matrix[StudioBox->bone]);

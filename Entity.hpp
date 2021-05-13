@@ -599,6 +599,12 @@ public:
 		return *(float*)((DWORD)this + offset);
 	}
 
+	float GetOldSimulationTime()
+	{
+		static DWORD offset = N::GetOffset("DT_BaseAnimating", "m_flSimulationTime") + 4;
+		return *(float*)((DWORD)this + offset);
+	}
+
 	AnimState* GetAnimstate() noexcept
 	{
 		return *reinterpret_cast<AnimState**>(this + 0x3914);

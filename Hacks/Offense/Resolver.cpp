@@ -138,7 +138,10 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 			ConsoleColorMsg(Color(255, 255, 255), " for ");
 			ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 			ConsoleColorMsg(Color(255, 255, 255), " in the ");
-			ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
+			ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
+			ConsoleColorMsg(Color(255, 255, 255), " at angle ");
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+
 			if(!BacktrackShot)
 				PlayerInfo[ImpactEndUserID].ShotsMissed--;
 
@@ -151,13 +154,15 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		// LUCKY shot (wasn't going t hit but did + not backtrack shot...)
 		PlayerInfo[ImpactEndUserID].ShotsMissed++;
 
-		ConsoleColorMsg(Color(255, 69, 0), "Prediction Error: ");
+		ConsoleColorMsg(Color(255, 69, 0), "Resolver Error: ");
 		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
 		ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
 		ConsoleColorMsg(Color(255, 255, 255), " for ");
 		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
-		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
+		ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
+		ConsoleColorMsg(Color(255, 255, 255), " at angle ");
+		ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
 
 		LogPredError = false;
 		LogShot = false; // dont log missed to spread (cuz luckily hit entity)
@@ -170,7 +175,9 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 255, 255), " for ");
 		ConsoleColorMsg(Color(255, 0, 0), "[%d]", dmg);
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
-		ConsoleColorMsg(Color(255, 69, 0), "[%s]\n", HitGroupStr(hitgroup).c_str());
+		ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
+		ConsoleColorMsg(Color(255, 255, 255), " at angle ");
+		ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
 		//PlayerInfo[ImpactEndUserID].ShotsMissed--;
 
 		LogPredError = false; // no prediction error cuz backtrack
@@ -294,9 +301,10 @@ void Resolver::AnimationFix(Entity* entity)
 	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
 		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
+	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
 
-	*ClientAnims = false;
+
 
 	I::globalvars->m_realTime = m_flRealtime;
 	I::globalvars->m_curTime = m_flCurtime;
@@ -325,6 +333,10 @@ void Resolver::Resolve()
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
 
+
+	H::console.clear();
+	H::console.resize(0);
+
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
 		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
@@ -336,12 +348,13 @@ void Resolver::Resolve()
 			)
 			continue;
 
-		AnimationFix(ent);
-
-		
 		player_info_t info;
 		if (!I::engine->GetPlayerInfo(i, &info))
+		{
+			AnimationFix(ent);
 			continue;
+		}
+			
 
 		int UserID = info.userid;
 
@@ -358,14 +371,17 @@ void Resolver::Resolve()
 		if (LogPredError && LogEnable->Get() && PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
 		{
 			PlayerInfo[UserID].LogShot = true;
-			ConsoleColorMsg(Color(255, 69, 0), "Prediction Error: ");
+			ConsoleColorMsg(Color(255, 69, 0), "Resolver Error: ");
 			ConsoleColorMsg(Color(255, 0, 0), "Missed shot at ");
-			ConsoleColorMsg(Color(0, 255, 0), "[%s]\n", info.name);
+			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
+			ConsoleColorMsg(Color(255, 0, 0), " at angle ");
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
 			LogPredError = false;
 			LogShot = false; // dont wanna log spread error if it is a prediction error
 		}
 
 		ResolveEnt(ent, i);
+		AnimationFix(ent);
 		
 	}
 
@@ -373,7 +389,7 @@ void Resolver::Resolve()
 	if (LogShot && LogEnable->Get() && !BacktrackShot)
 	{
 		player_info_t info;
-		if (!I::engine->GetPlayerInfo(UserID, &info))
+		if (!I::engine->GetPlayerInfo(AimbotUserID, &info))
 		{
 			ConsoleColorMsg(Color(255, 255, 255), "Missed shot due to");
 			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
@@ -381,9 +397,11 @@ void Resolver::Resolve()
 		else
 		{
 			ConsoleColorMsg(Color(255, 255, 255), "Missed shot on");
-			ConsoleColorMsg(Color(255, 0, 0), "[%s]", info.name);
-			ConsoleColorMsg(Color(255, 255, 255), "  due to ");
-			ConsoleColorMsg(Color(255, 0, 0), " spread\n");
+			ConsoleColorMsg(Color(255, 0, 0), " [%s] ", info.name);
+			ConsoleColorMsg(Color(255, 255, 255), "due to ");
+			ConsoleColorMsg(Color(255, 0, 0), " spread");
+			ConsoleColorMsg(Color(255, 0, 0), " at angle ");
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
 		}
 	}
 	else if(LogShot && LogEnable->Get() && BacktrackShot) // if we miss backtrack shot...
@@ -405,6 +423,7 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 	player_info_t info;
 	if (!I::engine->GetPlayerInfo(Index, &info))
 		return;
+
 	int UserID = info.userid;
 	auto& record = PlayerInfo[UserID];
 
@@ -418,157 +437,147 @@ void Resolver::ResolveEnt(Entity* entity, int Index)
 		record.OldSimTime = entity->GetSimulationTime();
 	}
 
-	// If Desyncing... RESOLVE!
-	if (true/* record.IsDesyncing*/)
+	// Dont try to resolve if not desync lol
+	/*if (!record.IsDesyncing)
+		return;*/
+
+	// Get Animstate
+	AnimState* animstate = entity->GetAnimstate();
+	if (!animstate) return;
+
+	//animstate->m_flGoalFeetYaw = (entity->GetLBY() + entity->GetEyeAngles().y) / 2.f;
+
+	float max_desync = entity->GetMaxDesyncAngle();
+
+	record.ResolverFlag = std::to_string(record.ShotsMissed) + " | ";
+
+	// we miss jitter resolve method hard so try straight back
+	if (record.ResolveMethod == JITTER_METHOD && record.ShotsMissed - record.BeforeShotMissed > 2) {
+		record.ResolveMethod = BACK_METHOD;
+		record.BeforeShotMissed = record.ShotsMissed;
+	}
+
+	// we miss bruteforce method so try straight back
+	if (record.ResolveMethod == BRUTE_FORCE && record.ShotsMissed - record.BeforeShotMissed > 6)
 	{
-		PlayerInfo[UserID].ResolverFlag = std::to_string(PlayerInfo[UserID].ShotsMissed) + "|";
+		record.ResolveMethod = BACK_METHOD;
+		record.BeforeShotMissed = record.ShotsMissed;
+	}
 
-		// Applies pitch if shooting (I think)
-		FindShot(entity, UserID);
-		record.PrevAng = entity->GetEyeAngles();
 
-		// Get Side of desync
-		int side = 0;
-		DetectSide(entity, &side);
+	int side = 0;
+	// if there is jitter to be had...
+	if (DoesHaveJitter(entity, UserID, side))
+	{
+		if (record.ResolveMethod == BRUTE_FORCE && record.ShotsMissed - record.BeforeShotMissed > 6)
+		{
+			record.ResolveMethod = JITTER_METHOD;
+			record.BeforeShotMissed = record.ShotsMissed;
+		}
+	}
 		
-		// Get Animstate
-		AnimState* animstate = entity->GetAnimstate();
-		if (!animstate) return;
-
-		// Get EyeYaw
-		float EyeYaw = animstate->m_flEyeYaw;
-
-		// Get MaxDesyncDelta
-		float MaxDesyncAng = entity->GetMaxDesyncAngle();
-
-		// Check if extending
-		AnimationLayer* layer = entity->GetAnimOverlay(3);
-		bool m_extending = false;
-		if (layer)
-			m_extending = layer->m_flCycle == 0.f && layer->m_flWeight == 0.f;
-
-		// set up brute ang
-		static float brute = 0.f;
-
-		// if they are roughly facing forward...
-		bool forward = fabsf(NormalizeYaw(NormalizeYaw(entity->GetEyeAngles().y) - NormalizeYaw(GetBackwardYaw(entity) + 180))) < 90.f;
-
-		// resolve shooting players separately.
-		if (record.Shot)
-		{
-			PlayerInfo[UserID].ResolverFlag += "Shot!";
-			float flPseudoFireYaw = NormalizeYaw(aimbot->CalculateAngle(entity->GetVecOrigin(), G::LocalPlayer->GetVecOrigin()).y);
-
-			if (m_extending) {
-				float flLeftFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y + 58.f)));
-				float flRightFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y - 58.f)));
-
-				//g_notify.add( tfm::format( XOR( "found shot record on %s: [ yaw: %i ]" ), game::GetPlayerName( record->m_player->index( ) ), int( flLeftFireYawDelta > flRightFireYawDelta ? -58.f : 58.f ) ) );
-
-				brute = flLeftFireYawDelta > flRightFireYawDelta ? -58.f : 58.f;
-			}
-			else {
-				float flLeftFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y + 29.f)));
-				float flRightFireYawDelta = fabsf(NormalizeYaw(flPseudoFireYaw - (entity->GetEyeAngles().y - 29.f)));
-
-				//g_notify.add( tfm::format( XOR( "found shot record on %s: [ yaw: %i ]" ), game::GetPlayerName( record->m_player->index( ) ), int( flLeftFireYawDelta > flRightFireYawDelta ? -29.f : 29.f ) ) );
-
-				brute = flLeftFireYawDelta > flRightFireYawDelta ? -29.f : 29.f;
-			}
-		}
-		// Otherwise BRUTEFORCE
-		else
-		{
-			float resolve_yaw = MaxDesyncAng;
-			// Because we know they are choking packets --> assume desync
-			switch (record.ShotsMissed % 3) {
-			case 0:
-				PlayerInfo[UserID].ResolverFlag += "LEFT";
-				brute = resolve_yaw * (forward ? side : -side);
-				break;
-			case 1:
-				PlayerInfo[UserID].ResolverFlag += "RIGHT";
-				brute = resolve_yaw * (forward ? -side : side);
-				break;
-			case 2:
-				PlayerInfo[UserID].ResolverFlag += "0";
-				brute = 0;
-				break;
-			}
-
-			animstate->m_flGoalFeetYaw = EyeYaw + brute;
-
-			// normalize the eye angles, doesn't really matter but its clean.
-			animstate->m_flGoalFeetYaw = NormalizeYaw(animstate->m_flGoalFeetYaw);
-			//entity->PGetEyeAngles()->y = NormalizeYaw(entity->PGetEyeAngles()->y);
-		}
+	// we miss the back method as well --> RESET!
+	if (record.ResolveMethod == BACK_METHOD
+		&& record.ShotsMissed - record.BeforeShotMissed > 2) {
+		record.ResolveMethod = BRUTE_FORCE;
+		record.BeforeShotMissed = record.ShotsMissed;
 	}
-	else
+
+
+	if (record.ResolveMethod == BRUTE_FORCE)
 	{
-		PlayerInfo[UserID].ResolverFlag = "Not Desyncing";
+		switch (record.ShotsMissed % 7)
+		{
+		case 0:
+			record.OffsetAngle = 0.f;
+			break;
+		case 1:
+			record.OffsetAngle = max_desync;
+			break;
+		case 2:
+			record.OffsetAngle = -max_desync;
+			break;
+		case 3:
+			record.OffsetAngle = max_desync * 2 / 3;
+			break;
+		case 4:
+			record.OffsetAngle = -max_desync * 2 / 3;
+			break;
+		case 5:
+			record.OffsetAngle = max_desync * 1 / 3;
+			break;
+		case 6:
+			record.OffsetAngle = -max_desync * 1 / 3;
+			break;
+		}
+		animstate->m_flGoalFeetYaw += record.OffsetAngle;
+		record.ResolverFlag += std::to_string(record.OffsetAngle);
+		return;
+	}
+	else if (record.ResolveMethod == JITTER_METHOD)
+	{
+		record.ResolverFlag += "Jitter ";
+		switch (record.ShotsMissed % 3)
+		{
+		case 0:
+			record.OffsetAngle = 0.f;
+			break;
+		case 1:
+			record.OffsetAngle = max_desync * side;
+			break;
+		case 2:
+			record.OffsetAngle = max_desync * side;
+			break;
+		}
+		animstate->m_flGoalFeetYaw += record.OffsetAngle;
+		record.ResolverFlag += std::to_string(record.OffsetAngle);
+		return;
+	} 
+	else if (record.ResolveMethod == BACK_METHOD)
+	{
+		record.ResolverFlag += "Backyaw ";
+		float backyaw = GetBackwardsYaw(entity);
+		switch (record.ShotsMissed % 3)
+		{
+		case 0:
+			record.OffsetAngle = 0.f;
+			break;
+		case 1:
+			record.OffsetAngle = max_desync;
+			break;
+		case 2:
+			record.OffsetAngle = -max_desync;
+			break;
+		}
+		animstate->m_flGoalFeetYaw = backyaw + record.OffsetAngle;
+		record.ResolverFlag += std::to_string(record.OffsetAngle);
+		return;
 	}
 }
 
-void Resolver::FindShot(Entity* entity, int UserID)
+bool Resolver::DoesHaveJitter(Entity* entity, int UserID, int &newside)
 {
-	auto& record = PlayerInfo[UserID];
-	Entity* pWeapon = entity->GetActiveWeapon();
-
-	float shoot_time = -1.f;
-	if (pWeapon) {
-		// with logging this time was always one tick behind.
-		// so add one tick to the last shoot time.
-		shoot_time = pWeapon->GetLastShotTime() + I::globalvars->m_intervalPerTick;
+	float CurrentAngle = entity->GetEyeAngles().y;
+	if (!IsNearEqual(CurrentAngle, PlayerInfo[UserID].LastAngle, 50.f)) {
+		PlayerInfo[UserID].Switch = !PlayerInfo[UserID].Switch;
+		PlayerInfo[UserID].LastAngle = CurrentAngle;
+		newside = PlayerInfo[UserID].Switch ? 1 : -1;
+		PlayerInfo[UserID].LastBrute = newside;
+		PlayerInfo[UserID].LastUpdateTime = I::globalvars->m_curTime;
+		return true;
 	}
-
-
-	static int OS = 0;
-	// this record has a shot on it.
-	if (TimeToTicks(shoot_time) - TimeToTicks(entity->GetSimulationTime()) == 1) {
-		H::console.push_back("SHOT");
-		if (record.LagTime <= 2)
-			record.Shot = true;
-
-		// more then 1 choke, cant hit pitch, apply prev pitch.
-		else
-			entity->PGetEyeAngles()->x = record.PrevAng.x;
+	else {
+		if (fabsf(PlayerInfo[UserID].LastUpdateTime - I::globalvars->m_curTime >= TicksToTime(17))
+			|| entity->GetSimulationTime() != entity->GetOldSimulationTime()) {
+			PlayerInfo[UserID].LastAngle = CurrentAngle;
+		}
+		newside = PlayerInfo[UserID].LastBrute;
 	}
-	else
-		record.Shot = false;
+	return false;
 }
 
-float Resolver::GetBackwardYaw(Entity* entity)
+float Resolver::GetBackwardsYaw(Entity* entity)
 {
 	return aimbot->CalculateAngle(G::LocalPlayer->GetVecOrigin(), entity->GetVecOrigin()).y;
 }
 
-void Resolver::DetectSide(Entity* entity, int* side)
-{
-	Vec src3D, dst3D, forward, right, up, src, dst;
-	float back_two, right_two, left_two;
-	trace_t tr;
-	CTraceFilter filter(entity);
-
-	AngleVectors(QAngle(0, GetBackwardYaw(entity), 0), &forward, &right, &up);
-
-	src3D = entity->GetEyePos();
-	dst3D = src3D + (forward * 384); //Might want to experiment with other numbers, incase you don't know what the number does, its how far the trace will go. Lower = shorter.
-
-	I::enginetrace->TraceRay(Ray_t(src3D, dst3D), MASK_SHOT, &filter, &tr);
-	back_two = (tr.Endpos - tr.Startpos).VecLength();
-
-	I::enginetrace->TraceRay(Ray_t(src3D + right * 35, dst3D + right * 35), MASK_SHOT, &filter, &tr);
-	right_two = (tr.Endpos - tr.Startpos).VecLength();
-
-	I::enginetrace->TraceRay(Ray_t(src3D - right * 35, dst3D - right * 35), MASK_SHOT, &filter, &tr);
-	left_two = (tr.Endpos - tr.Startpos).VecLength();
-
-	if (left_two > right_two) {
-		*side = -1;
-	}
-	else if (right_two > left_two) {
-		*side = 1;
-	}
-	else
-		*side = 0;
-}

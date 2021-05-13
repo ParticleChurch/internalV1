@@ -70,6 +70,13 @@ float Autowall::HandleBulletPenetration(SurfaceData* EnterSurfaceData, const tra
     return Damage;
 }
 
+void Autowall::TraceLine(Vec& start, Vec& end, unsigned int mask, Entity* ignore, trace_t* tr)
+{
+    Ray_t ray(start, end);
+    CTraceFilter filter(ignore);
+    I::enginetrace->TraceRay(ray, MASK_SHOT | CONTENTS_HITBOX, &filter, tr);
+}
+
 bool Autowall::IsVisible(Vec Start, Vec End, Entity* Ent)
 {
     trace_t Trace;
@@ -228,10 +235,12 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
         trace_t Trace;
         CTraceFilter Filter(G::LocalPlayer);
         Ray_t Ray(Start, point);
+        //MASK_SHOT + 0x0000000B
         I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
 
         if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
             return false;
+
 
         // We have reached end of trace and therefore can hit it
         L::Verbose("Checking trace fraction 1");
@@ -244,7 +253,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 
         // We've hit an enemy hitbox, and therefore can't hit point?
         // as long as trace entity's team isn't on our team
-        if (Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
+        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
 
             float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
@@ -271,46 +280,26 @@ bool Autowall::CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriend
 
     if (!G::LocalPlayerWeaponData) return false;
 
-    float Damage = G::LocalPlayerWeaponData->Damage;
-
     Vec Start{ start };
     Vec Direction{ Start - point };
     Direction /= Direction.VecLength();
+    Vec end = start + (Direction * G::LocalPlayerWeaponData->Range);
 
-    // if it is autowallable
-    int hitsLeft = 4;
-    while (Damage >= 1.0f && hitsLeft > 0) {
+    static auto VectortoVectorVisible = [&](Vec src, Vec point) -> bool {
+        trace_t TraceInit;
+        TraceLine(src, point, MASK_SOLID, G::LocalPlayer, &TraceInit);
         trace_t Trace;
-        CTraceFilter Filter(G::LocalPlayer);
-        Ray_t Ray(Start, point);
-        I::enginetrace->TraceRay(Ray, 0x4600400B, &Filter, &Trace);
+        TraceLine(src, point, MASK_SOLID, TraceInit.Entity, &Trace);
 
-        if (!AllowFriendlyFire && Trace.Entity && Trace.Entity->IsPlayer() && (G::LocalPlayer->GetTeam() == Trace.Entity->GetTeam()))
-            return false;
+        if (Trace.Fraction == 1.0f || TraceInit.Fraction == 1.0f)
+            return true;
 
-        // We have reached end of trace and therefore can hit it
-        if (Trace.Fraction == 1.0f)
-            return false;
+        return false;
+    };
 
-        // We've hit an enemy hitbox, and therefore can't hit point? can hit? idk... prob should should ig
-        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG) {
-            Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
+    if (VectortoVectorVisible(start, point))
+        return true;
 
-            float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;
-            if (IsArmored(Trace.Hitgroup, Trace.Entity->HasHelmet()))
-                Damage -= (Trace.Entity->ArmorVal() < Damage * ArmorRatio / 2.0f ? Trace.Entity->ArmorVal() * 4.0f : Damage) * (1.0f - ArmorRatio);
-
-            return Damage >= 1;
-        }
-
-        const auto SurfaceData = I::physicssurfaceprops->getSurfaceData(Trace.Surface.SurfaceProps);
-
-        if (SurfaceData->game.flPenetrationModifier < 0.1f)
-            break;
-
-        Damage = HandleBulletPenetration(SurfaceData, Trace, Direction, Start, G::LocalPlayerWeaponData->Penetration, Damage);
-        hitsLeft--;
-    }
     return false;
 }
 
