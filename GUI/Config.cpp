@@ -527,6 +527,8 @@ namespace Config
 			{
 				Group* g = t->Add("Misc");
 
+				g->Add("theme-offscreen", "Allow Menu Off Screen", new CBoolean(false));
+
 				g->Add("theme-eject", "Eject Label", new CColor(true));
 				g->Add("theme-eject-button", "Eject Button", new CColor(true));
 				g->Add("theme-eject-button-text", "Eject Button Text", new CColor(true));

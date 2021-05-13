@@ -325,6 +325,8 @@ void H::Free()
 
 long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
+	static auto AllowMenuOffScreen = Config::GetState("theme-offscreen");
+
 	L::Verbose("H::EndSceneHook - begin");
 
 	// init imgui
@@ -355,6 +357,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		if (GUI::MainWindow && !AllowMenuOffScreen->Get())
+			GUI::ClampToScreen();
 
 		
 		//debugger console

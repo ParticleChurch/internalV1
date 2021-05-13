@@ -93,6 +93,8 @@ namespace GUI
 	bool IsSearching = false;
 	char* SearchQuery = nullptr;
 	Config::Tab* ActiveTab = nullptr;
+	
+	ImGuiWindow* MainWindow = nullptr;
 };
 
 // Util drawers
@@ -1623,6 +1625,101 @@ namespace ImGui
 
 		return 20;
 	}
+}
+
+void RealSetWindowDimensions(ImGuiWindow* window, ImVec2 position, ImVec2 size)
+{
+	ImVec2 pdelta = position - window->Pos;
+	ImVec2 sdelta = size - window->SizeFull;
+
+	ImGui::SetWindowPos(window, position);
+	ImGui::SetWindowSize(window, size);
+
+	ImGuiContext* GImGui = ImGui::GetCurrentContext();
+	if (GImGui->MovingWindow == window)
+		GImGui->ActiveIdClickOffset -= pdelta;
+	else if (window->ResizeBorderHeld)
+		GImGui->ActiveIdClickOffset -= sdelta;
+}
+
+void GUI::ClampToScreen()
+{
+	if (!MainWindow) return;
+	static float lx = MainWindow->Pos.x;
+	static float ly = MainWindow->Pos.y;
+	float x = MainWindow->Pos.x;
+	float y = MainWindow->Pos.y;
+	float sx = MainWindow->SizeFull.x;
+	float sy = MainWindow->SizeFull.y;
+	ImVec2 screen = ImGui::GetIO().DisplaySize;
+
+
+	bool moved = x != lx || y != ly;
+	bool offScreen = x < 0 || y < 0 || x + sx > screen.x || y + sy > screen.y;
+
+	if (offScreen)
+	{
+		if (moved)
+		{
+			if (sx <= screen.x)
+			{
+				// clamp to screen
+				x = std::clamp(x, 0.f, screen.x - sx);
+			}
+			else
+			{
+				// resize and place on left
+				x = 0.f;
+				sx = max(screen.x, MinMenuSize.x);
+			}
+
+			if (sy <= screen.y)
+			{
+				// clamp to screen
+				y = std::clamp(y, 0.f, screen.y - sy);
+			}
+			else
+			{
+				// resize and place on top
+				y = 0.f;
+				sy = max(screen.y, MinMenuSize.y);
+			}
+		}
+		else
+		{
+			if (x < 0)
+			{
+				// decrease size and move right
+				sx = std::clamp(sx + x, MinMenuSize.x, screen.x);
+				x = 0.f;
+			}
+			else if (x + sx > screen.x)
+			{
+				// decrease size and move left
+				sx = std::clamp(screen.x - x, MinMenuSize.x, screen.x);
+				x = screen.x - sx;
+			}
+
+			if (y < 0)
+			{
+				// decrease size and move down
+				sy = std::clamp(sy + y, MinMenuSize.y, screen.y);
+				y = 0.f;
+			}
+			else if (y + sy > screen.y)
+			{
+				// decrease size and move up
+				sy = std::clamp(screen.y - y, MinMenuSize.y, screen.y);
+				y = screen.y - sy;
+			}
+		}
+
+		// update gui with new params
+		RealSetWindowDimensions(MainWindow, ImVec2(x,y), ImVec2(sx, sy));
+	}
+
+	lx = x;
+	ly = y;
 }
 
 void GUI::LoadingScreen()
@@ -3156,8 +3253,9 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopStyleVar(1);
 
 	// init
-	auto Window = ImGui::GetCurrentWindow();
+	auto Window = MainWindow = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
+
 
 	// draw border because imgui borders are inset which makes me wanna kms
 	{

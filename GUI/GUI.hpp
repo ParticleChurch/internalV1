@@ -26,6 +26,8 @@ namespace GUI
 
 	extern void LoadFonts(ImGuiIO& io);
 
+	extern ImGuiWindow* MainWindow;
+	extern void ClampToScreen();
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
 	extern void AuthenticationIntro();
