@@ -295,7 +295,6 @@ void Movement::AutoStop()
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
 		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
 		{
-			H::console.push_back("can hit player @" + std::string(it->second.info.name));
 			PossibleDamage = true;
 			break;
 		}

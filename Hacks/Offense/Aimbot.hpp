@@ -69,7 +69,6 @@ private:
 public:
 	int GetHitGroup(int Hitbox);
 
-
 	int maxplayerscan = 5;
 	// General Public Functions
 	Vec CalculateAngle(Vec Target);

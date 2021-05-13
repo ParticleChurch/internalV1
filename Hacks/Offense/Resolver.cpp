@@ -333,10 +333,6 @@ void Resolver::Resolve()
 	L::Verbose("Resolver::PreResolver - begin");
 	Entity* ent;
 
-
-	H::console.clear();
-	H::console.resize(0);
-
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
 		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
