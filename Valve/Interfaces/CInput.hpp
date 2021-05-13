@@ -44,4 +44,16 @@ public:
 		auto verifiedCommands = *(CVerifiedUserCmd**)(reinterpret_cast<uint32_t>(this) + 0xF8);
 		return &verifiedCommands[sequence_number % 150];
 	}
+
+	void CamToFirstPerson()
+	{
+		typedef void (__thiscall* CamToFirstPerson_)(void*);
+		GetVFunc<CamToFirstPerson_>(this, 36)(this);
+	}
+
+	int CamInThirdPerson(int slot = -1)
+	{
+		typedef int (__thiscall* CamInThirdPerson_)(void*, int);
+		return GetVFunc<CamInThirdPerson_>(this, 32)(this, slot);
+	}
 };

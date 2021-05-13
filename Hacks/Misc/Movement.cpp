@@ -272,10 +272,6 @@ void Movement::AutoStop()
 	// Updating our next position
 	Vec NextPos = G::LocalPlayer->GetEyePos() + velocity;
 
-	H::console.clear();
-	H::console.resize(0);
-	H::console.push_back("autostop/scope");
-
 	bool PossibleDamage = false;
 
 	std::map<int, Player>::iterator it;

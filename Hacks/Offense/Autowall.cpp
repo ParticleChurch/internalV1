@@ -244,7 +244,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 
         // We've hit an enemy hitbox, and therefore can't hit point?
         // as long as trace entity's team isn't on our team
-        if (Trace.Hitgroup > HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
+        if (Trace.Hitgroup >= HITGROUP_GENERIC && Trace.Hitgroup <= HITGROUP_RIGHTLEG && Trace.Entity->GetTeam() != G::LocalPlayerTeam) {
             Damage = GetDamageMultiplier(Trace.Hitgroup) * Damage * powf(G::LocalPlayerWeaponData->RangeModifier, Trace.Fraction * G::LocalPlayerWeaponData->Range / 500.0f);
 
             float ArmorRatio = G::LocalPlayerWeaponData->ArmorRatio / 2.0f;

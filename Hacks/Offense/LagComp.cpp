@@ -167,37 +167,44 @@ void LagComp::Update()
 			tick.Flags = ent->GetFlags();
 			// Choked
 			L::Verbose("Choked");
-			tick.Choked = 0.f;//will figure out later :D
+			if(!PlayerList[UserId].Records.empty())
+				tick.Choked = TimeToTicks(tick.SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
 			// LastShotTIme
 			L::Verbose("LastShotTIme");
 			tick.LastShotTime = PlayerList[UserId].ptrWeap ? PlayerList[UserId].ptrWeap->GetLastShotTime() : 0.f;
 			// Shot
 			L::Verbose("Shot");
+			
 			if (!PlayerList[UserId].Records.empty())
 			{
 				if (PlayerList[UserId].ptrWeap)
 				{
-					if (tick.LastShotTime != PlayerList[UserId].Records.front().LastShotTime)
+					if (TimeToTicks(tick.LastShotTime) != TimeToTicks(PlayerList[UserId].Records.front().LastShotTime))
 					{
 						// If last record time diff from this one, and weapon exists,--> SHOT DONE!
-						tick.Shot = true;
+						if (tick.Choked <= 2) // timing right, eye ang wrong so...
+						{
+							tick.Shot = true;
+						}
+							
 					}
 					else
-						tick.Shot = false;
+						tick.Shot = resolver->PlayerInfo[UserId].Shot;
 				}
 				else
 					tick.Shot = false;
 			}
 			else
 				tick.Shot = false;
+				
 
 			// Push tick forward
 			PlayerList[UserId].Records.push_front(tick);
 		}
 
 		L::Verbose("Deal with too many records");
-		// Deal with too many records (anything above 200ms just forget about it :D)
-		unsigned int Ticks = TimeToTicks(.2f);
+		// Deal with too many records (anything above 190ms just forget about it :D)
+		unsigned int Ticks = TimeToTicks(.190f);
 		while (PlayerList[UserId].Records.size() > 3 && PlayerList[UserId].Records.size() > Ticks) {
 			PlayerList[UserId].Records.pop_back();
 		}

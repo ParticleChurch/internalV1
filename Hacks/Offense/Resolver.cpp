@@ -294,10 +294,9 @@ void Resolver::AnimationFix(Entity* entity)
 	if (anim->m_iLastClientSideAnimationUpdateFramecount >= m_iNextSimulationTick)
 		anim->m_iLastClientSideAnimationUpdateFramecount = m_iNextSimulationTick - 1;
 
-	*ClientAnims = true;
 	entity->UpdateClientSideAnimation();
 
-
+	*ClientAnims = false;
 
 	I::globalvars->m_realTime = m_flRealtime;
 	I::globalvars->m_curTime = m_flCurtime;
@@ -339,6 +338,7 @@ void Resolver::Resolve()
 
 		AnimationFix(ent);
 
+		
 		player_info_t info;
 		if (!I::engine->GetPlayerInfo(i, &info))
 			continue;
@@ -366,6 +366,7 @@ void Resolver::Resolve()
 		}
 
 		ResolveEnt(ent, i);
+		
 	}
 
 	// if we are aimboting, and have logs enabled...
@@ -520,8 +521,11 @@ void Resolver::FindShot(Entity* entity, int UserID)
 		shoot_time = pWeapon->GetLastShotTime() + I::globalvars->m_intervalPerTick;
 	}
 
+
+	static int OS = 0;
 	// this record has a shot on it.
-	if (TimeToTicks(shoot_time) == TimeToTicks(entity->GetSimulationTime())) {
+	if (TimeToTicks(shoot_time) - TimeToTicks(entity->GetSimulationTime()) == 1) {
+		H::console.push_back("SHOT");
 		if (record.LagTime <= 2)
 			record.Shot = true;
 

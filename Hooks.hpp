@@ -18,6 +18,7 @@ namespace H
     typedef void(__thiscall* DoPostScreenEffects)(void*, int);
 	typedef void(__thiscall* DrawModelExecute)(void*, void*, void*, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
 	typedef void(__thiscall* EmitSound)(void*, SoundData);
+	typedef bool(__thiscall* WriteUsercmdDeltaToBuffer)(void*, int, void*, int, int, bool);
 
 	extern EndScene oEndScene;
 	extern Reset oReset;
@@ -29,6 +30,7 @@ namespace H
 	extern DoPostScreenEffects oDoPostScreenEffects;
 	extern DrawModelExecute oDrawModelExecute;
 	extern EmitSound oEmitSound;
+	extern WriteUsercmdDeltaToBuffer oWriteUsercmdDeltaToBuffer;
 
 	//our functions
 	extern long __stdcall EndSceneHook(IDirect3DDevice9* device);
@@ -42,10 +44,10 @@ namespace H
     extern void __stdcall DoPostScreenEffectsHook(int param);
 	extern void __fastcall DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld);
 	extern void __stdcall EmitSoundHook(SoundData data);
-
-
-	//DT???
-	typedef bool(__thiscall* WriteUsercmdDeltaToBuffer)(void*, int, void*, int, int, bool);
-	extern WriteUsercmdDeltaToBuffer oWriteUsercmdDeltaToBuffer;
 	extern	bool __fastcall WriteUsercmdDeltaToBufferHook(void* ecx, void* edx, int slot, void* buffer, int from, int to, bool isnewcommand);
+
+	//Pingspike?
+	typedef int(__thiscall* SendDatagram)(void*, void*);
+	extern SendDatagram oSendDatagram;
+	extern int SendDatagramHook(void* data);
 }
