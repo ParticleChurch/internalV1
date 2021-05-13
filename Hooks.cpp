@@ -54,6 +54,8 @@ public:
 		I::gameeventmanager->AddListener(this, "player_hurt");		// Resolver/Hitmarker
 		I::gameeventmanager->AddListener(this, "weapon_fire");		// Resolver
 		I::gameeventmanager->AddListener(this, "player_death");		// Hitmarker
+		I::gameeventmanager->AddListener(this, "round_freeze_end");	// AA (freezetime)
+		I::gameeventmanager->AddListener(this, "round_prestart");	// AA (freezetime)
 	}
 	~EventListener()
 	{
@@ -149,6 +151,12 @@ public:
 			
 		}
 		break;
+		case StrHash::Hash("round_freeze_end"):
+			G::FreezeTime = false;
+		break;
+		case StrHash::Hash("round_prestart"):
+			G::FreezeTime = true;
+			break;
 		}
 		
 		killsay->run(event);

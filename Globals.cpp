@@ -12,6 +12,7 @@ namespace G
 	QAngle StartAngle;
 	QAngle EndAngle;
 	bool IsInGame;
+	bool FreezeTime = false;
 
 	//LocalPlayer
 	Entity* LocalPlayer = new Entity();

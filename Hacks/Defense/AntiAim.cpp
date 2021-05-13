@@ -593,6 +593,9 @@ void AntiAim::rage()
 
 	if (!Enable->Get()) return;
 
+	// Big P2C looking
+	if (G::FreezeTime) return; 
+
 	// make it so it only updates on a new tick :D
 	static int tick_count = G::cmd->tick_count;
 	if (tick_count == G::cmd->tick_count)

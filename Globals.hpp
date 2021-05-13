@@ -8,10 +8,11 @@ namespace G {
 	extern std::string CSGODirectory;
 	extern std::string CSGOExePath;
 
-	//General Variables
+	//General 
 	extern QAngle StartAngle;
 	extern QAngle EndAngle;
 	extern bool IsInGame;
+	extern bool FreezeTime;
 
 	//LocalPlayer
 	extern Entity* LocalPlayer;
