@@ -357,7 +357,8 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
-		if (GUI::MainWindow && !AllowMenuOffScreen->Get())
+		ImGuiIO& io = ImGui::GetIO();
+		if (GUI::MainWindow && !AllowMenuOffScreen->Get() && io.DisplaySize.x > GUI::MinMenuSize.x && io.DisplaySize.y > GUI::MinMenuSize.y)
 			GUI::ClampToScreen();
 
 		
@@ -435,47 +436,54 @@ long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPr
 
 LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	L::Verbose("H::WndProc - begin (", "");
-	L::Verbose(std::to_string((DWORD)hWnd).c_str(), ", ");
-	L::Verbose(std::to_string(uMsg).c_str(), ", ");
-	L::Verbose(std::to_string(wParam).c_str(), ", ");
-	L::Verbose(std::to_string(lParam).c_str(), ")\n");
-
-	if (!D3dInit)
-	{
-		L::Verbose("H::WndProc - not initalized so calling original");
-		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-	}
-
+	if (!D3dInit) return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 	static auto MenuOpen = Config::GetState("show-menu");
-	bool IsKeyboardInput = uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP || uMsg == WM_CHAR;
-	bool IsMouseInput =
-		uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL || uMsg == WM_INPUT || // wm_input is not always mouse but usually will be
+
+	// determine input type
+	bool KeyboardInput =
+		uMsg == WM_SYSCHAR ||
+		uMsg == WM_CHAR ||
+		uMsg == WM_DEADCHAR ||
+		uMsg == WM_HOTKEY ||
+		uMsg == WM_KEYDOWN ||
+		uMsg == WM_KEYUP ||
+		uMsg == WM_SYSDEADCHAR ||
+		uMsg == WM_SYSKEYDOWN ||
+		uMsg == WM_SYSKEYUP ||
+		uMsg == WM_UNICHAR;
+	bool MouseInput =
+		uMsg == WM_MOUSEMOVE || uMsg == WM_INPUT || uMsg == WM_SETCURSOR ||
+		uMsg == WM_MOUSEWHEEL || uMsg == WM_MOUSEHWHEEL ||
+		uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK ||
 		uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONDBLCLK ||
 		uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONDBLCLK ||
 		uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONDBLCLK ||
-		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK;
+		uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONDBLCLK ||
+		uMsg == WM_NCLBUTTONDOWN || uMsg == WM_NCLBUTTONDBLCLK ||
+		uMsg == WM_NCRBUTTONDOWN || uMsg == WM_NCRBUTTONDBLCLK ||
+		uMsg == WM_NCMBUTTONDOWN || uMsg == WM_NCMBUTTONDBLCLK ||
+		uMsg == WM_NCXBUTTONDOWN || uMsg == WM_NCXBUTTONDBLCLK;
+	bool UnknownInput = !KeyboardInput && !MouseInput;
 
-	L::Verbose(IsKeyboardInput ? "H::WndProc - keyboard input" : (IsMouseInput ? "H::WndProc - mouse input" : "H::WndProc - unknown input"));
-	
-	// give imgui input
-	if (MenuOpen->Get())
-	{
-		bool im = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-		L::Verbose("H::WndProc - imgui returned ", im ? "true\n" : "false\n");
-	}
-	
-	// determine if csgo should receive this input
-	ImGuiIO& io = ImGui::GetIO();
-	bool HideInputFromCSGO = (IsMouseInput && io.WantCaptureMouse) || (IsKeyboardInput && io.WantCaptureKeyboard);
-	if (HideInputFromCSGO)
-		L::Verbose("H::WndProc - CS:GO will not receive this input");
+	L::Verbose("WndProc begin (", "");
+	L::Verbose(std::to_string((DWORD)hWnd).c_str(), ", ");
+	L::Verbose(std::to_string(uMsg).c_str(), ", ");
+	L::Verbose(std::to_string(wParam).c_str(), ", ");
+	L::Verbose(std::to_string(lParam).c_str(), ") - ");
+	L::Verbose(MouseInput ? "mouse" : KeyboardInput ? "keyboard" : "unknown");
 
-	bool og = false;
-	if (!HideInputFromCSGO)
-		og = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-	L::Verbose("H::WndProc - complete (returning ", og ? "true)\n" : "false)\n");
-	return og;
+	// send input to imgui
+	if (MenuOpen->Get()) ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+
+	// send input to csgo if any othe following:
+	//    - we don't understand the input
+	//    - it's keyboard input and imgui doesn't care about it
+	//    - it's mouse input and imgui doesn't care about it
+	bool handled = false;
+	if (UnknownInput || KeyboardInput && !GUI::WantKeyboard || MouseInput && !ImGui::GetIO().WantCaptureMouse) handled = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+
+	L::Verbose("WndProc complete - returned ", handled ? "true\n" : "false\n");
+	return handled;
 }
 
 float RandomVal(float min, float max)
