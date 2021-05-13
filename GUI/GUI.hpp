@@ -10,6 +10,7 @@ namespace GUI
 
 	extern bool Ejected;
 	extern bool WantMouse;
+	extern bool WantKeyboard;
 	extern float LoadProgress;
 	extern float VisibleLoadProgress;
 	extern Animation::Anim* IntroAnimation;

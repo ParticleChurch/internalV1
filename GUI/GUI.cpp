@@ -80,6 +80,7 @@ namespace GUI
 {
 	bool Ejected = false;
 	bool WantMouse = false;
+	bool WantKeyboard = false;
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
 	Animation::Anim* IntroAnimation = nullptr;
@@ -447,6 +448,7 @@ namespace ImGui
 			}
 		}
 		InputText((XOR("##") + Identifier).c_str(), Buffer, BufferLength);
+		GUI::WantKeyboard |= IsItemActive();
 	}
 
 	std::string TruncateToEllipsis(std::string Input, float MaxWidth)
@@ -750,6 +752,7 @@ namespace ImGui
 			SetCursorPos(ImVec2(5, 3));
 			SetNextItemWidth(w->Size.x - 10);
 			InputText((XOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize, PremiumLocked ? ImGuiInputTextFlags_ReadOnly : 0);
+			GUI::WantKeyboard |= IsItemActive();
 
 			if (IsTyping)
 			{
@@ -1332,17 +1335,9 @@ namespace ImGui
 				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5, 0));
 				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 				{
-					if (p->Name == XOR("show-menu"))
-					{
-						Config::SettingKeybindFor = p;
-						GUI::WantMouse = true;
-					}
-					else
-					{
-						Config::_BindToKey(p, -1);
-						Config::SettingKeybindFor = nullptr;
-						GUI::WantMouse = true;
-					}
+					Config::_BindToKey(p, -1);
+					Config::SettingKeybindFor = nullptr;
+					GUI::WantMouse = true;
 				}
 				if (IsItemHovered())
 				{
@@ -2198,8 +2193,6 @@ void GUI::DrawActiveTab()
 	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
 	static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
 	static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-	//static Config::CColor* SearchbarBackground = Config::GetColor(XOR("theme-main-searchbar-background"));
-	//static Config::CColor* SearchbarText = Config::GetColor(XOR("theme-main-searchbar-text"));
 	static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
 	static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
 	static Config::CFloat* LegitRageSwitchBorderSize = Config::GetFloat(XOR("theme-legit-rage-switch-border-size"));
@@ -2487,6 +2480,7 @@ void GUI::DrawActiveTab()
 				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearchingKnife ? 48 : 28));
 				ImGui::InputText(InputLabel, KnifeSearchQuery, 256);
 				ImGui::PopStyleColor(1);
+				WantKeyboard |= ImGui::IsItemActive();
 
 				if (!IsSearchingKnife)
 				{
@@ -2832,6 +2826,7 @@ void GUI::DrawActiveTab()
 				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearchingWeapon ? 48 : 28));
 				ImGui::InputText(InputLabel, WeaponSearchQuery, 256);
 				ImGui::PopStyleColor(1);
+				WantKeyboard |= ImGui::IsItemActive();
 
 				if (!IsSearchingWeapon)
 				{
@@ -3358,7 +3353,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
 			ImGui::InputText(InputLabel, SearchQuery, 256);
 			ImGui::PopStyleColor(1);
-			WantMouse |= ImGui::IsItemHovered();
+			WantKeyboard |= ImGui::IsItemActive();
 
 			if (!IsSearching)
 			{
@@ -3517,6 +3512,7 @@ void GUI::Main()
 	}
 
 	WantMouse = false;
+	WantKeyboard = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
 		L::Verbose(XOR("GUI::AuthenticationIntro running"));
