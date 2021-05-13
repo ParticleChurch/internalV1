@@ -79,7 +79,6 @@ namespace ImGui
 namespace GUI
 {
 	bool Ejected = false;
-	bool WantMouse = false;
 	bool WantKeyboard = false;
 	float LoadProgress = 0.f;
 	float VisibleLoadProgress = 0.f;
@@ -686,7 +685,6 @@ namespace ImGui
 			{
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(iconText, IconSize.y);
-				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 					ShellExecute(0, 0, (XOR("https://www.a4g4.com/features#") + p->Name).c_str(), 0, 0, SW_HIDE);
 			}
@@ -817,7 +815,6 @@ namespace ImGui
 		// switch behavior
 		if (Flipped && !PremiumLocked)
 		{
-			GUI::WantMouse = true;
 			Config::SettingKeybindFor = nullptr;
 			Value->Value.Invert();
 			if (Value->BoundToKey >= 0)
@@ -830,14 +827,10 @@ namespace ImGui
 		}
 
 		// hover premium lock
-		if (IsItemHovered())
+		if (PremiumLocked && IsItemHovered())
 		{
-			GUI::WantMouse = true;
-			if (PremiumLocked)
-			{
-				SetCursorPos(SwitchPos + ImVec2(15, 0));
-				ToolTip(PREMIUM_USERS_ONLY, 20);
-			}
+			SetCursorPos(SwitchPos + ImVec2(15, 0));
+			ToolTip(PREMIUM_USERS_ONLY, 20);
 		}
 
 		// draw keybind (only if premium not locked)
@@ -893,7 +886,6 @@ namespace ImGui
 								{
 									Value->BindMode = (Config::KeybindMode)i;
 								}
-								GUI::WantMouse |= IsItemHovered();
 							}
 						}
 						EndChild();
@@ -940,20 +932,17 @@ namespace ImGui
 					if (p->Name == XOR("show-menu"))
 					{
 						Config::SettingKeybindFor = p;
-						GUI::WantMouse = true;
 					}
 					else
 					{
 						Config::_BindToKey(p, -1);
 						Config::SettingKeybindFor = nullptr;
-						GUI::WantMouse = true;
 					}
 				}
 				if (IsItemHovered())
 				{
 					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
 					ToolTip(p->Name == XOR("show-menu") ? XOR("Click To Edit") : XOR("Click To Clear"), 20);
-					GUI::WantMouse = true;
 				}
 				PopFont();
 				PopStyleColor(2);
@@ -976,11 +965,6 @@ namespace ImGui
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config::SettingKeybindFor = p;
-					GUI::WantMouse = true;
-				}
-				if (IsItemHovered())
-				{
-					GUI::WantMouse = true;
 				}
 				PopFont();
 				PopStyleColor(2);
@@ -1029,14 +1013,12 @@ namespace ImGui
 
 			if (!PremiumLocked && Active)
 			{
-				GUI::WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
 				Value->SetFactor(UserSetValue);
 			}
 
 			if (IsItemHovered() || Active)
 			{
-				GUI::WantMouse = true;
 				SetCursorPos(BarBase + ImVec2((BarLength - 16.f) * DrawValue + 8.f, (20 - 16) / 2));
 				ToolTip(PremiumLocked ? PREMIUM_USERS_ONLY : Value->Stringify(), 20);
 			}
@@ -1097,7 +1079,6 @@ namespace ImGui
 				OpenPopup((XOR("##color-picker-") + p->Name).c_str());
 			else if (IsItemHovered())
 			{
-				GUI::WantMouse = true;
 				SetCursorPos(ColorButtonBase + ImVec2(20, 0));
 				ToolTip(PremiumLocked ? PREMIUM_USERS_ONLY : Value->Stringify(), 20);
 			}
@@ -1112,7 +1093,6 @@ namespace ImGui
 			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
 			if (BeginPopup((XOR("##color-picker-") + p->Name).c_str()))
 			{
-				GUI::WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
 
 				PushFont(Arial16);
@@ -1232,13 +1212,11 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
-						GUI::WantMouse = true;
 						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
 				bool HoveringOverOpener = IsItemHovered();
-				GUI::WantMouse |= HoveringOverOpener;
 
 				EndChild();
 				PopStyleColor(1);
@@ -1269,7 +1247,6 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
 				{
-					GUI::WantMouse = true;
 					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
@@ -1337,13 +1314,11 @@ namespace ImGui
 				{
 					Config::_BindToKey(p, -1);
 					Config::SettingKeybindFor = nullptr;
-					GUI::WantMouse = true;
 				}
 				if (IsItemHovered())
 				{
 					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
 					ToolTip(XOR("Click To Clear"), 20);
-					GUI::WantMouse = true;
 				}
 				PopFont();
 				PopStyleColor(2);
@@ -1366,11 +1341,6 @@ namespace ImGui
 				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 				{
 					Config::SettingKeybindFor = p;
-					GUI::WantMouse = true;
-				}
-				if (IsItemHovered())
-				{
-					GUI::WantMouse = true;
 				}
 				PopFont();
 				PopStyleColor(2);
@@ -1413,17 +1383,13 @@ namespace ImGui
 			bool hovered = ItemHoverable(BB, ID);
 			bool clicked = (hovered && GImGui->IO.MouseClicked[0]);
 			if (clicked)
-			{
 				SetActiveID(ID, Window);
-			}
-			GUI::WantMouse |= hovered;
 
 
 			if (GImGui->ActiveId == ID)
 			{
 				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 				{
-					GUI::WantMouse = true;
 					Config::SettingKeybindFor = nullptr;
 
 					float MouseX = GImGui->IO.MousePos.x;
@@ -1539,13 +1505,11 @@ namespace ImGui
 					SetCursorPos(ImVec2(0, 0));
 					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
-						GUI::WantMouse = true;
 						Config::SettingKeybindFor = nullptr;
 						open = true;
 					}
 				}
 				bool HoveringOverOpener = IsItemHovered();
-				GUI::WantMouse |= HoveringOverOpener;
 
 				EndChild();
 				PopStyleColor(1);
@@ -1576,7 +1540,6 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
 				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
 				{
-					GUI::WantMouse = true;
 					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
@@ -2246,20 +2209,16 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(ImVec2(0, 0));
 			if (ImGui::Button(IsOffencePage ? XOR("Legit##big-switch-offence") : XOR("Legit##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
-				WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(0);
 			}
-			WantMouse |= ImGui::IsItemHovered();
 
 			ImGui::SetCursorPos(ImVec2(Width / 2, 0));
 			if (ImGui::Button(IsOffencePage ? XOR("Rage##big-switch-offence") : XOR("Rage##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
-				WantMouse = true;
 				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(1);
 			}
-			WantMouse |= ImGui::IsItemHovered();
 
 			ImGui::EndChild();
 
@@ -2981,7 +2940,6 @@ void GUI::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
@@ -3017,7 +2975,6 @@ void GUI::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
@@ -3096,7 +3053,6 @@ void GUI::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
@@ -3132,7 +3088,6 @@ void GUI::DrawActiveTab()
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
-				GUI::WantMouse = true;
 				if (GImGui->IO.MouseClicked[0])
 				{
 					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
@@ -3378,7 +3333,6 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 					if (ImGui::GetActiveID() == InputID)
 						ImGui::ClearActiveID();
 				}
-				WantMouse |= ImGui::IsItemHovered();
 				ImGui::PopStyleColor(3);
 			}
 			ImGui::PopFont();
@@ -3459,7 +3413,6 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			// hover triangle
 			if (HoveredTabIndex >= 0 && SelectedTabIndex != HoveredTabIndex)
 			{
-				WantMouse = true;
 				ImGui::SetCursorPos(ImVec2(12, 34 + 20 * HoveredTabIndex + (18 - 8) / 2));
 				ImGui::DrawSelectionCursor(ActiveTabPointer->ModulateAlpha(0.4f), ImVec2(10, 8));
 			}
@@ -3511,7 +3464,6 @@ void GUI::Main()
 		Init = true;
 	}
 
-	WantMouse = false;
 	WantKeyboard = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{

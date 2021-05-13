@@ -1653,7 +1653,7 @@ namespace Config
 				continue;
 
 			bool IsMouse = VK == VK_LBUTTON;
-			if (IsMouse && GUI::WantMouse)
+			if (IsMouse && ImGui::IsAnyItemHovered() || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup))
 			{
 				continue;
 			}
