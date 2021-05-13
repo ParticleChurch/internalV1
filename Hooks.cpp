@@ -330,12 +330,12 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	L::Verbose("H::EndSceneHook - begin");
 
 	// init imgui
-	ImGuiIO& io = ImGui::GetIO();
 	if (!D3dInit) {
 		L::Verbose("H::EndSceneHook d3d9 init begin");
 		D3dInit = true;
 
 		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename = nullptr;
 
 		GUI::LoadFonts(io);
@@ -357,6 +357,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGuiIO& io = ImGui::GetIO();
 		if (GUI::MainWindow && !AllowMenuOffScreen->Get() && io.DisplaySize.x > GUI::MinMenuSize.x && io.DisplaySize.y > GUI::MinMenuSize.y)
 			GUI::ClampToScreen();
 
