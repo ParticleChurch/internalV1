@@ -147,10 +147,10 @@ namespace Config
 
 				g->Add("antiaim-type", "", new CHorizontalState({ "Manual", "Custom" }));
 
-				g->Add("antiaim-manual-direction", "Direction", new CHorizontalState({"Left", "Back", "Right"}, true, 200));
-				p = g->Add("antiaim-manual-left", "Left", new CBoolean());
-				g->Add("antiaim-manual-back", "Back", new CBoolean())->VisibilityLinked = p;
-				g->Add("antiaim-manual-right", "Right", new CBoolean())->VisibilityLinked = p;
+				p = g->Add("antiaim-manual-direction", "Direction", new CHorizontalState({"Left", "Back", "Right"}, true, 200));
+				g->Add("antiaim-manual-left", "Left", new CFunction("Select", true))->VisibilityLinked = p;
+				g->Add("antiaim-manual-back", "Back", new CFunction("Select", true))->VisibilityLinked = p;
+				g->Add("antiaim-manual-right", "Right", new CFunction("Select", true))->VisibilityLinked = p;
 				g->Add("antiaim-manual-max", "Desync Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
 				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 0);
 
@@ -162,6 +162,19 @@ namespace Config
 				CONFIG_VIS(p, nullptr, GetState("antiaim-type"), 1);
 
 				g->EndMaster();
+
+				((CFunction*)GetProperty("antiaim-manual-left")->Value)->Callback = []() {
+					static auto s = GetState("antiaim-manual-direction");
+					s->Set(0);
+				};
+				((CFunction*)GetProperty("antiaim-manual-back")->Value)->Callback = []() {
+					static auto s = GetState("antiaim-manual-direction");
+					s->Set(1);
+				};
+				((CFunction*)GetProperty("antiaim-manual-right")->Value)->Callback = []() {
+					static auto s = GetState("antiaim-manual-direction");
+					s->Set(2);
+				};
 
 				GetProperty("antiaim-manual-max")->GetWarning = []() {
 					static auto fakelagtick = GetFloat("antiaim-fakelag-tick");
@@ -551,52 +564,6 @@ namespace Config
 			Tab* t = new Tab("Eject");
 		}
 
-		GetState("antiaim-manual-left")->OnChange = []() {
-			static auto me = GetState("antiaim-manual-left");
-			static auto o1 = GetState("antiaim-manual-back");
-			static auto o2 = GetState("antiaim-manual-right");
-
-			if (me->Get())
-			{
-				o1->Set(false);
-				o2->Set(false);
-			}
-			else if (!o1->Get() && !o2->Get())
-			{
-				me->Set(true);
-			}
-		};
-		GetState("antiaim-manual-back")->OnChange = []() {
-			static auto me = GetState("antiaim-manual-back");
-			static auto o1 = GetState("antiaim-manual-left");
-			static auto o2 = GetState("antiaim-manual-right");
-
-			if (me->Get())
-			{
-				o1->Set(false);
-				o2->Set(false);
-			}
-			else if (!o1->Get() && !o2->Get())
-			{
-				me->Set(true);
-			}
-		};
-		GetState("antiaim-manual-right")->OnChange = []() {
-			static auto me = GetState("antiaim-manual-right");
-			static auto o1 = GetState("antiaim-manual-back");
-			static auto o2 = GetState("antiaim-manual-left");
-
-			if (me->Get())
-			{
-				o1->Set(false);
-				o2->Set(false);
-			}
-			else if (!o1->Get() && !o2->Get())
-			{
-				me->Set(true);
-			}
-		};
-
 		GetState("legit-aim-enable")->OnChange = []() {
 			static auto me = GetState("legit-aim-enable");
 			static auto o = GetState("rage-aim-enable");
@@ -784,6 +751,11 @@ namespace Config
 				if (currentlyPressed)
 					((CVerticalState*)p->Value)->Value.Increment();
 			} break;
+			case PropertyType::FUNCTION:
+			{
+				if (currentlyPressed && ((CFunction*)p->Value)->Callback)
+					((CFunction*)p->Value)->Callback();
+			} break;
 			default:
 				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
 				return;
@@ -855,6 +827,26 @@ namespace Config
 			if (index >= 0)
 			{
 				((CHorizontalState*)p->Value)->BoundToKey = index;
+				Keybind::Binds[index].push_back(p);
+			}
+			ForceUpdate = false;
+		} break;
+		case PropertyType::FUNCTION:
+		{
+			// unbind if already bound
+			if (((CFunction*)p->Value)->BoundToKey >= 0)
+			{
+				std::vector<void*>& vec = Keybind::Binds[((CFunction*)p->Value)->BoundToKey];
+				for (size_t i = 0; i < vec.size(); i++)
+					if (vec.at(i) == (void*)p)
+						vec.erase(vec.begin() + i--);
+				((CFunction*)p->Value)->BoundToKey = -1;
+			}
+
+			// bind if wants us to
+			if (index >= 0)
+			{
+				((CFunction*)p->Value)->BoundToKey = index;
 				Keybind::Binds[index].push_back(p);
 			}
 			ForceUpdate = false;

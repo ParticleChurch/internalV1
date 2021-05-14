@@ -267,62 +267,19 @@ void AntiAim::legit()
 void AntiAim::ManualRage()
 {
 	// First fight with direction booleans
-	static Config::CState* Left	= Config::GetState("antiaim-manual-left");
-	static Config::CState* Back	= Config::GetState("antiaim-manual-back");
-	static Config::CState* Right	= Config::GetState("antiaim-manual-right");
-	static Config::CFloat* Max		= Config::GetFloat("antiaim-manual-max");
+	static Config::CState* Direction = Config::GetState("antiaim-manual-direction");
+	static Config::CFloat* Max = Config::GetFloat("antiaim-manual-max");
 
-	static int PrevLeft = 0;
-	static int PrevBack = 1;
-	static int PrevRight = 0;
-
-	
-	static int MODE = 1; // left, back, right (0, 1, 2)
-
-	// If they are all off, reset back to last state
-	if (!Left->Get() && !Back->Get() && !Right->Get())
+	switch (Direction->Get())
 	{
-		Left->Set(PrevLeft);
-		Back->Set(PrevBack);
-		Right->Set(PrevRight);
-	}
-	// If user pressed left...
-	else if (!PrevLeft && Left->Get())
-	{
-		Back->Set(0);
-		Right->Set(0);
-		MODE = 0;
-	} 
-	// If user pressed back...
-	else if (!PrevBack && Back->Get())
-	{
-		Left->Set(0);
-		Right->Set(0);
-		MODE = 1;
-	}
-	// If user pressed right...
-	else if (!PrevRight && Right->Get())
-	{
-		Left->Set(0);
-		Back->Set(0);
-		MODE = 2;
-	}
-
-	PrevLeft = Left->Get();
-	PrevBack = Back->Get();
-	PrevRight = Right->Get();
-
-	switch (MODE)
-	{
+	case 1:
+	default:
+		break;
 	case 0:
 		G::cmd->viewangles.y += -90;
 		break;
-	case 1:
-		break;
 	case 2:
 		G::cmd->viewangles.y += 90;
-		break;
-	default:
 		break;
 	}
 
@@ -353,7 +310,7 @@ void AntiAim::ManualRage()
 	static bool Flip = false;
 	if (this->Invert)
 	{
-		switch (MODE)
+		switch (Direction->Get())
 		{
 		case 0: // Left
 			// Set up Yaw
@@ -410,7 +367,7 @@ void AntiAim::ManualRage()
 	// If NOT inverted
 	else
 	{
-		switch (MODE)
+		switch (Direction->Get())
 		{
 		case 0: // Left
 			// Set up Yaw

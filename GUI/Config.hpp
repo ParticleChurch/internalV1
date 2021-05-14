@@ -41,6 +41,7 @@ namespace Config
 		VSTATEFUL,
 		COLOR,
 		MULTISELECT,
+		FUNCTION,
 	};
 	enum class KeybindMode
 	{
@@ -241,6 +242,22 @@ namespace Config
 		std::string Stringify()
 		{
 			return this->Value.Get() ? "true" : "false";
+		}
+	};
+	struct CFunction
+	{
+		static const PropertyType Type = PropertyType::FUNCTION;
+
+	public:
+		bool Bindable = true;
+		int BoundToKey = -1;
+		std::string Label = "";
+		void(*Callback)() = nullptr;
+
+		CFunction(std::string Label, bool Bindable = true)
+		{
+			this->Bindable = Bindable;
+			this->Label = Label;
 		}
 	};
 	struct CFloat
