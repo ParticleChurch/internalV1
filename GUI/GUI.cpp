@@ -693,9 +693,180 @@ namespace ImGui
 		// draw label
 		SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, (20 - GetFontSize()) / 2));
 		Text(TruncateToEllipsis(p->VisibleName, GUI::PropertyColumnPosition - (6 + IconSize.x + 6) - 10).c_str());
-		
+
 		// setup for property to be drawn
 		SetCursorPos(Pos + ImVec2(GUI::PropertyColumnPosition, 0));
+	}
+
+	void DrawGeneralKeybind(Config::Property* p)
+	{
+		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
+		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+
+		int currentBinding = -1;
+		switch (p->Type)
+		{
+		case Config::PropertyType::HSTATEFUL:
+			currentBinding = ((Config::CHorizontalState*)p->Value)->BoundToKey;
+			break;
+		case Config::PropertyType::VSTATEFUL:
+			currentBinding = ((Config::CVerticalState*)p->Value)->BoundToKey;
+			break;
+		case Config::PropertyType::BOOLEAN:
+			currentBinding = ((Config::CBoolean*)p->Value)->BoundToKey;
+			break;
+		default:
+			return;
+		}
+
+		auto Window = ImGui::GetCurrentWindow();
+		ImVec2 Pos = GetCursorPos();
+
+		if (p == Config::SettingKeybindFor) // the bind is currently being set
+		{
+			PushFont(Arial12);
+
+			if (p->Name == XOR("show-menu") || p->Type == Config::PropertyType::HSTATEFUL || p->Type == Config::PropertyType::VSTATEFUL)
+			{
+				SetCursorPos(Pos + ImVec2(0, (20 - 12) / 2));
+				Text(XOR("[PRESS A KEY]"));
+			}
+			else // it's a boolean
+			{
+				Config::CBoolean* Value = (Config::CBoolean*)p->Value;
+				const char* Prefix = XOR("MODE:");
+				ImVec2 PrefixSize = CalcTextSize(Prefix);
+				constexpr int BindModeOptionWidth = 60;
+				const char* Suffix = XOR("[PRESS A KEY]");
+				ImVec2 SuffixSize = CalcTextSize(Suffix);
+
+				// Prefix 
+				SetCursorPos(Pos + ImVec2(0, (20 - PrefixSize.y) / 2));
+				Text(Prefix);
+
+				// [Toggle, Enable, Disable]
+				PushFont(Arial14);
+				PushStyleColor(ImGuiCol_Button, 0);
+				PushStyleColor(ImGuiCol_ButtonHovered, 0);
+				PushStyleColor(ImGuiCol_ButtonActive, 0);
+				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*ButtonBase);
+				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+				PushStyleVar(ImGuiStyleVar_ChildBorderSize, ButtonBorderSize->Get());
+				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
+				SetCursorPos(Pos + ImVec2(PrefixSize.x + 5, 0));
+				{
+					BeginChild((XOR("##bindmode-") + p->Name).c_str(), ImVec2(BindModeOptionWidth * 3, 20), true);
+					{
+						auto ChildWindow = GetCurrentWindow();
+						auto ChildDrawList = ChildWindow->DrawList;
+
+						// current selection
+						SetCursorPos(ImVec2(BindModeOptionWidth * (int)Value->BindMode, 0));
+						ChildDrawList->AddRectFilled(ChildWindow->DC.CursorPos, ChildWindow->DC.CursorPos + ImVec2(BindModeOptionWidth, 20), *ButtonActive, 0, 0);
+
+						// other options
+						for (int i = 0; i < 3; i++)
+						{
+							SetCursorPos(ImVec2(BindModeOptionWidth * i, 0));
+							if (Button((Config::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(BindModeOptionWidth, 20)))
+							{
+								Value->BindMode = (Config::KeybindMode)i;
+							}
+						}
+					}
+					EndChild();
+				}
+				PopFont();
+				PopStyleColor(5);
+				PopStyleVar(2);
+
+				// Suffix
+				SetCursorPos(Pos + ImVec2(PrefixSize.x + 5 + BindModeOptionWidth * 3 + 5, (20 - SuffixSize.y) / 2));
+				Text(Suffix);
+			}
+
+			PopFont();
+		}
+		else if (currentBinding >= 0) // already bound (click to rebind)
+		{
+			PushFont(Arial12);
+			const char* Prefix = XOR("PRESS");
+			const char* Suffix = XOR("TO LOOP");
+			std::string KeyName = Keybind::KeyNames[currentBinding];
+
+			if (p->Type == Config::PropertyType::BOOLEAN)
+			{
+				const Config::CBoolean* Value = (Config::CBoolean*)p->Value;
+
+				if (Value->BindMode != Config::KeybindMode::TOGGLE)
+					Prefix = XOR("HOLD");
+				
+				Suffix =
+					Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
+					Value->BindMode == Config::KeybindMode::HOLDTOENABLE ? XOR("TO ENABLE") : XOR("TO DISABLE");
+			}
+
+			ImVec2 PrefixSize = CalcTextSize(Prefix);
+			ImVec2 SuffixSize = CalcTextSize(Suffix);
+			ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
+
+			// Prefix 
+			SetCursorPos(Pos + ImVec2(0, (20 - PrefixSize.y) / 2));
+			Text(Prefix);
+
+			// [keyname]
+			PushFont(Arial14);
+			PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+			PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+			PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+			SetCursorPos(Pos + ImVec2(PrefixSize.x + 5, 0));
+			if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+			{
+				if (p->Name == XOR("show-menu"))
+				{
+					Config::SettingKeybindFor = p;
+				}
+				else
+				{
+					Config::_BindToKey(p, -1);
+					Config::SettingKeybindFor = nullptr;
+				}
+			}
+			if (IsItemHovered())
+			{
+				SetCursorPos(Pos + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
+				ToolTip(p->Name == XOR("show-menu") ? XOR("Click To Edit") : XOR("Click To Clear"), 20);
+			}
+			PopFont();
+			PopStyleColor(2);
+			PopStyleVar(2);
+
+			// Suffix
+			SetCursorPos(Pos + ImVec2(PrefixSize.x + 5 + KeyNameSize.x + 10 + 5, (20 - PrefixSize.y) / 2));
+			Text(Suffix);
+
+			PopFont();
+		}
+		else // not bound but is bindable
+		{
+			PushFont(Arial14);
+			PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
+			PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
+			PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
+			PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+			SetCursorPos(Pos);
+			if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
+			{
+				Config::SettingKeybindFor = p;
+			}
+			PopFont();
+			PopStyleColor(2);
+			PopStyleVar(2);
+		}
 	}
 
 	int DrawLabelProperty(Config::Property* p)
@@ -777,11 +948,6 @@ namespace ImGui
 	{
 		static Config::CColor* PropertyBase = Config::GetColor(XOR("theme-property-base"));
 		static Config::CColor* PropertyAccent = Config::GetColor(XOR("theme-property-accent"));
-		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
 		Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -834,6 +1000,7 @@ namespace ImGui
 		}
 
 		// draw keybind (only if premium not locked)
+		/*
 		if (!PremiumLocked && Value->Bindable)
 		{
 			ImVec2 KeybindBase = SwitchPos + ImVec2(39, -2);
@@ -971,7 +1138,13 @@ namespace ImGui
 				PopStyleVar(2);
 			}
 		}
-		
+		*/
+		if (!PremiumLocked && Value->Bindable)
+		{
+			SetCursorPos(SwitchPos + ImVec2(36, -2));
+			DrawGeneralKeybind(p);
+		}
+
 		return 20;
 	}
 
@@ -1272,81 +1445,13 @@ namespace ImGui
 		PopStyleVar(1);
 		PopStyleColor(1);
 
-		// (yoinked from DrawBooleanProperty)
-		// draw keybind (only if premium not locked)
+		// keybind
 		if (!PremiumLocked && Value->Bindable)
 		{
-			ImVec2 KeybindBase = DropdownPos + ImVec2(209, 0);
-			if (p == Config::SettingKeybindFor) // the bind is currently being set
-			{
-				PushFont(Arial12);
-
-				SetCursorPos(KeybindBase + ImVec2(0, (20 - 12) / 2));
-				Text(XOR("[PRESS A KEY]"));
-
-				PopFont();
-			}
-			else if (Value->BoundToKey >= 0) // already bound (click to rebind)
-			{
-				PushFont(Arial12);
-
-				const char* Prefix = XOR("PRESS");
-				ImVec2 PrefixSize = CalcTextSize(Prefix);
-
-				const char* Suffix = XOR("TO LOOP");
-				ImVec2 SuffixSize = CalcTextSize(Suffix);
-
-				std::string KeyName = Keybind::KeyNames[Value->BoundToKey];
-				ImVec2 KeyNameSize = CalcTextSize(KeyName.c_str());
-
-				// Prefix 
-				SetCursorPos(KeybindBase + ImVec2(0, (20 - PrefixSize.y) / 2));
-				Text(Prefix);
-
-				// [keyname]
-				PushFont(Arial14);
-				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
-				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
-				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
-				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5, 0));
-				if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
-				{
-					Config::_BindToKey(p, -1);
-					Config::SettingKeybindFor = nullptr;
-				}
-				if (IsItemHovered())
-				{
-					SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
-					ToolTip(XOR("Click To Clear"), 20);
-				}
-				PopFont();
-				PopStyleColor(2);
-				PopStyleVar(2);
-
-				// Suffix
-				SetCursorPos(KeybindBase + ImVec2(PrefixSize.x + 5 + KeyNameSize.x + 10 + 5, (20 - PrefixSize.y) / 2));
-				Text(Suffix);
-
-				PopFont();
-			}
-			else if (Value->Bindable)
-			{
-				PushFont(Arial14);
-				PushStyleColor(ImGuiCol_Text, (ImVec4)*ButtonText);
-				PushStyleColor(ImGuiCol_Border, (ImVec4)*ButtonBorder);
-				PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
-				PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
-				SetCursorPos(KeybindBase);
-				if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
-				{
-					Config::SettingKeybindFor = p;
-				}
-				PopFont();
-				PopStyleColor(2);
-				PopStyleVar(2);
-			}
+			SetCursorPos(DropdownPos + ImVec2(205, 0));
+			DrawGeneralKeybind(p);
 		}
+
 		return 20;
 	}
 
@@ -1359,49 +1464,95 @@ namespace ImGui
 
 		auto Window = GetCurrentWindow();
 		auto DrawList = Window->DrawList;
-		ImVec2 Pos = GetCursorPos();
 
-		// todo: option to draw label and move to the right? maybe?
-		int WidthAvailable = GetContentRegionMaxAbs().x - Window->DC.CursorPos.x;
-		int LRPadding = 6;
-		int Width = WidthAvailable - 2 * LRPadding;
-		ImVec2 BarLocalPos = Pos + ImVec2(LRPadding, 0);
-		SetCursorPos(BarLocalPos);
-		ImVec2 Size(Width, 20);
+		// draw label
+		bool PremiumLocked = p->IsPremium && !UserData::Premium;
+		bool MasterLocked = p->Master && p->Master->Type == Config::PropertyType::BOOLEAN && !((Config::CBoolean*)p->Master->Value)->Value.Get();
+		if (p->VisibleName != "")
+		{
+			if (PremiumLocked)
+				DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
+			else if (MasterLocked)
+				DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			else
+			{
+				std::string w = p->GetWarning();
+				if (w == "")
+					DrawGeneralLabel(p);
+				else
+					DrawGeneralLabel(p, PropertyIcon::Warning, w);
+			}
+		}
+
+		// setup bar position
+		ImVec2 BarPosition = GetCursorPos();
+		int BarWidth = 0;
+		if (p->VisibleName != "")
+		{
+			if (Value->PixelWidth > 0)
+			{
+				BarWidth = Value->PixelWidth;
+			}
+			else
+			{
+				BarWidth = GetContentRegionMaxAbs().x - Window->DC.CursorPos.x - 6;
+			}
+		}
+		else
+		{
+			BarWidth = GetContentRegionMaxAbs().x - Window->DC.CursorPos.x - 12;
+			BarPosition += ImVec2(6, 0);
+		}
+
+		SetCursorPos(BarPosition);
+		ImVec2 Size(BarWidth, 20);
 		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
 		ImGuiID ID = GetID((p->Name + XOR("-interactable")).c_str());
 
 		// vars
 		size_t nItems = Value->StateNames.size();
-		float pixelsPerItem = (float)(Width - 4) / (float)nItems;
+		float pixelsPerItem = (float)(BarWidth - 4) / (float)nItems;
 		int itemsStartX = Window->DC.CursorPos.x + 2;
-		int itemsEndX = Window->DC.CursorPos.x + Width - 2;
+		int itemsEndX = Window->DC.CursorPos.x + BarWidth - 2;
 
 		// interaction behavior
 		{
 			ItemAdd(BB, ID);
 			bool hovered = ItemHoverable(BB, ID);
-			bool clicked = (hovered && GImGui->IO.MouseClicked[0]);
-			if (clicked)
-				SetActiveID(ID, Window);
+			bool active = GImGui->ActiveId == ID;
 
-
-			if (GImGui->ActiveId == ID)
+			if (hovered && GImGui->IO.MouseClicked[ImGuiMouseButton_Left] && !PremiumLocked)
 			{
-				if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
+				SetActiveID(ID, Window);
+				active = true;
+			}
+
+			if (active)
+			{
+				if (!GImGui->IO.MouseDown[ImGuiMouseButton_Left] || GImGui->ActiveIdSource != ImGuiInputSource_Mouse || PremiumLocked)
+				{
+					ClearActiveID();
+					active = false;
+				}
+				else
 				{
 					Config::SettingKeybindFor = nullptr;
 
 					float MouseX = GImGui->IO.MousePos.x;
 					float DX = MouseX - itemsStartX;
 					if (DX < 0) DX = 0;
-					else if (DX > (Width - 4)) DX = Width - 4;
+					else if (DX > (BarWidth - 4)) DX = BarWidth - 4;
 
 					size_t ClickedIndex = (size_t)(DX / pixelsPerItem);
 					Value->Value.Set(ClickedIndex);
 				}
-				else
-					ClearActiveID(); // only allow mouse1 activation
+			}
+
+			if (hovered && PremiumLocked)
+			{
+				SetCursorPos(BarPosition + ImVec2(BarWidth / 2, 0));
+				ToolTip(PREMIUM_USERS_ONLY, 20);
+				SetCursorPos(BarPosition);
 			}
 		}
 
@@ -1422,11 +1573,18 @@ namespace ImGui
 			for (size_t i = 0; i < nItems; i++)
 			{
 				ImVec2 tsize = CalcTextSize(Value->StateNames.at(i).c_str());
-				SetCursorPos(BarLocalPos + ImVec2(2.f + pixelsPerItem * i + (pixelsPerItem - tsize.x) / 2.f, (Size.y - tsize.y) / 2.f));
+				SetCursorPos(BarPosition + ImVec2(2.f + pixelsPerItem * i + (pixelsPerItem - tsize.x) / 2.f, (Size.y - tsize.y) / 2.f));
 				TextEx(Value->StateNames.at(i).c_str());
 			}
 			PopFont();
 			PopStyleColor(1);
+		}
+
+		//keybind
+		if (Value->Bindable && !PremiumLocked)
+		{
+			SetCursorPos(BarPosition + ImVec2(BarWidth + 10, 0));
+			DrawGeneralKeybind(p);
 		}
 
 		return 20;

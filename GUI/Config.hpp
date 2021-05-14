@@ -360,13 +360,15 @@ namespace Config
 		CState Value = CState(0, 0, 0);
 		bool Bindable = false;
 		int BoundToKey = -1;
+		int PixelWidth = -1;
 
 
-		CHorizontalState(std::vector<std::string> States, bool Bindable = false)
+		CHorizontalState(std::vector<std::string> States, bool Bindable = false, int PixelWidth = -1)
 		{
 			this->Value = CState(0, (int)States.size() - 1, 0);
 			this->StateNames = States;
 			this->Bindable = Bindable;
+			this->PixelWidth = PixelWidth;
 		}
 	};
 	struct CVerticalState

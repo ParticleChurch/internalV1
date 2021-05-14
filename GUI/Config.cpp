@@ -121,7 +121,7 @@ namespace Config
 
 				g->BeginMaster(p);
 				p = g->Add("antiaim-legit-max-angle", "Desync Amount", new CFloat(0, 100, 1, "%"));
-				g->Add("antiaim-legit-invert", "AA Direction", new CVerticalState({ "Left", "Right" }, true))->IsPremium = true;
+				g->Add("antiaim-legit-invert", "AA Direction", new CHorizontalState({ "Left", "Right" }, true, 150))->IsPremium = true;
 				g->EndMaster();
 
 				p->IsPremium = true;
@@ -147,6 +147,7 @@ namespace Config
 
 				g->Add("antiaim-type", "", new CHorizontalState({ "Manual", "Custom" }));
 
+				g->Add("antiaim-manual-direction", "Direction", new CHorizontalState({"Left", "Back", "Right"}, true, 200));
 				p = g->Add("antiaim-manual-left", "Left", new CBoolean());
 				g->Add("antiaim-manual-back", "Back", new CBoolean())->VisibilityLinked = p;
 				g->Add("antiaim-manual-right", "Right", new CBoolean())->VisibilityLinked = p;
@@ -383,7 +384,7 @@ namespace Config
 			{
 				Group* g = t->Add("Movement");
 				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
-				(p = g->Add("misc-movement-autostrafe", "Autostrafe", new CVerticalState({ "None", "Rage", "Legit" })))->IsPremium = true;
+				(p = g->Add("misc-movement-autostrafe", "Autostrafe", new CHorizontalState({ "None", "Rage", "Legit" }, false, 200)))->IsPremium = true;
 				p->Master = GetProperty("misc-movement-bhop");
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));
 				g->Add("misc-movement-autostop", "AutoStop", new CBoolean());
@@ -843,7 +844,7 @@ namespace Config
 			// unbind if already bound
 			if (((CHorizontalState*)p->Value)->BoundToKey >= 0)
 			{
-				std::vector<void*>& vec = Keybind::Binds[((CBoolean*)p->Value)->BoundToKey];
+				std::vector<void*>& vec = Keybind::Binds[((CHorizontalState*)p->Value)->BoundToKey];
 				for (size_t i = 0; i < vec.size(); i++)
 					if (vec.at(i) == (void*)p)
 						vec.erase(vec.begin() + i--);
@@ -1650,7 +1651,7 @@ namespace Config
 				continue;
 
 			bool IsMouse = VK == VK_LBUTTON;
-			if (IsMouse && ImGui::IsAnyItemHovered() || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup))
+			if (IsMouse && (ImGui::IsAnyItemHovered() || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopup)))
 			{
 				continue;
 			}
