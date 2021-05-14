@@ -2,17 +2,6 @@
 
 LagComp* lagcomp = new LagComp();
 
-bool LagComp::ValidSimulationTime(float SimTime)
-{
-	if (!I::engine->GetNetChannelInfo())
-		return false;
-
-	const auto correct = std::clamp(I::engine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING)
-		+ I::engine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING)
-		+ GetLerp(), 0.f, 0.2f);
-	return fabsf(correct - (I::globalvars->m_curTime - SimTime)) < 0.2f && correct < 1.f;
-}
-
 bool LagComp::ValidRecord(Player player)
 {
 	if (!player.Valid)
@@ -26,6 +15,43 @@ bool LagComp::ValidRecord(Player player)
 	if (player.Dormant)
 		return false;
 	return true;
+}
+
+static Tick CreateTick(Player p, int choked)
+{
+	L::Verbose("New Tick");
+	Tick newTick;
+	if (!p.ptrEntity)
+	{
+		L::Verbose("BAD ptrEntity");
+		return newTick;
+	}
+	L::Verbose("Matrix");
+	//tick.Choked = TimeToTicks(tick.SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
+	if (p.Matrix)
+		std::memcpy(newTick.Matrix, p.Matrix, 128 * sizeof(Matrix3x4));
+	L::Verbose("Dormant");
+	newTick.Dormant = p.Dormant;
+	L::Verbose("GetVecVelocity");
+	newTick.Velocity = p.ptrEntity->GetVecVelocity();
+	L::Verbose("Origin");
+	newTick.Origin = p.Origin;
+	L::Verbose("HeadPos");
+	if (p.Matrix)
+		newTick.HeadPos = Vec(p.Matrix[8][0][3], p.Matrix[8][1][3], p.Matrix[8][2][3]);
+	L::Verbose("EyeAng");
+	newTick.EyeAng = p.ptrEntity->GetEyeAngles();
+	L::Verbose("SimulationTime");
+	newTick.SimulationTime = p.SimulationTime;
+	L::Verbose("Duck");
+	newTick.Duck = p.ptrEntity->GetDuckAmount();
+	L::Verbose("LBY");
+	newTick.LBY = p.ptrEntity->GetLBY();
+	L::Verbose("Flags");
+	newTick.Flags = p.ptrEntity->GetFlags();
+	L::Verbose("Choked");
+	newTick.Choked = choked;
+	return newTick;
 }
 
 // Happens in FRAME_NET_UPDATE_END
@@ -57,47 +83,88 @@ void LagComp::Update()
 		// If not in the list... ADD IT BOY
 		if (PlayerList.find(UserId) == PlayerList.end())
 		{
+			L::Verbose("Add New Player");
 			Player NewPlayer;
-			PlayerList.insert(std::pair<int, Player>(UserId, NewPlayer));
-		}
-
-		L::Verbose("Update Player Crap");
-		// Update Player Crap
-		PlayerList[UserId].ptrEntity = ent;
-		ent->SetupBones(PlayerList[UserId].Matrix, 256, BONE_USED_BY_ANYTHING, 0.f);
-		PlayerList[UserId].ptrWeap = ent->GetActiveWeapon();
-		// Weird model stuff
-		Model* model = ent->GetModel();
-		if (model)
-		{
-			if (!PlayerList[UserId].ptrModel)
+			NewPlayer.ptrEntity = ent;
+			ent->SetupBones(NewPlayer.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);
+			NewPlayer.ptrWeap = ent->GetActiveWeapon();
+			// Weird model stuff
+			Model* model = ent->GetModel();
+			if (model)
 			{
-				PlayerList[UserId].ptrModel = new Model();
-				PlayerList[UserId].ptrModel = model;
+				if (!NewPlayer.ptrModel)
+				{
+					NewPlayer.ptrModel = new Model();
+					NewPlayer.ptrModel = model;
+				}
+				else
+				{
+					NewPlayer.ptrModel = model;
+				}
 			}
 			else
 			{
-				PlayerList[UserId].ptrModel = model;
+				free(NewPlayer.ptrModel);
 			}
-		}
+			L::Verbose("Continue update");
+			// O.W. Continue
+			NewPlayer.Index = i;
+			NewPlayer.Health = ent->GetHealth();
+			NewPlayer.SimulationTime = ent->GetSimulationTime();
+			NewPlayer.Team = ent->GetTeam();
+			NewPlayer.info = TempInfo;
+			NewPlayer.Valid = true;
+			NewPlayer.Origin = ent->GetVecOrigin();
+			NewPlayer.EyePos = ent->GetEyePos();
+			NewPlayer.Dormant = ent->IsDormant();
+			PlayerList.insert(std::pair<int, Player>(UserId, NewPlayer));
+		} 
+
+		// otherwise we update the enity
 		else
 		{
-			free(PlayerList[UserId].ptrModel);
+			PlayerList[UserId].ptrEntity = ent;
+			ent->SetupBones(PlayerList[UserId].Matrix, 128, BONE_USED_BY_HITBOX, 0.f);
+			PlayerList[UserId].ptrWeap = ent->GetActiveWeapon();
+			// Weird model stuff
+			Model* model = ent->GetModel();
+			if (model)
+			{
+				if (!PlayerList[UserId].ptrModel)
+				{
+					PlayerList[UserId].ptrModel = new Model();
+					PlayerList[UserId].ptrModel = model;
+				}
+				else
+				{
+					PlayerList[UserId].ptrModel = model;
+				}
+			}
+			else
+			{
+				free(PlayerList[UserId].ptrModel);
+			}
+			L::Verbose("Continue update");
+			// O.W. Continue
+			PlayerList[UserId].Index = i;
+			PlayerList[UserId].Health = ent->GetHealth();
+			PlayerList[UserId].SimulationTime = ent->GetSimulationTime();
+			PlayerList[UserId].Team = ent->GetTeam();
+			PlayerList[UserId].info = TempInfo;
+			PlayerList[UserId].Valid = true;
+			PlayerList[UserId].Origin = ent->GetVecOrigin();
+			PlayerList[UserId].EyePos = ent->GetEyePos();
+			PlayerList[UserId].Dormant = ent->IsDormant();
 		}
-		L::Verbose("Continue update");
-		// O.W. Continue
-		PlayerList[UserId].Index = i;
-		PlayerList[UserId].Health = ent->GetHealth();
-		PlayerList[UserId].SimulationTime = ent->GetSimulationTime();
-		PlayerList[UserId].Team = ent->GetTeam();
-		PlayerList[UserId].info = TempInfo;
-		PlayerList[UserId].Valid = true;
-		PlayerList[UserId].EyePos = ent->GetEyePos();
-		PlayerList[UserId].Origin = ent->GetVecOrigin();
-		PlayerList[UserId].AbsOrigin = ent->GetAbsOrigin();
-		PlayerList[UserId].obb_mins = ent->GetMins();
-		PlayerList[UserId].obb_maxs = ent->GetMaxs();
-		PlayerList[UserId].Dormant = ent->IsDormant();
+
+		// NOW DEAL WITH BACKTRACKING!_____________________________________________________
+
+		// Dont bother to even attempt update if same sim time / not valid record
+		bool ValidRecord_ = ValidRecord(PlayerList[UserId]);
+		if (!PlayerList[UserId].Records.empty() 
+			&& PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime
+			&& !ValidRecord_)
+			continue;
 
 		L::Verbose("Clear records if bad");
 		// Clear records if dormant/dead
@@ -107,104 +174,19 @@ void LagComp::Update()
 			continue;
 		}
 
-		L::Verbose("Update record?");
-		// Determine if we even need to update
-		// (if last sim time is this sim time AND the records aren't empty
-		if (!PlayerList[UserId].Records.empty() && PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime)
-			continue;
-
-		// If we need to add the current tick for a record
-		if (ValidSimulationTime(PlayerList[UserId].SimulationTime))
-		{
-			L::Verbose("Adding Tick");
-			// Create Tick :D
-			Tick tick;
-			// Matrix
-			L::Verbose("Matrix");
-			if(PlayerList[UserId].Matrix)
-				std::memcpy(tick.Matrix, PlayerList[UserId].Matrix, 256 * sizeof(Matrix3x4));
-			// Dormant
-			L::Verbose("Dormant");
-			tick.Dormant = PlayerList[UserId].Dormant;
-			// Velocity
-			L::Verbose("Velocity");
-			tick.Velocity = ent->GetVecVelocity();
-			// Origin
-			L::Verbose("Origin");
-			tick.Origin = PlayerList[UserId].Origin;
-			// Abs Origin
-			L::Verbose("AbsOrigin");
-			tick.AbsOrigin = PlayerList[UserId].AbsOrigin;
-			// obb_mins / obb_maxs
-			L::Verbose("obb_mins/maxs");
-			tick.obb_mins = PlayerList[UserId].obb_mins;
-			tick.obb_maxs = PlayerList[UserId].obb_maxs;
-			// HeadPos
-			L::Verbose("HeadPos");
-			if(tick.Matrix)
-				tick.HeadPos = Vec(tick.Matrix[8][0][3], tick.Matrix[8][1][3], tick.Matrix[8][2][3]);
-			// EyeAng
-			L::Verbose("EyeAng");
-			tick.EyeAng = ent->GetEyeAngles();
-			// Sim Time
-			L::Verbose("SimulationTime");
-			tick.SimulationTime = PlayerList[UserId].SimulationTime;
-			// TickCount
-			L::Verbose("TickCount");
-			if(G::cmd)
-				tick.TickCount = G::cmd->tick_count;
-			// Duck
-			L::Verbose("GetDuckAmount");
-			tick.Duck = ent->GetDuckAmount();
-			// LBY
-			L::Verbose("GetLBY");
-			tick.LBY = ent->GetLBY();
-			// SpawnTime
-			L::Verbose("SpawnTime");
-			tick.SpawnTime = ent->m_flSpawnTime();
-			// Flags
-			L::Verbose("Flags");
-			tick.Flags = ent->GetFlags();
-			// Choked
-			L::Verbose("Choked");
-			if(!PlayerList[UserId].Records.empty())
-				tick.Choked = TimeToTicks(tick.SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
-			// LastShotTIme
-			L::Verbose("LastShotTIme");
-			tick.LastShotTime = PlayerList[UserId].ptrWeap ? PlayerList[UserId].ptrWeap->GetLastShotTime() : 0.f;
-			// Shot
-			L::Verbose("Shot");
-			
-			if (!PlayerList[UserId].Records.empty())
-			{
-				if (PlayerList[UserId].ptrWeap)
-				{
-					if (TimeToTicks(tick.LastShotTime) != TimeToTicks(PlayerList[UserId].Records.front().LastShotTime))
-					{
-						// If last record time diff from this one, and weapon exists,--> SHOT DONE!
-						if (tick.Choked <= 2) // timing right, eye ang wrong so...
-						{
-							tick.Shot = true;
-						}
-
-					}
-					else
-						tick.Shot = false;
-				}
-				else
-					tick.Shot = false;
-			}
-			else
-				tick.Shot = false;
-				
-
-			// Push tick forward
-			PlayerList[UserId].Records.push_front(tick);
-		}
-
+		// Add the record
+		L::Verbose("Add to records");
+		int choked = 0;
+		if(!PlayerList[UserId].Records.empty())
+			choked = TimeToTicks(PlayerList[UserId].SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
+		L::Verbose("CreateTick");
+		Tick new_tick = CreateTick(PlayerList[UserId], choked);
+		L::Verbose("push_front");
+		PlayerList[UserId].Records.push_front(new_tick);
+		
 		L::Verbose("Deal with too many records");
-		// Deal with too many records (anything above 190ms just forget about it :D)
-		unsigned int Ticks = TimeToTicks(.190f);
+		// Deal with too many records (anything above 200ms just forget about it :D)
+		unsigned int Ticks = TimeToTicks(.2f);
 		while (PlayerList[UserId].Records.size() > 3 && PlayerList[UserId].Records.size() > Ticks) {
 			PlayerList[UserId].Records.pop_back();
 		}

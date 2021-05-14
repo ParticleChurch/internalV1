@@ -635,10 +635,10 @@ void Aimbot::Rage()
 	static Config::CState* AutoShoot = Config::GetState("rage-aim-autoshoot");
 	static Config::CState* FakeDuck = Config::GetState("misc-movement-fakeduck");
 
-	// Make sure it's a different tick
-	static int tickcount = G::cmd->tick_count;
+	// Make sure it's a different tick - just to check it working properly, we do this :D
+	/*static int tickcount = G::cmd->tick_count;
 	if (tickcount == G::cmd->tick_count) return;
-	tickcount = G::cmd->tick_count;
+	tickcount = G::cmd->tick_count;*/
 
 	// Is ragebot enabled
 	if (!Enable->Get()) return;
@@ -847,147 +847,12 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmax.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 
-		Vec point = (min + max) / 2.f; 
-		// do secial head multipoint stuff (assuming any multipoint enabled...)
-		if (HITBOX == HITBOX_HEAD && rage.multipoint > 0.01f)
-		{
-			// TRY for middle of head...
-			esp->points.push_back(point);
+		Vec point = (min + max) / 2.f;
 
-			// Calc Mid Angle
-			L::Verbose("ScanPlayer - CalculateAngle spook");
-			QAngle MidAngle = CalculateAngle(point);
-
-			// Calc Mid Hitchance
-			L::Verbose("ScanPlayer - CalculateHitchance spook");
-			float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
-
-			// If the left hitchance is up to snuff...
-			if (MidHitchance >= rage.hitchance)
-			{
-				// if the point is visible
-				L::Verbose("ScanPlayer - IsVisible spook");
-				bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
-
-				// no need to autowall if visible...
-				L::Verbose("ScanPlayer - Damage spook");
-				damage = autowall->Damage(point, HITBOX, true);
-				if (visible && damage >= rage.vis_mindam)
-				{
-					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy spook");
-					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime + GetLerp());
-
-					resolver->AimbotUserID = UserID;
-					Point = point;
-					return true;
-				}
-				else if (damage >= rage.hid_mindam)
-				{
-					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy spook");
-					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-
-					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime + GetLerp());
-
-					resolver->AimbotUserID = UserID;
-					Point = point;
-					return true;
-				}
-			}
-
-			//scratch that go for upper echelons of hittin head
-			point = min.z > max.z ? min : max;
-			
-			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
-			// this is to hopefully de-lag, though we can potentially do bad by 2 tick.
-			// this is counter by the fact that, because we aren't lagging, we will be most up to date
-			// maybe I'll add 2 implementations, with the user deciding which one to use
-			
-			switch (G::cmd->tick_count % 2)
-			{
-			case 0: // target top left
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopLeft(point, radius, G::LocalPlayer);
-				break;
-			case 1: // target top right
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetTopRight(point, radius, G::LocalPlayer);
-				break;
-			}
-		}
-		// do regular multipoint stuff
-		else if ((HITBOX == HITBOX_STOMACH || HITBOX == HITBOX_PELVIS || HITBOX == HITBOX_UPPER_CHEST || HITBOX == HITBOX_LOWER_CHEST) && rage.multipoint > 0.01f)
-		{
-			// we scan left, one tick, then scan right the next, and then the top tick, then repeat
-			// this is to hopefully de-lag, though we can potentially do bad by 2 tick.
-			// this is counter by the fact that, because we aren't lagging, we will be most up to date
-			// maybe I'll add 2 implementations, with the user deciding which one to use
-
-			if (radius < 0)
-				radius = 0.f;
-			if (radius > 1.f)
-				radius = 1.f;
-			switch (G::cmd->tick_count % 2)
-			{
-			case 0: // target left
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetLeft(point, radius, G::LocalPlayer);
-				break;
-			case 1: // target right
-				point = lagcomp->PlayerList[UserID].ptrEntity->GetRight(point, radius, G::LocalPlayer);
-				break;
-			}
-		}
-
-		
+		Point = point;
+		return true;
 
 		esp->points.push_back(point);
-
-		// Calc Mid Angle
-		L::Verbose("ScanPlayer - CalculateAngle Default");
-		QAngle MidAngle = CalculateAngle(point);
-
-		// Calc Mid Hitchance
-		L::Verbose("ScanPlayer - CalculateHitchance Default");
-		float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
-		
-		// If the left hitchance is up to snuff...
-		if (MidHitchance >= rage.hitchance)
-		{
-			// if the point is visible
-			L::Verbose("ScanPlayer - IsVisible Default");
-			bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
-
-			// no need to autowall if visible...
-			L::Verbose("ScanPlayer - Damage Default");
-			damage = autowall->Damage(point, HITBOX, true);
-			if (visible && damage >= rage.vis_mindam)
-			{
-				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy Default");
-				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
-				
-				resolver->AimbotUserID = UserID;
-				Point = point;
-				return true;
-			}
-			else if (damage >= rage.hid_mindam)
-			{
-				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy Default2");
-				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
-
-				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
-				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime);
-
-				resolver->AimbotUserID = UserID;
-				Point = point;
-				return true;
-			}
-		}
 	}
 	return false;
 }

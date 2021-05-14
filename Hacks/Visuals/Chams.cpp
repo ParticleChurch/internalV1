@@ -115,7 +115,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				&& LocalPlayerFakeEnable->Get()
 				&& ThirdPerson->Get())
 			{
-				if(NewTick && G::pSendPacket && *G::pSendPacket && !fakelag->LaggingOnPeak)
+				if(!fakelag->LaggingOnPeak)
 					RotateBoneMatrix(Vec(0, (antiaim->fake.y - antiaim->real.y), 0), G::LocalPlayer->GetVecOrigin(), customBoneToWorld, antiaim->FakeMatrix);
 				
 				float alpha = LocalPlayerFakeColor->GetA() / 255.f;

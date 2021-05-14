@@ -366,7 +366,7 @@ void Resolver::Resolve()
 		// and we haven't already logged prediction error...
 		if (LogPredError && LogEnable->Get() && PlayerInfo[UserID].ShotsMissed != PlayerInfo[UserID].OldShotsMissed && !PlayerInfo[UserID].LogShot)
 		{
-			PlayerInfo[UserID].LogShot = true;
+			PlayerInfo[UserID].LogShot = false;
 			ConsoleColorMsg(Color(255, 69, 0), "Resolver Error: ");
 			ConsoleColorMsg(Color(255, 0, 0), "Missed shot at ");
 			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);

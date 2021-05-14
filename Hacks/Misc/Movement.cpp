@@ -293,11 +293,20 @@ void Movement::AutoStop()
 			continue;
 
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
-		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
+		// --> reduced slightly with clipraytoentity
+		trace_t Trace;
+		Ray_t Ray(NextPos, it->second.EyePos);
+		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, it->second.ptrEntity, &Trace);
+		if (Trace.Entity == it->second.ptrEntity)
 		{
-			PossibleDamage = true;
-			break;
+			// autowall if we can clipray
+			if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
+			{
+				PossibleDamage = true;
+				break;
+			}
 		}
+		
 	}
 
 	// If there's no possible way to do damage, return
