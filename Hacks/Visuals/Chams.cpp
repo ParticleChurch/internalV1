@@ -156,24 +156,21 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 
-			//OverideMat(
-			//	true,	//viz thru wall?
-			//	1,	//material?
-			//	0.5,	//transparent?
-			//	Color(255, 0, 0),
-			//	thisptr, ctx, state, info, backtrack->TragetTick.Matrix);
-			//H::oDrawModelExecute(thisptr, ctx, state, info, backtrack->TragetTick.Matrix);
-			//I::modelrender->ForcedMaterialOverride(nullptr);
-
-			/*
-			if (Config::GetBool("visuals-chams-enemy-backtrack-enable"))
-			{
-				
-			}
-			*/
-
 			if (EnemyVisEnable->Get())
 			{
+				if (!lagcomp->PlayerList[bInfo.userid].Records.empty())
+				{
+					OverideMat(
+						true,	//viz thru wall?
+						1,		//material?
+						0.5,	//transparent?
+						Color(255, 0, 0),
+						thisptr, ctx, state, info, lagcomp->PlayerList[bInfo.userid].Records.back().Matrix);
+					H::oDrawModelExecute(thisptr, ctx, state, info, lagcomp->PlayerList[bInfo.userid].Records.back().Matrix);
+					I::modelrender->ForcedMaterialOverride(nullptr);
+				}
+				
+
 				OverideMat(
 					false,	//viz thru wall?
 					EnemyVisMaterial->Get(),	//wireframe?

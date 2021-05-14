@@ -17,43 +17,6 @@ bool LagComp::ValidRecord(Player player)
 	return true;
 }
 
-static Tick CreateTick(Player p, int choked)
-{
-	L::Verbose("New Tick");
-	Tick newTick;
-	if (!p.ptrEntity)
-	{
-		L::Verbose("BAD ptrEntity");
-		return newTick;
-	}
-	L::Verbose("Matrix");
-	//tick.Choked = TimeToTicks(tick.SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
-	if (p.Matrix)
-		std::memcpy(newTick.Matrix, p.Matrix, 128 * sizeof(Matrix3x4));
-	L::Verbose("Dormant");
-	newTick.Dormant = p.Dormant;
-	L::Verbose("GetVecVelocity");
-	newTick.Velocity = p.ptrEntity->GetVecVelocity();
-	L::Verbose("Origin");
-	newTick.Origin = p.Origin;
-	L::Verbose("HeadPos");
-	if (p.Matrix)
-		newTick.HeadPos = Vec(p.Matrix[8][0][3], p.Matrix[8][1][3], p.Matrix[8][2][3]);
-	L::Verbose("EyeAng");
-	newTick.EyeAng = p.ptrEntity->GetEyeAngles();
-	L::Verbose("SimulationTime");
-	newTick.SimulationTime = p.SimulationTime;
-	L::Verbose("Duck");
-	newTick.Duck = p.ptrEntity->GetDuckAmount();
-	L::Verbose("LBY");
-	newTick.LBY = p.ptrEntity->GetLBY();
-	L::Verbose("Flags");
-	newTick.Flags = p.ptrEntity->GetFlags();
-	L::Verbose("Choked");
-	newTick.Choked = choked;
-	return newTick;
-}
-
 // Happens in FRAME_NET_UPDATE_END
 void LagComp::Update()
 {
@@ -159,11 +122,8 @@ void LagComp::Update()
 
 		// NOW DEAL WITH BACKTRACKING!_____________________________________________________
 
-		// Dont bother to even attempt update if same sim time / not valid record
-		bool ValidRecord_ = ValidRecord(PlayerList[UserId]);
-		if (!PlayerList[UserId].Records.empty() 
-			&& PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime
-			&& !ValidRecord_)
+		// Dont bother to even attempt update if same sim time
+		if (!PlayerList[UserId].Records.empty() && PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime)
 			continue;
 
 		L::Verbose("Clear records if bad");
@@ -176,17 +136,38 @@ void LagComp::Update()
 
 		// Add the record
 		L::Verbose("Add to records");
-		int choked = 0;
-		if(!PlayerList[UserId].Records.empty())
-			choked = TimeToTicks(PlayerList[UserId].SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
-		L::Verbose("CreateTick");
-		Tick new_tick = CreateTick(PlayerList[UserId], choked);
+		auto& p = PlayerList[UserId];
+		Tick newTick;
+		L::Verbose("Matrix");
+		std::memcpy(newTick.Matrix, p.Matrix, 128 * sizeof(Matrix3x4));
+		L::Verbose("Dormant");
+		newTick.Dormant = p.Dormant;
+		L::Verbose("GetVecVelocity");
+		newTick.Velocity = p.ptrEntity->GetVecVelocity();
+		L::Verbose("Origin");
+		newTick.Origin = p.Origin;
+		L::Verbose("HeadPos");
+		newTick.HeadPos = Vec(p.Matrix[8][0][3], p.Matrix[8][1][3], p.Matrix[8][2][3]);
+		L::Verbose("EyeAng");
+		newTick.EyeAng = p.ptrEntity->GetEyeAngles();
+		L::Verbose("SimulationTime");
+		newTick.SimulationTime = p.SimulationTime;
+		L::Verbose("Duck");
+		newTick.Duck = p.ptrEntity->GetDuckAmount();
+		L::Verbose("LBY");
+		newTick.LBY = p.ptrEntity->GetLBY();
+		L::Verbose("Flags");
+		newTick.Flags = p.ptrEntity->GetFlags();
+		L::Verbose("Choked");
+		newTick.Choked = 0;
+		if (!PlayerList[UserId].Records.empty())
+			newTick.Choked = TimeToTicks(PlayerList[UserId].SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
 		L::Verbose("push_front");
-		PlayerList[UserId].Records.push_front(new_tick);
+		PlayerList[UserId].Records.push_front(newTick);
 		
 		L::Verbose("Deal with too many records");
 		// Deal with too many records (anything above 200ms just forget about it :D)
-		unsigned int Ticks = TimeToTicks(.2f);
+		unsigned int Ticks = TimeToTicks(0.2f);
 		while (PlayerList[UserId].Records.size() > 3 && PlayerList[UserId].Records.size() > Ticks) {
 			PlayerList[UserId].Records.pop_back();
 		}
