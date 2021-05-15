@@ -439,6 +439,10 @@ namespace Config
 				g->Add("clantag-special", "Special Clantag", new CBoolean())->IsPremium = true;
 				g->Add("resolver", "Resolver", new CBoolean())->IsPremium = true;
 			}
+			{
+				Group* g = t->Add("Visuals");
+				g->Add("chams-backtrack", "Backtrack Chams", new CBoolean())->IsPremium = true;
+			}
 		}
 
 		// THEME

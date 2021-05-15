@@ -54,9 +54,9 @@ private:
 	bool UpdateRageVal();
 	void GetRageHitboxes(int gun);
 
-	// Sorts UserID's of players in an order that makes sense for autowalling
-	std::vector<std::pair<int, float>> players;
-	void SortPlayers(std::vector<std::pair<int, float>>& values);
+	
+	
+	
 	
 	// Scans through players and attempts to autowall them (uses multithreading)
 	bool ScanPlayers();
@@ -67,6 +67,11 @@ private:
 	bool ScanPlayerBacktrack(int UserID, Vec& Point);
 
 public:
+	// Sorts UserID's of players in an order that makes sense for autowalling
+	std::vector<std::pair<int, float>> players;
+	void SortPlayers(std::vector<std::pair<int, float>>& values);
+
+
 	int GetHitGroup(int Hitbox);
 
 	int maxplayerscan = 5;

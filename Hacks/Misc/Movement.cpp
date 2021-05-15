@@ -274,40 +274,50 @@ void Movement::AutoStop()
 
 	bool PossibleDamage = false;
 
-	std::map<int, Player>::iterator it;
-	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
+	L::Verbose("Autostop autowall checking");
+
+	// only do what aimbot sees as important
+	int scans = 1;
+	for (auto& a : aimbot->players)
 	{
-		if (it->second.Index == G::LocalPlayerIndex) // entity is Localplayer
+		Player p = lagcomp->PlayerList[a.first];
+		if (p.Index == G::LocalPlayerIndex) // entity is Localplayer
 			continue;
 
-		if (!(it->second.ptrEntity)) // entity DOES NOT exist
+		if (!(p.ptrEntity)) // entity DOES NOT exist
 			continue;
 
-		if (!(it->second.Health > 0)) // entity is NOT alive
+		if (!(p.Health > 0)) // entity is NOT alive
 			continue;
 
-		if (it->second.Team == G::LocalPlayerTeam) // Entity is on same team
+		if (p.Team == G::LocalPlayerTeam) // Entity is on same team
 			continue;
 
-		if (it->second.Dormant)	// Entity is dormant
+		if (p.Dormant)	// Entity is dormant
 			continue;
+
+		Vec vel = p.ptrEntity->GetVecVelocity();
+		vel *= (I::globalvars->m_intervalPerTick * 1); // one tick forward prediciton
+		//velocity now holds our distance to move
+
+		// Updating their next position
+		Vec nPos = p.EyePos + vel;
 
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
 		// --> reduced slightly with clipraytoentity
-		trace_t Trace;
-		Ray_t Ray(NextPos, it->second.EyePos);
-		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, it->second.ptrEntity, &Trace);
-		if (Trace.Entity == it->second.ptrEntity)
+		// autowall if we can clipray
+		if (autowall->CanHitFloatingPoint(NextPos, nPos, true))
 		{
-			// autowall if we can clipray
-			if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
-			{
-				PossibleDamage = true;
-				break;
-			}
+			PossibleDamage = true;
+			break;
 		}
+		scans++;
+		// if we are going to scan too many people, return
+		if (scans > aimbot->maxplayerscan - 1)
+			return;
 		
 	}
+	L::Verbose("Autostop autowall - done");
 
 	// If there's no possible way to do damage, return
 	if (!PossibleDamage)
@@ -315,7 +325,7 @@ void Movement::AutoStop()
 
 	//SLOWWALK Stop
 	float maxSpeed = G::LocalPlayer->MaxAccurateSpeed() / 3.f;
-	maxSpeed -= 5;
+	maxSpeed *= 0.9f; // force to slow down to 0.9 of max accurate speed
 
 	if (AutoStop->Get())
 	{

@@ -46,6 +46,9 @@ void FakeLag::LagOnPeak()
 
 	bool DamageOutgoing = false;
 
+	L::Verbose("Fakelag autowall - begin");
+
+	int scans = 1;
 	std::map<int, Player>::iterator it;
 	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
@@ -72,9 +75,13 @@ void FakeLag::LagOnPeak()
 			DamageOutgoing = true;
 			break;
 		}
+		scans++;
+		// if we are going to scan too many people, skip
+		if (scans > aimbot->maxplayerscan - 1)
+			continue;
 	}
 
-
+	L::Verbose("Fakelag autowall - end");
 
 	static bool ChokeOnce = false;
 

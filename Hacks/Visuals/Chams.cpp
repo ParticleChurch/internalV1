@@ -87,6 +87,8 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 	static Config::CColor* LocalPlayerFakeColor = Config::GetColor("visuals-chams-local-fake-color");
 	static Config::CState* LocalPlayerFakeMaterial = Config::GetState("visuals-chams-local-fake-material");
 
+	static Config::CState* BacktrackChams = Config::GetState("chams-backtrack");
+
 	static int tick_count = I::globalvars->m_tickCount;
 	bool NewTick = false;
 	if (tick_count != I::globalvars->m_tickCount)
@@ -110,7 +112,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
 		{	
-			
+			L::Verbose("H::DrawModelExecuteHook - localplayer");
 			if ((LegitAA->Get() || RageAA->Get())
 				&& LocalPlayerFakeEnable->Get()
 				&& ThirdPerson->Get())
@@ -144,6 +146,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else if (isEnemy)
 		{
+			L::Verbose("H::DrawModelExecuteHook - enemy");
 			if (EnemyHidEnable->Get())
 			{
 				OverideMat(
@@ -156,21 +159,23 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 				I::modelrender->ForcedMaterialOverride(nullptr);
 			}
 
-			if (EnemyVisEnable->Get())
+			if (BacktrackChams->Get())
 			{
 				if (!lagcomp->PlayerList[bInfo.userid].Records.empty())
 				{
 					OverideMat(
-						true,	//viz thru wall?
-						1,		//material?
-						0.5,	//transparent?
-						Color(255, 0, 0),
+						false,	// viz thru wall?
+						1,		// flat
+						0.5,	// opacity
+						Color(255, 255, 255), // color
 						thisptr, ctx, state, info, lagcomp->PlayerList[bInfo.userid].Records.back().Matrix);
 					H::oDrawModelExecute(thisptr, ctx, state, info, lagcomp->PlayerList[bInfo.userid].Records.back().Matrix);
 					I::modelrender->ForcedMaterialOverride(nullptr);
 				}
-				
+			}
 
+			if (EnemyVisEnable->Get())
+			{
 				OverideMat(
 					false,	//viz thru wall?
 					EnemyVisMaterial->Get(),	//wireframe?
@@ -181,6 +186,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else
 		{
+			L::Verbose("H::DrawModelExecuteHook - friend");
 			if (FriendHidEnable->Get())
 			{
 				OverideMat(
@@ -205,9 +211,14 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 
 		}
 	}
-	
+
+	L::Verbose("H::DrawModelExecuteHook - redraw");
 	H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
-	if(ValidInfo)
+	if (ValidInfo)
+	{
+		L::Verbose("H::DrawModelExecuteHook - ValidInfo");
 		I::modelrender->ForcedMaterialOverride(nullptr);
+	}
+		
 	
 }
