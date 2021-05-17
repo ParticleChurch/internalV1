@@ -20,6 +20,19 @@ public:
 	void ChangeViewModel();
 	void ForceCrosshair();
 	std::vector<std::string> GetSpectators();
+	//keybind visual
+	struct KeybindVis
+	{
+		std::string name;
+		bool val;
+		KeybindVis(std::string name, bool val)
+		{
+			this->name = name;
+			this->val = val;
+		}
+	};
+	std::vector<KeybindVis> GetKeyBinds();
+
 };
 
 extern MiscVisuals* miscvisuals;

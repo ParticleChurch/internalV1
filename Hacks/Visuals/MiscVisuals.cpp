@@ -253,3 +253,17 @@ std::vector<std::string> MiscVisuals::GetSpectators()
 
 	return SpecList;
 }
+
+std::vector<MiscVisuals::KeybindVis> MiscVisuals::GetKeyBinds()
+{
+	std::vector<KeybindVis> KeyBindList = {};
+	for (auto& a : Config::PropertyTable)
+	{
+		// If it is bound to some key
+		if (Config::GetKeybind(a.first) != -1)
+		{
+			KeyBindList.push_back(KeybindVis(a.second->Name, Config::GetState(a.first)->Get()));
+		}
+	}
+	return KeyBindList;
+}

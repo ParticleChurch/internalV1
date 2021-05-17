@@ -403,6 +403,13 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		{
 			ImGui::Text(a.c_str());
 		}
+
+		ImGui::Text("Keybind List");
+		for (auto a : miscvisuals->GetKeyBinds())
+		{
+			std::string str = a.name + "\t" + (a.val ? "ON" : "OFF");
+			ImGui::Text(str.c_str());
+		}
 		
 		for (auto a : console)
 			ImGui::Text(a.c_str());
