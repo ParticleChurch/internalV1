@@ -32,7 +32,7 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(FONT, "verdana", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+		I::surface->SetFontGlyphSet(FONT, "Verdana", 12, 1, 0, 0, FONTFLAG_DROPSHADOW);// FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
 
 	std::string TEXT = Name;
@@ -61,6 +61,8 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	if (WeapIcon.find(id) == WeapIcon.end())
 		return;
 
+	bool IsDormant = ent->IsDormant();
+
 	wchar_t icon[2] = { (wchar_t)WeapIcon[id], 0 };
 	static DWORD FONT = I::surface->FontCreate();
 	static bool Once = true;
@@ -71,23 +73,41 @@ void ESP::DrawWeapon(Vec TL, Vec BR, Entity* ent)
 	}
 
 	I::surface->DrawSetTextFont(FONT);
-	I::surface->DrawSetTextColor(Color(EnemyWeaponColor->GetR(), EnemyWeaponColor->GetG(), EnemyWeaponColor->GetB(), EnemyWeaponColor->GetA()));
+	I::surface->DrawSetTextColor(Color(EnemyWeaponColor->GetR(), EnemyWeaponColor->GetG(), EnemyWeaponColor->GetB(), IsDormant ? EnemyWeaponColor->GetA() / 2.f : EnemyWeaponColor->GetA()));
 	I::surface->DrawSetTextPos(TL.x, BR.y + 7);
 	I::surface->DrawPrintText(icon, 1);
 }
 
-void ESP::DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg)
+void ESP::DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg, bool IsDormant)
 {
 	int Height = BR.y - TL.y;
 
 	int HeightBar = (int)(Height * (Health / 100.0f));
-	int WidthBar = (int)(3 + Height / 100.0f);
+	int WidthBar = (int)(2 + Height / 100.0f);
 
 	I::surface->DrawSetColor(bg);		//red
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - Height, BR.x + WidthBar + 1, BR.y);
 
 	I::surface->DrawSetColor(fg);		//green
 	I::surface->DrawFilledRect(BR.x + 1, BR.y - HeightBar, BR.x + WidthBar + 1, BR.y);
+
+	static DWORD FONT = I::surface->FontCreate();
+	static bool Once = true;
+	if (Once)
+	{
+		Once = false;
+		I::surface->SetFontGlyphSet(FONT, "Small Fonts", 10, 400, 0, 0, FONTFLAG_DROPSHADOW);// FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+	}
+
+	std::string TEXT = std::to_string(Health);
+	static std::wstring wide_string;
+	wide_string = std::wstring(TEXT.begin(), TEXT.end());
+
+	//vgui_spew_fonts TYPE THAT IN CONSOLE TO GET ALL FONTS
+	I::surface->DrawSetTextFont(FONT);
+	I::surface->DrawSetTextColor(Color(255*(100 - Health) / 100.f, 255 * (Health) / 100.f, 0, IsDormant ? 125 : 255));
+	I::surface->DrawSetTextPos(BR.x + WidthBar + 1, BR.y - HeightBar);
+	I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 }
 
 void ESP::DrawSkeleton(Entity* Ent)
@@ -97,6 +117,8 @@ void ESP::DrawSkeleton(Entity* Ent)
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(Ent->GetModel());
 	if (!StudioModel)
 		return;
+
+	bool Dormant = Ent->IsDormant();
 
 	static Matrix3x4 BoneToWorldOut[128];
 	if (Ent->SetupBones(BoneToWorldOut, 128, 256, 0))
@@ -134,7 +156,7 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 	Collideable* col = ent->GetCollideable();
 	if (!col)
 		return;
-	Vec origin = ent->GetVecOrigin();
+	Vec origin = ent->GetAbsOrigin();
 
 	/*Vec MIN, MAX;
 	ent->GetRenderBounds(MIN, MAX);*/
@@ -224,7 +246,7 @@ void ESP::DrawIndicators(Entity* ent, Color clr)
 	const auto angle_yaw_rad = DEG2RAD(viewangles.y - aimbot->CalculateAngle(eyepos).y - 90);
 
 	int radius = 100.f;
-	int size = 10.f;
+	int size = 8.f;
 
 	const auto new_point_x = screen_center.x + ((((width - (size * 3)) * .5f) * (radius / 100.0f)) * cos(angle_yaw_rad)) + (int)(6.0f * (((float)size - 4.f) / 16.0f));
 	const auto new_point_y = screen_center.y + ((((height - (size * 3)) * .5f) * (radius / 100.0f)) * sin(angle_yaw_rad));
@@ -256,7 +278,6 @@ void ESP::Run_PaintTraverse()
 	static Config::CState* EnemyResolver		= Config::GetState("visuals-esp-enemy-resolverflags");
 	static Config::CColor* EnemyResolverColor  = Config::GetColor("visuals-esp-enemy-resolverflags-color");
 	static Config::CState* EnemyWeapon			= Config::GetState("visuals-esp-enemy-weapon");
-	
 
 	static Config::CState* FriendEnable			= Config::GetState("visuals-esp-friend-enable");
 	static Config::CState* FriendBox				= Config::GetState("visuals-esp-friend-bbox");
@@ -298,8 +319,7 @@ void ESP::Run_PaintTraverse()
 		if (!(Ent->GetHealth() > 0))
 			continue;
 
-		if (Ent->IsDormant())
-			continue;
+		bool IsDormant = Ent->IsDormant();
 
 		Vec TopLeft;
 		Vec BottomRight;
@@ -307,7 +327,7 @@ void ESP::Run_PaintTraverse()
 
 
 		//if on localplayer team...
-		if (Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
+		if (!IsDormant && Ent->GetTeam() == I::entitylist->GetClientEntity(I::engine->GetLocalPlayer())->GetTeam())
 		{
 			//if friend esp not enabled
 			if (!FriendEnable->Get())
@@ -326,7 +346,7 @@ void ESP::Run_PaintTraverse()
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(),
 					Color(FriendHealthFGColor->GetR(), FriendHealthFGColor->GetG(), FriendHealthFGColor->GetB(), FriendHealthFGColor->GetA()),
-					Color(FriendHealthBGColor->GetR(), FriendHealthBGColor->GetG(), FriendHealthBGColor->GetB(), FriendHealthBGColor->GetA()));
+					Color(FriendHealthBGColor->GetR(), FriendHealthBGColor->GetG(), FriendHealthBGColor->GetB(), FriendHealthBGColor->GetA()), IsDormant);
 			}
 			if (FriendSkeleton->Get())
 			{
@@ -346,7 +366,7 @@ void ESP::Run_PaintTraverse()
 			if (Once)
 			{
 				Once = false;
-				I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+				I::surface->SetFontGlyphSet(FONT, "Small Fonts", 10, 400, 0, 0, FONTFLAG_DROPSHADOW);// FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 			}
 
 			//resolver->PlayerInfo[PlayerInfo.userid]
@@ -358,8 +378,13 @@ void ESP::Run_PaintTraverse()
 				static std::wstring wide_string;
 				wide_string = std::wstring(TEXT.begin(), TEXT.end());
 
+				Color clr = Color(EnemyResolverColor->GetR(), EnemyResolverColor->GetG(), EnemyResolverColor->GetB(), EnemyResolverColor->GetA());
+				// if dormant divide by two
+				if (IsDormant)
+					clr.color[3] /= 2;
+
 				I::surface->DrawSetTextFont(FONT);
-				I::surface->DrawSetTextColor(Color(EnemyResolverColor->GetR(), EnemyResolverColor->GetG(), EnemyResolverColor->GetB(), EnemyResolverColor->GetA()));
+				I::surface->DrawSetTextColor(clr);
 				I::surface->DrawSetTextPos(BottomRight.x + 8, (TopLeft.y + BottomRight.y) / 2);
 				I::surface->DrawPrintText(wide_string.c_str(), wcslen(wide_string.c_str()));
 			}
@@ -367,26 +392,38 @@ void ESP::Run_PaintTraverse()
 
 			if (EnemyBox->Get())
 			{
-				I::surface->DrawSetColor(Color(EnemyBoxColor->GetR(), EnemyBoxColor->GetG(), EnemyBoxColor->GetB(), EnemyBoxColor->GetA()));
+				// if dormant divide by two
+				
+				Color clr = Color(EnemyBoxColor->GetR(), EnemyBoxColor->GetG(), EnemyBoxColor->GetB(), EnemyBoxColor->GetA());
+				if (IsDormant)
+					clr.color[3] /= 2;
+				I::surface->DrawSetColor(clr);
 				DrawBoxes(TopLeft, BottomRight);
 			}
 			if (EnemyName->Get())
 			{
-				DrawName(TopLeft, BottomRight, PlayerInfo.name, Color(EnemyNameColor->GetR(), EnemyNameColor->GetG(), EnemyNameColor->GetB(), EnemyNameColor->GetA()));
+				Color clr = Color(EnemyNameColor->GetR(), EnemyNameColor->GetG(), EnemyNameColor->GetB(), EnemyNameColor->GetA());
+				if (IsDormant)
+					clr.color[3] /= 2;
+				DrawName(TopLeft, BottomRight, PlayerInfo.name, clr);
 			}
 			if (EnemyIndicator->Get())
 			{
+				Color clr = Color(EnemyIndicatorColor->GetR(), EnemyIndicatorColor->GetG(), EnemyIndicatorColor->GetB(), EnemyIndicatorColor->GetA());
+				if (IsDormant)
+					clr.color[3] /= 2;
 				DrawIndicators(Ent, Color(EnemyIndicatorColor->GetR(), EnemyIndicatorColor->GetG(), EnemyIndicatorColor->GetB(), EnemyIndicatorColor->GetA()));
 			}
 			if (EnemyHealth->Get())
 			{
 				DrawHealth(TopLeft, BottomRight, Ent->GetHealth(), 
-					Color(EnemyHealthFGColor->GetR(), EnemyHealthFGColor->GetG(), EnemyHealthFGColor->GetB(), EnemyHealthFGColor->GetA()),
-					Color(EnemyHealthBGColor->GetR(), EnemyHealthBGColor->GetG(), EnemyHealthBGColor->GetB(), EnemyHealthBGColor->GetA()));
+					Color(EnemyHealthFGColor->GetR(), EnemyHealthFGColor->GetG(), EnemyHealthFGColor->GetB(), IsDormant ? EnemyHealthFGColor->GetA() / 2.f : EnemyHealthFGColor->GetA()),
+					Color(EnemyHealthBGColor->GetR(), EnemyHealthBGColor->GetG(), EnemyHealthBGColor->GetB(), IsDormant ? EnemyHealthBGColor->GetA() / 2.f : EnemyHealthBGColor->GetA()),
+					IsDormant);
 			}
 			if (EnemySkeleton->Get())
 			{
-				I::surface->DrawSetColor(Color(EnemySkeletonColor->GetR(), EnemySkeletonColor->GetG(), EnemySkeletonColor->GetB(), EnemySkeletonColor->GetA())); //white by defualt
+				I::surface->DrawSetColor(Color(EnemySkeletonColor->GetR(), EnemySkeletonColor->GetG(), EnemySkeletonColor->GetB(), IsDormant ? EnemySkeletonColor->GetA() / 2.f : EnemySkeletonColor->GetA())); //white by defualt
 				DrawSkeleton(Ent);
 			}
 			if (EnemyWeapon->Get())

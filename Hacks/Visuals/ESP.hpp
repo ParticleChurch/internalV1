@@ -7,7 +7,7 @@ private:
 	void DrawName(Vec TL, Vec BR, char Name[128], Color clr);
 	void DrawWeapon(Vec TL, Vec BR, Entity*);
 	void DrawIndicators(Entity* ent, Color clr);
-	void DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg);
+	void DrawHealth(Vec TL, Vec BR, int Health, Color fg, Color bg, bool IsDormant);
 	void DrawSkeleton(Entity*);
 	void GetBounds(Entity* ent, Vec& TL, Vec& BR);
 
