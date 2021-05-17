@@ -306,7 +306,7 @@ void Movement::AutoStop()
 		// Get damage from next position... (LOTS OF AWALL, idk what i'm supposed to do lmao)
 		// --> reduced slightly with clipraytoentity
 		// autowall if we can clipray
-		if (autowall->CanHitFloatingPoint(NextPos, nPos, true))
+		if (autowall2->CanHitFloatingPoint(nPos, NextPos))
 		{
 			PossibleDamage = true;
 			break;

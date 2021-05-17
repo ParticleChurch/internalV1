@@ -22,6 +22,9 @@ bool FakeLag::TimeBreaker()
 
 void FakeLag::LagOnPeak()
 {
+	H::console.clear();
+	H::console.resize(0);
+
 	if (!G::LocalPlayer)
 		return;
 	if (!G::LocalPlayerAlive)
@@ -47,9 +50,10 @@ void FakeLag::LagOnPeak()
 	bool DamageOutgoing = false;
 
 	L::Verbose("Fakelag autowall - begin");
-
+	
 	int scans = 1;
 	std::map<int, Player>::iterator it;
+	H::console.push_back("LagOnPeak going brrrr");
 	for (it = lagcomp->PlayerList.begin(); it != lagcomp->PlayerList.end(); it++)
 	{
 		if (it->second.Index == G::LocalPlayerIndex) // entity is Localplayer
@@ -67,18 +71,30 @@ void FakeLag::LagOnPeak()
 		if (it->second.Dormant)	// Entity is dormant
 			continue;
 
-		if (!ValidSimTime(it->second.Records.front().SimulationTime)) // if not valid simtime
+		L::Verbose("Fakelag autowall - ValidSimTime");
+		if (!ValidSimTime(it->second.SimulationTime)) // if not valid simtime
 			continue;
 
-		if (autowall->CanHitFloatingPoint(NextPos, it->second.EyePos, true))
+		L::Verbose("Fakelag autowall - CanHitFloatingPoint");
+
+		H::console.push_back("CanHitFloatingPoint?");
+		/*if (autowall2->CanHitFloatingPoint(it->second.EyePos, NextPos))
 		{
+			
+			H::console.push_back("BOOM HITTIN A POINT!");
 			DamageOutgoing = true;
 			break;
+		}*/
+		if (autowall->Damage(G::LocalPlayer->GetEyePos(), it->second.EyePos) > 0)
+		{
+			H::console.push_back("BOOM HITTIN A POINT!");
+			DamageOutgoing = true;
+			/*break;*/
 		}
 		scans++;
 		// if we are going to scan too many people, skip
-		if (scans > aimbot->maxplayerscan - 1)
-			continue;
+		/*if (scans > aimbot->maxplayerscan / 3)
+			continue;*/
 	}
 
 	L::Verbose("Fakelag autowall - end");

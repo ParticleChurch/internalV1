@@ -132,6 +132,9 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		// No shots were missed, revert back to normal
 		if (LogEnable->Get() && PlayerInfo.find(ImpactEndUserID) != PlayerInfo.end())
 		{
+			if (!BacktrackShot)
+				PlayerInfo[ImpactEndUserID].ShotsMissed--;
+
 			// GOOD shot
 			ConsoleColorMsg(Color(0, 255, 0), "Shot ");
 			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
@@ -140,10 +143,11 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 			ConsoleColorMsg(Color(255, 255, 255), " in the ");
 			ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
 			ConsoleColorMsg(Color(255, 255, 255), " at angle ");
-			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 255), " | Shots Missed [%d]\n", (int)PlayerInfo[info.userid].ShotsMissed);
+			
 
-			if(!BacktrackShot)
-				PlayerInfo[ImpactEndUserID].ShotsMissed--;
+			
 
 			LogPredError = false; // no prediction error cuz we hit them
 			LogShot = false; // dont log anything more cuz we hit the shot
@@ -152,7 +156,6 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 	else if(LogEnable->Get() && !BacktrackShot)
 	{
 		// LUCKY shot (wasn't going t hit but did + not backtrack shot...)
-		PlayerInfo[ImpactEndUserID].ShotsMissed++;
 
 		ConsoleColorMsg(Color(255, 69, 0), "Resolver Error: ");
 		ConsoleColorMsg(Color(255, 0, 0), "Shot ");
@@ -162,7 +165,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
 		ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
 		ConsoleColorMsg(Color(255, 255, 255), " at angle ");
-		ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+		ConsoleColorMsg(Color(255, 255, 0), "[%d]", (int)PlayerInfo[info.userid].OffsetAngle);
+		ConsoleColorMsg(Color(255, 255, 255), " | Shots Missed [%d]\n", (int)PlayerInfo[info.userid].ShotsMissed);
 
 		LogPredError = false;
 		LogShot = false; // dont log missed to spread (cuz luckily hit entity)
@@ -177,7 +181,8 @@ void Resolver::LogPlayerHurt(GameEvent* event)
 		ConsoleColorMsg(Color(255, 255, 255), " in the ");
 		ConsoleColorMsg(Color(255, 69, 0), "[%s]", HitGroupStr(hitgroup).c_str());
 		ConsoleColorMsg(Color(255, 255, 255), " at angle ");
-		ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+		ConsoleColorMsg(Color(255, 255, 0), "[%d]", (int)PlayerInfo[info.userid].OffsetAngle);
+		ConsoleColorMsg(Color(255, 255, 255), " | Shots Missed [%d]\n", (int)PlayerInfo[info.userid].ShotsMissed);
 		//PlayerInfo[ImpactEndUserID].ShotsMissed--;
 
 		LogPredError = false; // no prediction error cuz backtrack
@@ -371,7 +376,8 @@ void Resolver::Resolve()
 			ConsoleColorMsg(Color(255, 0, 0), "Missed shot at ");
 			ConsoleColorMsg(Color(0, 255, 0), "[%s]", info.name);
 			ConsoleColorMsg(Color(255, 0, 0), " at angle ");
-			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 255), " | Shots Missed [%d]\n", (int)PlayerInfo[info.userid].ShotsMissed);
 			LogPredError = false;
 			LogShot = false; // dont wanna log spread error if it is a prediction error
 		}
@@ -397,7 +403,8 @@ void Resolver::Resolve()
 			ConsoleColorMsg(Color(255, 255, 255), "due to ");
 			ConsoleColorMsg(Color(255, 0, 0), " spread");
 			ConsoleColorMsg(Color(255, 0, 0), " at angle ");
-			ConsoleColorMsg(Color(255, 255, 0), "[%d]\n", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 0), "[%d]", (int)PlayerInfo[info.userid].OffsetAngle);
+			ConsoleColorMsg(Color(255, 255, 255), " | Shots Missed [%d]\n", (int)PlayerInfo[info.userid].ShotsMissed);
 		}
 	}
 	else if(LogShot && LogEnable->Get() && BacktrackShot) // if we miss backtrack shot...

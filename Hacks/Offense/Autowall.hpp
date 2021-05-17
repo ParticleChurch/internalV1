@@ -21,3 +21,42 @@ public:
 };
 
 extern Autowall* autowall;
+
+
+
+struct FireBulletData
+{
+	FireBulletData(const Vec& eyePos, Entity* entity) : src(eyePos), filter(entity)
+	{
+	}
+
+	Vec          src;
+	trace_t         enter_trace;
+	Vec          direction;
+	CTraceFilter   filter;
+	float           trace_length;
+	float           trace_length_remaining;
+	float           current_damage;
+	int             penetrate_count;
+};
+
+// credits to 
+class Autowall2
+{
+private:
+	void TraceLine(Vec& start, Vec& end, unsigned int mask, Entity* ignore, trace_t* tr);
+	bool VectortoVectorVisible(Vec src, Vec point);
+	bool HandleBulletPenetration(WeaponData* wpn_data, FireBulletData& data, bool extracheck);
+	bool TraceToExitalt(Vec& end, trace_t& tr, Vec start, Vec vEnd, trace_t* trace);
+	bool SimulateFireBullet(Entity* local, Entity* weapon, FireBulletData& data);
+	void UTIL_ClipTraceToPlayers(const Vec& vecAbsStart, const Vec& vecAbsEnd, unsigned int mask, CTraceFilter* filter, trace_t* tr);
+	void ScaleDamage(int hitgroup, Entity* enemy, float weapon_armor_ratio, float& current_damage);
+	float GetHitgroupDamageMult(int iHitGroup);
+public:
+	Vec aim;
+	float Damage(const Vec& point);
+	bool CanHitFloatingPoint(const Vec& point, const Vec& source);
+	//bool CanWallbang(float& dmg);
+};
+
+extern Autowall2* autowall2;

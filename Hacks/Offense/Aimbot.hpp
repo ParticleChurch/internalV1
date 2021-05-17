@@ -28,7 +28,7 @@ private:
 	}rage;
 
 	// General Private Functions
-	float CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox);
+	float CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, int hbox);
 	float CalculatePsudoHitchance();
 	bool ValidPlayer(Player player);
 	

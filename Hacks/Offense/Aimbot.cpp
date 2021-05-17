@@ -2,7 +2,7 @@
 
 Aimbot* aimbot = new Aimbot();
 
-float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, Hitboxes hbox)
+float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* player, int hbox)
 {
 	auto weapon = G::LocalPlayerWeapon;
 	if (!weapon)
@@ -19,12 +19,14 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 	fast_vec_normalize(forward);
 	fast_vec_normalize(right);
 	fast_vec_normalize(up);
-	auto endpoint = point;
+	Vec endpoint = point;
 
-	auto hits = 0;
+	float hits = 0;
 	auto i = 0;
 
-	while (i < 255)
+	// originally 255, reducing down to 100 for less accuracy, but quicker calc
+	int NumTraces = 100;
+	while (i < NumTraces)
 	{
 		const auto b = QuickRandom(0.f, 2.0f * 3.1415926535f); // tired of "warning C4305: 'argument': truncation from 'double' to 'float'"
 		const auto c = QuickRandom(0.0f, 1.0f);
@@ -57,12 +59,12 @@ float Aimbot::CalculateHitchance(QAngle vangles, const Vec& point, Entity* playe
 		I::enginetrace->ClipRayToEntity(Ray, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &Trace);
 
 		if (Trace.Entity == player && GetHitGroup(hbox) == GetHitGroup(Trace.hitbox)) // eg. in head
-			hits++;
+			hits+=1;
 
 		i++;
 	}
 
-	return (hits / 255.f);
+	return (hits / NumTraces);
 }
 
 float Aimbot::CalculatePsudoHitchance()
@@ -661,9 +663,6 @@ void Aimbot::Rage()
 	{
 		L::Verbose("ScanPlayer - shooting at players");
 
-		/*esp->points.clear();
-		esp->points.resize(0);
-		esp->points.push_back(this->AimPoint);*/
 		QAngle Angle = CalculateAngle(this->AimPoint);
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
 
@@ -736,8 +735,6 @@ bool Aimbot::ScanPlayers()
 	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
 	backtrackaim = false;
-	esp->points.clear();
-	esp->points.resize(0);
 	for (auto &a : this->players)
 	{
 		// scan players
@@ -855,32 +852,30 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		// do secial head multipoint stuff (assuming any multipoint enabled...)
 		if (HITBOX == HITBOX_HEAD && rage.multipoint > 0.01f)
 		{
-			// TRY for middle of head...
-			esp->points.push_back(point);
 
 			// Calc Mid Angle
-			L::Verbose("ScanPlayer - CalculateAngle");
+			L::Verbose("ScanPlayer - CalculateAngle HITBOX_HEAD");
 			QAngle MidAngle = CalculateAngle(point);
 
 			// Calc Mid Hitchance
-			L::Verbose("ScanPlayer - CalculateHitchance");
+			L::Verbose("ScanPlayer - CalculateHitchance HITBOX_HEAD");
 			float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 
 			// If the left hitchance is up to snuff...
 			if (MidHitchance >= rage.hitchance)
 			{
 				// if the point is visible
-				L::Verbose("ScanPlayer - IsVisible");
+				L::Verbose("ScanPlayer - IsVisible HITBOX_HEAD");
 				bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 				// no need to autowall if visible...
-				L::Verbose("ScanPlayer - Damage");
+				L::Verbose("ScanPlayer - Damage HITBOX_HEAD");
 				damage = autowall->Damage(point, HITBOX, true);
 				if (visible && damage >= rage.vis_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy");
-					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+					L::Verbose("ScanPlayer - memcpy vis_mindam HITBOX_HEAD");
+					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
 
@@ -890,8 +885,8 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 				else if (damage >= rage.hid_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy");
-					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+					L::Verbose("ScanPlayer - memcpy hid_mindam HITBOX_HEAD");
+					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 					TargetTickCount =TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
@@ -937,33 +932,29 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			}
 		}
 
-
-
-		esp->points.push_back(point);
-
 		// Calc Mid Angle
-		L::Verbose("ScanPlayer - CalculateAngle");
+		L::Verbose("ScanPlayer - CalculateAngle Reg");
 		QAngle MidAngle = CalculateAngle(point);
 
 		// Calc Mid Hitchance
-		L::Verbose("ScanPlayer - CalculateHitchance");
+		L::Verbose("ScanPlayer - CalculateHitchance Reg");
 		float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
 			// if the point is visible
-			L::Verbose("ScanPlayer - IsVisible");
+			L::Verbose("ScanPlayer - IsVisible Reg");
 			bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 			// no need to autowall if visible...
-			L::Verbose("ScanPlayer - Damage");
+			L::Verbose("ScanPlayer - Damage Reg");
 			damage = autowall->Damage(point, HITBOX, true);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy");
-				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+				L::Verbose("ScanPlayer - memcpy vis_mindam");
+				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
 
@@ -973,8 +964,8 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			else if (damage >= rage.hid_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy");
-				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 256 * sizeof(Matrix3x4));
+				L::Verbose("ScanPlayer - memcpy hid_mindam");
+				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
@@ -1078,7 +1069,7 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
-			if (autowall->CanHitFloatingPoint(mid, true))
+			if (autowall2->CanHitFloatingPoint(mid, G::LocalPlayer->GetEyePos()))
 			{
 				this->TargetUserID = UserID;
 				std::memcpy(TargetMatrix, TargetTick.Matrix, 128 * sizeof(Matrix3x4));

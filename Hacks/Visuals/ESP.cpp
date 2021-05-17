@@ -32,7 +32,7 @@ void ESP::DrawName(Vec TL, Vec BR, char Name[128], Color clr) //NEED TO FINISH
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(FONT, "Tahoma", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+		I::surface->SetFontGlyphSet(FONT, "verdana", 14, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
 
 	std::string TEXT = Name;
@@ -135,6 +135,9 @@ void ESP::GetBounds(Entity* ent, Vec& TL, Vec& BR)
 	if (!col)
 		return;
 	Vec origin = ent->GetVecOrigin();
+
+	/*Vec MIN, MAX;
+	ent->GetRenderBounds(MIN, MAX);*/
 	Vec min = origin + col->obbMins();
 	Vec max = origin + col->obbMaxs();
 	
@@ -221,7 +224,7 @@ void ESP::DrawIndicators(Entity* ent, Color clr)
 	const auto angle_yaw_rad = DEG2RAD(viewangles.y - aimbot->CalculateAngle(eyepos).y - 90);
 
 	int radius = 100.f;
-	int size = 15.f;
+	int size = 10.f;
 
 	const auto new_point_x = screen_center.x + ((((width - (size * 3)) * .5f) * (radius / 100.0f)) * cos(angle_yaw_rad)) + (int)(6.0f * (((float)size - 4.f) / 16.0f));
 	const auto new_point_y = screen_center.y + ((((height - (size * 3)) * .5f) * (radius / 100.0f)) * sin(angle_yaw_rad));
@@ -275,7 +278,7 @@ void ESP::Run_PaintTraverse()
 	if (Once)
 	{
 		Once = false;
-		I::surface->SetFontGlyphSet(FONT, "Tahoma", 20, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
+		I::surface->SetFontGlyphSet(FONT, "Tahoma", 10, 1, 0, 0, FONTFLAG_ANTIALIAS | FONTFLAG_OUTLINE);
 	}
 	
 

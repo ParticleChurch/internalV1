@@ -738,6 +738,12 @@ public:
 		return GetVFunc<oGetModel>(this + 4, 8)(this + 4);
 	}
 
+	void GetRenderBounds(Vec& mins, Vec& maxs)
+	{
+		typedef void(__thiscall* oGetRenderBounds)(void*, Vec&, Vec&);
+		return GetVFunc<oGetRenderBounds>(this + 4, 17)(this + 4, mins, maxs);
+	}
+
 	Vec& GetRenderOrigin()
 	{
 		typedef Vec& (__thiscall* oGetRenderOrigin)(void*);
