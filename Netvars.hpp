@@ -12,4 +12,7 @@ namespace N {
 	extern int GetRecvProp(std::vector<RecvTable*> Tables, RecvTable* RecvTable, const char* PropName, RecvProp** Prop = 0);
 	extern std::string DumpTable();
 	extern std::string DumpTable(RecvTable* Table, int Depth);
+
+	extern std::string Dump();
+	extern RecvProp* FindRecvPropByPath(std::vector<std::string> path /* ex: {"DT_CSPlayer", "DT_CSLocalPlayerExclusive", "m_vecOrigin"} */);
 }

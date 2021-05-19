@@ -13,6 +13,9 @@ namespace TextService
 
 	extern bool Contains(std::string needle, std::string haystack, bool CaseSensitive = true);
 	extern int CountOccurances(std::string needle, std::string haystack);
+	extern std::string lpad(std::string in, size_t length, const char padWith = ' ');
+	extern std::string rpad(std::string in, size_t length, const char padWith = ' ');
+	extern std::string cpad(std::string in, size_t length, const char padWith = ' ');
 }
 
 /*

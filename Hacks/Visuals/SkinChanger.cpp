@@ -168,11 +168,26 @@ void SequenceProxyHook(const CRecvProxyData* pData_const, void* pStruct, void* p
     SkinChanger::oSequenceProxy(pData_const, pStruct, pOut);
 }
 
+RecvVarProxyFn oTestProxy = nullptr;
+void TestProxyHook(const CRecvProxyData* pData_const, void* pStruct, void* pOut)
+{
+    CRecvProxyData* pData = const_cast<CRecvProxyData*>(pData_const);
+
+    Entity* Player = (Entity*)pStruct;
+    L::Log("origin changed to", " - ");
+    L::Log(std::to_string(pData_const->m_Value.m_Vector[0]).c_str(), ", ");
+    L::Log(std::to_string(pData_const->m_Value.m_Vector[1]).c_str(), ", ");
+    L::Log(std::to_string(pData_const->m_Value.m_Vector[2]).c_str());
+
+    if (oTestProxy && GetKeyState('T') >= 0)
+        oTestProxy(pData_const, pStruct, pOut);
+}
+
 void SkinChanger::Hook()
 {
     for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
     {
-        if (!strcmp(pClass->m_pRecvTable->m_pNetTableName, "DT_BaseViewModel"))
+        if (!strcmp(pClass->m_pNetworkName, "CBaseViewModel"))
         {
             for (int i = 0; i < pClass->m_pRecvTable->m_nProps; i++)
             {
@@ -196,6 +211,13 @@ void SkinChanger::Hook()
             CreateWearable = pClass->m_pCreateFn;
         }
     }
+
+    //m_vecOrigin
+    //{
+    //    RecvProp* prop = N::FindRecvPropByPath({ "DT_CSPlayer", "DT_CSNonLocalPlayerExclusive", "m_vecOrigin" });
+    //    oTestProxy = (RecvVarProxyFn)prop->m_ProxyFn;
+    //    prop->m_ProxyFn = TestProxyHook;
+    //}
 }
 
 void SkinChanger::UnHook()
@@ -213,7 +235,7 @@ void SkinChanger::UnHook()
 
     for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
     {
-        if (!strcmp(pClass->m_pRecvTable->m_pNetTableName, "DT_BaseViewModel"))
+        if (!strcmp(pClass->m_pNetworkName, "CBaseViewModel"))
         {
             for (int i = 0; i < pClass->m_pRecvTable->m_nProps; i++)
             {
@@ -231,6 +253,12 @@ void SkinChanger::UnHook()
             }
         }
     }
+
+    //m_vecOrigin
+    //{
+    //    RecvProp* prop = N::FindRecvPropByPath({ "DT_CSPlayer", "DT_CSNonLocalPlayerExclusive", "m_vecOrigin" });
+    //    prop->m_ProxyFn = oTestProxy;
+    //}
 }
 
 void SkinChanger::ForceSkin(Entity* Weapon, int PaintKit, float Wear)

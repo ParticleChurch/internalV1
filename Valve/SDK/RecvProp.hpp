@@ -1,8 +1,22 @@
 #pragma once
+
+//https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/public/dt_common.h#L111
+typedef enum
+{
+    DPT_Int = 0,
+    DPT_Float,
+    DPT_Vector,
+    DPT_VectorXY, // Only encodes the XY of a vector, ignores Z
+    DPT_String,
+    DPT_Array,	// An array of the base types (can't be of datatables).
+    DPT_DataTable,
+    DPT_NUMSendPropTypes
+} RecvPropType;
+
 struct RecvProp
 {
 	char* m_pVarName;
-	int m_RecvType;
+	int m_RecvType; // RecvPropType
 	int m_Flags;
 	int m_StringBufferSize;
 	bool m_bInsideArray;

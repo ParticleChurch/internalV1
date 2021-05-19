@@ -39,3 +39,30 @@ int TextService::CountOccurances(std::string needle, std::string haystack)
 
 	return count;
 }
+
+std::string TextService::lpad(std::string in, size_t length, const char padWith)
+{
+	std::string out = in;
+	if (out.length() < length)
+		out.insert(0, length - out.length(), padWith);
+	return out;
+}
+
+std::string TextService::rpad(std::string in, size_t length, const char padWith)
+{
+	std::string out = in;
+	if (out.length() < length)
+		out.insert(out.length(), length - out.length(), padWith);
+	return out;
+}
+
+std::string TextService::cpad(std::string in, size_t length, const char padWith)
+{
+	std::string out = in;
+	if (out.length() >= length) return out;
+	size_t l = (length - out.length())/2;
+	size_t r = length - out.length() - l;
+	out.insert(0, l, padWith);
+	out.insert(out.length(), r, padWith);
+	return out;
+}

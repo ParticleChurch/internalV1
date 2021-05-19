@@ -134,7 +134,6 @@ namespace N {
 
 		return str;
 	}
-
 	std::string DumpTable()
 	{
 		std::string str;
@@ -143,5 +142,112 @@ namespace N {
 			str.append(DumpTable(a, 0));
 		}
 		return str;
+	}
+
+	std::string DumpRecvTable(RecvTable* table, std::map<RecvTable*, char>* alreadyPrinted, unsigned int depth = 0)
+	{
+		std::string padding = "";
+		for (unsigned int d = 0; d < depth; d++)
+			padding += "    ";
+
+		if (alreadyPrinted->find(table) != alreadyPrinted->end())
+		{
+			return " -> " + std::string(table->m_pNetTableName) + " [already shown]\n";
+		}
+		else
+		{
+			alreadyPrinted->insert(std::pair<RecvTable*, bool>(table, 'Y'));
+		}
+
+		std::string str = " -> " + std::string(table->m_pNetTableName) + " {\n";
+		std::string prefix = padding + "    ";
+
+		for (int i = 0; i < table->m_nProps; i++)
+		{
+			RecvProp* pProp = table->m_pProps + i;
+			if (!pProp)
+			{
+				str += prefix + "[NULL]\n";
+				continue;
+			}
+
+			try {
+				// if the var name is an integer, then don't print it
+				int x = std::stoi(pProp->m_pVarName);
+				continue;
+			}
+			catch (std::exception&) {}
+
+			str += prefix + "[ " + TextService::cpad(std::to_string(pProp->m_Offset), 6) + " ] " + pProp->m_pVarName;
+			if (pProp->m_pDataTable)
+				str += DumpRecvTable(pProp->m_pDataTable, alreadyPrinted, depth + 1);
+			else
+				str += "\n";
+		}
+		str += padding + "}\n";
+
+		return str;
+	}
+
+	std::string Dump()
+	{
+		std::map<RecvTable*, char>* alreadyPrinted = new std::map<RecvTable*, char>();
+
+		std::string str = "";
+		for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
+		{
+			str += "CLASS: " + std::string(pClass->m_pNetworkName);
+			str += DumpRecvTable(pClass->m_pRecvTable, alreadyPrinted);
+		}
+
+		delete alreadyPrinted;
+		return str;
+	}
+
+	RecvProp* FindRecvPropByPath(std::vector<std::string> path)
+	{
+		if (path.size() < 2) return nullptr;
+
+		RecvTable* table = nullptr;
+		for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
+		{
+			if (path[0] == pClass->m_pRecvTable->m_pNetTableName)
+			{
+				table = pClass->m_pRecvTable;
+				break;
+			}
+		}
+
+		if (!table) return nullptr;
+		for (size_t p = 1; p < path.size(); p++)
+		{
+			std::string& search = path.at(p);
+			bool last = p >= path.size() - 1;
+			bool found = false;
+
+			for (int i = 0; i < table->m_nProps; i++)
+			{
+				RecvProp* pProp = table->m_pProps + i;
+				if (!pProp)
+					continue;
+
+				if (last)
+				{
+					if (search == pProp->m_pVarName)
+						return pProp;
+				}
+				else if (pProp->m_pDataTable && search == pProp->m_pDataTable->m_pNetTableName)
+				{
+					table = pProp->m_pDataTable;
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+				return nullptr;
+		}
+		
+		return nullptr;
 	}
 }
