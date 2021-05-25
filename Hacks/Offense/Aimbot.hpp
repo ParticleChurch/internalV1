@@ -24,7 +24,7 @@ private:
 		// how far out from center aimbot will shoot for...
 		// for now will only be applied to pelvis, head, and upperchest
 		float multipoint = 0.f; 
-		
+		bool FriendlyFireAllowed = true;
 	}rage;
 
 	// General Private Functions

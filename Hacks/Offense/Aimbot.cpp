@@ -870,7 +870,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 
 				// no need to autowall if visible...
 				L::Verbose("ScanPlayer - Damage HITBOX_HEAD");
-				damage = autowall->Damage(point, HITBOX, true);
+				damage = autowall->Damage(point, HITBOX, rage.FriendlyFireAllowed);
 				if (visible && damage >= rage.vis_mindam)
 				{
 					this->TargetUserID = UserID;
@@ -949,7 +949,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 
 			// no need to autowall if visible...
 			L::Verbose("ScanPlayer - Damage Reg");
-			damage = autowall->Damage(point, HITBOX, true);
+			damage = autowall->Damage(point, HITBOX, rage.FriendlyFireAllowed);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
@@ -1084,6 +1084,9 @@ bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 
 bool Aimbot::UpdateRageVal()
 {
+	static Config::CState* FriendlyFire = Config::GetState("rage-aim-friendlyfire");
+	rage.FriendlyFireAllowed = FriendlyFire->Get();
+
 	Entity* weapon = G::LocalPlayer->GetActiveWeapon();
 	if (!weapon) return false;
 

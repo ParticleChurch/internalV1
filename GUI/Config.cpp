@@ -81,6 +81,7 @@ namespace Config
 				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
 				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
 				g->Add("rage-aim-autoscope", "Auto Scope", new CBoolean());
+				g->Add("rage-aim-friendlyfire", "Allow Friendly Fire", new CBoolean());
 
 				g->Add("rageaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Scout", "AWP", "Auto" }));
 				size_t index = 0;
