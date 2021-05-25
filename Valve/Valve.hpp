@@ -10,6 +10,7 @@
 #include "SDK/Prototypes.hpp"
 #include "SDK/Constants.hpp"
 #include "SDK/BSPFlags.hpp"
+#include "SDK/CHudElement.hpp"
 #include "SDK/CUserCmd.hpp"
 #include "SDK/ClientFrameStage_t.hpp"
 #include "SDK/EFontFlags.hpp"

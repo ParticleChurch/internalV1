@@ -1636,12 +1636,16 @@ namespace Config
 
 	void ProcessKeys()
 	{
+		CHudElement* chat = GUI::FindHudElement("CCSGO_HudChat");
+		bool chatOpen = chat && chat->IsActive();
+		bool IsTyping = GUI::WantKeyboard || chatOpen || I::engine->IsConsoleOpen();
+
 		for (size_t key = 0; key < Keybind::nKeys; key++)
 		{
 			int VK = Keybind::KeyMap[key];
-			bool LastWasPressed = Keybind::KeyState[key];
-			bool CurrentPressed = GetAsyncKeyState(VK) < 0;
-			Keybind::KeyState[key] = CurrentPressed;
+			bool KeyWasDown = Keybind::KeyState[key];
+			bool KeyIsDown = GetAsyncKeyState(VK) < 0;
+			Keybind::KeyState[key] = KeyIsDown;
 
 			if (UserData::SessionId == "")
 				continue;
@@ -1651,16 +1655,19 @@ namespace Config
 			{
 				continue;
 			}
-			else if (LastWasPressed != CurrentPressed)
+			else if (KeyWasDown != KeyIsDown)
 			{
-				if (SettingKeybindFor && CurrentPressed)
+				if (SettingKeybindFor && KeyIsDown)
 				{
 					_BindToKey(SettingKeybindFor, key);
 					SettingKeybindFor = nullptr;
 				}
 				else
 				{
-					_KeyStateChanged(key, CurrentPressed);
+					if (!KeyIsDown) // you can always release keys
+						_KeyStateChanged(key, false);
+					else if (!IsTyping) // but can only press keys when not typing
+						_KeyStateChanged(key, true);
 				}
 			}
 		}

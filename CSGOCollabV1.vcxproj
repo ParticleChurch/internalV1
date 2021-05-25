@@ -293,6 +293,7 @@
     <ClInclude Include="Valve\SDK\AnimationLayer.hpp" />
     <ClInclude Include="Valve\SDK\AnimState.hpp" />
     <ClInclude Include="Valve\SDK\BSPFlags.hpp" />
+    <ClInclude Include="Valve\SDK\CHudElement.hpp" />
     <ClInclude Include="Valve\SDK\ClientClass.h" />
     <ClInclude Include="Valve\SDK\ClientFrameStage_t.hpp" />
     <ClInclude Include="Valve\SDK\Constants.hpp" />

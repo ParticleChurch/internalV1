@@ -36,4 +36,7 @@ namespace GUI
 	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);
 	extern void Init();
 	extern void Main();
+
+	extern CHudElement* FindHudElement(const char* Name);
+	extern void ResetInventoryHud();
 };

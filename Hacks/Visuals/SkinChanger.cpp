@@ -1,32 +1,10 @@
 ﻿#include "../../Include.hpp"
 
-DWORD FindHudElement(const char* Name)
-{
-    static void* PHUD = *(void**)(FindPattern("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 8B 5D 08") + 1);
-    static auto FindHudElement = (DWORD(__thiscall*)(void*, const char*))FindPattern("client.dll", "55 8B EC 53 8B 5D 08 56 57 8B F9 33 F6 39 77 28");
-    return FindHudElement(PHUD, Name);
-}
-
-
 void Update()
 {
     static auto ForceUpdate = (void(__cdecl*)())FindPattern("engine.dll", "A1 ? ? ? ? B9 ? ? ? ? 56 FF 50 14 8B 34 85");
     //ForceUpdate();
     I::clientstate->m_delta_tick = -1;
-}
-void ResetInventory()
-{
-    static auto ClearHudWeaponIcon = (int(__thiscall*)(void*, int))FindPattern("client.dll", "55 8B EC 51 53 56 8B 75 08 8B D9 57 6B FE 2C");
-    DWORD hudWeaponSelection = FindHudElement("CCSGO_HudWeaponSelection");
-    if (hudWeaponSelection)
-    {
-        DWORD hudWeapons = hudWeaponSelection - 0xA0;
-        int* weaponCount = (int*)(hudWeapons + 0x80);
-        if (hudWeapons && weaponCount)
-            while (*weaponCount)
-                ClearHudWeaponIcon((void*)(hudWeapons), *weaponCount - 1);
-    }
-    Update();
 }
 
 int TransformSequence(int OriginalSequence, Skins::Knife OriginalKnife, Skins::Knife NewKnife)
@@ -230,7 +208,8 @@ void SkinChanger::UnHook()
     if (G::LocalPlayer && G::LocalPlayerAlive && G::IsInGame)
     {
         RunFSN();
-        ResetInventory();
+        GUI::ResetInventoryHud();
+        Update();
     }
 
     for (ClientClass* pClass = I::client->GetAllClasses(); pClass; pClass = pClass->m_pNext)
@@ -393,7 +372,8 @@ void SkinChanger::RunFSN()
                 {
                     *Weapon->GetItemDefinitionIndex() = (int)ConfigKnifeModel;
                     *Weapon->GetModelIndex() = ModelIndex;
-                    ResetInventory();
+                    GUI::ResetInventoryHud();
+                    Update();
                 }
                 if (KnifeSkin->PaintKit && KnifeSkin->PaintKit->ID > 0)
                     ForceSkin(Weapon, KnifeSkin->PaintKit->ID, KnifeWear->Get());
@@ -407,7 +387,8 @@ void SkinChanger::RunFSN()
                 {
                     *Weapon->GetItemDefinitionIndex() = (int)OriginalKnife;
                     *Weapon->GetModelIndex() = I::modelinfo->GetModelIndex(Skins::GetKnifeModel(Skins::KnifeFromId(OriginalKnife)));
-                    ResetInventory();
+                    GUI::ResetInventoryHud();
+                    Update();
                 }
                 ClearSkin(Weapon);
             }

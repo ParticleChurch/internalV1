@@ -455,17 +455,20 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	static auto MenuOpen = Config::GetState("show-menu");
 
 	// determine input type
-	bool KeyboardInput =
+	bool KeyboardPress =
 		uMsg == WM_SYSCHAR ||
 		uMsg == WM_CHAR ||
 		uMsg == WM_DEADCHAR ||
 		uMsg == WM_HOTKEY ||
 		uMsg == WM_KEYDOWN ||
-		uMsg == WM_KEYUP ||
 		uMsg == WM_SYSDEADCHAR ||
 		uMsg == WM_SYSKEYDOWN ||
-		uMsg == WM_SYSKEYUP ||
 		uMsg == WM_UNICHAR;
+	bool KeyboardRelease =
+		uMsg == WM_KEYUP ||
+		uMsg == WM_SYSKEYUP;
+	bool KeyboardInput = KeyboardPress || KeyboardRelease;
+
 	bool MouseInput =
 		uMsg == WM_MOUSEMOVE || uMsg == WM_INPUT || uMsg == WM_SETCURSOR ||
 		uMsg == WM_MOUSEWHEEL || uMsg == WM_MOUSEHWHEEL ||
@@ -490,12 +493,19 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	// send input to imgui
 	if (MenuOpen->Get()) ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
-	// send input to csgo if any othe following:
+	// send input to csgo if any of the following:
 	//    - we don't understand the input
+	//    - it's a keyboard release
 	//    - it's keyboard input and imgui doesn't care about it
 	//    - it's mouse input and imgui doesn't care about it
 	bool handled = false;
-	if (UnknownInput || KeyboardInput && !GUI::WantKeyboard || MouseInput && !ImGui::GetIO().WantCaptureMouse) handled = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+	if (
+		UnknownInput ||
+		KeyboardRelease ||
+		KeyboardInput && !GUI::WantKeyboard && !Config::SettingKeybindFor ||
+		MouseInput && !ImGui::GetIO().WantCaptureMouse && !Config::SettingKeybindFor
+	)
+		handled = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 
 	L::Verbose("WndProc complete - returned ", handled ? "true\n" : "false\n");
 	return handled;

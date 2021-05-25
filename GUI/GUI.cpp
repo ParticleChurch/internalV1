@@ -3623,3 +3623,24 @@ void GUI::Main()
 	}
 	L::Verbose(XOR("GUI::Main complete"));
 }
+
+CHudElement* GUI::FindHudElement(const char* Name)
+{
+	static void* PHUD = *(void**)(FindPattern("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 8B 5D 08") + 1);
+	static auto func = (CHudElement * (__thiscall*)(void*, const char*))FindPattern("client.dll", "55 8B EC 53 8B 5D 08 56 57 8B F9 33 F6 39 77 28");
+	return func(PHUD, Name);
+}
+
+void GUI::ResetInventoryHud()
+{
+	static auto ClearHudWeaponIcon = (int(__thiscall*)(void*, int))FindPattern("client.dll", "55 8B EC 51 53 56 8B 75 08 8B D9 57 6B FE 2C");
+	CHudElement* hudWeaponSelection = GUI::FindHudElement("CCSGO_HudWeaponSelection");
+	if (hudWeaponSelection)
+	{
+		DWORD hudWeapons = (DWORD)hudWeaponSelection - 0xA0;
+		int* weaponCount = (int*)(hudWeapons + 0x80);
+		if (hudWeapons && weaponCount)
+			while (*weaponCount)
+				ClearHudWeaponIcon((void*)(hudWeapons), *weaponCount - 1);
+	}
+}

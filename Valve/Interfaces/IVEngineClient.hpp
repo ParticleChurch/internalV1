@@ -20,6 +20,12 @@ public:
 		return GetVFunc<oGetPlayerForUserID>(this, 9)(this, UserID);
 	}
 
+	bool IsConsoleOpen()
+	{
+		typedef bool(__thiscall* oIsConsoleOpen)(void*);
+		return GetVFunc<oIsConsoleOpen>(this, 11)(this);
+	}
+
 	int GetLocalPlayer()
 	{
 		typedef int(__thiscall* oGetLocalPlayer)(void*);
