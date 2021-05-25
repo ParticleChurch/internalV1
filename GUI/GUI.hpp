@@ -39,4 +39,5 @@ namespace GUI
 
 	extern CHudElement* FindHudElement(const char* Name);
 	extern void ResetInventoryHud();
+	extern bool IsSteamOverlayOpen();
 };

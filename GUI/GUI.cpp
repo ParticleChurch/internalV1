@@ -3588,7 +3588,7 @@ void GUI::Main()
 	}
 	else if (UserData::SessionId != "")
 	{
-		if (MenuOpen->Get())
+		if (MenuOpen->Get() && !IsSteamOverlayOpen())
 		{
 			L::Verbose(XOR("GUI::MainScreen running"));
 			MainScreen();
@@ -3604,7 +3604,8 @@ void GUI::Main()
 	else
 	{
 		L::Verbose(XOR("GUI::AuthenticationScreen running"));
-		AuthenticationScreen();
+		if (!IsSteamOverlayOpen())
+			AuthenticationScreen();
 		L::Verbose(XOR("GUI::AuthenticationScreen complete"));
 	}
 
@@ -3643,4 +3644,17 @@ void GUI::ResetInventoryHud()
 			while (*weaponCount)
 				ClearHudWeaponIcon((void*)(hudWeapons), *weaponCount - 1);
 	}
+}
+
+bool GUI::IsSteamOverlayOpen()
+{
+	// this would work, but it will break pretty easily when steam updates
+	// and will likely return true always, so the menu will never show up
+	//static bool* isOpen = (bool*)((DWORD)GetModuleHandleA("gameoverlayrenderer.dll") + 0x14B7E4);
+	//return *isOpen;
+
+	// this solution is probably "worse" but it is less likely to render our
+	// cheat useless when it does break
+	static int* isOpen = (int*)((DWORD)GetModuleHandleA("gameoverlayrenderer.dll") + 0x14B7E4);
+	return *isOpen == 1;
 }
