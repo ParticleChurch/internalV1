@@ -777,6 +777,9 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	static int deadflagOffset = N::GetOffset("DT_CSPlayer", "deadflag");
 	static auto ThirdPerson = Config::GetState("visuals-misc-thirdperson");
 
+
+	world->RunFSN(stage);
+
 	switch (stage)
 	{
 	case FRAME_RENDER_START:
@@ -809,7 +812,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		if (ThirdPerson->Get()) *(Vec*)((DWORD)G::LocalPlayer + deadflagOffset + 4) = antiaim->real;
 
 		esp->RunFSN();
-		world->RunFSN();
+		
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
 	{

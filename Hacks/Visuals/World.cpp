@@ -60,8 +60,16 @@ void World::LightMod()
 	blue->SetValue(clr->GetB() / 255.f);
 }
 
-void World::RunFSN()
+void World::RunFSN(int stage)
 {
+	static bool LastInGame = false;
+	bool ForceUpdate = (LastInGame != G::IsInGame);
+
+	LastInGame = G::IsInGame;
+
+	if (stage != FRAME_RENDER_START)
+		return;
+
 	static Config::CState* World = Config::GetState("visuals-world-enable");
 	static Config::CState* Prop = Config::GetState("visuals-world-prop-enable");
 	static Config::CState* SkyboxEnabled = Config::GetState("visuals-world-skybox-enable");
@@ -79,7 +87,6 @@ void World::RunFSN()
 		LastColor = DesiredColor;
 	}
 		
-
 	bool UpdateProp = false;
 	if (Prop->Get())
 	{
@@ -102,7 +109,9 @@ void World::RunFSN()
 		LastColor = DesiredColor;
 	}
 
-	if (!(UpdateSkybox || UpdateProp || UpdateWorld))
+	bool ShouldReturn = !UpdateSkybox && !UpdateProp && !UpdateWorld && !ForceUpdate;
+
+	if (ShouldReturn)
 		return; // everything already up to date
 
 	if (UpdateSkybox)
