@@ -60,20 +60,20 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);
 		}
 	}
-	else
+	else if(I::engine->IsInGame() && G::LocalPlayer)
 	{
 		if (Enable->Get())
 		{
-			I::input->m_fCameraInThirdPerson = true;
-			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, GetCameraBoomLength(Dist->Get()));
+			I::input->m_fCameraInThirdPerson = false;
+			/*I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);*/
 			*G::LocalPlayer->GetObserverMode() = 5;
 		}
-		/*else
+		else
 		{
 			I::input->m_fCameraInThirdPerson = false;
-			I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);
+			/*I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);*/
 			*G::LocalPlayer->GetObserverMode() = 4;
-		}*/
+		}
 	}
 }
 
