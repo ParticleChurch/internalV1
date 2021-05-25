@@ -28,7 +28,7 @@ float MiscVisuals::GetCameraBoomLength(float distance)
 	trace_t Trace;
 	Ray_t Ray(PlayerPos, IdealCameraPos);
 	CTraceFilter Filter(I::entitylist->GetClientEntity(I::engine->GetLocalPlayer()));
-	I::enginetrace->TraceRay(Ray, CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_MONSTERCLIP | CONTENTS_GRATE, &Filter, &Trace); // originaly mask all
+	I::enginetrace->TraceRay(Ray, MASK_SOLID & ~CONTENTS_MONSTER, &Filter, &Trace); // originaly mask all
 
 	if (Trace.Fraction <= 1)
 		return distance * Trace.Fraction * 0.9;
@@ -49,6 +49,7 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 	static Config::CState* Enable = Config::GetState("visuals-misc-thirdperson");
 	static Config::CFloat* Dist = Config::GetFloat("visuals-misc-thirdperson-distance");
 	if (I::engine->IsInGame() && G::LocalPlayer && G::LocalPlayerAlive) {
+		*G::LocalPlayer->GetObserverMode() = 0;
 		if (Enable->Get())
 		{
 			I::input->m_fCameraInThirdPerson = true;
@@ -62,16 +63,16 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 	}
 	else if(I::engine->IsInGame() && G::LocalPlayer)
 	{
-		if (Enable->Get())
+		I::input->m_fCameraInThirdPerson = false;
+		
+		if (Enable->Get() && *G::LocalPlayer->GetObserverMode() != 6)
 		{
-			I::input->m_fCameraInThirdPerson = false;
-			/*I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);*/
+			I::input->CamInThirdPerson();
 			*G::LocalPlayer->GetObserverMode() = 5;
 		}
-		else
+		else if(*G::LocalPlayer->GetObserverMode() != 6)
 		{
-			I::input->m_fCameraInThirdPerson = false;
-			/*I::input->m_vecCameraOffset = Vec(G::StartAngle.x, G::StartAngle.y, 0);*/
+			I::input->CamToFirstPerson();
 			*G::LocalPlayer->GetObserverMode() = 4;
 		}
 	}
