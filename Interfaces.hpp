@@ -24,6 +24,7 @@ namespace I
 	extern IVDebugOverlay* debugoverlay;
 	extern ClientState* clientstate;
 	extern IMemAlloc* memalloc;
+	extern CEffects* effects;
 
 	typedef void* (*InterfaceCreator)(const char*, int);
 	template <typename T>

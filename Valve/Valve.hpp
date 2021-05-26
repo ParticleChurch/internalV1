@@ -54,4 +54,5 @@
 #include "Interfaces/IVDebugOverlay.hpp"
 #include "Interfaces/ClientState.hpp"
 #include "Interfaces/IMemAlloc.hpp"
+#include "Interfaces/CEffects.h"
 

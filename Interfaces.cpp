@@ -24,6 +24,7 @@ namespace I
 	IVDebugOverlay*       debugoverlay         = nullptr;
 	ClientState*          clientstate          = nullptr;
 	IMemAlloc*            memalloc             = nullptr;
+	CEffects*			  effects			   = nullptr;
 
 	void GUIInit()
 	{
@@ -53,5 +54,6 @@ namespace I
 		debugoverlay         = GetInterface<IVDebugOverlay      >("engine.dll",         "VDebugOverlay004");
 		clientstate          = **reinterpret_cast<ClientState***>(FindPattern("engine.dll", "A1 ? ? ? ? 8B 80 ? ? ? ? C3") + 1);
 		memalloc             = *reinterpret_cast<IMemAlloc**> (GetProcAddress(GetModuleHandleA("tier0.dll"), "g_pMemAlloc"));
+		effects				 = GetInterface<CEffects			>("engine.dll", "VEngineEffects001");
 	}
 }

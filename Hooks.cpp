@@ -378,6 +378,30 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 			H::console.clear();
 			H::console.resize(0);
 		}
+		if (ImGui::Button("Add dlight at player pos"))
+		{
+			//dlight_t* pList[MAX_DLIGHTS];
+			//I::effects->CL_GetActiveDLights(pList);
+			//for (int i = 0; i < MAX_DLIGHTS; i++)
+			//{
+			//	// if valid dlight
+			//	if (pList[i])
+			//	{
+
+			//	}
+			//}
+			//Color(255, 15, 255), 10.f, 50.f, 10.f, pEntity->GetIndex() + 69, pEntity->GetVecOrigin(), pEntity->GetVecOrigin() + Vector(0, 0, 32)
+			dlight_t* temp = I::effects->CL_AllocDlight(1337 + rand() % 1000);
+			temp->color.r = 255;
+			temp->color.g = 0;
+			temp->color.b = 0;
+			temp->color.exponent = 10; // 0, 133, 255, 161 <= ideal col
+			temp->radius = 75;
+			temp->decay = temp->radius / 5.0f;
+			temp->m_Direction = G::LocalPlayer->GetAbsOrigin();
+			temp->origin = G::LocalPlayer->GetEyePos();
+			temp->die = FLT_MAX;
+		}
 		ImGui::SliderInt("Player###playerscan", &aimbot->maxplayerscan, 0, 16);
 		
 		if (ImGui::Button("Reset Resolver"))
@@ -911,6 +935,7 @@ void __stdcall H::EmitSoundHook(SoundData data)
 
 	if (!strcmp(data.soundEntry, "UIPanorama.popup_accept_match_beep") && Enable->Get())
 	{
+		data.volume = 0.f; // set volume to zero to not annoy
 		acceptMatch("accept");
 		/*auto window = FindWindowW(L"Valve001", NULL);
 		FLASHWINFO flash{ sizeof(FLASHWINFO), window, FLASHW_TRAY | FLASHW_TIMERNOFG, 0, 0 };
@@ -918,8 +943,10 @@ void __stdcall H::EmitSoundHook(SoundData data)
 		ShowWindow(window, SW_RESTORE);*/
 
 	//	//Comment multiple lines of code: [ctrl] + [shift] + [/]
-	} else
-		oEmitSound(I::sound, data); //idk if this will crash but it will remove sound? maybe?
+	}
+
+	// call orig hook
+	oEmitSound(I::sound, data); 
 
 	L::Verbose("H::EmitSoundHook - complete");
 }

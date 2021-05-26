@@ -426,6 +426,9 @@
     <ClInclude Include="Valve\SDK\CHudElement.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\CEffects.h">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

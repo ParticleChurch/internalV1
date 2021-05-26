@@ -271,6 +271,7 @@
     <ClInclude Include="Valve\Custom\Matrix3x4.hpp" />
     <ClInclude Include="Valve\Custom\Vec.hpp" />
     <ClInclude Include="Valve\Custom\WeaponId.hpp" />
+    <ClInclude Include="Valve\Interfaces\CEffects.h" />
     <ClInclude Include="Valve\Interfaces\ClientState.hpp" />
     <ClInclude Include="Valve\Interfaces\Convar.hpp" />
     <ClInclude Include="Valve\Interfaces\GameEventManager.hpp" />
