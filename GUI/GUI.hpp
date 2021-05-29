@@ -6,6 +6,11 @@
 
 namespace GUI
 {
+	struct SearchResult {
+		std::string title;
+		std::vector<nlohmann::ordered_json> properties;
+	};
+
 	constexpr bool ConsoleOutput = true;
 
 	extern bool Ejected;
@@ -21,7 +26,9 @@ namespace GUI
 	extern int PropertyColumnPosition;
 
 	extern bool IsSearching;
-	extern char* SearchQuery;
+	extern char SearchQuery[];
+	extern char CachedSearch[];
+	extern std::vector<SearchResult> SearchResults;
 	extern Config::Tab* ActiveTab;
 
 	extern void LoadFonts(ImGuiIO& io);
@@ -34,6 +41,7 @@ namespace GUI
 	extern void DrawNormalTab(Config::Tab* t, std::string GroupPrefix = "");
 	extern void DrawActiveTab();
 	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);
+	extern void PerformSearch();
 	extern void Init();
 	extern void Main();
 

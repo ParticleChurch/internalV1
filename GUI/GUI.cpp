@@ -91,7 +91,9 @@ namespace GUI
 	int PropertyColumnPosition = 200;
 
 	bool IsSearching = false;
-	char* SearchQuery = nullptr;
+	char SearchQuery[256];
+	char CachedSearch[256];
+	std::vector<SearchResult> SearchResults = {};
 	Config::Tab* ActiveTab = nullptr;
 	
 	ImGuiWindow* MainWindow = nullptr;
@@ -3421,7 +3423,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*SearchbarText);
 			ImGui::SetCursorPos(ImVec2(24, 4));
 			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - (IsSearching ? 48 : 28));
-			ImGui::InputText(InputLabel, SearchQuery, 256);
+			ImGui::InputText(InputLabel, SearchQuery, 255);
 			ImGui::PopStyleColor(1);
 			WantKeyboard |= ImGui::IsItemActive();
 
@@ -3536,9 +3538,14 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		else
 		{
 			ImGui::SetCursorPos(ImVec2(5, 5 + 24 + 5));
+
+			PerformSearch();
+
 			ImGui::Text(XOR("This feature is not implemented yet."));
 			ImGui::SetCursorPosX(5);
 			ImGui::Text(XOR("In the near future, you will be able to search for a setting from here."));
+			ImGui::SetCursorPosX(5);
+			ImGui::Text(SearchQuery);
 		}
 
 		ImGui::EndChild();
@@ -3556,12 +3563,156 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 	ImGui::PopStyleColor(17);
 }
 
+void GUI::PerformSearch()
+{
+	// only search when needed
+	if (strncmp(CachedSearch, SearchQuery, 256) == 0)
+		return;
+	memcpy(CachedSearch, SearchQuery, 256);
+
+	// get a list of search terms
+	std::vector<std::string> searchTerms = {};
+	char word[256];
+	size_t o = 0;
+
+	// check if every word is a stopword
+	bool allStopWords = true;
+	while (allStopWords && SearchQuery[o])
+	{
+		// clear previous word
+		ZeroMemory(word, 256);
+
+		// fill new word
+		size_t start = o;
+		for (char c = SearchQuery[o]; c && (o - start) < 256; c = SearchQuery[++o])
+		{
+			if (!IS_ALPHA(c))
+				break;
+			else
+				word[o - start] = MAKE_LOWER(c);
+		}
+
+		// just move o to the start of the next word
+		while (SearchQuery[o] && !IS_ALPHA(SearchQuery[o]))
+			o++;
+
+		// check if this word is a stopword
+		bool isStopWord = false;
+		for (auto& stopword : Config::SearchStopwords)
+		{
+			if (stopword.get<std::string>() == std::string(word))
+			{
+				isStopWord = true;
+				break;
+			}
+		}
+		if (!isStopWord)
+		{
+			allStopWords = false;
+			break;
+		}
+	}
+
+	// loop through words
+	o = 0;
+	while (SearchQuery[o])
+	{
+		// clear previous word
+		ZeroMemory(word, 256);
+
+		// fill new word
+		size_t start = o;
+		for (char c = SearchQuery[o]; c && o < 256; c = SearchQuery[++o])
+		{
+			if (!IS_ALPHA(c))
+				break;
+			else
+				word[o - start] = MAKE_LOWER(c);
+		}
+
+		// just move o to the start of the next word
+		while (SearchQuery[o] && !IS_ALPHA(SearchQuery[o]))
+			o++;
+
+		// check if this word is a stopword
+		bool isStopWord = false;
+		if (!allStopWords) // if they're all stop words, then none of them are
+		{
+			for (auto& stopword : Config::SearchStopwords)
+			{
+				if (stopword.get<std::string>() == std::string(word))
+				{
+					isStopWord = true;
+					break;
+				}
+			}
+		}
+
+		if (!isStopWord)
+		{
+			searchTerms.push_back(word);
+		}
+	}
+
+	SearchResults.clear();
+	for (auto& [tabName, tab] : Config::SearchableFeatures.items())
+	{
+		for (auto& [groupName, group] : tab.items())
+		{
+			SearchResults.push_back(SearchResult{ tabName + " / " + groupName , {} });
+			SearchResult& result = SearchResults.at(SearchResults.size() - 1);
+
+			for (auto& prop : group)
+			{
+				// check if the search should return this property
+				bool matches = true;
+				for (std::string& term : searchTerms)
+				{
+					bool termHasMatch = false;
+					for (auto& keyword : prop["keywords"])
+					{
+						if (keyword.get<std::string>().find(term, 0) != std::string::npos)
+						{
+							termHasMatch = true;
+							break;
+						}
+					}
+					if (!termHasMatch)
+					{
+						matches = false;
+						break;
+					}
+				}
+
+				if (matches)
+				{
+					result.properties.push_back(prop);
+				}
+			}
+
+			if (result.properties.size() == 0)
+			{
+				SearchResults.pop_back(); // nvm, remove it lol
+			}
+		}
+	}
+
+	L::Log("\n===== RESULTS =====");
+	for (SearchResult& res : SearchResults)
+	{
+		L::Log(res.title.c_str());
+		for (auto& prop : res.properties)
+		{
+			L::Log(("    " + prop["name"].get<std::string>()).c_str());
+		}
+	}
+}
+
 void GUI::Init()
 {
 	L::Verbose(XOR("GUI::Init running"));
-	while (!SearchQuery)
-		if (SearchQuery = new char[256])
-			ZeroMemory(SearchQuery, 256);
+	ZeroMemory(SearchQuery, 256);
+	ZeroMemory(CachedSearch, 256);
 
 	SearchAnimation = Animation::newAnimation(XOR("search-open/close"), 0);
 	L::Verbose(XOR("GUI::Init complete"));

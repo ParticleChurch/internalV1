@@ -1,5 +1,4 @@
 ﻿#include "../Include.hpp"
-#include "../json.hpp"
 #include "HTTP.hpp"
 #include <sstream>
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
@@ -34,6 +33,9 @@ namespace Config
 	std::string KeybindTypeNames[] = {
 		"Toggle", "Enable", "Disable"
 	};
+
+	nlohmann::ordered_json SearchableFeatures = nlohmann::ordered_json::parse("{}");
+	nlohmann::ordered_json SearchStopwords = nlohmann::ordered_json::parse("{}");
 
 	void Init()
 	{
@@ -1944,13 +1946,40 @@ namespace UserData
 	first:
 		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected.php", "", &bytes);
 		if (bytes == 0 || !response) goto retry;
-		L::Log(std::string(response, bytes).c_str());
 		try {
-			nlohmann::json x = nlohmann::json::parse(std::string(response, bytes));
+			nlohmann::ordered_json x = nlohmann::ordered_json::parse(std::string(response, bytes));
+			Config::SearchableFeatures = x["features"];
+			Config::SearchStopwords = x["stopwords"];
+
+			// make sure that the features list is structured correctly
+			for (auto& [tabName, tab] : Config::SearchableFeatures.items())
+			{
+				for (auto& [groupName, group] : tab.items())
+				{
+					for (auto& prop: group)
+					{
+						prop["name"].get<std::string>();
+						for (auto& id : prop["ids"])
+						{
+							id.get<std::string>();
+						}
+						for (auto& keyword : prop["keywords"])
+						{
+							keyword.get<std::string>();
+						}
+					}
+				}
+			}
+
+			// make sure that the stopwords list is structured correctly
+			for (auto& word : Config::SearchStopwords)
+			{
+				word.get<std::string>();
+			}
 		}
-		catch (std::exception&)
+		catch (std::exception& e)
 		{
-			L::Log("Failed to parse... :(");
+			L::Log(e.what());
 			goto retry;
 		}
 

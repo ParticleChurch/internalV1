@@ -11,6 +11,7 @@
 #include "animation.hpp"
 #include "HTTP.hpp"
 #include "ConfigConstants.hpp"
+#include "../json.hpp"
 
 namespace Config
 {
@@ -25,6 +26,9 @@ namespace Config
 
 	extern std::map<std::string, Property*> PropertyTable;
 	extern std::vector<Tab*> Tabs;
+
+	extern nlohmann::ordered_json SearchableFeatures;
+	extern nlohmann::ordered_json SearchStopwords;
 
 	// for keybinds
 	extern Property* SettingKeybindFor;
