@@ -8,6 +8,7 @@ ImFont* Arial12;
 ImFont* Arial14;
 ImFont* Arial16;
 ImFont* Arial18;
+ImFont* Arial16Bold;
 ImFont* Arial18Bold;
 ImFont* Arial12Italics;
 ImFont* Arial14Italics;
@@ -30,6 +31,7 @@ void GUI::LoadFonts(ImGuiIO& io)
 	AYO_LOAD_FONT_BRUH(Arial18Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 18.f);
 	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 14.f);
 	AYO_LOAD_FONT_BRUH(Arial18BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial16Bold, XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 16.f);
 	AYO_LOAD_FONT_BRUH(Arial18Bold, XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 18.f);
 
 	return;
@@ -3344,7 +3346,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 	if (!ActiveTab && Config::Tabs.size() > 0)
 		ActiveTab = Config::Tabs.at(0);
 
-	float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15);
+	float SearchAnimationFactor = Animation::animate(Animation::age(SearchAnimation), 0.15f);
 	if (!IsSearching)
 		SearchAnimationFactor = 1.f - SearchAnimationFactor;
 
@@ -3362,7 +3364,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		ImVec2 ChildSize = Window->Size - OverlayPosition - ImVec2(OverlaySize.x, 0);
 
 		ImGui::SetCursorPos(ImVec2(150, TitleBarHeight));
-		ImGui::BeginChild(XOR("##main-right-side"), ChildSize);
+		ImGui::BeginChild(XOR("##main-right-side"), Window->Size - OverlayPosition - ImVec2(150, 0));
 
 		auto w = ImGui::GetCurrentWindow();
 		ImGui::PushClipRect(ChildPos, ChildPos + ChildSize, false);
@@ -3408,7 +3410,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			ImGui::SetCursorPos(ImVec2(5, 5));
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-			ImGui::BeginChild(XOR("##left-side-searchbar"), ImVec2(OverlaySize.x - 10, 24), false);
+			ImGui::BeginChild(XOR("##left-side-searchbar"), ImVec2(ImGui::GetWindowContentRegionWidth() - 10, 24), false);
 
 			const char* InputLabel = XOR("##SearchTextInput");
 			auto InputID = ImGui::GetID(InputLabel);
@@ -3436,11 +3438,12 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			}
 			else
 			{
+				float w = ImGui::GetWindowContentRegionWidth();
 				Config::SettingKeybindFor = nullptr;
-				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 7, 7));
+				ImGui::SetCursorPos(ImVec2(w - 24 + 7, 7));
 				ImGui::DrawXIcon(SearchbarText->ModulateAlpha(SearchAnimationFactor * 0.8f), ImVec2(9, 9));
 				// dummy button
-				ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 24 + 3, 3));
+				ImGui::SetCursorPos(ImVec2(w - 24 + 3, 3));
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)SearchbarText->ModulateAlpha(0.25f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)SearchbarText->ModulateAlpha(0.5f));
@@ -3537,15 +3540,42 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		// search results
 		else
 		{
-			ImGui::SetCursorPos(ImVec2(5, 5 + 24 + 5));
+			ImGui::SetCursorPos(ImVec2(10, 5 + 24 + 8));
 
 			PerformSearch();
+			
+			ImGui::PushFont(Arial16);
+			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*TablistText);
 
-			ImGui::Text(XOR("This feature is not implemented yet."));
-			ImGui::SetCursorPosX(5);
-			ImGui::Text(XOR("In the near future, you will be able to search for a setting from here."));
-			ImGui::SetCursorPosX(5);
-			ImGui::Text(SearchQuery);
+			for (SearchResult& res : SearchResults)
+			{
+				ImGui::SetCursorPosX(15);
+
+				ImGui::PushFont(Arial16Bold);
+				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ActiveTablistText);
+				ImGui::Text(res.title.c_str());
+				ImGui::PopStyleColor();
+				ImGui::PopFont();
+				
+				for (auto& prop : res.properties)
+				{
+					ImGui::SetCursorPosX(25);
+					ImGui::Text(prop["name"].get<std::string>().c_str());
+				}
+				
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			}
+
+			if (SearchResults.size() == 0)
+			{
+				const char* text = "No Results";
+				ImVec2 sz = ImGui::CalcTextSize(text);
+				ImGui::SetCursorPosX((ImGui::GetWindowContentRegionWidth() - sz.x) / 2);
+				ImGui::Text(text);
+			}
+
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
 		}
 
 		ImGui::EndChild();
@@ -3584,7 +3614,7 @@ void GUI::PerformSearch()
 
 		// fill new word
 		size_t start = o;
-		for (char c = SearchQuery[o]; c && (o - start) < 256; c = SearchQuery[++o])
+		for (char c = SearchQuery[o]; c; c = SearchQuery[++o])
 		{
 			if (!IS_ALPHA(c))
 				break;
@@ -3600,7 +3630,7 @@ void GUI::PerformSearch()
 		bool isStopWord = false;
 		for (auto& stopword : Config::SearchStopwords)
 		{
-			if (stopword.get<std::string>() == std::string(word))
+			if (stopword.get<std::string>() == std::string(word)) // it will always be /0 terminated, vs2019 is dumb
 			{
 				isStopWord = true;
 				break;
@@ -3622,7 +3652,7 @@ void GUI::PerformSearch()
 
 		// fill new word
 		size_t start = o;
-		for (char c = SearchQuery[o]; c && o < 256; c = SearchQuery[++o])
+		for (char c = SearchQuery[o]; c; c = SearchQuery[++o])
 		{
 			if (!IS_ALPHA(c))
 				break;
@@ -3696,16 +3726,6 @@ void GUI::PerformSearch()
 			}
 		}
 	}
-
-	L::Log("\n===== RESULTS =====");
-	for (SearchResult& res : SearchResults)
-	{
-		L::Log(res.title.c_str());
-		for (auto& prop : res.properties)
-		{
-			L::Log(("    " + prop["name"].get<std::string>()).c_str());
-		}
-	}
 }
 
 void GUI::Init()
@@ -3713,6 +3733,7 @@ void GUI::Init()
 	L::Verbose(XOR("GUI::Init running"));
 	ZeroMemory(SearchQuery, 256);
 	ZeroMemory(CachedSearch, 256);
+	strcpy(CachedSearch, "this string is here so that `PerformSearch` will actually run on the first call");
 
 	SearchAnimation = Animation::newAnimation(XOR("search-open/close"), 0);
 	L::Verbose(XOR("GUI::Init complete"));
