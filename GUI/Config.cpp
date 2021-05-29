@@ -1944,9 +1944,15 @@ namespace UserData
 	first:
 		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected.php", "", &bytes);
 		if (bytes == 0 || !response) goto retry;
-		for (size_t i = 0; i < bytes; i++)
-			if (response[i] < '0' || '9' < response[i])
-				goto retry;
+		L::Log(std::string(response, bytes).c_str());
+		try {
+			nlohmann::json x = nlohmann::json::parse(std::string(response, bytes));
+		}
+		catch (std::exception&)
+		{
+			L::Log("Failed to parse... :(");
+			goto retry;
+		}
 
 		return true;
 	}

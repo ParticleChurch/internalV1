@@ -35,7 +35,7 @@ void Init()
     H::Init();           L::Log("H::Init() complete");
     UserData::ConnectAPI();   L::Log("UserData::ConnectAPI() complete");
     GUI::LoadProgress = 1.f;
-    L::Log(N::Dump().c_str());
+    //L::Log(N::Dump().c_str());
 
     L::Log("DLLMain complete. Now waiting for ejection");
     while (!G::KillDLL) Sleep(100);
