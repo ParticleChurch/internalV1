@@ -3560,6 +3560,9 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 				for (auto& prop : res.properties)
 				{
 					ImGui::SetCursorPosX(25);
+
+					std::string id = "##" + res.title + "-" + prop["ids"][0].get<std::string>();
+
 					ImGui::Text(prop["name"].get<std::string>().c_str());
 				}
 				

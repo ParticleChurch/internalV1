@@ -1944,7 +1944,7 @@ namespace UserData
 		Sleep(1000);
 
 	first:
-		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected.php", "", &bytes);
+		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected_new.php", "", &bytes);
 		if (bytes == 0 || !response) goto retry;
 		try {
 			nlohmann::ordered_json x = nlohmann::ordered_json::parse(std::string(response, bytes));
