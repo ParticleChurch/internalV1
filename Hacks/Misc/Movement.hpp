@@ -4,6 +4,7 @@ public:
 	void AAMoveFix();
 	void BunnyHop();
 	void FastCrouch();
+	void FastStopUser();
 	void RageAutoStrafe();
 	void LegitAutoStrafe();
 	void SlowWalk();

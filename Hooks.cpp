@@ -369,41 +369,31 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 		if (GUI::MainWindow && !AllowMenuOffScreen->Get() && io.DisplaySize.x > GUI::MinMenuSize.x && io.DisplaySize.y > GUI::MinMenuSize.y)
 			GUI::ClampToScreen();
 
+
+		// crappy watermark, make it nice plz
+		/*static auto MenuOpen = Config::GetState(XOR("show-menu"));
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize;
+		if (!MenuOpen->Get())
+			windowFlags |= ImGuiWindowFlags_NoInputs;
+
+		ImGui::SetNextWindowBgAlpha(0.3f);
+		ImGui::Begin("Watermark", nullptr, windowFlags);
+
+		static auto frameRate = 1.0f;
+		frameRate = 0.9f * frameRate + 0.1f * I::globalvars->m_frameTime;;
+
+		ImGui::Text("A4G4.com | %d fps", frameRate != 0.0f ? static_cast<int>(1 / frameRate) : 0);
+		ImGui::End();*/
 		
 		//debugger console
 		ImGui::Begin("console");
-
 		if (ImGui::Button("Clear Console"))
 		{
 			H::console.clear();
 			H::console.resize(0);
 		}
-		if (ImGui::Button("Add dlight at player pos"))
-		{
-			//dlight_t* pList[MAX_DLIGHTS];
-			//I::effects->CL_GetActiveDLights(pList);
-			//for (int i = 0; i < MAX_DLIGHTS; i++)
-			//{
-			//	// if valid dlight
-			//	if (pList[i])
-			//	{
-
-			//	}
-			//}
-			//Color(255, 15, 255), 10.f, 50.f, 10.f, pEntity->GetIndex() + 69, pEntity->GetVecOrigin(), pEntity->GetVecOrigin() + Vector(0, 0, 32)
-			dlight_t* temp = I::effects->CL_AllocDlight(1337 + rand() % 1000);
-			temp->color.r = 255;
-			temp->color.g = 0;
-			temp->color.b = 0;
-			temp->color.exponent = 10; // 0, 133, 255, 161 <= ideal col
-			temp->radius = 75;
-			temp->decay = temp->radius / 5.0f;
-			temp->m_Direction = G::LocalPlayer->GetAbsOrigin();
-			temp->origin = G::LocalPlayer->GetEyePos();
-			temp->die = FLT_MAX;
-		}
 		ImGui::SliderInt("Player###playerscan", &aimbot->maxplayerscan, 0, 16);
-		
+		/*
 		if (ImGui::Button("Reset Resolver"))
 		{
 			for (auto& a : resolver->PlayerInfo)
@@ -421,25 +411,10 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 				a.second.ShotsMissed += 1;
 			}
 		}
-
-		ImGui::Text("Spec List");
-		for (auto a : miscvisuals->GetSpectators())
-		{
-			ImGui::Text(a.c_str());
-		}
-
-		ImGui::Text("Keybind List");
-		for (auto a : miscvisuals->GetKeyBinds())
-		{
-			std::string str = a.name + "\t" + (a.val ? "ON" : "OFF");
-			ImGui::Text(str.c_str());
-		}
-		
+		*/
 		for (auto a : console)
 			ImGui::Text(a.c_str());
-		
 		ImGui::End();
-		//*/
 		
 
 		GUI::Main();
@@ -587,6 +562,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		movement->LegitAutoStrafe();
 		movement->RageAutoStrafe();
 		movement->LegSlide();
+		movement->FastStopUser();
 		
 
 		// nade visuals

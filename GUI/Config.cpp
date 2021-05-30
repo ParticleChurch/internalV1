@@ -409,6 +409,7 @@ namespace Config
 			{
 				Group* g = t->Add("Movement");
 				g->Add("misc-movement-bhop", "Bunnyhop", new CBoolean());
+				g->Add("misc-movement-faststop", "Fast Stop", new CBoolean());
 				(p = g->Add("misc-movement-autostrafe", "Autostrafe", new CHorizontalState({ "None", "Rage", "Legit" }, false, 200)))->IsPremium = true;
 				p->Master = GetProperty("misc-movement-bhop");
 				//g->Add("misc-movement-bhop-chance", "Bunnyhop Chance", new CFloat(0, 100, 1, "%"));

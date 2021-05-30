@@ -52,6 +52,43 @@ void Movement::FastCrouch()
 	G::cmd->buttons |= IN_BULLRUSH;
 }
 
+void Movement::FastStopUser()
+{
+	static Config::CState* Enabled = Config::GetState("misc-movement-faststop");
+
+	if (!Enabled->Get()) return;
+
+	if (!G::LocalPlayer || !G::LocalPlayerAlive)
+		return;
+
+	int movetype = G::LocalPlayer->GetMoveType();
+	if (movetype == MOVETYPE_NOCLIP || movetype == MOVETYPE_LADDER || !(G::LocalPlayer->GetFlags() & 1) || G::cmd->buttons & IN_JUMP)
+		return;
+
+	if (G::cmd->buttons & (IN_MOVELEFT | IN_MOVERIGHT | IN_FORWARD | IN_BACK))
+		return;
+
+	Vec velocity = G::LocalPlayer->GetVecVelocity();
+	const float speed = velocity.VecLength2D();
+	if (speed < 15.0f)
+		return;
+
+	QAngle direction = QAngle(0, RAD2DEG(atan2(velocity.y, velocity.x)), 0);
+
+	//direction.y now holds delta between current viewangle, and velocity angle
+	direction.y = G::cmd->viewangles.y - direction.y;
+
+	//direction now holds forward/sidemove to achieve velocity angle (mentioned above)
+	float SIN = sinf(DEG2RAD(direction.y)) * 450;
+	float COS = cosf(DEG2RAD(direction.y)) * 450;
+	direction.x = COS;
+	direction.y = SIN;
+
+	Vec negated_direction = direction * -speed;
+	G::cmd->forwardmove = negated_direction.x;
+	G::cmd->sidemove = negated_direction.y;
+}
+
 void Movement::RageAutoStrafe()
 {
 	static Config::CState* State = Config::GetState("misc-movement-autostrafe");
