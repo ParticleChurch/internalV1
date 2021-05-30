@@ -49,14 +49,19 @@ namespace Config
 			t->TopPadding = -10;
 			Group* OffenceMeta = t->Add("__META__");
 			Property* OffenceMode = OffenceMeta->Add("offence-mode", "", new CHorizontalState({ "Legit", "Rage" }, false));
+			Property* LegitVisible = OffenceMeta->Add("offence-legit-visibility", "", new CLabel());
+			Property* RageVisible = OffenceMeta->Add("offence-rage-visibility", "", new CLabel());
+			CONFIG_VIS(LegitVisible, nullptr, GetState("offence-mode"), 0);
+			CONFIG_VIS(RageVisible, nullptr, GetState("offence-mode"), 1);
 
 			// LEGIT
 			{
-				Group* g = t->Add("legit-Aimbot");
+				Group* g = t->Add("Aimbot");
 				p = g->Add("legit-aim-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = LegitVisible;
 				g->BeginMaster(p);
 
-				g->Add("legitaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Sniper" }));
+				g->Add("legitaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Sniper" }))->VisibilityLinked = LegitVisible;
 				size_t index = 0;
 				for (std::string wtype : {"pistol", "smg", "heavy", "rifle", "sniper"})
 				{
@@ -64,28 +69,30 @@ namespace Config
 					g->Add("legitaim-" + wtype + "-hitbox", "Select Hitbox Scan", new CMultiSelect({ HITBOXES_CONFIG }))->VisibilityLinked = p;
 					g->Add("legitaim-" + wtype + "-smoothing", "Smoothing Method", new CVerticalState({ "None", "Slow-to-Fast", "Fast-to-Slow", "Linear" }))->VisibilityLinked = p;
 					g->Add("legitaim-" + wtype + "-smoothing-amount", "Smoothing Amount", new CFloat(0, 100, 1, "%"))->VisibilityLinked = p;
-					CONFIG_VIS(p, nullptr, GetState("legitaim-weapontype"), index++);
+					CONFIG_VIS(p, GetProperty("legitaim-weapontype"), GetState("legitaim-weapontype"), index++);
 
 					GetProperty("legitaim-" + wtype + "-smoothing")->IsPremium = true;
 				}
 				g->EndMaster();
 			}
 			{
-				Group* g = t->Add("legit-Backtrack");
-				g->Add("legitaim-backtrack-time", "Backtrack TIme", new CFloat(0, 200, 1, "MS"));
+				Group* g = t->Add("Backtrack");
+				g->Add("legitaim-backtrack-time", "Backtrack TIme", new CFloat(0, 200, 1, "MS"))->VisibilityLinked = LegitVisible;
 			}
 
 			// RAGE
 			{
-				Group* g = t->Add("rage-Aimbot");
-				g->BeginMaster(g->Add("rage-aim-enable", "Enable", new CBoolean()));
+				Group* g = t->Add("Aimbot");
+				p = g->Add("rage-aim-enable", "Enable", new CBoolean());
+				p->VisibilityLinked = RageVisible;
+				g->BeginMaster(p);
 
-				g->Add("rage-aim-silent", "Silent Aim", new CBoolean());
-				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean());
-				g->Add("rage-aim-autoscope", "Auto Scope", new CBoolean());
-				g->Add("rage-aim-friendlyfire", "Allow Friendly Fire", new CBoolean());
+				g->Add("rage-aim-silent", "Silent Aim", new CBoolean())->VisibilityLinked = RageVisible;
+				g->Add("rage-aim-autoshoot", "Auto Shoot", new CBoolean())->VisibilityLinked = RageVisible;
+				g->Add("rage-aim-autoscope", "Auto Scope", new CBoolean())->VisibilityLinked = RageVisible;
+				g->Add("rage-aim-friendlyfire", "Allow Friendly Fire", new CBoolean())->VisibilityLinked = RageVisible;
 
-				g->Add("rageaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Scout", "AWP", "Auto" }));
+				g->Add("rageaim-weapontype", "", new CHorizontalState({ "Pistol", "SMG", "Heavy", "Rifle", "Scout", "AWP", "Auto" }))->VisibilityLinked = RageVisible;
 				size_t index = 0;
 				for (std::string wtype : {"pistol", "smg", "heavy", "rifle", "scout", "awp", "auto"})
 				{
@@ -97,7 +104,7 @@ namespace Config
 					g->Add("rageaim-" + wtype + "-baimiflethal", "Baim if Lethal", new CBoolean())->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-override", "Min Damage Override", new CBoolean())->VisibilityLinked = p;
 					g->Add("rageaim-" + wtype + "-override-damage", "Override Damage", new CFloat(0, 100, 0, "HP"))->VisibilityLinked = p;
-					CONFIG_VIS(p, nullptr, GetState("rageaim-weapontype"), index++);
+					CONFIG_VIS(p, GetProperty("rageaim-weapontype"), GetState("rageaim-weapontype"), index++);
 
 					GetProperty("rageaim-" + wtype + "-baimiflethal")->IsPremium = true;
 					GetProperty("rageaim-" + wtype + "-override")->IsPremium = true;
@@ -558,6 +565,8 @@ namespace Config
 				g->Add("theme-tooltip-text", "Tooltip Text", new CColor(true));
 				g->Add("theme-tooltip-border-size", "Tooltip Outline Thickness", new CFloat(0.f, 3.f, 0, "PX"));
 				g->Add("theme-tooltip-border", "Tooltip Outline", new CColor(true));
+
+				g->Add("theme-search-result-highlight", "Search Result Highlight", new CColor(true));
 			}
 		}
 
@@ -615,7 +624,7 @@ namespace Config
 		GetState("show-menu")->Set(1);
 	}
 
-	Property* GetProperty(std::string Name)
+	Property* GetProperty(const std::string Name)
 	{
 		auto Search = PropertyTable.find(Name);
 		if (Search == PropertyTable.end())
@@ -627,7 +636,7 @@ namespace Config
 			return Search->second;
 	}
 
-	int GetKeybind(std::string Name)
+	int GetKeybind(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return -1;
@@ -651,7 +660,7 @@ namespace Config
 		return -1;
 	}
 
-	CFloat* GetFloat(std::string Name)
+	CFloat* GetFloat(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -660,7 +669,7 @@ namespace Config
 		return (CFloat*)p->Value;
 	}
 
-	CPaintKit* GetPaintKit(std::string Name)
+	CPaintKit* GetPaintKit(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -669,7 +678,7 @@ namespace Config
 		return (CPaintKit*)p->Value;
 	}
 
-	CState* GetState(std::string Name)
+	CState* GetState(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -689,7 +698,7 @@ namespace Config
 		}
 	}
 
-	CColor* GetColor(std::string Name)
+	CColor* GetColor(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -698,7 +707,7 @@ namespace Config
 		return (CColor*)p->Value;
 	}
 
-	CMultiSelect* GetSelected(std::string Name)
+	CMultiSelect* GetSelected(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -707,7 +716,7 @@ namespace Config
 		return (CMultiSelect*)p->Value;
 	}
 
-	CTextInput* GetText(std::string Name)
+	CTextInput* GetText(const std::string Name)
 	{
 		auto p = GetProperty(Name);
 		if (!p) return nullptr;
@@ -1959,6 +1968,7 @@ namespace UserData
 					for (auto& prop: group)
 					{
 						prop["name"].get<std::string>();
+						prop["ids"][0].get<std::string>();
 						for (auto& id : prop["ids"])
 						{
 							id.get<std::string>();

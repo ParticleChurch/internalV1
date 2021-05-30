@@ -38,7 +38,7 @@ namespace GUI
 	extern void LoadingScreen();
 	extern void AuthenticationScreen(float Opacity = 1.f);
 	extern void AuthenticationIntro();
-	extern void DrawNormalTab(Config::Tab* t, std::string GroupPrefix = "");
+	extern void DrawNormalTab(Config::Tab* t);
 	extern void DrawActiveTab();
 	extern void MainScreen(float ContentOpacity = 1.f, bool Interactable = true);
 	extern void PerformSearch();

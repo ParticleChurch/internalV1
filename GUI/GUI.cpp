@@ -50,12 +50,12 @@ namespace ImGui
 	{
 		return (b - a) * f + a;
 	}
-
+	
 	inline double lerp(double a, double b, double f)
 	{
 		return (b - a) * f + a;
 	}
-
+	
 	ImVec2 lerp(ImVec2 a, ImVec2 b, float f)
 	{
 		return ImVec2(
@@ -63,7 +63,7 @@ namespace ImGui
 			lerp(a.y, b.y, f)
 		);
 	}
-
+	
 	ImVec4 lerp(ImVec4 a, ImVec4 b, float f)
 	{
 		return ImVec4(
@@ -2150,10 +2150,11 @@ void GUI::AuthenticationIntro()
 	}
 }
 
-void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
+void GUI::DrawNormalTab(Config::Tab* t)
 {
 	static Config::CColor* WidgetBackground = Config::GetColor(XOR("theme-widget-background"));
 	static Config::CColor* WidgetTitleText = Config::GetColor(XOR("theme-widget-title"));
+	static Config::CColor* PropertyHighlight = Config::GetColor(XOR("theme-search-result-highlight"));
 
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
@@ -2161,38 +2162,58 @@ void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 	int WidgetWidth = Window->ContentRegionRect.GetWidth();
 	int WidgetX = t->HorizontalPadding + ImGui::GetCursorPosX(), WidgetY = t->TopPadding + t->VerticalPadding + ImGui::GetCursorPosY();
 
+	Config::Property* ScrollTo = nullptr;
+	if (t->Highlight.Property && t->Highlight.Scroll)
+	{
+		Config::Property* next = ScrollTo = t->Highlight.Property;
+
+		// move all the sliders around so that this property will be visible
+		do
+		{
+			if (next->Visible.State)
+				next->Visible.State->Set(next->Visible.StateEquals);
+		} while (next = next->VisibilityLinked);
+
+		t->Highlight.Scroll = false;
+	}
+
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
+	int ScrollPos = 0;
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
 		Config::Group* Group = t->Groups[g];
-		if (Group->Title == XOR("__META__")) continue;
-		if (Group->Title.substr(0, GroupPrefix.size()) != GroupPrefix) continue;
+		if (Group->Name == XOR("__META__")) continue;
 
-		int GroupHeight = Group->GetDrawHeight();
+		size_t GroupVisibleProperties = Group->CountVisibleProperties();
+		if (GroupVisibleProperties == 0) continue;
+
+		int GroupHeight = Group->Padding + GroupVisibleProperties * (20 + Group->Padding);
+		if (Group->ShowName)
+			GroupHeight += 18 + Group->Padding;
+
 		int GroupY = Group->Padding;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, Group->Rounding);
 		ImGui::PushFont(Arial16);
 
-		// TODO: each group should have meta properties like "backgroundColor"
 		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
 		ImGui::BeginChild((t->Name + XOR("-") + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
 		auto GroupWindow = ImGui::GetCurrentWindow();
+		auto GroupDrawList = GroupWindow->DrawList;
 
-		if (Group->ShowTitle)
+		if (Group->ShowName)
 		{
 			ImGui::SetCursorPos(ImVec2(5, GroupY));
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::PushFont(Arial18BoldItalics);
-			ImGui::Text(Group->Title.substr(GroupPrefix.size()).c_str());
+			ImGui::Text(Group->Name.c_str());
 			ImGui::PopFont();
 			ImGui::PopStyleColor(1);
-			GroupY += 18 + 5;
+			GroupY += 18 + Group->Padding;
 		}
 
 		// draw properties
 		{
-			//L::Log("\n\n===================================");
 			size_t nDrawnProps = 0;
 			for (size_t p = 0; p < Group->Properties.size(); p++)
 			{
@@ -2204,8 +2225,29 @@ void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 
 				if (nDrawnProps > 0)
 					GroupY += Group->Padding;
-
+				
 				ImGui::SetCursorPos(ImVec2(0, GroupY));
+
+				if (ScrollTo == Property)
+				{
+					ScrollPos = WidgetY + GroupY;
+				}
+
+				double timeSinceHighlight = t->Highlight.Property == Property ? Animation::delta(Animation::now(), t->Highlight.Time) : 1000.0;
+				if (timeSinceHighlight < 2.0)
+				{
+					float factor = 1.f;
+					if (timeSinceHighlight < 0.25)
+						factor = Animation::animate(timeSinceHighlight, 0.25);
+					else if (timeSinceHighlight > 1.0)
+						factor = 1.f - Animation::animate(timeSinceHighlight - 1.0, 1.0);
+
+					GroupDrawList->AddRectFilled(
+						GroupWindow->DC.CursorPos,
+						GroupWindow->DC.CursorPos + ImVec2(ImGui::GetWindowContentRegionWidth(), 20),
+						PropertyHighlight->ModulateAlpha(factor)
+					);
+				}
 
 				switch (Property->Type)
 				{
@@ -2239,19 +2281,26 @@ void GUI::DrawNormalTab(Config::Tab* t, std::string GroupPrefix)
 					break;
 				}
 
+				if (ScrollTo == Property)
+				{
+					// the average of before and after will be the center
+					ScrollPos = (ScrollPos + (WidgetY + GroupY)) / 2;
+				}
+
 				nDrawnProps++;
 			}
 		}
 
 		GroupY += Group->Padding;
 		ImGui::EndChild();
-		Group->SetDrawHeight(GroupY);
 
 		ImGui::PopStyleVar(1);
 		ImGui::PopFont();
 
 		WidgetY += GroupHeight + t->VerticalPadding;
 	}
+	if (ScrollTo)
+		ImGui::SetScrollFromPosY(ScrollPos, 0.5f);
 
 	ImGui::PopStyleColor(1);
 
@@ -2348,7 +2397,7 @@ void GUI::DrawActiveTab()
 
 		// the rest of the shit
 		ImGui::SetCursorPos(ImVec2(0, 60));
-		DrawNormalTab(ActiveTab, MasterMode->Value.Get() == 0 ? XOR("legit-") : XOR("rage-"));
+		DrawNormalTab(ActiveTab);
 	}
 	else if (ActiveTab->Name == XOR("Eject"))
 	{
@@ -3415,8 +3464,15 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			const char* InputLabel = XOR("##SearchTextInput");
 			auto InputID = ImGui::GetID(InputLabel);
 
-			IsSearching = ImGui::GetActiveID() == InputID || (SearchQuery && SearchQuery[0]);
-			Animation::changed(SearchAnimation, IsSearching);
+			// open search window if it wasnt already
+			if (ImGui::GetActiveID() == InputID || (SearchQuery && SearchQuery[0]))
+			{
+				if (!IsSearching)
+				{
+					IsSearching = true;
+					Animation::changed(SearchAnimation, IsSearching);
+				}
+			}
 
 			ImGui::SetCursorPos(ImVec2(5, 5));
 			ImGui::DrawSearchIcon(SearchbarText->ModulateAlpha(0.8f), ImVec2(14, 14));
@@ -3452,6 +3508,10 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 					ZeroMemory(SearchQuery, 256);
 					if (ImGui::GetActiveID() == InputID)
 						ImGui::ClearActiveID();
+
+					// close search window
+					IsSearching = false;
+					Animation::changed(SearchAnimation, IsSearching);
 				}
 				ImGui::PopStyleColor(3);
 			}
@@ -3561,9 +3621,44 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 				{
 					ImGui::SetCursorPosX(25);
 
-					std::string id = "##" + res.title + "-" + prop["ids"][0].get<std::string>();
+					std::string identifier = "##" + res.title + "-" + prop["ids"][0].get<std::string>();
+					ImGuiID id = ImGui::GetID(identifier.c_str());
 
+					ImVec2 size = ImGui::CalcTextSize(prop["name"].get<std::string>().c_str());
+					ImVec2 pos = ImGui::GetCursorPos();
+
+					bool brighten = ImGui::GetHoveredID() == id || ImGui::GetActiveID() == id;
+					if (brighten)
+						ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*ActiveTablistText);
 					ImGui::Text(prop["name"].get<std::string>().c_str());
+					if (brighten)
+						ImGui::PopStyleColor();
+					
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.f);
+					ImGui::SetCursorPos(pos);
+					if (ImGui::Button(identifier.c_str(), size))
+					{
+						// close search window
+						ZeroMemory(SearchQuery, 256);
+						IsSearching = false;
+						Animation::changed(SearchAnimation, IsSearching);
+
+						Config::Property* p;
+						Config::Group* g;
+						Config::Tab* t;
+						if (
+								(p = Config::GetProperty(prop["ids"][0].get<std::string>())) &&
+								(g = p->Parent) &&
+								(t = g->Parent)
+							)
+						{
+							ActiveTab = t;
+							t->Highlight.Property = p;
+							t->Highlight.Time = Animation::now();
+							t->Highlight.Scroll = true;
+						}
+					}
+					ImGui::PopStyleVar();
 				}
 				
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);

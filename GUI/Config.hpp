@@ -74,14 +74,14 @@ namespace Config
 	extern void _BindToKey(Property* p, int index);
 
 	// getters
-	extern Property* GetProperty(std::string Name);
-	extern int GetKeybind(std::string Name);
-	extern CFloat* GetFloat(std::string Name);
-	extern CPaintKit* GetPaintKit(std::string Name);
-	extern CState* GetState(std::string Name);
-	extern CColor* GetColor(std::string Name);
-	extern CMultiSelect* GetSelected(std::string Name);
-	extern CTextInput* GetText(std::string Name);
+	extern Property* GetProperty(const std::string Name);
+	extern int GetKeybind(const std::string Name);
+	extern CFloat* GetFloat(const std::string Name);
+	extern CPaintKit* GetPaintKit(const std::string Name);
+	extern CState* GetState(const std::string Name);
+	extern CColor* GetColor(const std::string Name);
+	extern CMultiSelect* GetSelected(const std::string Name);
+	extern CTextInput* GetText(const std::string Name);
 
 	// import/export theme/config
 	extern bool ExportSingleProperty(Property* p, char** buffer, size_t* size, size_t* capacity);
@@ -569,6 +569,8 @@ namespace Config
 		Visibility Visible;
 		Property* VisibilityLinked = nullptr;
 
+		Group* Parent = nullptr;
+
 		// meta info
 		bool IsPremium = false;
 
@@ -627,26 +629,28 @@ namespace Config
 	struct Group
 	{
 	private:
-		float LastDrawHeight = -1.f;
 		Property* CurrentMaster = nullptr;
 
 	public:
 		int Padding = 5;
 		int Rounding = 5;
-		std::string Title;
-		bool ShowTitle = true;
+		std::string Name;
+		bool ShowName = true;
+
+		Tab* Parent = nullptr;
 
 		std::vector<Property*> Properties;
 
-		Group(std::string Title)
+		Group(std::string Name)
 		{
-			this->Title = Title;
+			this->Name = Name;
 		}
 
 		template <typename T>
 		Property* Add(std::string Name, std::string VisibleName, T* Value)
 		{
 			Property* x = new Property(Name, VisibleName, Value);
+			x->Parent = this;
 			if (this->CurrentMaster)
 				x->Master = this->CurrentMaster;
 			this->Properties.push_back(x);
@@ -662,28 +666,15 @@ namespace Config
 			this->CurrentMaster = nullptr;
 		}
 
-		float GetDrawHeight()
+		size_t CountVisibleProperties()
 		{
-			// return actual height
-			//if (this->LastDrawHeight >= 0.f) return this->LastDrawHeight;
-			
-			// try to calculate it
-			float h = this->ShowTitle ? 5.f + 18.f : 0.f;
+			size_t c = 0;
 			for (size_t p = 0; p < this->Properties.size(); p++)
 			{
-				auto Property = this->Properties[p];
-				if (!Property->IsVisible()) continue;
-				
-				h += this->Padding + 20;
+				if (!this->Properties[p]->IsVisible()) continue;
+				c++;
 			}
-			h += this->Padding;
-
-			return h;
-		}
-
-		void SetDrawHeight(float DrawHeight)
-		{
-			this->LastDrawHeight = DrawHeight;
+			return c;
 		}
 	};
 	struct Tab
@@ -697,6 +688,12 @@ namespace Config
 		int VerticalPadding = 10;
 		int HorizontalPadding = 10;
 
+		struct {
+			bool Scroll = false;
+			Property* Property = nullptr;
+			TIME_POINT Time = std::chrono::steady_clock::time_point(std::chrono::seconds(0));
+		} Highlight;
+
 		Tab(std::string Name)
 		{
 			this->Name = Name;
@@ -705,6 +702,7 @@ namespace Config
 		Group* Add(std::string Title)
 		{
 			Group* x = new Group(Title);
+			x->Parent = this;
 			this->Groups.push_back(x);
 			return x;
 		}
