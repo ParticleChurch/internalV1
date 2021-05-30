@@ -78,6 +78,36 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 	}
 }
 
+void MiscVisuals::NoAimViewPunchFSN(int stage)
+{
+	L::Verbose("NoAimViewPunchFSN");
+	static Config::CState* NoAimPunch = Config::GetState("visuals-misc-noAimPunch");
+	static Config::CState* NoViewPunch = Config::GetState("visuals-misc-noViewPunch");
+
+	static Vec aimPunch;
+	static Vec viewPunch;
+
+	L::Verbose("NoAimViewPunchFSN - run test");
+	if (!G::LocalPlayer || !G::LocalPlayerAlive || !G::IsInGame)
+		return;
+
+	if (stage == FRAME_RENDER_START) {
+		aimPunch = G::LocalPlayer->GetAimPunchAngle();
+		viewPunch = G::LocalPlayer->GetViewPunchAngle();
+
+		if (NoAimPunch->Get())
+			G::LocalPlayer->GetAimPunchAngle() = Vec{ };
+
+		if (NoViewPunch->Get())
+			G::LocalPlayer->GetViewPunchAngle() = Vec{ };
+
+	}
+	else if (stage == FRAME_RENDER_END) {
+		G::LocalPlayer->GetAimPunchAngle() = aimPunch;
+		G::LocalPlayer->GetViewPunchAngle() = viewPunch;
+	}
+}
+
 void MiscVisuals::RankRevealer()
 {
 	static Config::CState* Enable = Config::GetState("visuals-misc-revealranks");

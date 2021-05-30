@@ -851,6 +851,8 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	} break;
 	}
 
+	miscvisuals->NoAimViewPunchFSN(stage);
+
 	/*
 	
 		if (stage == FRAME_RENDER_START && G::LocalPlayer && G::LocalPlayerAlive && ThirdPerson->Get())

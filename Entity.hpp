@@ -486,8 +486,13 @@ public:
 		return this->GetNextAttack() <= ServerTime && weap->GetNextPrimaryAttack() <= ServerTime;
 	}
 
-	Vec GetAimPunchAngle() {
+	Vec& GetAimPunchAngle() {
 		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_aimPunchAngle");
+		return *(Vec*)((DWORD)this + offset);
+	}
+
+	Vec& GetViewPunchAngle() {
+		static DWORD offset = N::GetOffset("DT_BasePlayer", "m_viewPunchAngle");
 		return *(Vec*)((DWORD)this + offset);
 	}
 

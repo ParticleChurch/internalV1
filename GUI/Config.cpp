@@ -356,6 +356,8 @@ namespace Config
 				g->Add("visuals-misc-noflash", "No Flash", new CBoolean());
 				g->Add("visuals-misc-tracers", "Bullet Tracers", new CBoolean());
 				g->Add("visuals-misc-forcecrosshair", "Force Crosshair", new CBoolean());
+				g->Add("visuals-misc-noAimPunch", "No Aim Punch", new CBoolean());
+				g->Add("visuals-misc-noViewPunch", "No View Punch", new CBoolean());
 
 				/*w->AddProperty(false, 2, "visuals-misc-skin", "Skin ID", "", 0, 1000, 0, 0, 0);*/
 				/*w->AddProperty(false, 2, "visuals-misc-vote-indicator", "Vote Indicator", false, false);

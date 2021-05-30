@@ -11,6 +11,7 @@ public:
 	void ThirdPerson_DoPostScreenEffects();
 
 	// Others
+	void NoAimViewPunchFSN(int stage);
 	void RankRevealer();
 	void GrenadePrediction();
 	void NoScope();
