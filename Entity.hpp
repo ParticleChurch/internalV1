@@ -211,6 +211,24 @@ public:
 
 	bool SetupBones(Matrix3x4* pBoneToWorldOut, int nMaxBones, int boneMask, float currentTime = 0)
 	{
+		typedef bool(__thiscall* oSetupBones)(void*, Matrix3x4*, int, int, float);
+		if (false)
+		{
+			int* render = reinterpret_cast<int*>(this + 0x274);
+			int backup = *render;
+			Vec absOrigin = GetAbsOrigin();
+			*render = 0;
+			SetAbsOrigin(GetVecOrigin());
+			bool result = GetVFunc<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
+			SetAbsOrigin(absOrigin);
+			*render = backup;
+			return result;
+		} else
+			return GetVFunc<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
+
+
+
+		/*
 		__asm
 		{
 			mov edi, this
@@ -222,6 +240,8 @@ public:
 			push pBoneToWorldOut
 			call dword ptr ds : [edx + 0x34]
 		}
+		*/
+		
 	}
 
 	Vec GetBonePos(int boneID) {
