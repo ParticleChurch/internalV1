@@ -600,26 +600,47 @@ namespace ImGui
 		return Clicked;
 	}
 
-	float DrawInputFloat(std::string Identifier, ImVec4 ColorA, ImVec4 ColorB, float Factor = 0.5f, ImVec2 Size = ImVec2(100, 16), bool* Active = nullptr)
+	float DrawInputFloat(std::string Identifier, Config::CColor* Background, Config::CColor* Foreground, float Factor = 0.5f, ImVec2 Size = ImVec2(100, 10), bool* Active = nullptr)
 	{
 		if (Active) *Active = false;
 		auto Window = ImGui::GetCurrentWindow();
 		auto DrawList = Window->DrawList;
+		ImVec2 Position = Window->DC.CursorPos + ImVec2(Size.y / 2.f, 0);
+		Size.x -= Size.y;
 
-		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
+		ImRect BB(Position, Position + Size);
 		ImGuiID ID = Window->GetID(Identifier.c_str());
-		ImVec2 GrabCenter(Window->DC.CursorPos.x + Size.y / 2.f + Factor * (Size.x - Size.y), Window->DC.CursorPos.y + Size.y / 2.f);
 
 		// draw bar
 		{
-			DrawList->AddRectFilled(Window->DC.CursorPos, Window->DC.CursorPos + Size, ColorConvertFloat4ToU32(ColorB), Size.y);
-			DrawList->AddRectFilled(Window->DC.CursorPos + ImVec2(2, 2), Window->DC.CursorPos + Size - ImVec2(2, 2), ColorConvertFloat4ToU32(ColorA), Size.y);
-			DrawList->AddRectFilled(Window->DC.CursorPos, ImVec2(GrabCenter.x + Size.y / 2.f, Window->DC.CursorPos.y + Size.y), ColorConvertFloat4ToU32(ColorB), Size.y);
-		}
+			constexpr float InactiveHeight = 5.f;
+			constexpr float ActiveHeight = 7.f;
+			float GrabRadius = Size.y / 2.f;
+			float GrabOffset = Size.x * Factor;
 
-		// draw grab
-		{
-			DrawList->AddCircleFilled(GrabCenter, Size.y / 2.f - 2.f, ColorConvertFloat4ToU32(ColorA));
+			// inactive portion
+			DrawList->AddRectFilled(
+				Position + ImVec2(GrabOffset, (Size.y - InactiveHeight) / 2.f),
+				Position + ImVec2(Size.x + InactiveHeight / 2.f, (Size.y + InactiveHeight) / 2.f),
+				Background->ModulateAlpha(0.3f),
+				InactiveHeight
+			);
+
+			// active portion
+			DrawList->AddRectFilled(
+				Position + ImVec2(-ActiveHeight / 2.f, (Size.y - ActiveHeight) / 2.f),
+				Position + ImVec2(GrabOffset, (Size.y + ActiveHeight) / 2.f),
+				*Background,
+				ActiveHeight
+			);
+
+			// grab
+			DrawList->AddCircleFilled(
+				Position + ImVec2(GrabOffset, Size.y / 2.f),
+				GrabRadius,
+				*Foreground,
+				16
+			);
 		}
 
 		// behavior
@@ -634,7 +655,7 @@ namespace ImGui
 		{
 			if (GImGui->ActiveIdSource == ImGuiInputSource_Mouse && GImGui->IO.MouseDown[0])
 			{
-				Factor = (GImGui->IO.MousePos.x - (Window->DC.CursorPos.x + Size.y / 2.f)) / (Size.x - Size.y);
+				Factor = (GImGui->IO.MousePos.x - Position.x) / Size.x;
 				if (Active) *Active = true;
 			}
 			else
@@ -1063,14 +1084,15 @@ namespace ImGui
 
 		// draw bar
 		constexpr float SpaceAfterBar = 43.f;
+		constexpr int BarHeight = 16;
 		float BarLength = Window->ContentRegionRect.GetWidth() - GetCursorPosX() - SpaceAfterBar;
 		ImVec2 BarBase = GetCursorPos();
 		{
-			SetCursorPos(BarBase + ImVec2(0, (20 - 16) / 2));
+			SetCursorPos(BarBase + ImVec2(0, (20 - BarHeight) / 2));
 
 			float DrawValue = Value->GetFactor();
 			bool Active = false;
-			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), *PropertyBase, *PropertyAccent, DrawValue, ImVec2(BarLength, 16), &Active);
+			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), PropertyBase, PropertyAccent, DrawValue, ImVec2(BarLength, BarHeight), &Active);
 
 			if (!PremiumLocked && Active)
 			{
