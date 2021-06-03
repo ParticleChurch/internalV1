@@ -1084,7 +1084,7 @@ namespace ImGui
 
 		// draw bar
 		constexpr float SpaceAfterBar = 43.f;
-		constexpr int BarHeight = 16;
+		constexpr int BarHeight = 14;
 		float BarLength = Window->ContentRegionRect.GetWidth() - GetCursorPosX() - SpaceAfterBar;
 		ImVec2 BarBase = GetCursorPos();
 		{
@@ -1102,7 +1102,7 @@ namespace ImGui
 
 			if (IsItemHovered() || Active)
 			{
-				SetCursorPos(BarBase + ImVec2((BarLength - 16.f) * DrawValue + 8.f, (20 - 16) / 2));
+				SetCursorPos(BarBase + ImVec2((BarLength - 16.f) * DrawValue + 8.f, (20 - BarHeight) / 2));
 				ToolTip(PremiumLocked ? PREMIUM_USERS_ONLY : Value->Stringify(), 20);
 			}
 		}
