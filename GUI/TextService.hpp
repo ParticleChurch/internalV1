@@ -24,44 +24,42 @@ namespace TextService
 }
 
 /*
-	COMPILE-TIME ENCRYPTION
+	STRING ENCODING!
 */
+#define XOR_TAG_TEXT "!XOR!"
+#define XOR_TAG_LENGTH (sizeof(XOR_TAG_TEXT) - 1) /* null not included */
+#define XOR_TAG(str) (XOR_TAG_TEXT str)
+#define XOR_STDSTR(str) (TextService::StringEncoding::runtimeDecrypt(sizeof(str), XOR_TAG(str)))
+#define XOR(str) (XOR_STDSTR(str).c_str())
+
 namespace TextService
 {
 	namespace StringEncoding {
-		struct string
+		inline std::string runtimeDecrypt(const size_t size /* "!XOR!Hello" = 6 */, const volatile char* str)
 		{
-			char* str;
-
-			string(size_t size, size_t tagSize, const volatile char* original) noexcept
+			if (*str == '^')
 			{
-				this->str = new char[size];
-				memcpy(this->str, (const char*)original + tagSize, size);
+				// this string has been encrypted, it must be decrypted
+				uint32_t key = *(volatile uint32_t*)(str + 1);
+				const char* keys = (char*)(&key);
 
-				if (original[0] == '^') // has it been encrypted?
+				std::string workspace((char*)(str + XOR_TAG_LENGTH), size);
+
+				for (size_t o = 0; o < size; o++)
 				{
-					uint32_t key = *(volatile uint32_t*)(original + 1);
-
-					size_t offset = 0;
-					for (; size >= 4 && offset <= size - 4; offset += 4)
-						*(uint32_t*)(this->str + offset) ^= key;
-					for (; offset < size; offset++)
-						this->str[offset] ^= key & 0xff;
+					char key = keys[o % 4];
+					workspace[o] ^= key;
 				}
-			}
-			~string()
-			{
-				delete[] str;
-			}
-		};
-	};
-}
-//#define XOR_MINSTRINGSIZE 5 // 4 chars + 1 null
-//#define XORTAG(str) (TextService::StringEncoding::string(sizeof(str), 5, "!XOR!" str))
-//#define XOR(string_literal) ((sizeof(string_literal) <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG(string_literal); return s.str;}()))
-//
-//#define XORTAG_S(size, str) (TextService::StringEncoding::string(sizeof(str), 5 + sizeof(#size) - 1, "!XOR" #size "!" str))
-//#define XOR_S(string_size, string_literal) ((string_size <= XOR_MINSTRINGSIZE) ? (string_literal) : ([]{static auto s = XORTAG_S(string_size, string_literal); return s.str;}()))
 
-#define XOR(x) x
-#define XOR_S(_, x) x 
+				return workspace;
+			}
+			else if (*str != '!')
+			{
+				std::exit(0);
+				return "\x69\x42\x0";
+			}
+
+			return (const char*)(str + XOR_TAG_LENGTH);
+		}
+	}
+}

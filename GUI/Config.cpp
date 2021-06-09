@@ -1767,7 +1767,7 @@ namespace UserData
 				SessionId = parsed["idSessions"].get<std::string>();
 				Authenticated = true;
 				UserId = parsed["idUsers"].get<uint32_t>();
-				PremiumTimeRemaining = parsed["premiumTimeRemaining"].get<uint32_t>();
+				PremiumTimeRemaining = parsed[XOR("premiumTimeRemaining")].get<uint32_t>();
 				Premium = PremiumTimeRemaining > 0;
 				LastPingTime = Animation::now();
 			}
