@@ -18,4 +18,16 @@ namespace StrHash {
         }
         return value;
     }
+
+    constexpr uint32_t HashRuntime(const char* str, const size_t length) noexcept
+    {
+        auto value = offsetBasis;
+
+        for (size_t i = 0; i < length; i++)
+        {
+            value ^= *str++;
+            value *= prime;
+        }
+        return value;
+    }
 }

@@ -1,4 +1,5 @@
 #include "Include.hpp"
+#include <functional>
 
 template<typename ...Args>
 void ConsoleColorMsg(const Color& color, const char* fmt, Args ...args)
@@ -38,7 +39,43 @@ void Init()
     //L::Log(N::Dump().c_str());
 
     L::Log("DLLMain complete. Now waiting for ejection");
-    while (!G::KillDLL) Sleep(100);
+
+
+    /*
+    for (size_t i = 0; i < 2048; i++)
+    {
+        std::string byte = std::to_string((uint32_t)(functionOfInterest[i]));
+        while (byte.length() < 3)
+            byte = "0" + byte;
+        L::Log(("\\" + byte).c_str(), "");
+    }
+    L::Log("");
+    */
+
+    struct { const volatile unsigned char* ptr; const size_t sz; uint32_t initialHash = 0; } hashables[] = {
+        {(const volatile unsigned char*)UserData::AttemptLogin, 0x6a4},
+        {(const volatile unsigned char*)UserData::GetUnauthenticatedSession, 0x461},
+        {(const volatile unsigned char*)UserData::PingServer, 0x337},
+        {(const volatile unsigned char*)UserData::ConnectAPI, 0x170e},
+    };
+
+    while (!G::KillDLL)
+    {
+        for (size_t i = 0; i < sizeof(hashables) / sizeof(hashables[0]); i++)
+        {
+            auto& h = hashables[i];
+            uint32_t currentHash = StrHash::HashRuntime((const char*)h.ptr, h.sz);
+            if (h.initialHash == 0)
+            {
+                h.initialHash = currentHash;
+            }
+            else if (h.initialHash != currentHash)
+            {
+                L::Log("HASH MISMATCH!!!");
+            }
+        }
+        Sleep(100);
+    }
     L::Log("Ejecting...");
 
     SkinChanger::UnHook(); L::Log("SkinChanger::UnHook(); complete");
