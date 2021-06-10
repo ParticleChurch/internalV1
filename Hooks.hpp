@@ -1,5 +1,15 @@
 namespace H
 {
+	extern VMTManager* d3d9VMT;
+	extern VMTManager* clientVMT;
+	extern VMTManager* clientmodeVMT;
+	extern VMTManager* surfaceVMT;
+	extern VMTManager* panelVMT;
+	extern VMTManager* gameeventmanagerVMT;
+	extern VMTManager* inputVMT;
+	extern VMTManager* modelrenderVMT;
+	extern VMTManager* soundVMT;
+
 	extern void Init();
 	extern void GUIInit();
 	extern void UnHook();

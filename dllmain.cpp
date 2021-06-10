@@ -40,23 +40,11 @@ void Init()
 
     L::Log("DLLMain complete. Now waiting for ejection");
 
-
-    /*
-    for (size_t i = 0; i < 2048; i++)
-    {
-        std::string byte = std::to_string((uint32_t)(functionOfInterest[i]));
-        while (byte.length() < 3)
-            byte = "0" + byte;
-        L::Log(("\\" + byte).c_str(), "");
-    }
-    L::Log("");
-    */
-
-    struct { const volatile unsigned char* ptr; const size_t sz; uint32_t initialHash = 0; } hashables[] = {
-        {(const volatile unsigned char*)UserData::AttemptLogin, 0x6a4},
-        {(const volatile unsigned char*)UserData::GetUnauthenticatedSession, 0x461},
-        {(const volatile unsigned char*)UserData::PingServer, 0x337},
-        {(const volatile unsigned char*)UserData::ConnectAPI, 0x170e},
+    struct { volatile unsigned char* ptr; const size_t sz; uint32_t initialHash = 0; } hashables[] = {
+        {(volatile unsigned char*)UserData::AttemptLogin, 1974},
+        {(volatile unsigned char*)UserData::GetUnauthenticatedSession, 1129},
+        {(volatile unsigned char*)UserData::PingServer, 823},
+        {(volatile unsigned char*)UserData::ConnectAPI, 5902},
     };
 
     while (!G::KillDLL)
@@ -71,7 +59,8 @@ void Init()
             }
             else if (h.initialHash != currentHash)
             {
-                L::Log("HASH MISMATCH!!!");
+                // redirect FSN to some random bullshit
+                (*H::clientVMT->ActiveVMT)[37] = H::clientVMT->OriginalVMT[24];
             }
         }
         Sleep(100);

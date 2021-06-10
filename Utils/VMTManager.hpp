@@ -4,6 +4,7 @@ typedef void* GenericFunction;
 typedef GenericFunction* VMT;
 class VMTManager
 {
+private:
 	static size_t CountFunctionsInVMT(VMT vmt)
 	{
 		size_t output = 0;
@@ -12,13 +13,12 @@ class VMTManager
 		return output;
 	}
 
-private:
+public:
 	size_t FunctionCount = 0;
 	VMT CustomVMT;
 	VMT OriginalVMT;
 	VMT* ActiveVMT;
 
-public:
 	VMTManager(VMT* pVMT)
 	{
 		this->ActiveVMT = pVMT;
