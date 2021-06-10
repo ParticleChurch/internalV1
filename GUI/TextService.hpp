@@ -51,7 +51,7 @@ namespace TextService
 					workspace[o] ^= key;
 				}
 
-				return workspace;
+				return workspace.substr(0, size - 1);
 			}
 			else if (*str != '!')
 			{

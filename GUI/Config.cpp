@@ -1737,18 +1737,27 @@ namespace UserData
 
 		// dump to json
 		nlohmann::json out = nlohmann::json::object();
-		out["email"] = inputEmail;
-		out["password"] = inputPassword;
+		out[XOR_STDSTR("email")] = inputEmail;
+		out[XOR_STDSTR("password")] = inputPassword;
 
 		// call api
-		HTTP::contentType = "application/json";
+		HTTP::contentType = XOR_STDSTR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/login.php", out.dump(), &bytesRead);
+		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/login.php"), out.dump(), &bytesRead);
+
+		std::string x = XOR_STDSTR("Hello");
+		std::string y = XOR_STDSTR("World");
+		std::string z = "HelloWorld";
+		L::Log((x + y).c_str());
+		L::Log(z.c_str());
+		L::Log(std::to_string(x.length()).c_str());
+		L::Log(std::to_string(y.length()).c_str());
+		L::Log(std::to_string(z.length()).c_str());
 
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			SetLoginError("Failed to contact server - Please check your firewall.");
+			SetLoginError(XOR_STDSTR("Failed to contact server - Please check your firewall."));
 			goto failed;
 		}
 
@@ -1757,32 +1766,33 @@ namespace UserData
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
 
-			if (!parsed["success"].get<bool>())
+			if (!parsed[XOR_STDSTR("success")].get<bool>())
 			{
-				SetLoginError(parsed["error"].get<std::string>());
+				SetLoginError(parsed[XOR_STDSTR("error")].get<std::string>());
 				goto failed;
 			}
 			else
 			{
-				SessionId = parsed["idSessions"].get<std::string>();
+				SessionId = parsed[XOR_STDSTR("idSessions")].get<std::string>();
 				Authenticated = true;
-				UserId = parsed["idUsers"].get<uint32_t>();
-				PremiumTimeRemaining = parsed[XOR("premiumTimeRemaining")].get<uint32_t>();
+				UserId = parsed[XOR_STDSTR("idUsers")].get<uint32_t>();
+				PremiumTimeRemaining = parsed[XOR_STDSTR("premiumTimeRemaining")].get<uint32_t>();
 				Premium = PremiumTimeRemaining > 0;
 				LastPingTime = Animation::now();
 			}
 		}
 		catch (std::exception& e)
 		{
-			SetLoginError("Unknown Error - Try Again"); // invalid server response
+			SetLoginError(XOR_STDSTR("Unknown Error - Try Again")); // invalid server response
 			L::Log(e.what());
+			L::Log(response);
 			goto failed;
 		}
 
 		// save login info to file
 		try
 		{
-			L::Log("Saving credentials to file...", " ");
+			L::Log(XOR("Saving credentials to file..."), " ");
 			auto f = std::ofstream(CredentialsFile, std::ios::binary);
 			if (f.is_open()) // if fails, whatever, they'll have to type password again
 			{
@@ -1815,12 +1825,12 @@ namespace UserData
 
 				f.write(data, usedSize);
 				f.close();
-				L::Log("Success!");
+				L::Log(XOR("Success!"));
 			}
 		}
 		catch (const std::exception& e)
 		{
-			L::Log("Failed to save user credentials w/ error: ", "");
+			L::Log(XOR("Failed to save user credentials w/ error: "), "");
 			L::Log(e.what());
 		}
 
@@ -1843,14 +1853,14 @@ namespace UserData
 		SetLoginError("");
 
 		// call api
-		HTTP::contentType = "application/json";
+		HTTP::contentType = XOR_STDSTR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/playfree.php", "{}", &bytesRead);
+		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/playfree.php"), XOR_STDSTR("{}"), &bytesRead);
 
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			SetLoginError("Failed to contact server - Please check your firewall.");
+			SetLoginError(XOR_STDSTR("Failed to contact server - Please check your firewall."));
 			goto failed;
 		}
 
@@ -1858,20 +1868,20 @@ namespace UserData
 		try {
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
-			SessionId = parsed["idSessions"].get<std::string>();
+			SessionId = parsed[XOR_STDSTR("idSessions")].get<std::string>();
 			Authenticated = false;
 			UserId = (uint32_t)-1;
 			PremiumTimeRemaining = 0;
 			Premium = PremiumTimeRemaining > 0;
 			LastPingTime = Animation::now();
-			Config::GetState("misc-other-killsay")->Set(true);
-			Config::GetState("misc-other-clantag")->Set(true);
-			for (std::string wtype : {"pistol", "smg", "heavy", "rifle", "sniper"})
-				Config::GetState("legitaim-" + wtype + "-smoothing")->Set(3);
+			Config::GetState(XOR_STDSTR("misc-other-killsay"))->Set(true);
+			Config::GetState(XOR_STDSTR("misc-other-clantag"))->Set(true);
+			for (std::string wtype : {XOR_STDSTR("pistol"), XOR_STDSTR("smg"), XOR_STDSTR("heavy"), XOR_STDSTR("rifle"), XOR_STDSTR("sniper")})
+				Config::GetState(XOR_STDSTR("legitaim-") + wtype + XOR_STDSTR("-smoothing"))->Set(3);
 		}
 		catch (std::exception& e)
 		{
-			SetLoginError("Unknown Error - Try Again"); // invalid server response
+			SetLoginError(XOR_STDSTR("Unknown Error - Try Again")); // invalid server response
 			L::Log(e.what());
 			goto failed;
 		}
@@ -1893,15 +1903,15 @@ namespace UserData
 		if (PingDebounce) return false;
 		PingDebounce = true;
 
-		L::Log("Ping!");
+		L::Log(XOR("Ping!"));
 		// dump to json
 		nlohmann::json out = nlohmann::json::object();
-		out["sid"] = UserData::SessionId;
+		out[XOR_STDSTR("sid")] = UserData::SessionId;
 
 		// call api
-		HTTP::contentType = "application/json";
+		HTTP::contentType = XOR_STDSTR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post("https://www.a4g4.com/API/new/ping.php", out.dump(), &bytesRead);
+		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/ping.php"), out.dump(), &bytesRead);
 		if (response)
 		{
 			L::Log(std::string(response, bytesRead).c_str());
@@ -1909,7 +1919,7 @@ namespace UserData
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			L::Log("Ping failed due to invalid server response");
+			L::Log(XOR("Ping failed due to invalid server response"));
 			goto failed;
 		}
 
@@ -1918,21 +1928,21 @@ namespace UserData
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
 
-			if (!parsed["success"].get<bool>())
+			if (!parsed[XOR_STDSTR("success")].get<bool>())
 			{
-				L::Log(("Ping failed w/ err: " + parsed["error"].get<std::string>()).c_str());
+				L::Log((XOR_STDSTR("Ping failed w/ err: ") + parsed[XOR_STDSTR("error")].get<std::string>()).c_str());
 				goto failed;
 			}
 			else
 			{
-				PremiumTimeRemaining = parsed["premiumTimeRemaining"].get<uint32_t>();
+				PremiumTimeRemaining = parsed[XOR_STDSTR("premiumTimeRemaining")].get<uint32_t>();
 				Premium = PremiumTimeRemaining > 0;
 				LastPingTime = Animation::now();
 			}
 		}
 		catch (std::exception& e)
 		{
-			L::Log("Ping failed w/ error: ", "");
+			L::Log(XOR("Ping failed w/ error: "), "");
 			L::Log(e.what());
 			goto failed;
 		}
@@ -1956,12 +1966,12 @@ namespace UserData
 		Sleep(1000);
 
 	first:
-		response = (char*)HTTP::Post("https://www.a4g4.com/API/new/injected_new.php", "", &bytes);
+		response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/injected_new.php"), "", &bytes);
 		if (bytes == 0 || !response) goto retry;
 		try {
 			nlohmann::ordered_json x = nlohmann::ordered_json::parse(std::string(response, bytes));
-			Config::SearchableFeatures = x["features"];
-			Config::SearchStopwords = x["stopwords"];
+			Config::SearchableFeatures = x[XOR_STDSTR("features")];
+			Config::SearchStopwords = x[XOR_STDSTR("stopwords")];
 
 			// make sure that the features list is structured correctly
 			for (auto& [tabName, tab] : Config::SearchableFeatures.items())
@@ -1970,13 +1980,13 @@ namespace UserData
 				{
 					for (auto& prop: group)
 					{
-						prop["name"].get<std::string>();
-						prop["ids"][0].get<std::string>();
-						for (auto& id : prop["ids"])
+						prop[XOR_STDSTR("name")].get<std::string>();
+						prop[XOR_STDSTR("ids")][0].get<std::string>();
+						for (auto& id : prop[XOR_STDSTR("ids")])
 						{
 							id.get<std::string>();
 						}
-						for (auto& keyword : prop["keywords"])
+						for (auto& keyword : prop[XOR_STDSTR("keywords")])
 						{
 							keyword.get<std::string>();
 						}

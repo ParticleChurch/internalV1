@@ -426,7 +426,7 @@ namespace ImGui
 		DrawList->PathClear();
 	}
 
-	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength)
+	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength, ImGuiInputTextFlags Flags = 0)
 	{
 		bool Active = GetID((XOR("##") + Identifier).c_str()) == GetActiveID();
 		bool HasContent = BufferLength && Buffer[0];
@@ -450,7 +450,7 @@ namespace ImGui
 				GImGui->NextItemData.Width = NextItemWidth;
 			}
 		}
-		InputText((XOR("##") + Identifier).c_str(), Buffer, BufferLength);
+		InputText((XOR("##") + Identifier).c_str(), Buffer, BufferLength, Flags);
 		GUI::WantKeyboard |= IsItemActive();
 	}
 
@@ -2022,7 +2022,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(Position + ImVec2(30, (26 - 18) / 2));
 		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
-		ImGui::InputTextWithPlaceholder(XOR("AccountPassword"), XOR("Password"), Password, 512);
+		ImGui::InputTextWithPlaceholder(XOR("AccountPassword"), XOR("Password"), Password, 512, ImGuiInputTextFlags_Password);
 
 		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
 	}
