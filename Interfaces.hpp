@@ -25,6 +25,7 @@ namespace I
 	extern ClientState* clientstate;
 	extern IMemAlloc* memalloc;
 	extern CEffects* effects;
+	extern ViewRenderBeams* viewrenderbeams;
 
 	typedef void* (*InterfaceCreator)(const char*, int);
 	template <typename T>

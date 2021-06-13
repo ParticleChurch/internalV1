@@ -11,6 +11,7 @@ public:
 	void ThirdPerson_DoPostScreenEffects();
 
 	// Others
+	void DrawBeams(GameEvent* event);
 	void NoAimViewPunchFSN(int stage);
 	void RankRevealer();
 	void GrenadePrediction();

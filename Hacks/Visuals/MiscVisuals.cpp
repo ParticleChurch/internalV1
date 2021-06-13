@@ -78,6 +78,68 @@ void MiscVisuals::ThirdPerson_DoPostScreenEffects()
 	}
 }
 
+void MiscVisuals::DrawBeams(GameEvent* event)
+{
+	//userid
+	//visuals-misc-beam
+
+	static Config::CState* Enable = Config::GetState("visuals-misc-beam");
+
+	if (!Enable->Get())
+		return;
+
+	int UserID = event->GetInt("userid");
+
+	if (I::engine->GetPlayerForUserID(UserID) != G::LocalPlayerIndex)
+		return;
+
+	switch (StrHash::HashRuntime(event->GetName())) {
+	case StrHash::Hash("bullet_impact"):
+	{
+		BeamInfo beamInfo;
+		beamInfo.start = G::LocalPlayer->GetEyePos();
+		beamInfo.end.x = event->GetFloat("x");
+		beamInfo.end.y = event->GetFloat("y");
+		beamInfo.end.z = event->GetFloat("z");
+
+		Vec direction = beamInfo.start - beamInfo.end;
+		direction /= direction.VecLength();
+		direction *= 30;// force it to be 10 units ahead
+		beamInfo.start += direction;
+
+		beamInfo.modelName = "sprites/physbeam.vmt";
+		beamInfo.modelIndex = -1;
+		beamInfo.haloName = nullptr;
+		beamInfo.haloIndex = -1;
+
+		beamInfo.red = 255.0f;
+		beamInfo.green = 0;
+		beamInfo.blue = 0;
+		beamInfo.brightness = 255.0f;
+
+		beamInfo.type = 0;
+		beamInfo.life = 0.0f;
+		beamInfo.amplitude = 0.0f;
+		beamInfo.segments = -1;
+		beamInfo.renderable = true;
+		beamInfo.speed = 0.2f;
+		beamInfo.startFrame = 0;
+		beamInfo.frameRate = 0.0f;
+		beamInfo.width = 2.0f;
+		beamInfo.endWidth = 2.0f;
+		beamInfo.flags = 0x40;
+		beamInfo.fadeLength = 20.0f;
+
+		if (const auto beam = I::viewrenderbeams->createBeamPoints(beamInfo)) {
+			constexpr auto FBEAM_FOREVER = 0x4000;
+			beam->flags &= ~FBEAM_FOREVER;
+			beam->die = I::globalvars->m_curTime + 2.0f;
+		}
+		break;
+	}
+	}
+}
+
 void MiscVisuals::NoAimViewPunchFSN(int stage)
 {
 	L::Verbose("NoAimViewPunchFSN");

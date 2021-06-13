@@ -45,61 +45,6 @@ static void CapsuleOverlay(Entity* pPlayer, Color col, float duration)
 	}
 }
 
-struct BeamInfo {
-	int	type;
-	Entity* startEnt;
-	int startAttachment;
-	Entity* endEnt;
-	int	endAttachment;
-	Vec start;
-	Vec end;
-	int modelIndex;
-	const char* modelName;
-	int haloIndex;
-	const char* haloName;
-	float haloScale;
-	float life;
-	float width;
-	float endWidth;
-	float fadeLength;
-	float amplitude;
-	float brightness;
-	float speed;
-	int	startFrame;
-	float frameRate;
-	float red;
-	float green;
-	float blue;
-	bool renderable;
-	int segments;
-	int	flags;
-	Vec ringCenter;
-	float ringStartRadius;
-	float ringEndRadius;
-};
-
-struct Beam {
-	std::byte pad[52];
-	int flags;
-	std::byte pad2[144];
-	float die;
-};
-
-class ViewRenderBeams {
-public:
-
-	//VIRTUAL_METHOD(Beam*, createBeamPoints, WIN32_LINUX(12, 9), (BeamInfo& beamInfo), (this, std::ref(beamInfo)))
-	
-	Beam* createBeamPoints(BeamInfo& beamInfo)
-	{
-		typedef Beam*(__thiscall* oCreateBeamPoints)(void*, BeamInfo&);
-		return GetVFunc<oCreateBeamPoints>(this, 12)(this, beamInfo);
-	}
-	
-
-};
-
-
 class EventListener : public GameEventListener
 {
 public:
@@ -212,46 +157,9 @@ public:
 		case StrHash::Hash("round_prestart"):
 			G::FreezeTime = true;
 			break;
-		case StrHash::Hash("bullet_impact"):
-			BeamInfo beamInfo;
-			beamInfo.start = G::LocalPlayer->GetEyePos();
-			beamInfo.end.x = event->GetFloat("x");
-			beamInfo.end.y = event->GetFloat("y");
-			beamInfo.end.z = event->GetFloat("z");
-
-			beamInfo.modelName = "sprites/physbeam.vmt";
-			beamInfo.modelIndex = -1;
-			beamInfo.haloName = nullptr;
-			beamInfo.haloIndex = -1;
-
-			beamInfo.red = 255.0f;
-			beamInfo.green = 0;
-			beamInfo.blue = 0;
-			beamInfo.brightness = 255.0f;
-
-			beamInfo.type = 0;
-			beamInfo.life = 0.0f;
-			beamInfo.amplitude = 0.0f;
-			beamInfo.segments = -1;
-			beamInfo.renderable = true;
-			beamInfo.speed = 0.2f;
-			beamInfo.startFrame = 0;
-			beamInfo.frameRate = 0.0f;
-			beamInfo.width = 2.0f;
-			beamInfo.endWidth = 2.0f;
-			beamInfo.flags = 0x40;
-			beamInfo.fadeLength = 20.0f;
-
-			static ViewRenderBeams* viewRenderBeams = *reinterpret_cast<ViewRenderBeams**>(FindPattern("client.dll", "B9 ? ? ? ? 0F 11 44 24 ? C7 44 24 ? ? ? ? ? F3 0F 10 84 24") + 1);
-
-			if (const auto beam = viewRenderBeams->createBeamPoints(beamInfo)) {
-				constexpr auto FBEAM_FOREVER = 0x4000;
-				beam->flags &= ~FBEAM_FOREVER;
-				beam->die = I::globalvars->m_curTime + 2.0f;
-			}
-			break;
 		}
 		
+		miscvisuals->DrawBeams(event);
 		killsay->run(event);
 		resolver->LogShots(event);
 		esp->Run_GameEvent(event);

@@ -25,6 +25,7 @@ namespace I
 	ClientState*          clientstate          = nullptr;
 	IMemAlloc*            memalloc             = nullptr;
 	CEffects*			  effects			   = nullptr;
+	ViewRenderBeams*      viewrenderbeams      = nullptr;
 
 	void GUIInit()
 	{
@@ -55,5 +56,6 @@ namespace I
 		clientstate          = **reinterpret_cast<ClientState***>(FindPattern("engine.dll", "A1 ? ? ? ? 8B 80 ? ? ? ? C3") + 1);
 		memalloc             = *reinterpret_cast<IMemAlloc**> (GetProcAddress(GetModuleHandleA("tier0.dll"), "g_pMemAlloc"));
 		effects				 = GetInterface<CEffects			>("engine.dll", "VEngineEffects001");
+		viewrenderbeams		 = *reinterpret_cast<ViewRenderBeams**>(FindPattern("client.dll", "B9 ? ? ? ? 0F 11 44 24 ? C7 44 24 ? ? ? ? ? F3 0F 10 84 24") + 1);
 	}
 }

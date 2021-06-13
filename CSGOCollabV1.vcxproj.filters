@@ -429,6 +429,9 @@
     <ClInclude Include="Valve\Interfaces\CEffects.h">
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="Valve\Interfaces\ViewRenderBeams.hpp">
+      <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
