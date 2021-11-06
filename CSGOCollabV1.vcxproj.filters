@@ -121,6 +121,9 @@
     <ClCompile Include="Utils\TextService.cpp">
       <Filter>Source\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\StringEncryption.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -430,6 +433,9 @@
       <Filter>Headers\Valve\Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="Utils\TextService.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StringEncryption.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
   </ItemGroup>

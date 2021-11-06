@@ -1,6 +1,6 @@
 #include "../Include.hpp"
 
-#define PREMIUM_USERS_ONLY XOR("Upgrade to premium to access this feature.")
+#define PREMIUM_USERS_ONLY STRXOR("Upgrade to premium to access this feature.")
 
 ImFont* FontDefault;
 ImFont* Arial8;
@@ -20,23 +20,23 @@ ImFont* Arial18BoldItalics;
 void GUI::LoadFonts(ImGuiIO& io)
 {
 	FontDefault = io.Fonts->AddFontDefault();
-	AYO_LOAD_FONT_BRUH(Arial8, XOR("C:\\Windows\\Fonts\\arial.ttf"), 8.f);
-	AYO_LOAD_FONT_BRUH(Arial12, XOR("C:\\Windows\\Fonts\\arial.ttf"), 12.f);
-	AYO_LOAD_FONT_BRUH(Arial14, XOR("C:\\Windows\\Fonts\\arial.ttf"), 14.f);
-	AYO_LOAD_FONT_BRUH(Arial16, XOR("C:\\Windows\\Fonts\\arial.ttf"), 16.f);
-	AYO_LOAD_FONT_BRUH(Arial18, XOR("C:\\Windows\\Fonts\\arial.ttf"), 18.f);
-	AYO_LOAD_FONT_BRUH(Arial12Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 12.f);
-	AYO_LOAD_FONT_BRUH(Arial14Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 14.f);
-	AYO_LOAD_FONT_BRUH(Arial16Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 16.f);
-	AYO_LOAD_FONT_BRUH(Arial18Italics, XOR("C:\\Windows\\Fonts\\ariali.ttf"), 18.f);
-	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 14.f);
-	AYO_LOAD_FONT_BRUH(Arial18BoldItalics, XOR("C:\\Windows\\Fonts\\arialbi.ttf"), 18.f);
-	AYO_LOAD_FONT_BRUH(Arial16Bold, XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 16.f);
-	AYO_LOAD_FONT_BRUH(Arial18Bold, XOR("C:\\Windows\\Fonts\\arialbd.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial8, STRXOR("C:\\Windows\\Fonts\\arial.ttf"), 8.f);
+	AYO_LOAD_FONT_BRUH(Arial12, STRXOR("C:\\Windows\\Fonts\\arial.ttf"), 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14, STRXOR("C:\\Windows\\Fonts\\arial.ttf"), 14.f);
+	AYO_LOAD_FONT_BRUH(Arial16, STRXOR("C:\\Windows\\Fonts\\arial.ttf"), 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18, STRXOR("C:\\Windows\\Fonts\\arial.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial12Italics, STRXOR("C:\\Windows\\Fonts\\ariali.ttf"), 12.f);
+	AYO_LOAD_FONT_BRUH(Arial14Italics, STRXOR("C:\\Windows\\Fonts\\ariali.ttf"), 14.f);
+	AYO_LOAD_FONT_BRUH(Arial16Italics, STRXOR("C:\\Windows\\Fonts\\ariali.ttf"), 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18Italics, STRXOR("C:\\Windows\\Fonts\\ariali.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial14BoldItalics, STRXOR("C:\\Windows\\Fonts\\arialbi.ttf"), 14.f);
+	AYO_LOAD_FONT_BRUH(Arial18BoldItalics, STRXOR("C:\\Windows\\Fonts\\arialbi.ttf"), 18.f);
+	AYO_LOAD_FONT_BRUH(Arial16Bold, STRXOR("C:\\Windows\\Fonts\\arialbd.ttf"), 16.f);
+	AYO_LOAD_FONT_BRUH(Arial18Bold, STRXOR("C:\\Windows\\Fonts\\arialbd.ttf"), 18.f);
 
 	return;
 problemo:
-	MessageBox(NULL, XOR("a4g4.com requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again."), XOR("Missing Fonts"), 0);
+	MessageBox(NULL, STRXOR("a4g4.com requires that you have the \"Arial\" font (and it's italics version) installed. It comes installed by default with Windows OS in C:/Windows/Fonts. Please download Airal to that location (as arial.ttf and ariali.ttf) then try injecting again."), STRXOR("Missing Fonts"), 0);
 	// segfault lol
 	int x = *(int*)0;
 	// prevent dumbass compiler from ignoring our segfault >:(
@@ -258,7 +258,7 @@ namespace ImGui
 
 	void DrawInfoIcon(unsigned char Opacity = 255, ImVec2 Dimensions = ImVec2(20.f, 20.f))
 	{
-		static Config::CColor* ColorBase = Config::GetColor(XOR("theme-info-icon"));
+		static Config::CColor* ColorBase = Config::GetColor(STRXOR("theme-info-icon"));
 		Config::CColor Color = ColorBase->ModulateAlpha(Opacity);
 		ImU32 Color32 = Color;
 
@@ -428,7 +428,7 @@ namespace ImGui
 
 	void InputTextWithPlaceholder(std::string Identifier, std::string Placeholder, char* Buffer, size_t BufferLength, ImGuiInputTextFlags Flags = 0)
 	{
-		bool Active = GetID((XOR("##") + Identifier).c_str()) == GetActiveID();
+		bool Active = GetID((STRXOR("##") + Identifier).c_str()) == GetActiveID();
 		bool HasContent = BufferLength && Buffer[0];
 		if (!HasContent && !Active)
 		{
@@ -450,7 +450,7 @@ namespace ImGui
 				GImGui->NextItemData.Width = NextItemWidth;
 			}
 		}
-		InputText((XOR("##") + Identifier).c_str(), Buffer, BufferLength, Flags);
+		InputText((STRXOR("##") + Identifier).c_str(), Buffer, BufferLength, Flags);
 		GUI::WantKeyboard |= IsItemActive();
 	}
 
@@ -461,7 +461,7 @@ namespace ImGui
 
 		int PredictedCharCount = Input.size() * MaxWidth / CurrentWidth;
 		std::string Output = Input.substr(0, PredictedCharCount);
-		CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
+		CurrentWidth = CalcTextSize((Output + STRXOR("...")).c_str()).x;
 
 		if (CurrentWidth <= MaxWidth) // prediction was too short
 		{
@@ -470,9 +470,9 @@ namespace ImGui
 			{
 				AddChars++;
 				Output = Input.substr(0, PredictedCharCount + AddChars);
-				CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
+				CurrentWidth = CalcTextSize((Output + STRXOR("...")).c_str()).x;
 			}
-			return Input.substr(0, PredictedCharCount + AddChars - 1) + XOR("...");
+			return Input.substr(0, PredictedCharCount + AddChars - 1) + STRXOR("...");
 		}
 		else // prediction was too long
 		{
@@ -481,18 +481,18 @@ namespace ImGui
 			{
 				RemoveChars++;
 				Output = Input.substr(0, PredictedCharCount - RemoveChars);
-				CurrentWidth = CalcTextSize((Output + XOR("...")).c_str()).x;
+				CurrentWidth = CalcTextSize((Output + STRXOR("...")).c_str()).x;
 			}
-			return Input.substr(0, PredictedCharCount - RemoveChars) + XOR("...");
+			return Input.substr(0, PredictedCharCount - RemoveChars) + STRXOR("...");
 		}
 	}
 
 	void ToolTip(std::string str, int ItemHeightForVerticalFlip = 20)
 	{
-		static Config::CColor* TooltipBackground = Config::GetColor(XOR("theme-tooltip-background"));
-		static Config::CColor* TooltipText = Config::GetColor(XOR("theme-tooltip-text"));
-		static Config::CColor* TooltipBorder = Config::GetColor(XOR("theme-tooltip-border"));
-		static Config::CFloat* TooltipBorderSize = Config::GetFloat(XOR("theme-tooltip-border-size"));
+		static Config::CColor* TooltipBackground = Config::GetColor(STRXOR("theme-tooltip-background"));
+		static Config::CColor* TooltipText = Config::GetColor(STRXOR("theme-tooltip-text"));
+		static Config::CColor* TooltipBorder = Config::GetColor(STRXOR("theme-tooltip-border"));
+		static Config::CFloat* TooltipBorderSize = Config::GetFloat(STRXOR("theme-tooltip-border-size"));
 
 		constexpr int MinWidth = 20;
 
@@ -703,7 +703,7 @@ namespace ImGui
 				break;
 			}
 
-			auto ID = GetID((p->Name + XOR("-status-icon-hoverable")).c_str());
+			auto ID = GetID((p->Name + STRXOR("-status-icon-hoverable")).c_str());
 			auto BB = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + IconSize);
 			ItemAdd(BB, ID);
 			if (ItemHoverable(BB, ID))
@@ -711,7 +711,7 @@ namespace ImGui
 				SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
 				ToolTip(iconText, IconSize.y);
 				if (GImGui->IO.MouseClicked[0])
-					ShellExecute(0, 0, (XOR("https://www.a4g4.com/features#") + p->Name).c_str(), 0, 0, SW_HIDE);
+					ShellExecute(0, 0, (STRXOR("https://www.a4g4.com/features#") + p->Name).c_str(), 0, 0, SW_HIDE);
 			}
 		}
 
@@ -725,11 +725,11 @@ namespace ImGui
 
 	void DrawGeneralKeybind(Config::Property* p)
 	{
-		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+		static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+		static Config::CColor* ButtonBorder = Config::GetColor(STRXOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(STRXOR("theme-button-text"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(STRXOR("theme-button-border-size"));
 
 		int currentBinding = -1;
 		switch (p->Type)
@@ -756,15 +756,15 @@ namespace ImGui
 		if (p == Config::SettingKeybindFor) // the bind is currently being set
 		{
 			PushFont(Arial12);
-			bool HasBindModes = p->Type == Config::PropertyType::BOOLEAN && p->Name != XOR("show-menu");
+			bool HasBindModes = p->Type == Config::PropertyType::BOOLEAN && p->Name != STRXOR("show-menu");
 
 			if (HasBindModes)
 			{
 				Config::CBoolean* Value = (Config::CBoolean*)p->Value;
-				const char* Prefix = XOR("MODE:");
+				const char* Prefix = STRXOR("MODE:");
 				ImVec2 PrefixSize = CalcTextSize(Prefix);
 				constexpr int BindModeOptionWidth = 60;
-				const char* Suffix = XOR("[PRESS A KEY]");
+				const char* Suffix = STRXOR("[PRESS A KEY]");
 				ImVec2 SuffixSize = CalcTextSize(Suffix);
 
 				// Prefix 
@@ -782,7 +782,7 @@ namespace ImGui
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
 				SetCursorPos(Pos + ImVec2(PrefixSize.x + 5, 0));
 				{
-					BeginChild((XOR("##bindmode-") + p->Name).c_str(), ImVec2(BindModeOptionWidth * 3, 20), true);
+					BeginChild((STRXOR("##bindmode-") + p->Name).c_str(), ImVec2(BindModeOptionWidth * 3, 20), true);
 					{
 						auto ChildWindow = GetCurrentWindow();
 						auto ChildDrawList = ChildWindow->DrawList;
@@ -795,7 +795,7 @@ namespace ImGui
 						for (int i = 0; i < 3; i++)
 						{
 							SetCursorPos(ImVec2(BindModeOptionWidth * i, 0));
-							if (Button((Config::KeybindTypeNames[i] + XOR("##") + p->Name).c_str(), ImVec2(BindModeOptionWidth, 20)))
+							if (Button((Config::KeybindTypeNames[i] + STRXOR("##") + p->Name).c_str(), ImVec2(BindModeOptionWidth, 20)))
 							{
 								Value->BindMode = (Config::KeybindMode)i;
 							}
@@ -814,7 +814,7 @@ namespace ImGui
 			else
 			{
 				SetCursorPos(Pos + ImVec2(0, (20 - 12) / 2));
-				Text(XOR("[PRESS A KEY]"));
+				Text(STRXOR("[PRESS A KEY]"));
 			}
 
 			PopFont();
@@ -822,8 +822,8 @@ namespace ImGui
 		else if (currentBinding >= 0) // already bound (click to rebind)
 		{
 			PushFont(Arial12);
-			const char* Prefix = XOR("PRESS");
-			const char* Suffix = XOR("TO LOOP");
+			const char* Prefix = STRXOR("PRESS");
+			const char* Suffix = STRXOR("TO LOOP");
 			std::string KeyName = Keybind::KeyNames[currentBinding];
 			char __buffer[32];
 			if (p->Type == Config::PropertyType::BOOLEAN)
@@ -831,11 +831,11 @@ namespace ImGui
 				const Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 				if (Value->BindMode != Config::KeybindMode::TOGGLE)
-					Prefix = XOR("HOLD");
+					Prefix = STRXOR("HOLD");
 				
 				Suffix =
-					Value->BindMode == Config::KeybindMode::TOGGLE ? XOR("TO TOGGLE") :
-					Value->BindMode == Config::KeybindMode::HOLDTOENABLE ? XOR("TO ENABLE") : XOR("TO DISABLE");
+					Value->BindMode == Config::KeybindMode::TOGGLE ? STRXOR("TO TOGGLE") :
+					Value->BindMode == Config::KeybindMode::HOLDTOENABLE ? STRXOR("TO ENABLE") : STRXOR("TO DISABLE");
 			}
 			else if (p->Type == Config::PropertyType::FUNCTION)
 			{
@@ -872,9 +872,9 @@ namespace ImGui
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 			PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			SetCursorPos(Pos + ImVec2(PrefixSize.x + 5, 0));
-			if (Button((KeyName + XOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
+			if (Button((KeyName + STRXOR("##") + p->Name).c_str(), ImVec2(KeyNameSize.x + 10, 20)))
 			{
-				if (p->Name == XOR("show-menu"))
+				if (p->Name == STRXOR("show-menu"))
 				{
 					Config::SettingKeybindFor = p;
 				}
@@ -887,7 +887,7 @@ namespace ImGui
 			if (IsItemHovered())
 			{
 				SetCursorPos(Pos + ImVec2(PrefixSize.x + 5 + (KeyNameSize.x + 10) / 2, 0));
-				ToolTip(p->Name == XOR("show-menu") ? XOR("Click To Edit") : XOR("Click To Clear"), 20);
+				ToolTip(p->Name == STRXOR("show-menu") ? STRXOR("Click To Edit") : STRXOR("Click To Clear"), 20);
 			}
 			PopFont();
 			PopStyleColor(2);
@@ -907,7 +907,7 @@ namespace ImGui
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 			PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			SetCursorPos(Pos);
-			if (Button((XOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
+			if (Button((STRXOR("Bind##") + p->Name).c_str(), ImVec2(40, 20)))
 			{
 				Config::SettingKeybindFor = p;
 			}
@@ -930,8 +930,8 @@ namespace ImGui
 
 	int DrawTextInputProperty(Config::Property* p)
 	{
-		static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
-		static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
+		static Config::CColor* TextInputBackground = Config::GetColor(STRXOR("theme-text-input-background"));
+		static Config::CColor* TextInputText = Config::GetColor(STRXOR("theme-text-input-text"));
 		Config::CTextInput* Value = (Config::CTextInput*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -943,7 +943,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -960,15 +960,15 @@ namespace ImGui
 			SetCursorPos(InputBasePos);
 			PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 			PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-			BeginChild((XOR("##entry-child-") + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
+			BeginChild((STRXOR("##entry-child-") + p->Name).c_str(), ImVec2(Window->Size.x - 10 - GetCursorPosX(), 20), false);
 
 			auto w = ImGui::GetCurrentWindow();
 
 			PushFont(Arial14);
-			bool IsTyping = ImGui::GetActiveID() == w->GetID((XOR("##entry-child-text") + p->Name).c_str());
+			bool IsTyping = ImGui::GetActiveID() == w->GetID((STRXOR("##entry-child-text") + p->Name).c_str());
 			SetCursorPos(ImVec2(5, 3));
 			SetNextItemWidth(w->Size.x - 10);
-			InputText((XOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize, PremiumLocked ? ImGuiInputTextFlags_ReadOnly : 0);
+			InputText((STRXOR("##entry-child-text") + p->Name).c_str(), Value->Data, Value->DataSize, PremiumLocked ? ImGuiInputTextFlags_ReadOnly : 0);
 			GUI::WantKeyboard |= IsItemActive();
 
 			if (IsTyping)
@@ -979,7 +979,7 @@ namespace ImGui
 			{
 				SetCursorPos(ImVec2(5, 3));
 				PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
-				Text(XOR("Type here..."));
+				Text(STRXOR("Type here..."));
 				PopStyleColor(1);
 			}
 			PopFont();
@@ -994,8 +994,8 @@ namespace ImGui
 
 	int DrawBooleanProperty(Config::Property* p)
 	{
-		static Config::CColor* PropertyBase = Config::GetColor(XOR("theme-property-base"));
-		static Config::CColor* PropertyAccent = Config::GetColor(XOR("theme-property-accent"));
+		static Config::CColor* PropertyBase = Config::GetColor(STRXOR("theme-property-base"));
+		static Config::CColor* PropertyAccent = Config::GetColor(STRXOR("theme-property-accent"));
 		Config::CBoolean* Value = (Config::CBoolean*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1007,7 +1007,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1024,7 +1024,7 @@ namespace ImGui
 			AnimFactor = 1.f - AnimFactor;
 		SetCursorPosY(GetCursorPosY() + 2);
 		ImVec2 SwitchPos = GetCursorPos();
-		bool Flipped = DrawBooleanSwitch(XOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
+		bool Flipped = DrawBooleanSwitch(STRXOR("##") + p->Name, *PropertyBase, *PropertyAccent, AnimFactor);
 
 		// switch behavior
 		if (Flipped && !PremiumLocked)
@@ -1059,8 +1059,8 @@ namespace ImGui
 
 	int DrawFloatProperty(Config::Property* p)
 	{
-		static Config::CColor* PropertyBase = Config::GetColor(XOR("theme-property-base"));
-		static Config::CColor* PropertyAccent = Config::GetColor(XOR("theme-property-accent"));
+		static Config::CColor* PropertyBase = Config::GetColor(STRXOR("theme-property-base"));
+		static Config::CColor* PropertyAccent = Config::GetColor(STRXOR("theme-property-accent"));
 		Config::CFloat* Value = (Config::CFloat*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1072,7 +1072,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1092,7 +1092,7 @@ namespace ImGui
 
 			float DrawValue = Value->GetFactor();
 			bool Active = false;
-			float UserSetValue = DrawInputFloat(p->Name + XOR("##bar"), PropertyBase, PropertyAccent, DrawValue, ImVec2(BarLength, BarHeight), &Active);
+			float UserSetValue = DrawInputFloat(p->Name + STRXOR("##bar"), PropertyBase, PropertyAccent, DrawValue, ImVec2(BarLength, BarHeight), &Active);
 
 			if (!PremiumLocked && Active)
 			{
@@ -1120,10 +1120,10 @@ namespace ImGui
 
 	int DrawColorProperty(Config::Property* p)
 	{
-		static Config::CColor* EditorBase = Config::GetColor(XOR("theme-color-editor-background"));
-		static Config::CColor* EditorText = Config::GetColor(XOR("theme-color-editor-text"));
-		static Config::CColor* EditorBorder = Config::GetColor(XOR("theme-color-editor-border"));
-		static Config::CFloat* EditorBorderSize = Config::GetFloat(XOR("theme-color-editor-border-size"));
+		static Config::CColor* EditorBase = Config::GetColor(STRXOR("theme-color-editor-background"));
+		static Config::CColor* EditorText = Config::GetColor(STRXOR("theme-color-editor-text"));
+		static Config::CColor* EditorBorder = Config::GetColor(STRXOR("theme-color-editor-border"));
+		static Config::CFloat* EditorBorderSize = Config::GetFloat(STRXOR("theme-color-editor-border-size"));
 
 		Config::CColor* Value = (Config::CColor*)p->Value;
 
@@ -1136,7 +1136,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1158,8 +1158,8 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 127));
 			PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-			if (ColorButton((XOR("##color-button-") + p->Name).c_str(), ImColor, ImGuiColorEditFlags_NoTooltip, ImVec2(40, 20)) && !PremiumLocked)
-				OpenPopup((XOR("##color-picker-") + p->Name).c_str());
+			if (ColorButton((STRXOR("##color-button-") + p->Name).c_str(), ImColor, ImGuiColorEditFlags_NoTooltip, ImVec2(40, 20)) && !PremiumLocked)
+				OpenPopup((STRXOR("##color-picker-") + p->Name).c_str());
 			else if (IsItemHovered())
 			{
 				SetCursorPos(ColorButtonBase + ImVec2(20, 0));
@@ -1174,7 +1174,7 @@ namespace ImGui
 			PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)EditorText->ModulateAlpha(0.3f));
 			PushStyleVar(ImGuiStyleVar_PopupBorderSize, EditorBorderSize->Get());
 			SetNextWindowSize(ImVec2(210, Value->GetHasAlpha() ? 235 : 255));
-			if (BeginPopup((XOR("##color-picker-") + p->Name).c_str()))
+			if (BeginPopup((STRXOR("##color-picker-") + p->Name).c_str()))
 			{
 				Config::SettingKeybindFor = nullptr;
 
@@ -1189,14 +1189,14 @@ namespace ImGui
 				SetNextItemWidth(200);
 				if (Value->GetHasAlpha())
 				{
-					ColorPicker4((XOR("##color-editor-") + p->Name).c_str(), &ImColor.x,
+					ColorPicker4((STRXOR("##color-editor-") + p->Name).c_str(), &ImColor.x,
 						ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_PickerHueWheel |
 						ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHSV
 					);
 				}
 				else
 				{
-					ColorPicker3((XOR("##color-editor-") + p->Name).c_str(), &ImColor.x,
+					ColorPicker3((STRXOR("##color-editor-") + p->Name).c_str(), &ImColor.x,
 						ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoSmallPreview |
 						ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHSV
 					);
@@ -1218,16 +1218,16 @@ namespace ImGui
 
 	int DrawVerticalStatefulProperty(Config::Property* p)
 	{
-		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-		static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
-		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-		static Config::CColor* DropdownBase = Config::GetColor(XOR("theme-dropdown-background"));
-		static Config::CColor* DropdownText = Config::GetColor(XOR("theme-dropdown-text"));
-		static Config::CColor* DropdownBorder = Config::GetColor(XOR("theme-dropdown-border"));
-		static Config::CFloat* DropdownBorderSize = Config::GetFloat(XOR("theme-dropdown-border-size"));
-		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+		static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+		static Config::CColor* ButtonHovered = Config::GetColor(STRXOR("theme-button-hovered"));
+		static Config::CColor* ButtonBorder = Config::GetColor(STRXOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(STRXOR("theme-button-text"));
+		static Config::CColor* DropdownBase = Config::GetColor(STRXOR("theme-dropdown-background"));
+		static Config::CColor* DropdownText = Config::GetColor(STRXOR("theme-dropdown-text"));
+		static Config::CColor* DropdownBorder = Config::GetColor(STRXOR("theme-dropdown-border"));
+		static Config::CFloat* DropdownBorderSize = Config::GetFloat(STRXOR("theme-dropdown-border-size"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(STRXOR("theme-button-border-size"));
 		Config::CVerticalState* Value = (Config::CVerticalState*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1239,7 +1239,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1256,7 +1256,7 @@ namespace ImGui
 		PushStyleColor(ImGuiCol_Text, (ImVec4)*DropdownText);
 		// draw property
 		{
-			bool alreadyOpen = IsPopupOpen((XOR("##popup-") + p->Name).c_str());
+			bool alreadyOpen = IsPopupOpen((STRXOR("##popup-") + p->Name).c_str());
 			int nItems = Value->StateNames.size();
 			std::string CurrentSelection = Value->StateNames.at(Value->Value.Get());
 
@@ -1269,7 +1269,7 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
-				BeginChild((XOR("##button-child-") + p->Name).c_str(), ImVec2(200, 20));
+				BeginChild((STRXOR("##button-child-") + p->Name).c_str(), ImVec2(200, 20));
 
 				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
 				// draw border manually
@@ -1293,7 +1293,7 @@ namespace ImGui
 				// dummy button across whole child
 				{
 					SetCursorPos(ImVec2(0, 0));
-					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
+					if (Button((STRXOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
 						Config::SettingKeybindFor = nullptr;
 						open = true;
@@ -1312,7 +1312,7 @@ namespace ImGui
 				}
 
 				if (open)
-					OpenPopup((XOR("##popup-") + p->Name).c_str());
+					OpenPopup((STRXOR("##popup-") + p->Name).c_str());
 			}
 			PopStyleColor(3);
 
@@ -1328,14 +1328,14 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_PopupBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_PopupBorderSize, DropdownBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
-				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
+				if (BeginPopup((STRXOR("##popup-") + p->Name).c_str()))
 				{
 					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
 					{
 
 						SetCursorPos(ImVec2(0, i * 20));
-						if (Button((XOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						if (Button((STRXOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
 						{
 							Value->Value.Set(i);
 							CloseCurrentPopup();
@@ -1367,9 +1367,9 @@ namespace ImGui
 
 	int DrawHorizontalStatefulProperty(Config::Property* p)
 	{
-		static Config::CColor* HStateBackground = Config::GetColor(XOR("theme-hstate-background"));
-		static Config::CColor* HStateHighlight = Config::GetColor(XOR("theme-hstate-highlight"));
-		static Config::CColor* HStateText = Config::GetColor(XOR("theme-hstate-text"));
+		static Config::CColor* HStateBackground = Config::GetColor(STRXOR("theme-hstate-background"));
+		static Config::CColor* HStateHighlight = Config::GetColor(STRXOR("theme-hstate-highlight"));
+		static Config::CColor* HStateText = Config::GetColor(STRXOR("theme-hstate-text"));
 		Config::CHorizontalState* Value = (Config::CHorizontalState*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1383,7 +1383,7 @@ namespace ImGui
 			if (PremiumLocked)
 				DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 			else if (MasterLocked)
-				DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+				DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 			else
 			{
 				std::string w = p->GetWarning();
@@ -1417,7 +1417,7 @@ namespace ImGui
 		SetCursorPos(BarPosition);
 		ImVec2 Size(BarWidth, 20);
 		ImRect BB(Window->DC.CursorPos, Window->DC.CursorPos + Size);
-		ImGuiID ID = GetID((p->Name + XOR("-interactable")).c_str());
+		ImGuiID ID = GetID((p->Name + STRXOR("-interactable")).c_str());
 
 		// vars
 		size_t nItems = Value->StateNames.size();
@@ -1502,10 +1502,10 @@ namespace ImGui
 
 	int DrawMultiSelectorProperty(Config::Property* p)
 	{
-		static Config::CColor* DropdownBase = Config::GetColor(XOR("theme-dropdown-background"));
-		static Config::CColor* DropdownText = Config::GetColor(XOR("theme-dropdown-text"));
-		static Config::CColor* DropdownBorder = Config::GetColor(XOR("theme-dropdown-border"));
-		static Config::CFloat* DropdownBorderSize = Config::GetFloat(XOR("theme-dropdown-border-size"));
+		static Config::CColor* DropdownBase = Config::GetColor(STRXOR("theme-dropdown-background"));
+		static Config::CColor* DropdownText = Config::GetColor(STRXOR("theme-dropdown-text"));
+		static Config::CColor* DropdownBorder = Config::GetColor(STRXOR("theme-dropdown-border"));
+		static Config::CFloat* DropdownBorderSize = Config::GetFloat(STRXOR("theme-dropdown-border-size"));
 		Config::CMultiSelect* Value = (Config::CMultiSelect*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1517,7 +1517,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1534,9 +1534,9 @@ namespace ImGui
 		PushStyleColor(ImGuiCol_Text, (ImVec4)*DropdownText);
 		// draw property
 		{
-			bool alreadyOpen = IsPopupOpen((XOR("##popup-") + p->Name).c_str());
+			bool alreadyOpen = IsPopupOpen((STRXOR("##popup-") + p->Name).c_str());
 			int nItems = Value->StateNames.size();
-			std::string CurrentSelection = std::to_string(Value->CountSelected()) + XOR(" selected");
+			std::string CurrentSelection = std::to_string(Value->CountSelected()) + STRXOR(" selected");
 
 			PushStyleColor(ImGuiCol_Button, 0);
 			PushStyleColor(ImGuiCol_ButtonActive, 0);
@@ -1547,7 +1547,7 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_ChildRounding, 3.f);
 				PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.f);
-				BeginChild((XOR("##button-child-") + p->Name).c_str(), ImVec2(200, 20));
+				BeginChild((STRXOR("##button-child-") + p->Name).c_str(), ImVec2(200, 20));
 
 				// fuck you imgui, please let me just use ImGuiStyleVar_ChildBorderSize
 				// draw border manually
@@ -1571,7 +1571,7 @@ namespace ImGui
 				// dummy button across whole child
 				{
 					SetCursorPos(ImVec2(0, 0));
-					if (Button((XOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
+					if (Button((STRXOR("##button-invis-") + p->Name).c_str(), ImVec2(200, 20)) && !PremiumLocked)
 					{
 						Config::SettingKeybindFor = nullptr;
 						open = true;
@@ -1590,7 +1590,7 @@ namespace ImGui
 				}
 
 				if (open)
-					OpenPopup((XOR("##popup-") + p->Name).c_str());
+					OpenPopup((STRXOR("##popup-") + p->Name).c_str());
 			}
 			PopStyleColor(3);
 
@@ -1606,7 +1606,7 @@ namespace ImGui
 				PushStyleColor(ImGuiCol_PopupBg, (ImVec4)*DropdownBase);
 				PushStyleVar(ImGuiStyleVar_PopupBorderSize, DropdownBorderSize->Get());
 				PushStyleVar(ImGuiStyleVar_PopupRounding, 3.f);
-				if (BeginPopup((XOR("##popup-") + p->Name).c_str()))
+				if (BeginPopup((STRXOR("##popup-") + p->Name).c_str()))
 				{
 					Config::SettingKeybindFor = nullptr;
 					for (size_t i = 0; i < Value->StateNames.size(); i++)
@@ -1626,7 +1626,7 @@ namespace ImGui
 						}
 
 						SetCursorPos(ImVec2(0, i * 20));
-						if (Button((XOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
+						if (Button((STRXOR("##li") + p->Name + Value->StateNames.at(i)).c_str(), ImVec2(200, 20)))
 						{
 							Value->Set(i, !selected);
 						}
@@ -1654,11 +1654,11 @@ namespace ImGui
 
 	int DrawFunctionProperty(Config::Property* p)
 	{
-		static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-		static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-		static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-		static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-		static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+		static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+		static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+		static Config::CColor* ButtonBorder = Config::GetColor(STRXOR("theme-button-border"));
+		static Config::CColor* ButtonText = Config::GetColor(STRXOR("theme-button-text"));
+		static Config::CFloat* ButtonBorderSize = Config::GetFloat(STRXOR("theme-button-border-size"));
 		Config::CFunction* Value = (Config::CFunction*)p->Value;
 
 		auto Window = GetCurrentWindow();
@@ -1670,7 +1670,7 @@ namespace ImGui
 		if (PremiumLocked)
 			DrawGeneralLabel(p, PropertyIcon::Error, PREMIUM_USERS_ONLY);
 		else if (MasterLocked)
-			DrawGeneralLabel(p, PropertyIcon::Warning, XOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + XOR("."));
+			DrawGeneralLabel(p, PropertyIcon::Warning, STRXOR("This property has no effect because it is controlled by ") + p->Master->VisibleName + STRXOR("."));
 		else
 		{
 			std::string w = p->GetWarning();
@@ -1692,7 +1692,7 @@ namespace ImGui
 			PushStyleVar(ImGuiStyleVar_FrameBorderSize, ButtonBorderSize->Get());
 			PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
 			if (PremiumLocked) PushItemFlag(ImGuiItemFlags_Disabled, true);
-			if (Button((Value->Label + XOR("##manual-") + p->Name).c_str(), ImVec2(LabelSize.x + 10, 20)) && Value->Callback)
+			if (Button((Value->Label + STRXOR("##manual-") + p->Name).c_str(), ImVec2(LabelSize.x + 10, 20)) && Value->Callback)
 			{
 				Value->Callback();
 			}
@@ -1833,7 +1833,7 @@ void GUI::LoadingScreen()
 
 	if (!IntroAnimation && VisibleLoadProgress >= 1.f)
 	{
-		IntroAnimation = Animation::newAnimation(XOR("intro-animation"), 0);
+		IntroAnimation = Animation::newAnimation(STRXOR("intro-animation"), 0);
 		IntroAnimation->changed = Now;
 	}
 
@@ -1869,7 +1869,7 @@ void GUI::LoadingScreen()
 
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
-	ImGui::Begin(XOR("##LMAOBRUUHHHHHHHH"), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove);
+	ImGui::Begin(STRXOR("##LMAOBRUUHHHHHHHH"), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove);
 
 	auto DrawList = ImGui::GetWindowDrawList();
 
@@ -1923,7 +1923,7 @@ void GUI::LoadingScreen()
 		ImGui::DrawTeardrop(Position, Size, ThisContentOpacity);
 	}
 
-	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + XOR("%");
+	std::string txt = std::to_string((int)(VisibleLoadProgress * 100.f + 0.5f)) + STRXOR("%");
 	ImVec2 txtSize = ImGui::CalcTextSize(txt.c_str());
 	ImGui::SetCursorPos(ImVec2(FrameSize.x / 2 - txtSize.x / 2, FrameSize.y * 0.8f));
 	ImGui::TextEx(txt.c_str());
@@ -1949,12 +1949,12 @@ void GUI::LoadingScreen()
 
 void GUI::AuthenticationScreen(float ContentOpacity)
 {
-	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
-	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-	static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-	static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-	static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+	static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(STRXOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+	static Config::CColor* ButtonBorder = Config::GetColor(STRXOR("theme-button-border"));
+	static Config::CColor* ButtonText = Config::GetColor(STRXOR("theme-button-text"));
+	static Config::CFloat* ButtonBorderSize = Config::GetFloat(STRXOR("theme-button-border-size"));
 	// TODO: set background color + outline color to config theme
 
 	unsigned char ThisContentOpacity = ContentOpacity * 255;
@@ -1976,7 +1976,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 	ImGui::SetNextWindowPos(WindowCenter - FrameSize / 2, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(FrameSize, ImGuiCond_Always);
-	ImGui::Begin(XOR("##Authentication"), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+	ImGui::Begin(STRXOR("##Authentication"), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 
 	// login errors
 	{
@@ -2007,7 +2007,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(Position + ImVec2(30, (26 - 18) / 2));
 		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
-		ImGui::InputTextWithPlaceholder(XOR("AccountEmail"), XOR("Email"), Email, 512);
+		ImGui::InputTextWithPlaceholder(STRXOR("AccountEmail"), STRXOR("Email"), Email, 512);
 
 		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
 	}
@@ -2022,7 +2022,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(Position + ImVec2(30, (26 - 18) / 2));
 		ImGui::SetNextItemWidth(FrameSize.x - ImGui::GetCursorPosX() - InputPadding);
-		ImGui::InputTextWithPlaceholder(XOR("AccountPassword"), XOR("Password"), Password, 512, ImGuiInputTextFlags_Password);
+		ImGui::InputTextWithPlaceholder(STRXOR("AccountPassword"), STRXOR("Password"), Password, 512, ImGuiInputTextFlags_Password);
 
 		DrawList->AddLine(Window->Pos + Position + ImVec2(0, 29), Window->Pos + ImVec2(FrameSize.x - InputPadding, Position.y + 29), IM_COL32(175, 175, 175, ThisContentOpacity));
 	}
@@ -2087,7 +2087,7 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos));
 		// todo: show loading spinner instead of button when UserData::BusyAttemptingLogin 
-		if (ImGui::Button(UserData::LoginDebounce ? XOR("---") : XOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
+		if (ImGui::Button(UserData::LoginDebounce ? STRXOR("---") : STRXOR("Log in"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
 		{
 			UserData::LoginInformation* info = new UserData::LoginInformation{};
 			info->Email = std::string(Email);
@@ -2096,19 +2096,19 @@ void GUI::AuthenticationScreen(float ContentOpacity)
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 1));
-		if (ImGui::Button(XOR("Register Online"), ImVec2(ButtonWidth, 30)))
+		if (ImGui::Button(STRXOR("Register Online"), ImVec2(ButtonWidth, 30)))
 		{
-			ShellExecute(0, 0, XOR("http://a4g4.com/register/"), 0, 0, SW_SHOW);
+			ShellExecute(0, 0, STRXOR("http://a4g4.com/register/"), 0, 0, SW_SHOW);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 2));
-		if (ImGui::Button(UserData::LoginDebounce ? XOR("---") : XOR("Play Free"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
+		if (ImGui::Button(UserData::LoginDebounce ? STRXOR("---") : STRXOR("Play Free"), ImVec2(ButtonWidth, 30)) && !IntroAnimation2 && !UserData::LoginDebounce)
 		{
 			CreateThread(NULL, 0, UserData::GetUnauthenticatedSession, (LPVOID)nullptr, 0, NULL);
 		}
 
 		ImGui::SetCursorPos(ImVec2(XPos, YPos + (ButtonHeight + ButtonSpacing) * 3));
-		if (ImGui::Button(XOR("Cancel / Eject"), ImVec2(ButtonWidth, 30)))
+		if (ImGui::Button(STRXOR("Cancel / Eject"), ImVec2(ButtonWidth, 30)))
 			Ejected = true;
 	}
 	ImGui::PopStyleVar(2);
@@ -2154,7 +2154,7 @@ void GUI::AuthenticationIntro()
 
 		ImGui::SetNextWindowSize(Size, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x / 2.f, io.DisplaySize.y / 2.f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-		ImGui::Begin(XOR("##intro-2"), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
+		ImGui::Begin(STRXOR("##intro-2"), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
 		ImGui::End();
 
 		ImGui::PopStyleColor(2);
@@ -2174,9 +2174,9 @@ void GUI::AuthenticationIntro()
 
 void GUI::DrawNormalTab(Config::Tab* t)
 {
-	static Config::CColor* WidgetBackground = Config::GetColor(XOR("theme-widget-background"));
-	static Config::CColor* WidgetTitleText = Config::GetColor(XOR("theme-widget-title"));
-	static Config::CColor* PropertyHighlight = Config::GetColor(XOR("theme-search-result-highlight"));
+	static Config::CColor* WidgetBackground = Config::GetColor(STRXOR("theme-widget-background"));
+	static Config::CColor* WidgetTitleText = Config::GetColor(STRXOR("theme-widget-title"));
+	static Config::CColor* PropertyHighlight = Config::GetColor(STRXOR("theme-search-result-highlight"));
 
 	auto Window = ImGui::GetCurrentWindow();
 	auto DrawList = Window->DrawList;
@@ -2204,7 +2204,7 @@ void GUI::DrawNormalTab(Config::Tab* t)
 	for (size_t g = 0; g < t->Groups.size(); g++)
 	{
 		Config::Group* Group = t->Groups[g];
-		if (Group->Name == XOR("__META__")) continue;
+		if (Group->Name == STRXOR("__META__")) continue;
 
 		size_t GroupVisibleProperties = Group->CountVisibleProperties();
 		if (GroupVisibleProperties == 0) continue;
@@ -2219,7 +2219,7 @@ void GUI::DrawNormalTab(Config::Tab* t)
 		ImGui::PushFont(Arial16);
 
 		ImGui::SetCursorPos(ImVec2(WidgetX, WidgetY));
-		ImGui::BeginChild((t->Name + XOR("-") + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild((t->Name + STRXOR("-") + std::to_string(g)).c_str(), ImVec2(WidgetWidth - t->HorizontalPadding - WidgetX, GroupHeight), false, ImGuiWindowFlags_NoDecoration);
 		auto GroupWindow = ImGui::GetCurrentWindow();
 		auto GroupDrawList = GroupWindow->DrawList;
 
@@ -2331,25 +2331,25 @@ void GUI::DrawNormalTab(Config::Tab* t)
 
 void GUI::DrawActiveTab()
 {
-	static Config::CColor* WidgetBackground = Config::GetColor(XOR("theme-widget-background"));
-	static Config::CColor* WidgetTitleText = Config::GetColor(XOR("theme-widget-title"));
-	static Config::CColor* PropertyText = Config::GetColor(XOR("theme-property-text"));
-	static Config::CColor* LegitRageSwitchBackground = Config::GetColor(XOR("theme-legit-rage-switch-background"));
-	static Config::CColor* LegitRageSwitchHighlight = Config::GetColor(XOR("theme-legit-rage-switch-highlight"));
-	static Config::CColor* LegitRageSwitchOutline = Config::GetColor(XOR("theme-legit-rage-switch-outline"));
-	static Config::CColor* LegitRageSwitchText = Config::GetColor(XOR("theme-legit-rage-switch-text"));
-	static Config::CColor* EjectLabel = Config::GetColor(XOR("theme-eject"));
-	static Config::CColor* EjectButton = Config::GetColor(XOR("theme-eject-button"));
-	static Config::CColor* EjectButtonText = Config::GetColor(XOR("theme-eject-button-text"));
-	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
-	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-	static Config::CColor* ButtonBorder = Config::GetColor(XOR("theme-button-border"));
-	static Config::CColor* ButtonText = Config::GetColor(XOR("theme-button-text"));
-	static Config::CColor* TextInputBackground = Config::GetColor(XOR("theme-text-input-background"));
-	static Config::CColor* TextInputText = Config::GetColor(XOR("theme-text-input-text"));
-	static Config::CFloat* LegitRageSwitchBorderSize = Config::GetFloat(XOR("theme-legit-rage-switch-border-size"));
-	static Config::CFloat* ButtonBorderSize = Config::GetFloat(XOR("theme-button-border-size"));
+	static Config::CColor* WidgetBackground = Config::GetColor(STRXOR("theme-widget-background"));
+	static Config::CColor* WidgetTitleText = Config::GetColor(STRXOR("theme-widget-title"));
+	static Config::CColor* PropertyText = Config::GetColor(STRXOR("theme-property-text"));
+	static Config::CColor* LegitRageSwitchBackground = Config::GetColor(STRXOR("theme-legit-rage-switch-background"));
+	static Config::CColor* LegitRageSwitchHighlight = Config::GetColor(STRXOR("theme-legit-rage-switch-highlight"));
+	static Config::CColor* LegitRageSwitchOutline = Config::GetColor(STRXOR("theme-legit-rage-switch-outline"));
+	static Config::CColor* LegitRageSwitchText = Config::GetColor(STRXOR("theme-legit-rage-switch-text"));
+	static Config::CColor* EjectLabel = Config::GetColor(STRXOR("theme-eject"));
+	static Config::CColor* EjectButton = Config::GetColor(STRXOR("theme-eject-button"));
+	static Config::CColor* EjectButtonText = Config::GetColor(STRXOR("theme-eject-button-text"));
+	static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(STRXOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+	static Config::CColor* ButtonBorder = Config::GetColor(STRXOR("theme-button-border"));
+	static Config::CColor* ButtonText = Config::GetColor(STRXOR("theme-button-text"));
+	static Config::CColor* TextInputBackground = Config::GetColor(STRXOR("theme-text-input-background"));
+	static Config::CColor* TextInputText = Config::GetColor(STRXOR("theme-text-input-text"));
+	static Config::CFloat* LegitRageSwitchBorderSize = Config::GetFloat(STRXOR("theme-legit-rage-switch-border-size"));
+	static Config::CFloat* ButtonBorderSize = Config::GetFloat(STRXOR("theme-button-border-size"));
 
 	if (!ActiveTab) return;
 
@@ -2358,14 +2358,14 @@ void GUI::DrawActiveTab()
 
 	ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*PropertyText);
 
-	if (ActiveTab->Name == XOR("Offence") || ActiveTab->Name == XOR("Defence"))
+	if (ActiveTab->Name == STRXOR("Offence") || ActiveTab->Name == STRXOR("Defence"))
 	{
-		bool IsOffencePage = ActiveTab->Name == XOR("Offence");
+		bool IsOffencePage = ActiveTab->Name == STRXOR("Offence");
 
-		static Config::Property* MasterSwitch = Config::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
+		static Config::Property* MasterSwitch = Config::GetProperty(IsOffencePage ? STRXOR("offence-mode") : STRXOR("defence-mode"));
 		if (!MasterSwitch)
 		{
-			MasterSwitch = Config::GetProperty(IsOffencePage ? XOR("offence-mode") : XOR("defence-mode"));
+			MasterSwitch = Config::GetProperty(IsOffencePage ? STRXOR("offence-mode") : STRXOR("defence-mode"));
 			if (!MasterSwitch) return;
 		}
 		Config::CHorizontalState* MasterMode = (Config::CHorizontalState*)MasterSwitch->Value;
@@ -2385,7 +2385,7 @@ void GUI::DrawActiveTab()
 			ImGui::PushFont(Arial18BoldItalics);
 
 			ImGui::SetCursorPos(ImVec2(10, 10));
-			ImGui::BeginChild(IsOffencePage ? XOR("offence-main-top-gui-switch") : XOR("defence-main-top-gui-switch"), ImVec2(Width, 40), true, 0);
+			ImGui::BeginChild(IsOffencePage ? STRXOR("offence-main-top-gui-switch") : STRXOR("defence-main-top-gui-switch"), ImVec2(Width, 40), true, 0);
 
 			auto bruh_window = ImGui::GetCurrentWindow();
 			auto bruh_dl = bruh_window->DrawList;
@@ -2397,14 +2397,14 @@ void GUI::DrawActiveTab()
 			bruh_dl->AddRectFilled(bruh_window->Pos + ImVec2(XOffset, 5), bruh_window->Pos + ImVec2(XOffset + Width / 2 - 5, 35), *LegitRageSwitchHighlight, 5.f);
 
 			ImGui::SetCursorPos(ImVec2(0, 0));
-			if (ImGui::Button(IsOffencePage ? XOR("Legit##big-switch-offence") : XOR("Legit##big-switch-defence"), ImVec2(Width / 2, 40)))
+			if (ImGui::Button(IsOffencePage ? STRXOR("Legit##big-switch-offence") : STRXOR("Legit##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
 				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(0);
 			}
 
 			ImGui::SetCursorPos(ImVec2(Width / 2, 0));
-			if (ImGui::Button(IsOffencePage ? XOR("Rage##big-switch-offence") : XOR("Rage##big-switch-defence"), ImVec2(Width / 2, 40)))
+			if (ImGui::Button(IsOffencePage ? STRXOR("Rage##big-switch-offence") : STRXOR("Rage##big-switch-defence"), ImVec2(Width / 2, 40)))
 			{
 				Config::SettingKeybindFor = nullptr;
 				MasterMode->Value.Set(1);
@@ -2421,18 +2421,18 @@ void GUI::DrawActiveTab()
 		ImGui::SetCursorPos(ImVec2(0, 60));
 		DrawNormalTab(ActiveTab);
 	}
-	else if (ActiveTab->Name == XOR("Eject"))
+	else if (ActiveTab->Name == STRXOR("Eject"))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.f);
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::SetCursorPos(ImVec2(10.f, 10.f));
-		ImGui::BeginChild(XOR("##eject-confirm"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 171));
+		ImGui::BeginChild(STRXOR("##eject-confirm"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, 171));
 
 		// title text
 		{
 			ImGui::PushFont(Arial18Bold);
 
-			const char* Text = XOR("Are you sure you would like to eject?");
+			const char* Text = STRXOR("Are you sure you would like to eject?");
 			float TextSize = ImGui::CalcTextSize(Text).x;
 
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
@@ -2448,15 +2448,15 @@ void GUI::DrawActiveTab()
 			ImGui::PushFont(Arial16);
 
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f));
-			ImGui::TextEx(XOR("- your config will not be saved"));
+			ImGui::TextEx(STRXOR("- your config will not be saved"));
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f));
-			ImGui::TextEx(XOR("- your theme will not be saved"));
+			ImGui::TextEx(STRXOR("- your theme will not be saved"));
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f));
-			ImGui::TextEx(XOR("- this will remove the cheat from your computer's memory"));
+			ImGui::TextEx(STRXOR("- this will remove the cheat from your computer's memory"));
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f + 18.f));
-			ImGui::TextEx(XOR("- this will disable all effects"));
+			ImGui::TextEx(STRXOR("- this will disable all effects"));
 			ImGui::SetCursorPos(ImVec2(20.f, 2 + 18.f + 15.f + 18.f + 18.f + 18.f + 18.f));
-			ImGui::TextEx(XOR("- there is a *small* chance that CS:GO will crash"));
+			ImGui::TextEx(STRXOR("- there is a *small* chance that CS:GO will crash"));
 
 			ImGui::PopFont();
 		}
@@ -2472,7 +2472,7 @@ void GUI::DrawActiveTab()
 			ImGui::PushFont(Arial18BoldItalics);
 
 			ImGui::SetCursorPos(ImVec2(10.f, 131));
-			Ejected |= ImGui::Button(XOR("EJECT NOW##confirm"), ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
+			Ejected |= ImGui::Button(STRXOR("EJECT NOW##confirm"), ImVec2(ImGui::GetCurrentWindow()->Size.x - 20.f, 30.f));
 
 			ImGui::PopFont();
 
@@ -2484,7 +2484,7 @@ void GUI::DrawActiveTab()
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 	}
-	else if (ActiveTab->Name == XOR("Skinchanger"))
+	else if (ActiveTab->Name == STRXOR("Skinchanger"))
 	{
 		ImU32 ButtonBackgroundColor = *ButtonBase;
 		ImU32 ButtonHoveringColor = *ButtonHovered;
@@ -2498,44 +2498,44 @@ void GUI::DrawActiveTab()
 
 		// knife changer
 		{
-			static Config::CState* KnifeModel = Config::GetState(XOR("skinchanger-knife-model"));
-			static Config::CPaintKit* KnifePaintkit = Config::GetPaintKit(XOR("skinchanger-knife-paintkit"));
+			static Config::CState* KnifeModel = Config::GetState(STRXOR("skinchanger-knife-model"));
+			static Config::CPaintKit* KnifePaintkit = Config::GetPaintKit(STRXOR("skinchanger-knife-paintkit"));
 
 			static int WindowHeight = 0;
 			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
-			ImGui::BeginChild(XOR("##knife-skins"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
+			ImGui::BeginChild(STRXOR("##knife-skins"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
 			auto Widget = ImGui::GetCurrentWindow();
 
 			ImGui::SetCursorPos(ImVec2(10.f, 9.f));
 			ImGui::PushFont(Arial18BoldItalics);
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
-			ImGui::Text(XOR("Knives"));
+			ImGui::Text(STRXOR("Knives"));
 			ImGui::PopStyleColor(1);
 			ImGui::PopFont();
 
 			// enable switch
 			ImGui::PushFont(Arial16);
-			static Config::Property* KnifeChangerEnable = Config::GetProperty(XOR("skinchanger-knife-enable"));
+			static Config::Property* KnifeChangerEnable = Config::GetProperty(STRXOR("skinchanger-knife-enable"));
 			ImGui::SetCursorPos(ImVec2(5.f, 33.f));
 			ImGui::DrawBooleanProperty(KnifeChangerEnable);
 
 			// knife models
-			static Config::Property* KnifeModelProperty = Config::GetProperty(XOR("skinchanger-knife-model"));
+			static Config::Property* KnifeModelProperty = Config::GetProperty(STRXOR("skinchanger-knife-model"));
 			ImGui::SetCursorPos(ImVec2(5.f, 58.f));
 			ImGui::DrawVerticalStatefulProperty(KnifeModelProperty);
 
 			// knife wear
-			static Config::Property* KnifeWearProperty = Config::GetProperty(XOR("skinchanger-knife-wear"));
+			static Config::Property* KnifeWearProperty = Config::GetProperty(STRXOR("skinchanger-knife-wear"));
 			ImGui::SetCursorPos(ImVec2(5.f, 83.f));
 			ImGui::DrawFloatProperty(KnifeWearProperty);
 
 			// current skin + clear button
 			bool KnifeHasSkinSelection = KnifePaintkit->PaintKit->ID > 0;
-			std::string KnifeSkinName = KnifeHasSkinSelection ? KnifePaintkit->Stringify() : XOR("None");
+			std::string KnifeSkinName = KnifeHasSkinSelection ? KnifePaintkit->Stringify() : STRXOR("None");
 			{
-				static Animation::Anim* MyAnimation = Animation::newAnimation(XOR("knife-current-skin-hover"), 0);
+				static Animation::Anim* MyAnimation = Animation::newAnimation(STRXOR("knife-current-skin-hover"), 0);
 
-				const char* label = XOR("Current: ");
+				const char* label = STRXOR("Current: ");
 				ImVec2 labelSize = ImGui::CalcTextSize(label);
 
 				ImGui::SetCursorPos(ImVec2(10, 108 + (24 - labelSize.y) / 2));
@@ -2544,11 +2544,11 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(10 + labelSize.x + 5, 108));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-				ImGui::BeginChild(XOR("##skin-knife-current-selection"), ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
+				ImGui::BeginChild(STRXOR("##skin-knife-current-selection"), ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
 				ImGui::PopStyleVar(1);
 				ImGui::PopStyleColor(1);
 
-				Animation::changed(MyAnimation, ImGui::IsWindowHovered() || ImGui::GetActiveID() == ImGui::GetID(XOR("##remove-active-knife-skin")));
+				Animation::changed(MyAnimation, ImGui::IsWindowHovered() || ImGui::GetActiveID() == ImGui::GetID(STRXOR("##remove-active-knife-skin")));
 				float AnimFactor = Animation::animate(Animation::age(MyAnimation), 0.15);
 				if (!MyAnimation->state)
 					AnimFactor = 1.f - AnimFactor;
@@ -2559,7 +2559,7 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
 				if (!KnifeHasSkinSelection)
-					ImGui::Text(XOR("None"));
+					ImGui::Text(STRXOR("None"));
 				else
 				{
 					auto win = ImGui::GetCurrentWindow();
@@ -2578,7 +2578,7 @@ void GUI::DrawActiveTab()
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
 						ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
-						if (ImGui::Button(XOR("##remove-active-weapon-skin"), ImVec2(18, 18)))
+						if (ImGui::Button(STRXOR("##remove-active-weapon-skin"), ImVec2(18, 18)))
 						{
 							KnifePaintkit->ClearSelection();
 							KnifeHasSkinSelection = false;
@@ -2607,11 +2607,11 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(10, 137));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-				ImGui::BeginChild(XOR("##skin-knife-searchbar"), ImVec2(Widget->Size.x - 20, 24), false);
+				ImGui::BeginChild(STRXOR("##skin-knife-searchbar"), ImVec2(Widget->Size.x - 20, 24), false);
 
-				const char* InputLabel = XOR("##KnifeSkinSearchTextInput");
+				const char* InputLabel = STRXOR("##KnifeSkinSearchTextInput");
 				auto InputID = ImGui::GetID(InputLabel);
-				static Animation::Anim* MySearchAnimation = Animation::newAnimation(XOR("knife-skin-search"));
+				static Animation::Anim* MySearchAnimation = Animation::newAnimation(STRXOR("knife-skin-search"));
 				IsSearchingKnife = ImGui::GetActiveID() == InputID || KnifeSearchQuery[0];
 
 				float SearchAnimationFactor = Animation::animate(Animation::age(MySearchAnimation), 0.15);
@@ -2635,7 +2635,7 @@ void GUI::DrawActiveTab()
 				{
 					ImGui::SetCursorPos(ImVec2(24, 4));
 					ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
-					ImGui::Text(XOR("Search Skins"));
+					ImGui::Text(STRXOR("Search Skins"));
 					ImGui::PopStyleColor(1);
 				}
 				else
@@ -2648,7 +2648,7 @@ void GUI::DrawActiveTab()
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
 					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
-					if (ImGui::Button(XOR("##cancel-search-dummy-knife-skin"), ImVec2(18, 18)))
+					if (ImGui::Button(STRXOR("##cancel-search-dummy-knife-skin"), ImVec2(18, 18)))
 					{
 						ZeroMemory(KnifeSearchQuery, 256);
 						if (ImGui::GetActiveID() == InputID)
@@ -2671,7 +2671,7 @@ void GUI::DrawActiveTab()
 				ImGui::PushStyleColor(ImGuiCol_Button, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
-				ImGui::BeginChild(XOR("##weapon-skin-listings"), ImVec2(Widget->Size.x - 22, 135), false);
+				ImGui::BeginChild(STRXOR("##weapon-skin-listings"), ImVec2(Widget->Size.x - 22, 135), false);
 				auto win = ImGui::GetCurrentWindow();
 				Widget->DrawList->AddRect(
 					win->Pos - ImVec2(1, 1),
@@ -2703,7 +2703,7 @@ void GUI::DrawActiveTab()
 
 						std::string SkinName =
 							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
-							XOR(" | ") +
+							STRXOR(" | ") +
 							PK.VisibleName;
 
 						if (IsSearchingKnife && !TextService::Contains(SearchQuery, SkinName, false))
@@ -2714,7 +2714,7 @@ void GUI::DrawActiveTab()
 						{
 							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), ButtonSelectedColor);
 						}
-						else if (ImGui::Button((XOR("##invisible-knife-skin-select-") + SkinName).c_str(), ImVec2(win->Size.x, 30)))
+						else if (ImGui::Button((STRXOR("##invisible-knife-skin-select-") + SkinName).c_str(), ImVec2(win->Size.x, 30)))
 						{
 							KnifePaintkit->PaintKit = &Skins::PaintKits[i];
 							KnifePaintkit->Mode = Mode;
@@ -2750,13 +2750,13 @@ void GUI::DrawActiveTab()
 		{
 			static int WindowHeight = 0;
 			ImGui::SetCursorPos(ImVec2(10.f, y + 10));
-			ImGui::BeginChild(XOR("##weapon-skins"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
+			ImGui::BeginChild(STRXOR("##weapon-skins"), ImVec2(Window->ContentRegionRect.Max.x - Window->ContentRegionRect.Min.x - 20.f, WindowHeight + 10.f));
 			auto Widget = ImGui::GetCurrentWindow();
 
 			ImGui::SetCursorPos(ImVec2(10.f, 10.f));
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 			ImGui::PushFont(Arial18BoldItalics);
-			ImGui::Text(XOR("Guns"));
+			ImGui::Text(STRXOR("Guns"));
 			ImGui::PopFont();
 			ImGui::PopStyleColor(1);
 
@@ -2787,7 +2787,7 @@ void GUI::DrawActiveTab()
 				for (int i = 0; i < (int)Skins::WeaponGroup::_COUNT; i++)
 				{
 					ImGui::SetCursorPos(ImVec2(10.f, y));
-					if (ImGui::Button((XOR("##dummy-weapongroup-btn-") + Skins::WeaponGroupNames[i]).c_str(), ImVec2(62, 30)))
+					if (ImGui::Button((STRXOR("##dummy-weapongroup-btn-") + Skins::WeaponGroupNames[i]).c_str(), ImVec2(62, 30)))
 					{
 						SelectedWeaponGroup = i;
 						SelectedWeaponIndex = 0;
@@ -2844,7 +2844,7 @@ void GUI::DrawActiveTab()
 					std::string WeaponName = Skins::WeaponNames[(int)Weapon];
 
 					ImGui::SetCursorPos(ImVec2(82, y));
-					if (ImGui::Button((XOR("##dummy-weapongroup-btn-") + WeaponName).c_str(), ImVec2(110, 30)))
+					if (ImGui::Button((STRXOR("##dummy-weapongroup-btn-") + WeaponName).c_str(), ImVec2(110, 30)))
 					{
 						SelectedWeaponIndex = i;
 					}
@@ -2870,17 +2870,17 @@ void GUI::DrawActiveTab()
 
 			Skins::Weapon CurrentSelectedWeapon = Skins::WeaponGroupWeapons[SelectedWeaponGroup][SelectedWeaponIndex];
 			Config::Property* CurrentWeaponSkinProp =
-				Config::GetProperty(XOR("skinchanger-weapon-") + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[(int)CurrentSelectedWeapon])));
+				Config::GetProperty(STRXOR("skinchanger-weapon-") + TextService::RemoveWhitespace(TextService::ToLowercase(Skins::WeaponNames[(int)CurrentSelectedWeapon])));
 			Config::CPaintKit* CurrentPaintKit = (Config::CPaintKit*)CurrentWeaponSkinProp->Value;
 
 			bool WeaponHasSkinSelection = CurrentPaintKit->PaintKit->ID > 0;
-			std::string WeaponSkinName = WeaponHasSkinSelection ? CurrentPaintKit->Stringify() : XOR("None");
+			std::string WeaponSkinName = WeaponHasSkinSelection ? CurrentPaintKit->Stringify() : STRXOR("None");
 
 			// current skin for this weapon
 			{
-				static Animation::Anim* MyAnimation = Animation::newAnimation(XOR("weapon-current-skin-hover"), 0);
+				static Animation::Anim* MyAnimation = Animation::newAnimation(STRXOR("weapon-current-skin-hover"), 0);
 
-				const char* label = XOR("Current: ");
+				const char* label = STRXOR("Current: ");
 				ImVec2 labelSize = ImGui::CalcTextSize(label);
 
 				ImGui::SetCursorPos(ImVec2(202, 37 + (24 - labelSize.y) / 2));
@@ -2889,11 +2889,11 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(202 + labelSize.x + 5, 37));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-				ImGui::BeginChild(XOR("##skin-weapon-current-selection"), ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
+				ImGui::BeginChild(STRXOR("##skin-weapon-current-selection"), ImVec2(Widget->Size.x - ImGui::GetCursorPosX() - 10, 24), false);
 				ImGui::PopStyleVar(1);
 				ImGui::PopStyleColor(1);
 
-				Animation::changed(MyAnimation, ImGui::IsWindowHovered() || ImGui::GetActiveID() == ImGui::GetID(XOR("##remove-active-weapon-skin")));
+				Animation::changed(MyAnimation, ImGui::IsWindowHovered() || ImGui::GetActiveID() == ImGui::GetID(STRXOR("##remove-active-weapon-skin")));
 				float AnimFactor = Animation::animate(Animation::age(MyAnimation), 0.15);
 				if (!MyAnimation->state)
 					AnimFactor = 1.f - AnimFactor;
@@ -2904,7 +2904,7 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(4, 4));
 
 				if (!WeaponHasSkinSelection)
-					ImGui::Text(XOR("None"));
+					ImGui::Text(STRXOR("None"));
 				else
 				{
 					auto win = ImGui::GetCurrentWindow();
@@ -2923,7 +2923,7 @@ void GUI::DrawActiveTab()
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
 						ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
-						if (ImGui::Button(XOR("##remove-active-weapon-skin"), ImVec2(18, 18)))
+						if (ImGui::Button(STRXOR("##remove-active-weapon-skin"), ImVec2(18, 18)))
 						{
 							CurrentPaintKit->ClearSelection();
 							WeaponHasSkinSelection = false;
@@ -2953,11 +2953,11 @@ void GUI::DrawActiveTab()
 				ImGui::SetCursorPos(ImVec2(202, 37 + 24 + 5));
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*TextInputBackground);
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-				ImGui::BeginChild(XOR("##skin-weapon-searchbar"), ImVec2(Widget->Size.x - 202 - 10, 24), false);
+				ImGui::BeginChild(STRXOR("##skin-weapon-searchbar"), ImVec2(Widget->Size.x - 202 - 10, 24), false);
 
-				const char* InputLabel = XOR("##WeaponSkinSearchTextInput");
+				const char* InputLabel = STRXOR("##WeaponSkinSearchTextInput");
 				auto InputID = ImGui::GetID(InputLabel);
-				static Animation::Anim* MySearchAnimation = Animation::newAnimation(XOR("weapon-skin-search"));
+				static Animation::Anim* MySearchAnimation = Animation::newAnimation(STRXOR("weapon-skin-search"));
 				IsSearchingWeapon = ImGui::GetActiveID() == InputID || WeaponSearchQuery[0];
 
 				float SearchAnimationFactor = Animation::animate(Animation::age(MySearchAnimation), 0.15);
@@ -2981,7 +2981,7 @@ void GUI::DrawActiveTab()
 				{
 					ImGui::SetCursorPos(ImVec2(24, 4));
 					ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)TextInputText->ModulateAlpha(0.6f));
-					ImGui::Text(XOR("Search Skins"));
+					ImGui::Text(STRXOR("Search Skins"));
 					ImGui::PopStyleColor(1);
 				}
 				else
@@ -2994,7 +2994,7 @@ void GUI::DrawActiveTab()
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)TextInputText->ModulateAlpha(0.25f));
 					ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)TextInputText->ModulateAlpha(0.5f));
-					if (ImGui::Button(XOR("##cancel-search-dummy-weapon-skin"), ImVec2(18, 18)))
+					if (ImGui::Button(STRXOR("##cancel-search-dummy-weapon-skin"), ImVec2(18, 18)))
 					{
 						ZeroMemory(WeaponSearchQuery, 256);
 						if (ImGui::GetActiveID() == InputID)
@@ -3017,7 +3017,7 @@ void GUI::DrawActiveTab()
 				ImGui::PushStyleColor(ImGuiCol_Button, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
-				ImGui::BeginChild(XOR("##weapon-skin-listings"), ImVec2(Widget->Size.x - 203 - 11, 37 + WeaponNamesHeight - ImGui::GetCursorPosY()), false);
+				ImGui::BeginChild(STRXOR("##weapon-skin-listings"), ImVec2(Widget->Size.x - 203 - 11, 37 + WeaponNamesHeight - ImGui::GetCursorPosY()), false);
 				auto win = ImGui::GetCurrentWindow();
 				Widget->DrawList->AddRect(
 					win->Pos - ImVec2(1, 1),
@@ -3049,7 +3049,7 @@ void GUI::DrawActiveTab()
 
 						std::string SkinName =
 							(Mode == 0 ? Skins::WeaponNames[NameId] : (Mode == 1 ? Skins::KnifeNames[NameId] : Skins::GloveNames[NameId])) +
-							XOR(" | ") +
+							STRXOR(" | ") +
 							PK.VisibleName;
 
 						if (IsSearchingWeapon && !TextService::Contains(SearchQuery, SkinName, false))
@@ -3060,7 +3060,7 @@ void GUI::DrawActiveTab()
 						{
 							win->DrawList->AddRectFilled(win->DC.CursorPos, win->DC.CursorPos + ImVec2(win->Size.x, 30), ButtonSelectedColor);
 						}
-						else if (ImGui::Button((XOR("##invisible-weapon-skin-select-") + SkinName).c_str(), ImVec2(win->Size.x, 30)))
+						else if (ImGui::Button((STRXOR("##invisible-weapon-skin-select-") + SkinName).c_str(), ImVec2(win->Size.x, 30)))
 						{
 							CurrentPaintKit->PaintKit = &Skins::PaintKits[i];
 							CurrentPaintKit->Mode = Mode;
@@ -3092,22 +3092,22 @@ void GUI::DrawActiveTab()
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar(1);
 	}
-	else if (ActiveTab->Name == XOR("Theme"))
+	else if (ActiveTab->Name == STRXOR("Theme"))
 	{
 		int WidgetWidth = Window->ContentRegionRect.GetWidth();
 
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
 		ImGui::SetCursorPos(ImVec2(10, 10));
-		ImGui::BeginChild(XOR("##theme-import/export"), ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild(STRXOR("##theme-import/export"), ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
 		auto InnerWindow = ImGui::GetCurrentWindow();
 
 		ImGui::SetCursorPos(ImVec2(5, 5));
 		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 		ImGui::PushFont(Arial18BoldItalics);
-		ImGui::Text(XOR("Save / Load"));
+		ImGui::Text(STRXOR("Save / Load"));
 		ImGui::SetCursorPos(ImVec2(5, 52));
-		ImGui::Text(XOR("Presets"));
+		ImGui::Text(STRXOR("Presets"));
 		ImGui::PopFont();
 		ImGui::PopStyleColor(1);
 
@@ -3123,28 +3123,28 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID(XOR("theme-import-export-info-btn"));
+			auto ID = ImGui::GetID(STRXOR("theme-import-export-info-btn"));
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
+				ImGui::ToolTip(STRXOR("Click for more info"), IconSize.y);
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, STRXOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
 				}
 			}
 
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
-			if (ImGui::Button(XOR("Export##theme"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Export##theme"), ImVec2(60, 20)))
 			{
 				Config::PromptExportThemeFile();
 			}
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
-			if (ImGui::Button(XOR("Import##theme"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Import##theme"), ImVec2(60, 20)))
 			{
 				Config::PromptImportThemeFile();
 			}
@@ -3158,36 +3158,36 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID(XOR("theme-presets-info-btn"));
+			auto ID = ImGui::GetID(STRXOR("theme-presets-info-btn"));
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
+				ImGui::ToolTip(STRXOR("Click for more info"), IconSize.y);
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, STRXOR("http://a4g4.com/help/index.php#theme"), 0, 0, SW_SHOW);
 				}
 			}
 
 			int x = 6 + IconSize.x + 6;
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Dark##themepreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Dark##themepreset"), ImVec2(60, 20)))
 			{
 				Config::ImportTheme(ConfigConstants::ThemeDark, ConfigConstants::ThemeDarkSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Light##themepreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Light##themepreset"), ImVec2(60, 20)))
 			{
 				Config::ImportTheme(ConfigConstants::ThemeLight, ConfigConstants::ThemeLightSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Contrast##themepreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Contrast##themepreset"), ImVec2(60, 20)))
 			{
 				Config::ImportTheme(ConfigConstants::ThemeContrast, ConfigConstants::ThemeContrastSize);
 			}
@@ -3205,22 +3205,22 @@ void GUI::DrawActiveTab()
 		ImGui::SetCursorPos(ImVec2(0, 120));
 		DrawNormalTab(ActiveTab);
 	}
-	else if (ActiveTab->Name == XOR("Config"))
+	else if (ActiveTab->Name == STRXOR("Config"))
 	{
 		int WidgetWidth = Window->ContentRegionRect.GetWidth();
 
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*WidgetBackground);
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5);
 		ImGui::SetCursorPos(ImVec2(10, 10));
-		ImGui::BeginChild(XOR("##config-import/export"), ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
+		ImGui::BeginChild(STRXOR("##config-import/export"), ImVec2(WidgetWidth - 20, 100), false, ImGuiWindowFlags_NoDecoration);
 		auto InnerWindow = ImGui::GetCurrentWindow();
 
 		ImGui::SetCursorPos(ImVec2(5, 5));
 		ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)*WidgetTitleText);
 		ImGui::PushFont(Arial18BoldItalics);
-		ImGui::Text(XOR("Save / Load"));
+		ImGui::Text(STRXOR("Save / Load"));
 		ImGui::SetCursorPos(ImVec2(5, 52));
-		ImGui::Text(XOR("Presets"));
+		ImGui::Text(STRXOR("Presets"));
 		ImGui::PopFont();
 		ImGui::PopStyleColor(1);
 
@@ -3236,28 +3236,28 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID(XOR("config-import-export-info-btn"));
+			auto ID = ImGui::GetID(STRXOR("config-import-export-info-btn"));
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
+				ImGui::ToolTip(STRXOR("Click for more info"), IconSize.y);
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, STRXOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
 				}
 			}
 
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6, 0));
-			if (ImGui::Button(XOR("Export##config"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Export##config"), ImVec2(60, 20)))
 			{
 				Config::PromptExportConfigFile();
 			}
 
 			ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x + 6 + 60 + 6, 0));
-			if (ImGui::Button(XOR("Import##config"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Import##config"), ImVec2(60, 20)))
 			{
 				Config::PromptImportConfigFile();
 			}
@@ -3271,36 +3271,36 @@ void GUI::DrawActiveTab()
 			ImGui::SetCursorPos(Pos + ImVec2(6, (20 - IconSize.y) / 2));
 			ImGui::DrawInfoIcon(255, IconSize);
 
-			auto ID = ImGui::GetID(XOR("config-presets-info-btn"));
+			auto ID = ImGui::GetID(STRXOR("config-presets-info-btn"));
 			auto BB = ImRect(InnerWindow->DC.CursorPos, InnerWindow->DC.CursorPos + IconSize);
 			ImGui::ItemAdd(BB, ID);
 			if (ImGui::ItemHoverable(BB, ID))
 			{
 				ImGui::SetCursorPos(Pos + ImVec2(6 + IconSize.x / 2, (20 - IconSize.y) / 2));
-				ImGui::ToolTip(XOR("Click for more info"), IconSize.y);
+				ImGui::ToolTip(STRXOR("Click for more info"), IconSize.y);
 				if (GImGui->IO.MouseClicked[0])
 				{
-					ShellExecute(0, 0, XOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
+					ShellExecute(0, 0, STRXOR("http://a4g4.com/help/index.php#config"), 0, 0, SW_SHOW);
 				}
 			}
 
 			int x = 6 + IconSize.x + 6;
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Off##configpreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Off##configpreset"), ImVec2(60, 20)))
 			{
 				Config::ImportConfig(ConfigConstants::ConfigOff, ConfigConstants::ConfigOffSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Legit##configpreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Legit##configpreset"), ImVec2(60, 20)))
 			{
 				Config::ImportConfig(ConfigConstants::ConfigLegit, ConfigConstants::ConfigLegitSize);
 			}
 			x += 66;
 
 			ImGui::SetCursorPos(Pos + ImVec2(x, 0));
-			if (ImGui::Button(XOR("Rage##configpreset"), ImVec2(60, 20)))
+			if (ImGui::Button(STRXOR("Rage##configpreset"), ImVec2(60, 20)))
 			{
 				Config::ImportConfig(ConfigConstants::ConfigRage, ConfigConstants::ConfigRageSize);
 			}
@@ -3329,23 +3329,23 @@ void GUI::DrawActiveTab()
 void GUI::MainScreen(float ContentOpacity, bool Interactable)
 {
 	unsigned char ThisContentOpacity = (unsigned char)(ContentOpacity * 255.f);
-	static Config::CColor* TopbarBackground = Config::GetColor(XOR("theme-topbar-background"));
-	static Config::CColor* TopbarText = Config::GetColor(XOR("theme-topbar-text"));
-	static Config::CColor* TablistBackground = Config::GetColor(XOR("theme-overlay-background"));
-	static Config::CColor* TablistText = Config::GetColor(XOR("theme-overlay-text"));
-	static Config::CColor* ActiveTablistText = Config::GetColor(XOR("theme-overlay-active-text"));
-	static Config::CColor* SearchbarBackground = Config::GetColor(XOR("theme-main-searchbar-background"));
-	static Config::CColor* SearchbarText = Config::GetColor(XOR("theme-main-searchbar-text"));
-	static Config::CColor* ButtonBase = Config::GetColor(XOR("theme-button-background"));
-	static Config::CColor* ButtonHovered = Config::GetColor(XOR("theme-button-hovered"));
-	static Config::CColor* ButtonActive = Config::GetColor(XOR("theme-button-active"));
-	static Config::CColor* EjectLabel = Config::GetColor(XOR("theme-eject"));
-	static Config::CColor* MainBorder = Config::GetColor(XOR("theme-border"));
-	static Config::CColor* MainBackground = Config::GetColor(XOR("theme-background"));
-	static Config::CColor* ScrollbarBackground = Config::GetColor(XOR("theme-scrollbar-background"));
-	static Config::CColor* ScrollbarGrab = Config::GetColor(XOR("theme-scrollbar-grabber"));
-	static Config::CColor* ActiveTabPointer = Config::GetColor(XOR("theme-overlay-active-pointer"));
-	static Config::CFloat* MainBorderSize = Config::GetFloat(XOR("theme-border-size"));
+	static Config::CColor* TopbarBackground = Config::GetColor(STRXOR("theme-topbar-background"));
+	static Config::CColor* TopbarText = Config::GetColor(STRXOR("theme-topbar-text"));
+	static Config::CColor* TablistBackground = Config::GetColor(STRXOR("theme-overlay-background"));
+	static Config::CColor* TablistText = Config::GetColor(STRXOR("theme-overlay-text"));
+	static Config::CColor* ActiveTablistText = Config::GetColor(STRXOR("theme-overlay-active-text"));
+	static Config::CColor* SearchbarBackground = Config::GetColor(STRXOR("theme-main-searchbar-background"));
+	static Config::CColor* SearchbarText = Config::GetColor(STRXOR("theme-main-searchbar-text"));
+	static Config::CColor* ButtonBase = Config::GetColor(STRXOR("theme-button-background"));
+	static Config::CColor* ButtonHovered = Config::GetColor(STRXOR("theme-button-hovered"));
+	static Config::CColor* ButtonActive = Config::GetColor(STRXOR("theme-button-active"));
+	static Config::CColor* EjectLabel = Config::GetColor(STRXOR("theme-eject"));
+	static Config::CColor* MainBorder = Config::GetColor(STRXOR("theme-border"));
+	static Config::CColor* MainBackground = Config::GetColor(STRXOR("theme-background"));
+	static Config::CColor* ScrollbarBackground = Config::GetColor(STRXOR("theme-scrollbar-background"));
+	static Config::CColor* ScrollbarGrab = Config::GetColor(STRXOR("theme-scrollbar-grabber"));
+	static Config::CColor* ActiveTabPointer = Config::GetColor(STRXOR("theme-overlay-active-pointer"));
+	static Config::CFloat* MainBorderSize = Config::GetFloat(STRXOR("theme-border-size"));
 
 
 	// Initially center the window w/ default size
@@ -3385,9 +3385,9 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 	int TitleBarHeight = 24;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.f, (TitleBarHeight - ImGui::GetFontSize()) / 2.f));
 	std::string MainTitle =
-		std::string(XOR("A4G4 - ")) +
-		std::string((UserData::Premium ? XOR("FULL VERSION ") : XOR("TRIAL VERSION "))) +
-		std::string((UserData::Authenticated ? XOR("(USER ") + std::to_string(UserData::UserId) + XOR(")") : XOR("(UNAUTHENTICATED)")));
+		std::string(STRXOR("A4G4 - ")) +
+		std::string((UserData::Premium ? STRXOR("FULL VERSION ") : STRXOR("TRIAL VERSION "))) +
+		std::string((UserData::Authenticated ? STRXOR("(USER ") + std::to_string(UserData::UserId) + STRXOR(")") : STRXOR("(UNAUTHENTICATED)")));
 	ImGui::Begin(MainTitle.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | (Interactable ? 0 : ImGuiWindowFlags_NoInputs));
 	ImGui::PopStyleColor(1);
 	ImGui::PopStyleVar(1);
@@ -3435,7 +3435,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		ImVec2 ChildSize = Window->Size - OverlayPosition - ImVec2(OverlaySize.x, 0);
 
 		ImGui::SetCursorPos(ImVec2(150, TitleBarHeight));
-		ImGui::BeginChild(XOR("##main-right-side"), Window->Size - OverlayPosition - ImVec2(150, 0));
+		ImGui::BeginChild(STRXOR("##main-right-side"), Window->Size - OverlayPosition - ImVec2(150, 0));
 
 		auto w = ImGui::GetCurrentWindow();
 		ImGui::PushClipRect(ChildPos, ChildPos + ChildSize, false);
@@ -3453,7 +3453,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		ImGui::PushStyleColor(ImGuiCol_Button, 0);
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, 0);
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, 0);
-		ImGui::Button(XOR("##BRO"), ImVec2(1, ActiveTab->VerticalPadding));
+		ImGui::Button(STRXOR("##BRO"), ImVec2(1, ActiveTab->VerticalPadding));
 		ImGui::PopStyleColor(3);
 
 		ImGui::PopClipRect();
@@ -3474,16 +3474,16 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.f);
 		ImGui::SetCursorPos(OverlayPosition);
-		ImGui::BeginChild(XOR("##left-side"), OverlaySize, false);
+		ImGui::BeginChild(STRXOR("##left-side"), OverlaySize, false);
 
 		// search bar
 		{
 			ImGui::SetCursorPos(ImVec2(5, 5));
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, (ImVec4)*SearchbarBackground);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.f);
-			ImGui::BeginChild(XOR("##left-side-searchbar"), ImVec2(ImGui::GetWindowContentRegionWidth() - 10, 24), false);
+			ImGui::BeginChild(STRXOR("##left-side-searchbar"), ImVec2(ImGui::GetWindowContentRegionWidth() - 10, 24), false);
 
-			const char* InputLabel = XOR("##SearchTextInput");
+			const char* InputLabel = STRXOR("##SearchTextInput");
 			auto InputID = ImGui::GetID(InputLabel);
 
 			// open search window if it wasnt already
@@ -3511,7 +3511,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			{
 				ImGui::SetCursorPos(ImVec2(24, 4));
 				ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)SearchbarText->ModulateAlpha(0.6f));
-				ImGui::Text(XOR("Search"));
+				ImGui::Text(STRXOR("Search"));
 				ImGui::PopStyleColor(1);
 			}
 			else
@@ -3525,7 +3525,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)SearchbarText->ModulateAlpha(0.25f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)SearchbarText->ModulateAlpha(0.5f));
-				if (ImGui::Button(XOR("##cancel-search-dummy"), ImVec2(18, 18)))
+				if (ImGui::Button(STRXOR("##cancel-search-dummy"), ImVec2(18, 18)))
 				{
 					ZeroMemory(SearchQuery, 256);
 					if (ImGui::GetActiveID() == InputID)
@@ -3561,7 +3561,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 			{
 				Config::Tab* t = Config::Tabs.at(i);
 				bool isSelected = t == ActiveTab;
-				bool isEject = t->Name == XOR("Eject");
+				bool isEject = t->Name == STRXOR("Eject");
 
 				if (isEject || isSelected)
 				{
@@ -3585,7 +3585,7 @@ void GUI::MainScreen(float ContentOpacity, bool Interactable)
 
 				// dummy button to detect clicks + hover
 				ImGui::SetCursorPos(ImVec2(5, y - 1));
-				if (ImGui::Button((XOR("##dummy-tab-select-") + t->Name).c_str(), ImVec2(OverlaySize.x - 10, 20)))
+				if (ImGui::Button((STRXOR("##dummy-tab-select-") + t->Name).c_str(), ImVec2(OverlaySize.x - 10, 20)))
 				{
 					ActiveTab = t;
 					ActiveTab->InitialPaint = true;
@@ -3850,20 +3850,20 @@ void GUI::PerformSearch()
 
 void GUI::Init()
 {
-	L::Verbose(XOR("GUI::Init running"));
+	L::Verbose(STRXOR("GUI::Init running"));
 	ZeroMemory(SearchQuery, 256);
 	ZeroMemory(CachedSearch, 256);
 	strcpy(CachedSearch, "this string is here so that `PerformSearch` will actually run on the first call");
 
-	SearchAnimation = Animation::newAnimation(XOR("search-open/close"), 0);
-	L::Verbose(XOR("GUI::Init complete"));
+	SearchAnimation = Animation::newAnimation(STRXOR("search-open/close"), 0);
+	L::Verbose(STRXOR("GUI::Init complete"));
 }
 
 void GUI::Main()
 {
-	static auto MenuOpen = Config::GetState(XOR("show-menu"));
+	static auto MenuOpen = Config::GetState(STRXOR("show-menu"));
 	++Config::GUIFramesRenderedCounter;
-	L::Verbose((XOR("GUI::Main executed (frame ") + std::to_string(Config::GUIFramesRenderedCounter) + XOR(")")).c_str());
+	L::Verbose((STRXOR("GUI::Main executed (frame ") + std::to_string(Config::GUIFramesRenderedCounter) + STRXOR(")")).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3874,36 +3874,36 @@ void GUI::Main()
 	WantKeyboard = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
-		L::Verbose(XOR("GUI::AuthenticationIntro running"));
+		L::Verbose(STRXOR("GUI::AuthenticationIntro running"));
 		AuthenticationIntro();
-		L::Verbose(XOR("GUI::AuthenticationIntro complete"));
+		L::Verbose(STRXOR("GUI::AuthenticationIntro complete"));
 	}
 	else if (UserData::SessionId != "")
 	{
 		if (MenuOpen->Get() && !IsSteamOverlayOpen())
 		{
-			L::Verbose(XOR("GUI::MainScreen running"));
+			L::Verbose(STRXOR("GUI::MainScreen running"));
 			MainScreen();
-			L::Verbose(XOR("GUI::MainScreen complete"));
+			L::Verbose(STRXOR("GUI::MainScreen complete"));
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
-		L::Verbose(XOR("GUI::LoadingScreen running"));
+		L::Verbose(STRXOR("GUI::LoadingScreen running"));
 		LoadingScreen();
-		L::Verbose(XOR("GUI::LoadingScreen complete"));
+		L::Verbose(STRXOR("GUI::LoadingScreen complete"));
 	}
 	else
 	{
-		L::Verbose(XOR("GUI::AuthenticationScreen running"));
+		L::Verbose(STRXOR("GUI::AuthenticationScreen running"));
 		if (!IsSteamOverlayOpen())
 			AuthenticationScreen();
-		L::Verbose(XOR("GUI::AuthenticationScreen complete"));
+		L::Verbose(STRXOR("GUI::AuthenticationScreen complete"));
 	}
 
-	L::Verbose(XOR("Config::ProcessKeys running"));
+	L::Verbose(STRXOR("Config::ProcessKeys running"));
 	Config::ProcessKeys();
-	L::Verbose(XOR("Config::ProcessKeys complete"));
+	L::Verbose(STRXOR("Config::ProcessKeys complete"));
 
 
 	if (UserData::SessionId != "") // if we should be pinging
@@ -3914,7 +3914,7 @@ void GUI::Main()
 		else if (SecondsSincePing > 420) // egregious ping delay
 			GUI::Ejected = true;
 	}
-	L::Verbose(XOR("GUI::Main complete"));
+	L::Verbose(STRXOR("GUI::Main complete"));
 }
 
 CHudElement* GUI::FindHudElement(const char* Name)

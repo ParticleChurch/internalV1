@@ -778,7 +778,7 @@ namespace Config
 					((CFunction*)p->Value)->Callback();
 			} break;
 			default:
-				L::Log((XOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
+				L::Log((STRXOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
 				return;
 			}
 		}
@@ -873,7 +873,7 @@ namespace Config
 			ForceUpdate = false;
 		} break;
 		default:
-			L::Log((XOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
+			L::Log((STRXOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
 			return;
 		}
 
@@ -885,10 +885,10 @@ namespace Config
 	{
 		if (!p || !buffer || !bufferSpaceOccupied || !bufferSpaceAllocated)
 		{
-			L::Log(XOR("ExportSingleProperty failed - null parameter(s)"));
+			L::Log(STRXOR("ExportSingleProperty failed - null parameter(s)"));
 			return false;
 		}
-		L::Verbose(XOR("ExportSingleProperty running for p = "), "");
+		L::Verbose(STRXOR("ExportSingleProperty running for p = "), "");
 		L::Verbose(p->Name.c_str());
 
 		size_t vacantSpaceInBuffer = *bufferSpaceAllocated - *bufferSpaceOccupied;
@@ -956,7 +956,7 @@ namespace Config
 			spaceRequired += valueLength;
 		} break;
 		default:
-			L::Log((XOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
+			L::Log((STRXOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
 			return true;
 		}
 
@@ -972,14 +972,14 @@ namespace Config
 			}
 			if (!re)
 			{
-				L::Log(XOR("ExportSingleProperty failed - could not expand buffer"));
+				L::Log(STRXOR("ExportSingleProperty failed - could not expand buffer"));
 				return false;
 			}
 			else
 			{
 				*buffer = re;
 				*bufferSpaceAllocated += spaceRequired - vacantSpaceInBuffer;
-				L::Verbose(XOR("ExportSingleProperty reallocated to @"), "");
+				L::Verbose(STRXOR("ExportSingleProperty reallocated to @"), "");
 				L::Verbose((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*bufferSpaceAllocated)).c_str());
 			}
 		}
@@ -1124,7 +1124,7 @@ namespace Config
 					((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTODISABLE;
 					break;
 				default:
-					L::Verbose(XOR("ImportSingleProperty got a weird bind mode for boolean"));
+					L::Verbose(STRXOR("ImportSingleProperty got a weird bind mode for boolean"));
 					break; // just leave it at whatever it was
 				}
 				_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + 2)));
@@ -1175,7 +1175,7 @@ namespace Config
 			((CMultiSelect*)p->Value)->Mask = *(uint64_t*)value;
 		} break;
 		default:
-			L::Log((XOR("ImportSingleProperty - Warning, idk how to import this property type: ") + std::to_string((int)p->Type)).c_str());
+			L::Log((STRXOR("ImportSingleProperty - Warning, idk how to import this property type: ") + std::to_string((int)p->Type)).c_str());
 			return false;
 		}
 		return true;
@@ -1191,7 +1191,7 @@ namespace Config
 		char* buffer = (char*)malloc(headerSize);
 		if (!buffer)
 		{
-			L::Log(XOR("Config::ExportTheme failed - initial malloc failed"));
+			L::Log(STRXOR("Config::ExportTheme failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1226,13 +1226,13 @@ namespace Config
 				Property* p = group->Properties.at(i);
 				if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 				{
-					L::Log(XOR("Config::ExportTheme failed - ExportSingleProperty failed"));
+					L::Log(STRXOR("Config::ExportTheme failed - ExportSingleProperty failed"));
 					free(buffer);
 					return nullptr;
 				}
 			}
 		}
-		L::Log(XOR("Config::ExportTheme success"));
+		L::Log(STRXOR("Config::ExportTheme success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1248,7 +1248,7 @@ namespace Config
 		char* buffer = (char*)malloc(capacity);
 		if (!buffer)
 		{
-			L::Log(XOR("Config::ExportConfig failed - initial malloc failed"));
+			L::Log(STRXOR("Config::ExportConfig failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1270,14 +1270,14 @@ namespace Config
 
 					if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 					{
-						L::Log(XOR("Config::ExportConfig failed - ExportSingleProperty failed"));
+						L::Log(STRXOR("Config::ExportConfig failed - ExportSingleProperty failed"));
 						free(buffer);
 						return nullptr;
 					}
 				}
 			}
 		}
-		L::Log(XOR("Config::ExportConfig success"));
+		L::Log(STRXOR("Config::ExportConfig success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1308,7 +1308,7 @@ namespace Config
 			size_t bruh = nBytes - i;
 			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				L::Log(XOR("Failed to import property... This theme is probably fucked0"));
+				L::Log(STRXOR("Failed to import property... This theme is probably fucked0"));
 			}
 			i += bruh;
 		}
@@ -1739,16 +1739,16 @@ namespace UserData
 
 		// dump to json
 		nlohmann::json out = nlohmann::json::object();
-		out[XOR_STDSTR("email")] = inputEmail;
-		out[XOR_STDSTR("password")] = inputPassword;
+		out[STRXOR("email")] = inputEmail;
+		out[STRXOR("password")] = inputPassword;
 
 		// call api
-		HTTP::contentType = XOR_STDSTR("application/json");
+		HTTP::contentType = STRXOR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/login.php"), out.dump(), &bytesRead);
+		char* response = (char*)HTTP::Post(STRXOR("https://www.a4g4.com/API/new/login.php"), out.dump(), &bytesRead);
 
-		std::string x = XOR_STDSTR("Hello");
-		std::string y = XOR_STDSTR("World");
+		std::string x = STRXOR("Hello");
+		std::string y = STRXOR("World");
 		std::string z = "HelloWorld";
 		L::Log((x + y).c_str());
 		L::Log(z.c_str());
@@ -1759,7 +1759,7 @@ namespace UserData
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			SetLoginError(XOR_STDSTR("Failed to contact server - Please check your firewall."));
+			SetLoginError(STRXOR("Failed to contact server - Please check your firewall."));
 			goto failed;
 		}
 
@@ -1768,24 +1768,24 @@ namespace UserData
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
 
-			if (!parsed[XOR_STDSTR("success")].get<bool>())
+			if (!parsed[STRXOR("success")].get<bool>())
 			{
-				SetLoginError(parsed[XOR_STDSTR("error")].get<std::string>());
+				SetLoginError(parsed[STRXOR("error")].get<std::string>());
 				goto failed;
 			}
 			else
 			{
-				SessionId = parsed[XOR_STDSTR("idSessions")].get<std::string>();
+				SessionId = parsed[STRXOR("idSessions")].get<std::string>();
 				Authenticated = true;
-				UserId = parsed[XOR_STDSTR("idUsers")].get<uint32_t>();
-				PremiumTimeRemaining = parsed[XOR_STDSTR("premiumTimeRemaining")].get<uint32_t>();
+				UserId = parsed[STRXOR("idUsers")].get<uint32_t>();
+				PremiumTimeRemaining = parsed[STRXOR("premiumTimeRemaining")].get<uint32_t>();
 				Premium = PremiumTimeRemaining > 0;
 				LastPingTime = Animation::now();
 			}
 		}
 		catch (std::exception& e)
 		{
-			SetLoginError(XOR_STDSTR("Unknown Error - Try Again")); // invalid server response
+			SetLoginError(STRXOR("Unknown Error - Try Again")); // invalid server response
 			L::Log(e.what());
 			L::Log(response);
 			goto failed;
@@ -1794,7 +1794,7 @@ namespace UserData
 		// save login info to file
 		try
 		{
-			L::Log(XOR("Saving credentials to file..."), " ");
+			L::Log(STRXOR("Saving credentials to file..."), " ");
 			auto f = std::ofstream(CredentialsFile, std::ios::binary);
 			if (f.is_open()) // if fails, whatever, they'll have to type password again
 			{
@@ -1827,12 +1827,12 @@ namespace UserData
 
 				f.write(data, usedSize);
 				f.close();
-				L::Log(XOR("Success!"));
+				L::Log(STRXOR("Success!"));
 			}
 		}
 		catch (const std::exception& e)
 		{
-			L::Log(XOR("Failed to save user credentials w/ error: "), "");
+			L::Log(STRXOR("Failed to save user credentials w/ error: "), "");
 			L::Log(e.what());
 		}
 
@@ -1855,14 +1855,14 @@ namespace UserData
 		SetLoginError("");
 
 		// call api
-		HTTP::contentType = XOR_STDSTR("application/json");
+		HTTP::contentType = STRXOR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/playfree.php"), XOR_STDSTR("{}"), &bytesRead);
+		char* response = (char*)HTTP::Post(STRXOR("https://www.a4g4.com/API/new/playfree.php"), STRXOR("{}"), &bytesRead);
 
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			SetLoginError(XOR_STDSTR("Failed to contact server - Please check your firewall."));
+			SetLoginError(STRXOR("Failed to contact server - Please check your firewall."));
 			goto failed;
 		}
 
@@ -1870,20 +1870,20 @@ namespace UserData
 		try {
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
-			SessionId = parsed[XOR_STDSTR("idSessions")].get<std::string>();
+			SessionId = parsed[STRXOR("idSessions")].get<std::string>();
 			Authenticated = false;
 			UserId = (uint32_t)-1;
 			PremiumTimeRemaining = 0;
 			Premium = PremiumTimeRemaining > 0;
 			LastPingTime = Animation::now();
-			Config::GetState(XOR_STDSTR("misc-other-killsay"))->Set(true);
-			Config::GetState(XOR_STDSTR("misc-other-clantag"))->Set(true);
-			for (std::string wtype : {XOR_STDSTR("pistol"), XOR_STDSTR("smg"), XOR_STDSTR("heavy"), XOR_STDSTR("rifle"), XOR_STDSTR("sniper")})
-				Config::GetState(XOR_STDSTR("legitaim-") + wtype + XOR_STDSTR("-smoothing"))->Set(3);
+			Config::GetState(STRXOR("misc-other-killsay"))->Set(true);
+			Config::GetState(STRXOR("misc-other-clantag"))->Set(true);
+			for (std::string wtype : {STRXOR("pistol"), STRXOR("smg"), STRXOR("heavy"), STRXOR("rifle"), STRXOR("sniper")})
+				Config::GetState(STRXOR("legitaim-") + wtype + STRXOR("-smoothing"))->Set(3);
 		}
 		catch (std::exception& e)
 		{
-			SetLoginError(XOR_STDSTR("Unknown Error - Try Again")); // invalid server response
+			SetLoginError(STRXOR("Unknown Error - Try Again")); // invalid server response
 			L::Log(e.what());
 			goto failed;
 		}
@@ -1905,15 +1905,15 @@ namespace UserData
 		if (PingDebounce) return false;
 		PingDebounce = true;
 
-		L::Log(XOR("Ping!"));
+		L::Log(STRXOR("Ping!"));
 		// dump to json
 		nlohmann::json out = nlohmann::json::object();
-		out[XOR_STDSTR("sid")] = UserData::SessionId;
+		out[STRXOR("sid")] = UserData::SessionId;
 
 		// call api
-		HTTP::contentType = XOR_STDSTR("application/json");
+		HTTP::contentType = STRXOR("application/json");
 		DWORD bytesRead = 0;
-		char* response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/ping.php"), out.dump(), &bytesRead);
+		char* response = (char*)HTTP::Post(STRXOR("https://www.a4g4.com/API/new/ping.php"), out.dump(), &bytesRead);
 		if (response)
 		{
 			L::Log(std::string(response, bytesRead).c_str());
@@ -1921,7 +1921,7 @@ namespace UserData
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			L::Log(XOR("Ping failed due to invalid server response"));
+			L::Log(STRXOR("Ping failed due to invalid server response"));
 			goto failed;
 		}
 
@@ -1930,21 +1930,21 @@ namespace UserData
 			nlohmann::json parsed = nlohmann::json::parse(std::string(response, bytesRead));
 			free(response); response = nullptr;
 
-			if (!parsed[XOR_STDSTR("success")].get<bool>())
+			if (!parsed[STRXOR("success")].get<bool>())
 			{
-				L::Log((XOR_STDSTR("Ping failed w/ err: ") + parsed[XOR_STDSTR("error")].get<std::string>()).c_str());
+				L::Log((STRXOR("Ping failed w/ err: ") + parsed[STRXOR("error")].get<std::string>()).c_str());
 				goto failed;
 			}
 			else
 			{
-				PremiumTimeRemaining = parsed[XOR_STDSTR("premiumTimeRemaining")].get<uint32_t>();
+				PremiumTimeRemaining = parsed[STRXOR("premiumTimeRemaining")].get<uint32_t>();
 				Premium = PremiumTimeRemaining > 0;
 				LastPingTime = Animation::now();
 			}
 		}
 		catch (std::exception& e)
 		{
-			L::Log(XOR("Ping failed w/ error: "), "");
+			L::Log(STRXOR("Ping failed w/ error: "), "");
 			L::Log(e.what());
 			goto failed;
 		}
@@ -1968,12 +1968,12 @@ namespace UserData
 		Sleep(1000);
 
 	first:
-		response = (char*)HTTP::Post(XOR_STDSTR("https://www.a4g4.com/API/new/injected_new.php"), "", &bytes);
+		response = (char*)HTTP::Post(STRXOR("https://www.a4g4.com/API/new/injected_new.php"), "", &bytes);
 		if (bytes == 0 || !response) goto retry;
 		try {
 			nlohmann::ordered_json x = nlohmann::ordered_json::parse(std::string(response, bytes));
-			Config::SearchableFeatures = x[XOR_STDSTR("features")];
-			Config::SearchStopwords = x[XOR_STDSTR("stopwords")];
+			Config::SearchableFeatures = x[STRXOR("features")];
+			Config::SearchStopwords = x[STRXOR("stopwords")];
 
 			// make sure that the features list is structured correctly
 			for (auto& [tabName, tab] : Config::SearchableFeatures.items())
@@ -1982,13 +1982,13 @@ namespace UserData
 				{
 					for (auto& prop: group)
 					{
-						prop[XOR_STDSTR("name")].get<std::string>();
-						prop[XOR_STDSTR("ids")][0].get<std::string>();
-						for (auto& id : prop[XOR_STDSTR("ids")])
+						prop[STRXOR("name")].get<std::string>();
+						prop[STRXOR("ids")][0].get<std::string>();
+						for (auto& id : prop[STRXOR("ids")])
 						{
 							id.get<std::string>();
 						}
-						for (auto& keyword : prop[XOR_STDSTR("keywords")])
+						for (auto& keyword : prop[STRXOR("keywords")])
 						{
 							keyword.get<std::string>();
 						}
