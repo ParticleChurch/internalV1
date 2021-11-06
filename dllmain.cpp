@@ -40,29 +40,8 @@ void Init()
 
     L::Log("DLLMain complete. Now waiting for ejection");
 
-    struct { volatile unsigned char* ptr; const size_t sz; uint32_t initialHash = 0; } hashables[] = {
-        {(volatile unsigned char*)UserData::AttemptLogin, 1974},
-        {(volatile unsigned char*)UserData::GetUnauthenticatedSession, 1129},
-        {(volatile unsigned char*)UserData::PingServer, 823},
-        {(volatile unsigned char*)UserData::ConnectAPI, 5902},
-    };
-
     while (!G::KillDLL)
     {
-        for (size_t i = 0; i < sizeof(hashables) / sizeof(hashables[0]); i++)
-        {
-            auto& h = hashables[i];
-            uint32_t currentHash = StrHash::HashRuntime((const char*)h.ptr, h.sz);
-            if (h.initialHash == 0)
-            {
-                h.initialHash = currentHash;
-            }
-            else if (h.initialHash != currentHash)
-            {
-                // redirect FSN to some random bullshit
-                (*H::clientVMT->ActiveVMT)[37] = H::clientVMT->OriginalVMT[24];
-            }
-        }
         Sleep(100);
     }
     L::Log("Ejecting...");
