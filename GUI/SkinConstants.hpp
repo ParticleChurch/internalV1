@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "TextService.hpp"
+#include "../Utils/TextService.hpp"
 #include "KnifeSequence.hpp"
 #include "../Valve/Custom/WeaponId.hpp"
 

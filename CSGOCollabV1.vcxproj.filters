@@ -100,9 +100,6 @@
     <ClCompile Include="GUI\SkinConstants.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\TextService.cpp">
-      <Filter>Source\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\Keybind.cpp">
       <Filter>Source\GUI</Filter>
     </ClCompile>
@@ -120,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="Hacks\Offense\LagComp.cpp">
       <Filter>Source\Hacks\Offense</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\TextService.cpp">
+      <Filter>Source\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -387,9 +387,6 @@
     <ClInclude Include="GUI\SkinConstants.hpp">
       <Filter>Headers\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\TextService.hpp">
-      <Filter>Headers\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="Valve\SDK\AnimationLayer.hpp">
       <Filter>Headers\Valve\SDK</Filter>
     </ClInclude>
@@ -431,6 +428,9 @@
     </ClInclude>
     <ClInclude Include="Valve\Interfaces\ViewRenderBeams.hpp">
       <Filter>Headers\Valve\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\TextService.hpp">
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -493,6 +493,9 @@
     </Filter>
     <Filter Include="Source\Hacks\Misc">
       <UniqueIdentifier>{9520bb21-7616-4d6c-b894-58a9004acb40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{c86482c1-7413-4df7-b48b-7c13dc966897}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

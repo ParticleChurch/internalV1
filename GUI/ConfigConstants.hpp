@@ -1,5 +1,5 @@
 #pragma once
-#include "TextService.hpp"
+#include "../Utils/TextService.hpp"
 
 namespace ConfigManager
 {

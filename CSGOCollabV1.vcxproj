@@ -189,7 +189,6 @@
     <ClCompile Include="GUI\Keybind.cpp" />
     <ClCompile Include="GUI\KnifeSequence.cpp" />
     <ClCompile Include="GUI\SkinConstants.cpp" />
-    <ClCompile Include="GUI\TextService.cpp" />
     <ClCompile Include="GUI\VKeys.cpp" />
     <ClCompile Include="Hacks\Defense\AntiAim.cpp" />
     <ClCompile Include="Hacks\Defense\FakeLag.cpp" />
@@ -218,6 +217,7 @@
     <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Netvars.cpp" />
+    <ClCompile Include="Utils\TextService.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.hpp" />
@@ -230,7 +230,6 @@
     <ClInclude Include="GUI\HTTP.hpp" />
     <ClInclude Include="GUI\KnifeSequence.hpp" />
     <ClInclude Include="GUI\SkinConstants.hpp" />
-    <ClInclude Include="GUI\TextService.hpp" />
     <ClInclude Include="GUI\VKeys.hpp" />
     <ClInclude Include="Hacks\Defense\AntiAim.hpp" />
     <ClInclude Include="Hacks\Defense\FakeLag.hpp" />
@@ -267,6 +266,7 @@
     <ClInclude Include="Utils\GetVFunc.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\StrHash.hpp" />
+    <ClInclude Include="Utils\TextService.hpp" />
     <ClInclude Include="Utils\VMTManager.hpp" />
     <ClInclude Include="Utils\Macro.hpp" />
     <ClInclude Include="Utils\PatternScan.hpp" />

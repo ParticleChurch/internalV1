@@ -1,7 +1,7 @@
 #pragma once
 #include "animation.hpp"
 #include "SkinConstants.hpp"
-#include "TextService.hpp"
+#include "Utils/TextService.hpp"
 #include "Config.hpp"
 
 namespace GUI
