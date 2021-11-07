@@ -6,7 +6,7 @@ void World::WorldMod(Material* mat)
 {
 	static Config::CColor* Clr = Config::GetColor("visuals-world-color");
 
-	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
+	mat->ColorModulate(Clr->GetR() / 255.f, Clr->GetG() / 255.f, Clr->GetB() / 255.f);
 	mat->AlphaModulate(Clr->GetA() / 255.f);
 }
 
@@ -17,7 +17,7 @@ void World::PropMod(Material* mat)
 	r_drawspecificstaticprop->SetValue(1);
 
 	static Config::CColor* Clr = Config::GetColor("visuals-world-prop-color");
-	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
+	mat->ColorModulate(Clr->GetR() / 255.f, Clr->GetG() / 255.f, Clr->GetB() / 255.f);
 	mat->AlphaModulate(Clr->GetA() / 255.f);
 	
 }
@@ -38,7 +38,7 @@ void World::SkyboxLoad(std::string name)
 void World::SkyboxMod(Material* mat)
 {
 	static Config::CColor* Clr = Config::GetColor("visuals-world-skybox-color");
-	mat->ColorModulate(Color(Clr->GetR(), Clr->GetG(), Clr->GetB()));
+	mat->ColorModulate(Clr->GetR() / 255.f, Clr->GetG() / 255.f, Clr->GetB() / 255.f);
 }
 
 void World::LightMod()

@@ -86,14 +86,13 @@ namespace VMT { // Virtual Method Table
 	};
 }
 
-/* ONLY AVAILALBE IN C++20
 #define _VMT_UNPACK_UTIL(...) __VA_ARGS__
 #define _VMT_UNPACK(tuple) _VMT_UNPACK_UTIL tuple
 #define _VMT_PREPEND_UTIL(before, ...) before __VA_OPT__(,) __VA_ARGS__
 #define _VMT_PREPEND(v, args_tuple) (_VMT_PREPEND_UTIL(v, _VMT_UNPACK(args_tuple)))
-#define DECLARE_VIRTUAL_METHOD(return_type, name, index, in_args, pass_args) inline return_type name in_args noexcept \
+#define DECLARE_VIRTUAL_METHOD_CUSTOM_ARGS(return_type, name, index, user_args, csgo_args, pass_args) inline return_type name user_args noexcept \
 { \
-	typedef return_type (__thiscall* vfunc) _VMT_PREPEND(void* self, in_args); \
+	typedef return_type (__thiscall* vfunc) _VMT_PREPEND(void* self, csgo_args); \
 	return VMT::GetVirtualMethod<vfunc>(this, index) _VMT_PREPEND(this, pass_args); \
 }
-*/
+#define DECLARE_VIRTUAL_METHOD(return_type, name, index, in_args, pass_args) DECLARE_VIRTUAL_METHOD_CUSTOM_ARGS(return_type, name, index, in_args, in_args, pass_args)

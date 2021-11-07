@@ -6,11 +6,7 @@
 
 class NetChannel {
 public:
-	float GetLatency(int flow)
-	{
-		typedef float(__thiscall* ogetLatency)(void*, int);
-		return VMT::GetVirtualMethod<ogetLatency>(this, 9)(this, flow);
-	}
+	DECLARE_VIRTUAL_METHOD(float, GetLatency, 9, (int flow), (flow));
 
 private:
 	std::byte pad1[0x14];
