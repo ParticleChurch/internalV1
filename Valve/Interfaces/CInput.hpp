@@ -30,7 +30,7 @@ public:
 	CUserCmd* GetUserCmd(int sequence_number)
 	{
 		using OriginalFn = CUserCmd * (__thiscall*)(void*, int, int);
-		return GetVFunc<OriginalFn>(this, 8)(this, 0, sequence_number);
+		return VMT::GetVirtualMethod<OriginalFn>(this, 8)(this, 0, sequence_number);
 	}
 
 	CUserCmd* GetUserCmd(int nSlot, int sequence_number)

@@ -159,7 +159,7 @@
     <ClInclude Include="Utils\Macro.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\VMTManager.hpp">
+    <ClInclude Include="Utils\VMT.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Utils.hpp">

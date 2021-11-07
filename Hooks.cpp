@@ -171,15 +171,15 @@ public:
 
 namespace H
 {
-	VMTManager* d3d9VMT = nullptr;
-	VMTManager* clientVMT = nullptr;
-	VMTManager* clientmodeVMT = nullptr;
-	VMTManager* surfaceVMT = nullptr;
-	VMTManager* panelVMT = nullptr;
-	VMTManager* gameeventmanagerVMT = nullptr;
-	VMTManager* inputVMT = nullptr;
-	VMTManager* modelrenderVMT = nullptr;
-	VMTManager* soundVMT = nullptr;
+	VMT::Manager* d3d9VMT = nullptr;
+	VMT::Manager* clientVMT = nullptr;
+	VMT::Manager* clientmodeVMT = nullptr;
+	VMT::Manager* surfaceVMT = nullptr;
+	VMT::Manager* panelVMT = nullptr;
+	VMT::Manager* gameeventmanagerVMT = nullptr;
+	VMT::Manager* inputVMT = nullptr;
+	VMT::Manager* modelrenderVMT = nullptr;
+	VMT::Manager* soundVMT = nullptr;
 
 	EndScene oEndScene;
 	Reset oReset;
@@ -233,8 +233,8 @@ void H::GUIInit()
 
 	while (!(CSGOWindow = FindWindowW(L"Valve001", nullptr))) Sleep(10);
 
-	d3d9VMT = new VMTManager((VMT*)D3d9Device);
-	surfaceVMT = new VMTManager((VMT*)I::surface);
+	d3d9VMT = new VMT::Manager((VMT::VMT*)D3d9Device);
+	surfaceVMT = new VMT::Manager((VMT::VMT*)I::surface);
 	
 	oReset = (Reset)d3d9VMT->Hook(16, &ResetHook);
 	oLockCursor = (LockCursor)surfaceVMT->Hook(67, &LockCursorHook);
@@ -249,19 +249,19 @@ void H::Init()
 	WriteUsercmd = FindPattern("client.dll", " 55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");
 
 	// hooks
-	clientVMT = new VMTManager((VMT*)I::client);
+	clientVMT = new VMT::Manager((VMT::VMT*)I::client);
 	GUI::LoadProgress += 0.01f;
-	clientmodeVMT = new VMTManager((VMT*)I::clientmode);
+	clientmodeVMT = new VMT::Manager((VMT::VMT*)I::clientmode);
 	GUI::LoadProgress += 0.01f;
-	panelVMT = new VMTManager((VMT*)I::panel);
+	panelVMT = new VMT::Manager((VMT::VMT*)I::panel);
 	GUI::LoadProgress += 0.01f;
-	gameeventmanagerVMT = new VMTManager((VMT*)I::gameeventmanager);
+	gameeventmanagerVMT = new VMT::Manager((VMT::VMT*)I::gameeventmanager);
 	GUI::LoadProgress += 0.01f;
-	inputVMT = new VMTManager((VMT*)I::input);
+	inputVMT = new VMT::Manager((VMT::VMT*)I::input);
 	GUI::LoadProgress += 0.01f;
-	modelrenderVMT = new VMTManager((VMT*)I::modelrender);
+	modelrenderVMT = new VMT::Manager((VMT::VMT*)I::modelrender);
 	GUI::LoadProgress += 0.01f;
-	soundVMT = new VMTManager((VMT*)I::sound);
+	soundVMT = new VMT::Manager((VMT::VMT*)I::sound);
 	GUI::LoadProgress += 0.01f;
 
 	oCreateMove = (CreateMove)clientmodeVMT->Hook(24, &CreateMoveHook);
