@@ -49,7 +49,7 @@ void FakeLag::LagOnPeak()
 
 	bool DamageOutgoing = false;
 
-	L::Verbose("Fakelag autowall - begin");
+	L::Debug("Fakelag autowall - begin");
 	
 	int scans = 1;
 	std::map<int, Player>::iterator it;
@@ -71,11 +71,11 @@ void FakeLag::LagOnPeak()
 		if (it->second.Dormant)	// Entity is dormant
 			continue;
 
-		L::Verbose("Fakelag autowall - ValidSimTime");
+		L::Debug("Fakelag autowall - ValidSimTime");
 		if (!ValidSimTime(it->second.SimulationTime)) // if not valid simtime
 			continue;
 
-		L::Verbose("Fakelag autowall - CanHitFloatingPoint");
+		L::Debug("Fakelag autowall - CanHitFloatingPoint");
 
 		H::console.push_back("CanHitFloatingPoint?");
 		/*if (autowall2->CanHitFloatingPoint(it->second.EyePos, NextPos))
@@ -97,7 +97,7 @@ void FakeLag::LagOnPeak()
 			continue;*/
 	}
 
-	L::Verbose("Fakelag autowall - end");
+	L::Debug("Fakelag autowall - end");
 
 	static bool ChokeOnce = false;
 

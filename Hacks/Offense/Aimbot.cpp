@@ -661,7 +661,7 @@ void Aimbot::Rage()
 	// Scan through the players
 	if (ScanPlayers())
 	{
-		L::Verbose("ScanPlayer - shooting at players");
+		L::Debug("ScanPlayer - shooting at players");
 
 		QAngle Angle = CalculateAngle(this->AimPoint);
 		Angle -= (G::LocalPlayer->GetAimPunchAngle() * 2);
@@ -730,7 +730,7 @@ static ThreadHandle_t StartThread(ThreadFunc_t start, void* arg)
 
 bool Aimbot::ScanPlayers()
 {
-	L::Verbose("ScanPlayers");
+	L::Debug("ScanPlayers");
 
 	// for now I'm doing scan player along with backtrack cuz I might as well
 	int i = 1;
@@ -760,53 +760,53 @@ bool Aimbot::ScanPlayers()
 // need to implement the canhit floating point to get weird delay crap nonsense to work...
 bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 {
-	L::Verbose("ScanPlayer");
+	L::Debug("ScanPlayer");
 	if (lagcomp->PlayerList.empty())
 		return false;
 
-	/*L::Verbose("ScanPlayer - notempty");*/
+	/*L::Debug("ScanPlayer - notempty");*/
 
 	if (lagcomp->PlayerList.find(UserID) == lagcomp->PlayerList.end())
 		return false;
 
-	/*L::Verbose("ScanPlayer - notend");*/
+	/*L::Debug("ScanPlayer - notend");*/
 
 	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
 
-	/*L::Verbose("ScanPlayer - passedindexcheck");*/
+	/*L::Debug("ScanPlayer - passedindexcheck");*/
 
 	if (!(lagcomp->PlayerList[UserID].ptrEntity)) // entity DOES NOT exist
 		return false;
 
-	/*L::Verbose("ScanPlayer - passedptrEntitycheck");*/
+	/*L::Debug("ScanPlayer - passedptrEntitycheck");*/
 
 	if (!(lagcomp->PlayerList[UserID].Health > 0)) // entity is NOT alive
 		return false;
 
-	/*L::Verbose("ScanPlayer - passedhealthcheck");*/
+	/*L::Debug("ScanPlayer - passedhealthcheck");*/
 
 	if (lagcomp->PlayerList[UserID].Team == G::LocalPlayerTeam) // Entity is on same team
 		return false;
 
-	/*L::Verbose("ScanPlayer - passedteamcheck");*/
+	/*L::Debug("ScanPlayer - passedteamcheck");*/
 
 	if (lagcomp->PlayerList[UserID].Dormant)	// Entity is dormant
 		return false;
 
-	/*L::Verbose("ScanPlayer - passeddormantcheck");*/
+	/*L::Debug("ScanPlayer - passeddormantcheck");*/
 
 	if (!lagcomp->PlayerList[UserID].ptrModel) return false;
 
 	//valid sim time big brain
 	if (!ValidSimTime(lagcomp->PlayerList[UserID].SimulationTime)) return false;
 
-	//L::Verbose("ScanPlayer - passedmodelcheck");
+	//L::Debug("ScanPlayer - passedmodelcheck");
 
 	studiohdr_t* StudioModel = I::modelinfo->GetStudioModel(lagcomp->PlayerList[UserID].ptrModel);
 	if (!StudioModel) return false; //if cant get the model
 
-	L::Verbose("ScanPlayer - passed checks");
+	L::Debug("ScanPlayer - passed checks");
 
 	// Handle baim stuff :D
 	bool DoBaim = false;
@@ -843,7 +843,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		int HitGroup = GetHitGroup(HITBOX);
 		float radius = StudioBox->m_flRadius * rage.multipoint;
 
-		L::Verbose("ScanPlayer - got hitbox");
+		L::Debug("ScanPlayer - got hitbox");
 
 		Vec min = StudioBox->bbmin.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
 		Vec max = StudioBox->bbmax.Transform(lagcomp->PlayerList[UserID].Matrix[StudioBox->bone]);
@@ -854,27 +854,27 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		{
 
 			// Calc Mid Angle
-			L::Verbose("ScanPlayer - CalculateAngle HITBOX_HEAD");
+			L::Debug("ScanPlayer - CalculateAngle HITBOX_HEAD");
 			QAngle MidAngle = CalculateAngle(point);
 
 			// Calc Mid Hitchance
-			L::Verbose("ScanPlayer - CalculateHitchance HITBOX_HEAD");
+			L::Debug("ScanPlayer - CalculateHitchance HITBOX_HEAD");
 			float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 
 			// If the left hitchance is up to snuff...
 			if (MidHitchance >= rage.hitchance)
 			{
 				// if the point is visible
-				L::Verbose("ScanPlayer - IsVisible HITBOX_HEAD");
+				L::Debug("ScanPlayer - IsVisible HITBOX_HEAD");
 				bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 				// no need to autowall if visible...
-				L::Verbose("ScanPlayer - Damage HITBOX_HEAD");
+				L::Debug("ScanPlayer - Damage HITBOX_HEAD");
 				damage = autowall->Damage(point, HITBOX, rage.FriendlyFireAllowed);
 				if (visible && damage >= rage.vis_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy vis_mindam HITBOX_HEAD");
+					L::Debug("ScanPlayer - memcpy vis_mindam HITBOX_HEAD");
 					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 					TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
@@ -885,7 +885,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 				else if (damage >= rage.hid_mindam)
 				{
 					this->TargetUserID = UserID;
-					L::Verbose("ScanPlayer - memcpy hid_mindam HITBOX_HEAD");
+					L::Debug("ScanPlayer - memcpy hid_mindam HITBOX_HEAD");
 					std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 
 					// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
@@ -933,27 +933,27 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 		}
 
 		// Calc Mid Angle
-		L::Verbose("ScanPlayer - CalculateAngle Reg");
+		L::Debug("ScanPlayer - CalculateAngle Reg");
 		QAngle MidAngle = CalculateAngle(point);
 
 		// Calc Mid Hitchance
-		L::Verbose("ScanPlayer - CalculateHitchance Reg");
+		L::Debug("ScanPlayer - CalculateHitchance Reg");
 		float MidHitchance = CalculateHitchance(MidAngle, point, lagcomp->PlayerList[UserID].ptrEntity, HITBOX);
 
 		// If the left hitchance is up to snuff...
 		if (MidHitchance >= rage.hitchance)
 		{
 			// if the point is visible
-			L::Verbose("ScanPlayer - IsVisible Reg");
+			L::Debug("ScanPlayer - IsVisible Reg");
 			bool visible = autowall->IsVisible(point, lagcomp->PlayerList[UserID].ptrEntity);
 
 			// no need to autowall if visible...
-			L::Verbose("ScanPlayer - Damage Reg");
+			L::Debug("ScanPlayer - Damage Reg");
 			damage = autowall->Damage(point, HITBOX, rage.FriendlyFireAllowed);
 			if (visible && damage >= rage.vis_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy vis_mindam");
+				L::Debug("ScanPlayer - memcpy vis_mindam");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
 				TargetTickCount = TimeToTicks(lagcomp->PlayerList[UserID].SimulationTime - GetLerp()) + 1;
@@ -964,7 +964,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 			else if (damage >= rage.hid_mindam)
 			{
 				this->TargetUserID = UserID;
-				L::Verbose("ScanPlayer - memcpy hid_mindam");
+				L::Debug("ScanPlayer - memcpy hid_mindam");
 				std::memcpy(TargetMatrix, lagcomp->PlayerList[UserID].Matrix, 128 * sizeof(Matrix3x4));
 
 				// IT SHOULD BE + GETLERP BUT IDK Y THIS WORKS BRUGH
@@ -983,7 +983,7 @@ bool Aimbot::ScanPlayer(int UserID, Vec& Point)
 // STILL IN PROGRESS!
 bool Aimbot::ScanPlayerBacktrack(int UserID, Vec& Point)
 {
-	L::Verbose("ScanPlayerBacktrack");
+	L::Debug("ScanPlayerBacktrack");
 	if (lagcomp->PlayerList[UserID].Index == G::LocalPlayerIndex) // entity is Localplayer
 		return false;
 
@@ -1305,31 +1305,31 @@ void Aimbot::GetRageHitboxes(int gun)
 	switch (gun)
 	{
 	case 0:
-		L::Verbose("pistol");
+		L::Debug("pistol");
 		selection = Pistol_Hitbox_R->Mask;
 		break;
 	case 1:
-		L::Verbose("smg");
+		L::Debug("smg");
 		selection = SMG_Hitbox_R->Mask;
 		break;
 	case 2:
-		L::Verbose("heavy");
+		L::Debug("heavy");
 		selection = Heavy_Hitbox_R->Mask;
 		break;
 	case 3:
-		L::Verbose("scoupt");
+		L::Debug("scoupt");
 		selection = Scout_Hitbox_R->Mask;
 		break;
 	case 4:
-		L::Verbose("awp");
+		L::Debug("awp");
 		selection = AWP_Hitbox_R->Mask;
 		break;
 	case 5:
-		L::Verbose("auto");
+		L::Debug("auto");
 		selection = Auto_Hitbox_R->Mask;
 		break;
 	case 6:
-		L::Verbose("rifle");
+		L::Debug("rifle");
 		selection = Rifle_Hitbox_R->Mask;
 		break;
 	default:

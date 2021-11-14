@@ -64,8 +64,8 @@ public:
 
 	virtual void FireGameEvent(GameEvent* event)
 	{
-		L::Verbose("EventListener::FireGameEvent -> processing event: ", "");
-		L::Verbose(event->GetName());
+		L::Debug("EventListener::FireGameEvent -> processing event: ", "");
+		L::SameLine(event->GetName());
 		switch (StrHash::HashRuntime(event->GetName())) {
 		case StrHash::Hash("player_hurt"):
 		{
@@ -164,8 +164,8 @@ public:
 		resolver->LogShots(event);
 		esp->Run_GameEvent(event);
 
-		L::Verbose("EventListener::FireGameEvent -> end processing event: ", "");
-		L::Verbose(event->GetName());
+		L::Debug("EventListener::FireGameEvent -> end processing event: ", "");
+		L::SameLine(event->GetName());
 	}
 };
 
@@ -336,11 +336,11 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 {
 	static auto AllowMenuOffScreen = Config::GetState("theme-offscreen");
 
-	L::Verbose("H::EndSceneHook - begin");
+	L::Debug("H::EndSceneHook - begin");
 
 	// init imgui
 	if (!D3dInit) {
-		L::Verbose("H::EndSceneHook d3d9 init begin");
+		L::Debug("H::EndSceneHook d3d9 init begin");
 		D3dInit = true;
 
 		ImGui::CreateContext();
@@ -351,7 +351,7 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 
 		ImGui_ImplWin32_Init(CSGOWindow);
 		ImGui_ImplDX9_Init(device);
-		L::Verbose("H::EndSceneHook d3d9 init complete");
+		L::Debug("H::EndSceneHook d3d9 init complete");
 	}
 
 	//* store pixelstate
@@ -434,18 +434,18 @@ long __stdcall H::EndSceneHook(IDirect3DDevice9* device)
 	PixelState->Release();
 	//*/
 
-	L::Verbose("H::EndSceneHook - complete");
+	L::Debug("H::EndSceneHook - complete");
 	return oEndScene(device);
 }
 
 long __stdcall H::ResetHook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
-	L::Verbose("H::ResetHook - begin");
+	L::Debug("H::ResetHook - begin");
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 	ImGui_ImplDX9_CreateDeviceObjects();
 	
 	auto ogOutput = oReset(device, pPresentationParameters);
-	L::Verbose("H::ResetHook - complete");
+	L::Debug("H::ResetHook - complete");
 	return ogOutput;
 }
 
@@ -483,12 +483,12 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		uMsg == WM_NCXBUTTONDOWN || uMsg == WM_NCXBUTTONDBLCLK;
 	bool UnknownInput = !KeyboardInput && !MouseInput;
 
-	L::Verbose("WndProc begin (", "");
-	L::Verbose(std::to_string((DWORD)hWnd).c_str(), ", ");
-	L::Verbose(std::to_string(uMsg).c_str(), ", ");
-	L::Verbose(std::to_string(wParam).c_str(), ", ");
-	L::Verbose(std::to_string(lParam).c_str(), ") - ");
-	L::Verbose(MouseInput ? "mouse" : KeyboardInput ? "keyboard" : "unknown");
+	L::Debug("WndProc begin (", "");
+	L::SameLine(std::to_string((DWORD)hWnd).c_str(), ", ");
+	L::SameLine(std::to_string(uMsg).c_str(), ", ");
+	L::SameLine(std::to_string(wParam).c_str(), ", ");
+	L::SameLine(std::to_string(lParam).c_str(), ") - ");
+	L::SameLine(MouseInput ? "mouse" : KeyboardInput ? "keyboard" : "unknown");
 
 	// send input to imgui
 	if (MenuOpen->Get()) ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
@@ -507,7 +507,7 @@ LRESULT __stdcall H::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	)
 		handled = CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 
-	L::Verbose("WndProc complete - returned ", handled ? "true\n" : "false\n");
+	L::Debug("WndProc complete - returned ", handled ? "true\n" : "false\n");
 	return handled;
 }
 
@@ -520,40 +520,40 @@ float RandomVal(float min, float max)
 
 bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 {
-	L::Verbose("H::CreateMoveHook - begin");
+	L::Debug("H::CreateMoveHook - begin");
 	bool oFunc = oCreateMove(flInputSampleTime, cmd);
 	
 	if (!oFunc || !cmd || !cmd->command_number)
 	{
-		L::Verbose("!oFunc || !cmd || !cmd->command_number");
+		L::Debug("!oFunc || !cmd || !cmd->command_number");
 		/*return oFunc;*/
 		return false;
 	}
 		
-	L::Verbose("I::engine->IsInGame() && cmd && G::LocalPlayer");
+	L::Debug("I::engine->IsInGame() && cmd && G::LocalPlayer");
 	if (I::engine->IsInGame() && cmd && G::LocalPlayer)
 	{
-		L::Verbose("Assembly");
+		L::Debug("Assembly");
 		PVOID pebp;
 		__asm mov pebp, ebp;
 		bool* pSendPacket = (bool*)(*(DWORD*)pebp - 0x1C);
 
-		L::Verbose("CM_Start");
+		L::Debug("CM_Start");
 		G::CM_Start(cmd, pSendPacket);
 
 		// Fake lag Calculations
-		L::Verbose("fakelag->Start();");
+		L::Debug("fakelag->Start();");
 		fakelag->Start();
 
 		// Doubletap Stuff
 		doubletap->start();
 
 		// Update server time
-		L::Verbose("I::globalvars->ServerTime(cmd);");
+		L::Debug("I::globalvars->ServerTime(cmd);");
 		float ServerTime = I::globalvars->ServerTime(cmd);
 
 		// Movement
-		L::Verbose("movement");
+		L::Debug("movement");
 		movement->AutoStop();
 		movement->BunnyHop();	
 		movement->SlowWalk();
@@ -567,26 +567,26 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 
 		// nade visuals
-		L::Verbose("miscvisuals");
+		L::Debug("miscvisuals");
 		miscvisuals->GrenadePrediction();
 		//miscvisuals->ChangeViewModel();
 	
-		L::Verbose("CM_MoveFixStart");
+		L::Debug("CM_MoveFixStart");
 		G::CM_MoveFixStart();
 
 		// Fake Lag
-		L::Verbose("fakelag->End();");
+		L::Debug("fakelag->End();");
 		*G::pSendPacket = fakelag->End();
 		
 		// AA
-		L::Verbose("antiaim");
+		L::Debug("antiaim");
 		antiaim->legit();
 		antiaim->rage();
 
 		// Clantag
-		L::Verbose("clantag");
+		L::Debug("clantag");
 		clantag->run();
-		L::Verbose("RankRevealer");
+		L::Debug("RankRevealer");
 		miscvisuals->RankRevealer();
 
 		// bad use (E) and attack (LBUTTON)
@@ -603,7 +603,7 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			G::cmd->viewangles = G::StartAngle;
 		}
 
-		L::Verbose("aimbot");
+		L::Debug("aimbot");
 		aimbot->Run();
 
 		if (G::LocalPlayerWeapon && 
@@ -659,10 +659,10 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 			aimbot->Rage();
 		*/
 
-		L::Verbose("backtrack");
+		L::Debug("backtrack");
 		backtrack->run();
 
-		L::Verbose("CM_MoveFixEnd");
+		L::Debug("CM_MoveFixEnd");
 		G::CM_MoveFixEnd();
 
 		
@@ -684,20 +684,20 @@ bool __stdcall H::CreateMoveHook(float flInputSampleTime, CUserCmd* cmd)
 		
 		doubletap->end();
 
-		L::Verbose("CM_End");
+		L::Debug("CM_End");
 		G::CM_End();	
 
 		//movement->RageAutoStrafe();
 		animfix->UpdateVal(cmd, *pSendPacket);
 	}
 
-	L::Verbose("H::CreateMoveHook - complete");
+	L::Debug("H::CreateMoveHook - complete");
 	return false; //silent aim on false (only for client)
 }
 
 void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 {
-	L::Verbose("H::PaintTraverseHook - begin");
+	L::Debug("H::PaintTraverseHook - begin");
 
 	static Config::CState* NoScope = Config::GetState("visuals-misc-noscope");
 
@@ -709,32 +709,32 @@ void __stdcall H::PaintTraverseHook(int vguiID, bool force, bool allowForcing)
 		if (!G::LocalPlayer || !I::engine->IsInGame())
 			return;
 
-		L::Verbose("H::PaintTraverseHook - miscvisuals");
+		L::Debug("H::PaintTraverseHook - miscvisuals");
 		miscvisuals->NoScope();
-		L::Verbose("H::PaintTraverseHook - Run_PaintTraverse");
+		L::Debug("H::PaintTraverseHook - Run_PaintTraverse");
 		esp->Run_PaintTraverse();
 	}
 
-	L::Verbose("H::PaintTraverseHook - complete");
+	L::Debug("H::PaintTraverseHook - complete");
 }
 
 void __stdcall H::FrameStageNotifyHook(int stage)
 {
-	L::Verbose("H::FrameStageNotifyHook - begin stage ", "");  L::Verbose(std::to_string(stage).c_str());
+	L::Debug("H::FrameStageNotifyHook - begin stage ", "");  L::SameLine(std::to_string(stage).c_str());
 
 	// post processing
-	L::Verbose("H::FrameStageNotifyHook - disablePostProcessing");
+	L::Debug("H::FrameStageNotifyHook - disablePostProcessing");
 	static bool* disablePostProcessing = *reinterpret_cast<bool**>(FindPattern("client.dll", "83 EC 4C 80 3D") + 5);
 	if (stage == FRAME_RENDER_START || stage == FRAME_RENDER_END)
 		*disablePostProcessing = stage == FRAME_RENDER_START;
 
 	// update globals
-	L::Verbose("H::FrameStageNotifyHook - IsInGame (", "");
+	L::Debug("H::FrameStageNotifyHook - IsInGame (", "");
 	G::IsInGame = I::engine->IsInGame();
-	L::Verbose(G::IsInGame ? "true)" : "false)");
+	L::SameLine(G::IsInGame ? "true)" : "false)");
 	if (G::IsInGame)
 	{
-		L::Verbose("H::FrameStageNotifyHook - update globals");
+		L::Debug("H::FrameStageNotifyHook - update globals");
 		G::LocalPlayerIndex = I::engine->GetLocalPlayer();
 		G::LocalPlayer = I::entitylist->GetClientEntity(G::LocalPlayerIndex);
 		G::LocalPlayerAlive = G::LocalPlayer ? G::LocalPlayer->GetHealth() > 0 && G::LocalPlayer->GetLifeState() == LIFE_ALIVE: false;
@@ -744,14 +744,14 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 
 		if (!G::LocalPlayer || !G::LocalPlayerAlive)
 		{
-			L::Verbose("H::FrameStageNotifyHook - ClearRecords");
+			L::Debug("H::FrameStageNotifyHook - ClearRecords");
 			lagcomp->ClearRecords();
 			return oFrameStageNotify(stage);
 		}
 	}
 	else
 	{
-		L::Verbose("H::FrameStageNotifyHook - G::EntList.clear()");
+		L::Debug("H::FrameStageNotifyHook - G::EntList.clear()");
 		lagcomp->ClearPlayerList();
 		G::LocalPlayerAlive = false;
 		G::LocalPlayer = nullptr;
@@ -785,7 +785,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	{
 	case FRAME_RENDER_START:
 	{
-		L::Verbose("H::FrameStageNotifyHook - LocalAnimFix");
+		L::Debug("H::FrameStageNotifyHook - LocalAnimFix");
 		/*LocalAnimFix(G::LocalPlayer);*/
 		G::LocalPlayer->GetAnimOverlays()[3].m_flWeight = 0.0f;
 		G::LocalPlayer->GetAnimOverlays()[3].m_flCycle = 0.0f;
@@ -796,7 +796,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		
 
 		// bones out of view
-		L::Verbose("H::FrameStageNotifyHook - OutOfViewBoneSetup");
+		L::Debug("H::FrameStageNotifyHook - OutOfViewBoneSetup");
 		Entity* entity;
 		for (int i = 1; i <= I::engine->GetMaxClients(); i++) {
 			if (i == G::LocalPlayerIndex || !(entity = I::entitylist->GetClientEntity(i)) || entity->IsDormant() || entity->GetHealth() <= 0) continue;
@@ -806,7 +806,7 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		}
 
 		// update our local entlist
-		L::Verbose("H::FrameStageNotifyHook - UpdateEntities");
+		L::Debug("H::FrameStageNotifyHook - UpdateEntities");
 		lagcomp->Update();
 
 		// third person
@@ -817,13 +817,13 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 	} break;
 	case FRAME_NET_UPDATE_POSTDATAUPDATE_START:
 	{
-		L::Verbose("H::FrameStageNotifyHook - resolver->Resolve");
+		L::Debug("H::FrameStageNotifyHook - resolver->Resolve");
 		resolver->Resolve();
-		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoFlash");
+		L::Debug("H::FrameStageNotifyHook - miscvisuals->NoFlash");
 		miscvisuals->NoFlash();
-		L::Verbose("H::FrameStageNotifyHook - miscvisuals->NoSmokeFSN");
+		L::Debug("H::FrameStageNotifyHook - miscvisuals->NoSmokeFSN");
 		miscvisuals->NoSmokeFSN();
-		L::Verbose("H::FrameStageNotifyHook - SkinChanger::RunFSN");
+		L::Debug("H::FrameStageNotifyHook - SkinChanger::RunFSN");
 		SkinChanger::RunFSN();
 	} break;
 	}
@@ -861,35 +861,35 @@ void __stdcall H::FrameStageNotifyHook(int stage)
 		}
 	*/
 	oFrameStageNotify(stage);
-	L::Verbose("H::FrameStageNotifyHook - completed stage ", "");  L::Verbose(std::to_string(stage).c_str());
+	L::Debug("H::FrameStageNotifyHook - completed stage ", "");  L::SameLine(std::to_string(stage).c_str());
 }
 
 void __stdcall H::LockCursorHook()
 {
 	static auto MenuOpen = Config::GetState("show-menu");
-	L::Verbose("H::LockCursorHook - begin");
+	L::Debug("H::LockCursorHook - begin");
 	if (MenuOpen->Get())
 		I::surface->UnlockCursor();
 	else
 		oLockCursor(I::surface);
-	L::Verbose("H::LockCursorHook - end");
+	L::Debug("H::LockCursorHook - end");
 }
 
 void __fastcall H::hkCamToFirstPeronHook()
 {
-	L::Verbose("H::hkCamToFirstPeronHook - begin");
+	L::Debug("H::hkCamToFirstPeronHook - begin");
 	miscvisuals->ThirdPerson_hkCamToFirstPeron();
-	L::Verbose("H::hkCamToFirstPeronHook - end");
+	L::Debug("H::hkCamToFirstPeronHook - end");
 }
 
 void __stdcall H::DoPostScreenEffectsHook(int param)
 {
-	L::Verbose("H::DoPostScreenEffectsHook - begin");
+	L::Debug("H::DoPostScreenEffectsHook - begin");
 	miscvisuals->ThirdPerson_DoPostScreenEffects();
 	miscvisuals->NoSmoke_DoPostScreenEffects();
 	world->Run_DoPostScreenEffect();
 	miscvisuals->ForceCrosshair();
-	L::Verbose("H::DoPostScreenEffectsHook - end");
+	L::Debug("H::DoPostScreenEffectsHook - end");
 
 	return oDoPostScreenEffects(I::clientmode, param);
 }
@@ -897,18 +897,18 @@ void __stdcall H::DoPostScreenEffectsHook(int param)
 void __fastcall H::DrawModelExecuteHook(void* thisptr, int edx, void* ctx, void* state, const ModelRenderInfo& info, Matrix3x4* customBoneToWorld)
 {
 	/*return H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);*/
-	L::Verbose("H::DrawModelExecuteHook - begin");
+	L::Debug("H::DrawModelExecuteHook - begin");
 	
 	chams->Init(); // BRO, there MUST be a better way to do this
 	chams->Run(thisptr, edx, ctx, state, info, customBoneToWorld);
 	// 
 
-	L::Verbose("H::DrawModelExecuteHook - complete");
+	L::Debug("H::DrawModelExecuteHook - complete");
 }
 
 void __stdcall H::EmitSoundHook(SoundData data)
 {
-	L::Verbose("H::EmitSoundHook - begin");
+	L::Debug("H::EmitSoundHook - begin");
 	static std::add_pointer_t<bool __stdcall(const char*)> acceptMatch = reinterpret_cast<decltype(acceptMatch)>(G::AcceptMatchPattern);
 	static Config::CState* Enable = Config::GetState("misc-other-autoaccept");
 
@@ -927,7 +927,7 @@ void __stdcall H::EmitSoundHook(SoundData data)
 	// call orig hook
 	oEmitSound(I::sound, data); 
 
-	L::Verbose("H::EmitSoundHook - complete");
+	L::Debug("H::EmitSoundHook - complete");
 }
 
 static void CWriteUsercmd(void* buf, CUserCmd* Cin, CUserCmd* Cout)

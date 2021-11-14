@@ -518,7 +518,7 @@ namespace Config
 		{
 			if (index > 63)
 			{
-				L::Log("AYOOO YOU CAN'T SET MORE THAN 64 THINGS");
+				L::Info("AYOOO YOU CAN'T SET MORE THAN 64 THINGS");
 				return false;
 			}
 			return this->Mask & ((uint64_t)1 << index);

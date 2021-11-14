@@ -243,7 +243,7 @@ bool Autowall::CanHitFloatingPoint(const Vec& point, bool AllowFriendlyFire)
 
 
         // We have reached end of trace and therefore can hit it
-        L::Verbose("Checking trace fraction 1");
+        L::Debug("Checking trace fraction 1");
         if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
             // if reached end of ray, and the trace entity isn't on our team/doesnt exist...
@@ -300,7 +300,7 @@ bool Autowall::CanHitFloatingPoint(Vec start, const Vec& point, bool AllowFriend
 
 
         // We have reached end of trace and therefore can hit it
-        L::Verbose("Checking trace fraction 1");
+        L::Debug("Checking trace fraction 1");
         if (Trace.Fraction > 0.97f && (!Trace.Entity || Trace.Entity->GetTeam() != G::LocalPlayerTeam))
         {
             // if reached end of ray, and the trace entity isn't on our team/doesnt exist...

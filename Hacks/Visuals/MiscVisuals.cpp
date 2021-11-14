@@ -142,14 +142,14 @@ void MiscVisuals::DrawBeams(GameEvent* event)
 
 void MiscVisuals::NoAimViewPunchFSN(int stage)
 {
-	L::Verbose("NoAimViewPunchFSN");
+	L::Debug("NoAimViewPunchFSN");
 	static Config::CState* NoAimPunch = Config::GetState("visuals-misc-noAimPunch");
 	static Config::CState* NoViewPunch = Config::GetState("visuals-misc-noViewPunch");
 
 	static Vec aimPunch;
 	static Vec viewPunch;
 
-	L::Verbose("NoAimViewPunchFSN - run test");
+	L::Debug("NoAimViewPunchFSN - run test");
 	if (!G::LocalPlayer || !G::LocalPlayerAlive || !G::IsInGame)
 		return;
 

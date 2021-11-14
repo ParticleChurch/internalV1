@@ -40,7 +40,7 @@ problemo:
 	// segfault lol
 	int x = *(int*)0;
 	// prevent dumbass compiler from ignoring our segfault >:(
-	L::Log(std::to_string(x).c_str());
+	L::Info(std::to_string(x).c_str());
 }
 
 // random imgui utils
@@ -3850,20 +3850,20 @@ void GUI::PerformSearch()
 
 void GUI::Init()
 {
-	L::Verbose(STRXOR("GUI::Init running"));
+	L::Debug(STRXOR("GUI::Init running"));
 	ZeroMemory(SearchQuery, 256);
 	ZeroMemory(CachedSearch, 256);
 	strcpy(CachedSearch, "this string is here so that `PerformSearch` will actually run on the first call");
 
 	SearchAnimation = Animation::newAnimation(STRXOR("search-open/close"), 0);
-	L::Verbose(STRXOR("GUI::Init complete"));
+	L::Debug(STRXOR("GUI::Init complete"));
 }
 
 void GUI::Main()
 {
 	static auto MenuOpen = Config::GetState(STRXOR("show-menu"));
 	++Config::GUIFramesRenderedCounter;
-	L::Verbose((STRXOR("GUI::Main executed (frame ") + std::to_string(Config::GUIFramesRenderedCounter) + STRXOR(")")).c_str());
+	L::Debug((STRXOR("GUI::Main executed (frame ") + std::to_string(Config::GUIFramesRenderedCounter) + STRXOR(")")).c_str());
 	static bool Init = false;
 	if (!Init)
 	{
@@ -3874,36 +3874,36 @@ void GUI::Main()
 	WantKeyboard = false;
 	if (IntroAnimation2 && IntroAnimation2->state != 69)
 	{
-		L::Verbose(STRXOR("GUI::AuthenticationIntro running"));
+		L::Debug(STRXOR("GUI::AuthenticationIntro running"));
 		AuthenticationIntro();
-		L::Verbose(STRXOR("GUI::AuthenticationIntro complete"));
+		L::Debug(STRXOR("GUI::AuthenticationIntro complete"));
 	}
 	else if (UserData::SessionId != "")
 	{
 		if (MenuOpen->Get() && !IsSteamOverlayOpen())
 		{
-			L::Verbose(STRXOR("GUI::MainScreen running"));
+			L::Debug(STRXOR("GUI::MainScreen running"));
 			MainScreen();
-			L::Verbose(STRXOR("GUI::MainScreen complete"));
+			L::Debug(STRXOR("GUI::MainScreen complete"));
 		}
 	}
 	else if (VisibleLoadProgress <= 1.f) // if == 1, currently animating
 	{
-		L::Verbose(STRXOR("GUI::LoadingScreen running"));
+		L::Debug(STRXOR("GUI::LoadingScreen running"));
 		LoadingScreen();
-		L::Verbose(STRXOR("GUI::LoadingScreen complete"));
+		L::Debug(STRXOR("GUI::LoadingScreen complete"));
 	}
 	else
 	{
-		L::Verbose(STRXOR("GUI::AuthenticationScreen running"));
+		L::Debug(STRXOR("GUI::AuthenticationScreen running"));
 		if (!IsSteamOverlayOpen())
 			AuthenticationScreen();
-		L::Verbose(STRXOR("GUI::AuthenticationScreen complete"));
+		L::Debug(STRXOR("GUI::AuthenticationScreen complete"));
 	}
 
-	L::Verbose(STRXOR("Config::ProcessKeys running"));
+	L::Debug(STRXOR("Config::ProcessKeys running"));
 	Config::ProcessKeys();
-	L::Verbose(STRXOR("Config::ProcessKeys complete"));
+	L::Debug(STRXOR("Config::ProcessKeys complete"));
 
 
 	if (UserData::SessionId != "") // if we should be pinging
@@ -3914,7 +3914,7 @@ void GUI::Main()
 		else if (SecondsSincePing > 420) // egregious ping delay
 			GUI::Ejected = true;
 	}
-	L::Verbose(STRXOR("GUI::Main complete"));
+	L::Debug(STRXOR("GUI::Main complete"));
 }
 
 CHudElement* GUI::FindHudElement(const char* Name)

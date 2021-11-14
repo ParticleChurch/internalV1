@@ -6,9 +6,9 @@
 
 // config macro utils
 #define CONFIG_PROPERTY_TYPE_CHECK(p, t, ret) \
-if (L::OutputMode != L::LogMode::None && p->Type != t){ \
-	L::Log("ERROR: You used the wrong getter for property: ", ""); \
-	L::Log(p->Name.c_str()); \
+if (p->Type != t){ \
+	L::Info("ERROR: You used the wrong getter for property: ", ""); \
+	L::SameLine(p->Name.c_str()); \
 	return ret; \
 }
 #define CONFIG_VIS(p, link, state, statev) \
@@ -634,7 +634,7 @@ namespace Config
 		auto Search = PropertyTable.find(Name);
 		if (Search == PropertyTable.end())
 		{
-			L::Log(("nonexistent property: \"" + Name + "\"").c_str());
+			L::Info(("nonexistent property: \"" + Name + "\"").c_str());
 			return nullptr;
 		}
 		else
@@ -697,8 +697,8 @@ namespace Config
 		case PropertyType::VSTATEFUL:
 			return &((CVerticalState*)p->Value)->Value;
 		default:
-			L::Log("ERROR: You used the wrong getter for property: ", "");
-			L::Log(p->Name.c_str());
+			L::Info("ERROR: You used the wrong getter for property: ", "");
+			L::SameLine(p->Name.c_str());
 			return nullptr;
 		}
 	}
@@ -778,7 +778,7 @@ namespace Config
 					((CFunction*)p->Value)->Callback();
 			} break;
 			default:
-				L::Log((STRXOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
+				L::Info((STRXOR("_KeyStateChanged - idk how to deal with bind on property ") + p->Name).c_str());
 				return;
 			}
 		}
@@ -873,7 +873,7 @@ namespace Config
 			ForceUpdate = false;
 		} break;
 		default:
-			L::Log((STRXOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
+			L::Info((STRXOR("_BindToKey - idk how to deal with bind on non-boolean property ") + p->Name).c_str());
 			return;
 		}
 
@@ -885,11 +885,11 @@ namespace Config
 	{
 		if (!p || !buffer || !bufferSpaceOccupied || !bufferSpaceAllocated)
 		{
-			L::Log(STRXOR("ExportSingleProperty failed - null parameter(s)"));
+			L::Info(STRXOR("ExportSingleProperty failed - null parameter(s)"));
 			return false;
 		}
-		L::Verbose(STRXOR("ExportSingleProperty running for p = "), "");
-		L::Verbose(p->Name.c_str());
+		L::Debug(STRXOR("ExportSingleProperty running for p = "), "");
+		L::SameLine(p->Name.c_str());
 
 		size_t vacantSpaceInBuffer = *bufferSpaceAllocated - *bufferSpaceOccupied;
 		size_t spaceRequired = sizeof(size_t);
@@ -956,7 +956,7 @@ namespace Config
 			spaceRequired += valueLength;
 		} break;
 		default:
-			L::Log((STRXOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
+			L::Info((STRXOR("ExportSingleProperty - Warning, idk how to export this property type: ") + std::to_string((int)p->Type)).c_str());
 			return true;
 		}
 
@@ -968,19 +968,19 @@ namespace Config
 				re = (char*)realloc(*buffer, *bufferSpaceAllocated + (spaceRequired - vacantSpaceInBuffer));
 			}
 			catch (std::exception& e) {
-				L::Log(e.what());
+				L::Info(e.what());
 			}
 			if (!re)
 			{
-				L::Log(STRXOR("ExportSingleProperty failed - could not expand buffer"));
+				L::Info(STRXOR("ExportSingleProperty failed - could not expand buffer"));
 				return false;
 			}
 			else
 			{
 				*buffer = re;
 				*bufferSpaceAllocated += spaceRequired - vacantSpaceInBuffer;
-				L::Verbose(STRXOR("ExportSingleProperty reallocated to @"), "");
-				L::Verbose((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*bufferSpaceAllocated)).c_str());
+				L::Debug(STRXOR("ExportSingleProperty reallocated to @"), "");
+				L::SameLine((std::to_string((DWORD)*buffer) + " and new capacity: " + std::to_string(*bufferSpaceAllocated)).c_str());
 			}
 		}
 
@@ -1059,7 +1059,7 @@ namespace Config
 			*bufferSpaceOccupied += spaceRequired;
 		}
 
-		L::Verbose("ExportSingleProperty success");
+		L::Debug("ExportSingleProperty success");
 		return true;
 	}
 
@@ -1081,9 +1081,9 @@ namespace Config
 		Property* p = GetProperty(name);
 		if (!p)
 		{
-			L::Log("Failed to load nonexistent property: ", "\"");
-			L::Log(std::string(name, nameSize).c_str(), "\", ");
-			L::Log("so i'm just gonna try and skip to the next one");
+			L::Info("Failed to load nonexistent property: ", "\"");
+			L::SameLine(std::string(name, nameSize).c_str(), "\", ");
+			L::SameLine("so i'm just gonna try and skip to the next one");
 			if (nBytesUsed) *nBytesUsed += valueSize;
 			return false;
 		}
@@ -1124,7 +1124,7 @@ namespace Config
 					((CBoolean*)p->Value)->BindMode = KeybindMode::HOLDTODISABLE;
 					break;
 				default:
-					L::Verbose(STRXOR("ImportSingleProperty got a weird bind mode for boolean"));
+					L::Debug(STRXOR("ImportSingleProperty got a weird bind mode for boolean"));
 					break; // just leave it at whatever it was
 				}
 				_BindToKey(p, Keybind::ReverseKeyMap(*(int*)(value + 2)));
@@ -1175,7 +1175,7 @@ namespace Config
 			((CMultiSelect*)p->Value)->Mask = *(uint64_t*)value;
 		} break;
 		default:
-			L::Log((STRXOR("ImportSingleProperty - Warning, idk how to import this property type: ") + std::to_string((int)p->Type)).c_str());
+			L::Info((STRXOR("ImportSingleProperty - Warning, idk how to import this property type: ") + std::to_string((int)p->Type)).c_str());
 			return false;
 		}
 		return true;
@@ -1191,7 +1191,7 @@ namespace Config
 		char* buffer = (char*)malloc(headerSize);
 		if (!buffer)
 		{
-			L::Log(STRXOR("Config::ExportTheme failed - initial malloc failed"));
+			L::Info(STRXOR("Config::ExportTheme failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1212,7 +1212,7 @@ namespace Config
 
 			if (!ThemeTab)
 			{
-				L::Log("Config::ExportTheme failed - couldn't find theme tab");
+				L::Info("Config::ExportTheme failed - couldn't find theme tab");
 				free(buffer);
 				return nullptr;
 			}
@@ -1226,13 +1226,13 @@ namespace Config
 				Property* p = group->Properties.at(i);
 				if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 				{
-					L::Log(STRXOR("Config::ExportTheme failed - ExportSingleProperty failed"));
+					L::Info(STRXOR("Config::ExportTheme failed - ExportSingleProperty failed"));
 					free(buffer);
 					return nullptr;
 				}
 			}
 		}
-		L::Log(STRXOR("Config::ExportTheme success"));
+		L::Info(STRXOR("Config::ExportTheme success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1248,7 +1248,7 @@ namespace Config
 		char* buffer = (char*)malloc(capacity);
 		if (!buffer)
 		{
-			L::Log(STRXOR("Config::ExportConfig failed - initial malloc failed"));
+			L::Info(STRXOR("Config::ExportConfig failed - initial malloc failed"));
 			return nullptr;
 		}
 
@@ -1270,14 +1270,14 @@ namespace Config
 
 					if (!ExportSingleProperty(p, &buffer, &size, &capacity))
 					{
-						L::Log(STRXOR("Config::ExportConfig failed - ExportSingleProperty failed"));
+						L::Info(STRXOR("Config::ExportConfig failed - ExportSingleProperty failed"));
 						free(buffer);
 						return nullptr;
 					}
 				}
 			}
 		}
-		L::Log(STRXOR("Config::ExportConfig success"));
+		L::Info(STRXOR("Config::ExportConfig success"));
 
 		*nBytesOut = size;
 		return buffer;
@@ -1288,17 +1288,17 @@ namespace Config
 		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/THEME";
 		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/THEME") - 1;
 
-		L::Verbose("Loading theme with ", std::to_string(nBytes).c_str());
-		L::Verbose(" bytes");
+		L::Debug("Loading theme with ", std::to_string(nBytes).c_str());
+		L::SameLine(" bytes");
 		if (nBytes < headerSize)
 		{
-			L::Log("Tried to load a theme that doesn't have enough bytes");
+			L::Info("Tried to load a theme that doesn't have enough bytes");
 			return;
 		}
 
 		if (memcmp(header, buffer, headerSize))
 		{
-			L::Log("Tried to load a theme with invalid header");
+			L::Info("Tried to load a theme with invalid header");
 			return;
 		}
 
@@ -1308,7 +1308,7 @@ namespace Config
 			size_t bruh = nBytes - i;
 			if (!ImportSingleProperty(buffer + i, bruh, &bruh))
 			{
-				L::Log(STRXOR("Failed to import property... This theme is probably fucked0"));
+				L::Info(STRXOR("Failed to import property... This theme is probably fucked0"));
 			}
 			i += bruh;
 		}
@@ -1319,17 +1319,17 @@ namespace Config
 		constexpr const char* header = "\x69\x04\x20PARTICLE.CHURCH/CONFIG";
 		constexpr size_t headerSize = sizeof("\x69\x04\x20PARTICLE.CHURCH/CONFIG") - 1;
 
-		L::Verbose("Loading config with ", std::to_string(nBytes).c_str());
-		L::Verbose(" bytes");
+		L::Debug("Loading config with ", std::to_string(nBytes).c_str());
+		L::SameLine(" bytes");
 		if (nBytes < headerSize)
 		{
-			L::Log("Tried to load a config that doesn't have enough bytes");
+			L::Info("Tried to load a config that doesn't have enough bytes");
 			return;
 		}
 
 		if (memcmp(header, buffer, headerSize))
 		{
-			L::Log("Tried to load a config with invalid header");
+			L::Info("Tried to load a config with invalid header");
 			return;
 		}
 
@@ -1339,7 +1339,7 @@ namespace Config
 			size_t bruh = nBytes - i;
 			if (!ImportSingleProperty(buffer + i, bruh, &bruh, checkPremium))
 			{
-				L::Log("Failed to import property... This config is probably fucked");
+				L::Info("Failed to import property... This config is probably fucked");
 			}
 			i += bruh;
 		}
@@ -1353,7 +1353,7 @@ namespace Config
 
 	DWORD WINAPI _PromptExportThemeFile(void* _)
 	{
-		L::Log("_PromptExportThemeFile executing...");
+		L::Info("_PromptExportThemeFile executing...");
 
 		// prompt user to save file
 		char filename[MAX_PATH];
@@ -1372,40 +1372,40 @@ namespace Config
 			ofn.lpstrTitle = "Export Theme";
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
 
-			L::Verbose("_PromptExportThemeFile initiating user input");
+			L::Debug("_PromptExportThemeFile initiating user input");
 			bool UserTerminated = !GetSaveFileName(&ofn);
 			_ResetCWD();
 			if (UserTerminated || filename[0] == '\0')
 			{
-				L::Log("_PromptExportThemeFile failed - user terminated");
+				L::Info("_PromptExportThemeFile failed - user terminated");
 				return 1;
 			}
-			L::Verbose("_PromptExportThemeFile got filepath: ", "");
-			L::Verbose(filename);
+			L::Debug("_PromptExportThemeFile got filepath: ", "");
+			L::SameLine(filename);
 		}
 
 		// open the file
-		L::Verbose("_PromptExportThemeFile opening file");
+		L::Debug("_PromptExportThemeFile opening file");
 		std::ofstream file(filename, std::ios::binary);
 		if (!file.is_open())
 		{
-			L::Log("_PromptExportThemeFile failed - cannot open file");
+			L::Info("_PromptExportThemeFile failed - cannot open file");
 			return 2;
 		}
 
 		// export the theme
-		L::Verbose("_PromptExportThemeFile passing execution to Config::ExportTheme()");
+		L::Debug("_PromptExportThemeFile passing execution to Config::ExportTheme()");
 		size_t nBytesOut = 0;
 		char* data = Config::ExportTheme(&nBytesOut);
 		if (!data || nBytesOut == 0)
 		{
-			L::Log("_PromptExportThemeFile failed - Config::ExportTheme failed");
+			L::Info("_PromptExportThemeFile failed - Config::ExportTheme failed");
 			file.close();
 			return 3;
 		}
 
 		// write to file
-		L::Verbose("_PromptExportThemeFile writing to file and closing");
+		L::Debug("_PromptExportThemeFile writing to file and closing");
 		file.write(data, nBytesOut);
 		file.close();
 		return 0;
@@ -1413,7 +1413,7 @@ namespace Config
 
 	DWORD WINAPI _PromptImportThemeFile(void* _)
 	{
-		L::Log("_PromptImportThemeFile executing...");
+		L::Info("_PromptImportThemeFile executing...");
 
 		// prompt user to open file
 		char filename[MAX_PATH];
@@ -1431,24 +1431,24 @@ namespace Config
 			ofn.lpstrTitle = "Import Theme";
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
 
-			L::Verbose("_PromptImportThemeFile initiating user input");
+			L::Debug("_PromptImportThemeFile initiating user input");
 			bool UserTerminated = !GetOpenFileName(&ofn);
 			_ResetCWD();
 			if (UserTerminated || filename[0] == '\0')
 			{
-				L::Log("_PromptImportThemeFile failed - user terminated");
+				L::Info("_PromptImportThemeFile failed - user terminated");
 				return 1;
 			}
-			L::Verbose("_PromptImportThemeFile got filepath: ", "");
-			L::Verbose(filename);
+			L::Debug("_PromptImportThemeFile got filepath: ", "");
+			L::SameLine(filename);
 		}
 
 		// open the file
-		L::Verbose("_PromptImportThemeFile opening file");
+		L::Debug("_PromptImportThemeFile opening file");
 		std::ifstream file(filename, std::ios::binary);
 		if (!file.is_open())
 		{
-			L::Log("_PromptImportThemeFile failed - cannot open file");
+			L::Info("_PromptImportThemeFile failed - cannot open file");
 			return 2;
 		}
 
@@ -1457,33 +1457,33 @@ namespace Config
 		std::streampos bytes = file.tellg();
 		if (bytes > 100000)
 		{
-			L::Log("_PromptImportThemeFile failed - file too big: ", "");
-			L::Log(std::to_string(bytes).c_str(), " bytes\n");
+			L::Info("_PromptImportThemeFile failed - file too big: ", "");
+			L::SameLine(std::to_string(bytes).c_str(), " bytes\n");
 			return 3;
 		}
 		file.seekg(0);
 		file.clear();
-		L::Verbose("_PromptImportThemeFile got file length: ", "");
-		L::Verbose(std::to_string(bytes).c_str());
+		L::Debug("_PromptImportThemeFile got file length: ", "");
+		L::SameLine(std::to_string(bytes).c_str());
 
 		// read it into memory
 		char* buffer = (char*)malloc(bytes);
 		if (!buffer)
 		{
-			L::Log("_PromptImportThemeFile failed - couldn't malloc file space");
+			L::Info("_PromptImportThemeFile failed - couldn't malloc file space");
 			return 4;
 		}
-		L::Verbose("_PromptImportThemeFile reading file into memory & closing file handle");
+		L::Debug("_PromptImportThemeFile reading file into memory & closing file handle");
 		if (!file.read(buffer, bytes))
 		{
-			L::Log("_PromptImportThemeFile failed - couldn't read file data");
+			L::Info("_PromptImportThemeFile failed - couldn't read file data");
 			file.close();
 			free(buffer);
 			return 5;
 		}
 		file.close();
 
-		L::Verbose("_PromptImportThemeFile passing execution to Config::ImportTheme()");
+		L::Debug("_PromptImportThemeFile passing execution to Config::ImportTheme()");
 		Config::ImportTheme(buffer, bytes);
 		free(buffer);
 		return 0;
@@ -1491,7 +1491,7 @@ namespace Config
 
 	DWORD WINAPI _PromptExportConfigFile(void* _)
 	{
-		L::Log("_PromptExportConfigFile executing...");
+		L::Info("_PromptExportConfigFile executing...");
 
 		// prompt user to save file
 		char filename[MAX_PATH];
@@ -1510,40 +1510,40 @@ namespace Config
 			ofn.lpstrTitle = "Export Config";
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER | OFN_OVERWRITEPROMPT;
 
-			L::Verbose("_PromptExportConfigFile initiating user input");
+			L::Debug("_PromptExportConfigFile initiating user input");
 			bool UserTerminated = !GetSaveFileName(&ofn);
 			_ResetCWD();
 			if (UserTerminated || filename[0] == '\0')
 			{
-				L::Log("_PromptExportConfigFile failed - user terminated");
+				L::Info("_PromptExportConfigFile failed - user terminated");
 				return 1;
 			}
-			L::Verbose("_PromptExportConfigFile got filepath: ", "");
-			L::Verbose(filename);
+			L::Debug("_PromptExportConfigFile got filepath: ", "");
+			L::SameLine(filename);
 		}
 
 		// open the file
-		L::Verbose("_PromptExportConfigFile opening file");
+		L::Debug("_PromptExportConfigFile opening file");
 		std::ofstream file(filename, std::ios::binary);
 		if (!file.is_open())
 		{
-			L::Log("_PromptExportConfigFile failed - cannot open file");
+			L::Info("_PromptExportConfigFile failed - cannot open file");
 			return 2;
 		}
 
 		// export the theme
-		L::Verbose("_PromptExportConfigFile passing execution to Config::ExportConfig()");
+		L::Debug("_PromptExportConfigFile passing execution to Config::ExportConfig()");
 		size_t nBytesOut = 0;
 		char* data = Config::ExportConfig(&nBytesOut);
 		if (!data || nBytesOut == 0)
 		{
-			L::Log("_PromptExportConfigFile failed - Config::ExportConfig failed");
+			L::Info("_PromptExportConfigFile failed - Config::ExportConfig failed");
 			file.close();
 			return 3;
 		}
 
 		// write to file
-		L::Verbose("_PromptExportConfigFile writing to file and closing");
+		L::Debug("_PromptExportConfigFile writing to file and closing");
 		file.write(data, nBytesOut);
 		file.close();
 		return 0;
@@ -1551,7 +1551,7 @@ namespace Config
 
 	DWORD WINAPI _PromptImportConfigFile(void* _)
 	{
-		L::Log("_PromptImportConfigFile executing...");
+		L::Info("_PromptImportConfigFile executing...");
 
 		// prompt user to open file
 		char filename[MAX_PATH];
@@ -1569,24 +1569,24 @@ namespace Config
 			ofn.lpstrTitle = "Import Config";
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NODEREFERENCELINKS | OFN_EXPLORER;
 
-			L::Verbose("_PromptImportConfigFile initiating user input");
+			L::Debug("_PromptImportConfigFile initiating user input");
 			bool UserTerminated = !GetOpenFileName(&ofn);
 			_ResetCWD();
 			if (UserTerminated || filename[0] == '\0')
 			{
-				L::Log("_PromptImportConfigFile failed - user terminated");
+				L::Info("_PromptImportConfigFile failed - user terminated");
 				return 1;
 			}
-			L::Verbose("_PromptImportConfigFile got filepath: ", "");
-			L::Verbose(filename);
+			L::Debug("_PromptImportConfigFile got filepath: ", "");
+			L::SameLine(filename);
 		}
 
 		// open the file
-		L::Verbose("_PromptImportConfigFile opening file");
+		L::Debug("_PromptImportConfigFile opening file");
 		std::ifstream file(filename, std::ios::binary);
 		if (!file.is_open())
 		{
-			L::Log("_PromptImportConfigFile failed - cannot open file");
+			L::Info("_PromptImportConfigFile failed - cannot open file");
 			return 2;
 		}
 
@@ -1595,33 +1595,33 @@ namespace Config
 		std::streampos bytes = file.tellg();
 		if (bytes > 100000)
 		{
-			L::Log("_PromptImportConfigFile failed - file too big: ", "");
-			L::Log(std::to_string(bytes).c_str(), " bytes\n");
+			L::Info("_PromptImportConfigFile failed - file too big: ", "");
+			L::SameLine(std::to_string(bytes).c_str(), " bytes\n");
 			return 3;
 		}
 		file.seekg(0);
 		file.clear();
-		L::Verbose("_PromptImportConfigFile got file length: ", "");
-		L::Verbose(std::to_string(bytes).c_str());
+		L::Debug("_PromptImportConfigFile got file length: ", "");
+		L::SameLine(std::to_string(bytes).c_str());
 
 		// read it into memory
 		char* buffer = (char*)malloc(bytes);
 		if (!buffer)
 		{
-			L::Log("_PromptImportConfigFile failed - couldn't malloc file space");
+			L::Info("_PromptImportConfigFile failed - couldn't malloc file space");
 			return 4;
 		}
-		L::Verbose("_PromptImportConfigFile reading file into memory & closing file handle");
+		L::Debug("_PromptImportConfigFile reading file into memory & closing file handle");
 		if (!file.read(buffer, bytes))
 		{
-			L::Log("_PromptImportConfigFile failed - couldn't read file data");
+			L::Info("_PromptImportConfigFile failed - couldn't read file data");
 			file.close();
 			free(buffer);
 			return 5;
 		}
 		file.close();
 
-		L::Verbose("_PromptImportConfigFile passing execution to Config::ImportConfig()");
+		L::Debug("_PromptImportConfigFile passing execution to Config::ImportConfig()");
 		Config::ImportConfig(buffer, bytes);
 		free(buffer);
 		return 0;
@@ -1750,11 +1750,11 @@ namespace UserData
 		std::string x = STRXOR("Hello");
 		std::string y = STRXOR("World");
 		std::string z = "HelloWorld";
-		L::Log((x + y).c_str());
-		L::Log(z.c_str());
-		L::Log(std::to_string(x.length()).c_str());
-		L::Log(std::to_string(y.length()).c_str());
-		L::Log(std::to_string(z.length()).c_str());
+		L::Info((x + y).c_str());
+		L::Info(z.c_str());
+		L::Info(std::to_string(x.length()).c_str());
+		L::Info(std::to_string(y.length()).c_str());
+		L::Info(std::to_string(z.length()).c_str());
 
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
@@ -1786,15 +1786,15 @@ namespace UserData
 		catch (std::exception& e)
 		{
 			SetLoginError(STRXOR("Unknown Error - Try Again")); // invalid server response
-			L::Log(e.what());
-			L::Log(response);
+			L::Info(e.what());
+			L::Info(response);
 			goto failed;
 		}
 
 		// save login info to file
 		try
 		{
-			L::Log(STRXOR("Saving credentials to file..."), " ");
+			L::Info(STRXOR("Saving credentials to file..."), " ");
 			auto f = std::ofstream(CredentialsFile, std::ios::binary);
 			if (f.is_open()) // if fails, whatever, they'll have to type password again
 			{
@@ -1827,13 +1827,13 @@ namespace UserData
 
 				f.write(data, usedSize);
 				f.close();
-				L::Log(STRXOR("Success!"));
+				L::Info(STRXOR("Success!"));
 			}
 		}
 		catch (const std::exception& e)
 		{
-			L::Log(STRXOR("Failed to save user credentials w/ error: "), "");
-			L::Log(e.what());
+			L::Info(STRXOR("Failed to save user credentials w/ error: "), "");
+			L::SameLine(e.what());
 		}
 
 		//succeeded:
@@ -1884,7 +1884,7 @@ namespace UserData
 		catch (std::exception& e)
 		{
 			SetLoginError(STRXOR("Unknown Error - Try Again")); // invalid server response
-			L::Log(e.what());
+			L::SameLine(e.what());
 			goto failed;
 		}
 
@@ -1905,7 +1905,7 @@ namespace UserData
 		if (PingDebounce) return false;
 		PingDebounce = true;
 
-		L::Log(STRXOR("Ping!"));
+		L::Info(STRXOR("Ping!"));
 		// dump to json
 		nlohmann::json out = nlohmann::json::object();
 		out[STRXOR("sid")] = UserData::SessionId;
@@ -1916,12 +1916,12 @@ namespace UserData
 		char* response = (char*)HTTP::Post(STRXOR("https://www.a4g4.com/API/new/ping.php"), out.dump(), &bytesRead);
 		if (response)
 		{
-			L::Log(std::string(response, bytesRead).c_str());
+			L::Info(std::string(response, bytesRead).c_str());
 		}
 		// validate response
 		if (!response || bytesRead < 7) // {"x":1}
 		{
-			L::Log(STRXOR("Ping failed due to invalid server response"));
+			L::Info(STRXOR("Ping failed due to invalid server response"));
 			goto failed;
 		}
 
@@ -1932,7 +1932,7 @@ namespace UserData
 
 			if (!parsed[STRXOR("success")].get<bool>())
 			{
-				L::Log((STRXOR("Ping failed w/ err: ") + parsed[STRXOR("error")].get<std::string>()).c_str());
+				L::Info((STRXOR("Ping failed w/ err: ") + parsed[STRXOR("error")].get<std::string>()).c_str());
 				goto failed;
 			}
 			else
@@ -1944,8 +1944,8 @@ namespace UserData
 		}
 		catch (std::exception& e)
 		{
-			L::Log(STRXOR("Ping failed w/ error: "), "");
-			L::Log(e.what());
+			L::Info(STRXOR("Ping failed w/ error: "), "");
+			L::SameLine(e.what());
 			goto failed;
 		}
 
@@ -2004,7 +2004,7 @@ namespace UserData
 		}
 		catch (std::exception& e)
 		{
-			L::Log(e.what());
+			L::Info(e.what());
 			goto retry;
 		}
 

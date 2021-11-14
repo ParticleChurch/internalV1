@@ -108,11 +108,11 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 
 	if (ent && local && ent->GetHealth() > 0 && ent->IsPlayer() && ValidInfo)
 	{
-		L::Verbose("H::DrawModelExecuteHook - drawing a player differently");
+		L::Debug("H::DrawModelExecuteHook - drawing a player differently");
 		bool isEnemy = ent->GetTeam() != local->GetTeam();
 		if (info.entityIndex == I::engine->GetLocalPlayer())
 		{	
-			L::Verbose("H::DrawModelExecuteHook - localplayer");
+			L::Debug("H::DrawModelExecuteHook - localplayer");
 			if ((LegitAA->Get() || RageAA->Get())
 				&& LocalPlayerFakeEnable->Get()
 				&& ThirdPerson->Get())
@@ -146,7 +146,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else if (isEnemy)
 		{
-			L::Verbose("H::DrawModelExecuteHook - enemy");
+			L::Debug("H::DrawModelExecuteHook - enemy");
 			if (EnemyHidEnable->Get())
 			{
 				OverideMat(
@@ -186,7 +186,7 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 		else
 		{
-			L::Verbose("H::DrawModelExecuteHook - friend");
+			L::Debug("H::DrawModelExecuteHook - friend");
 			if (FriendHidEnable->Get())
 			{
 				OverideMat(
@@ -212,11 +212,11 @@ void Chams::Run(void* thisptr, int edx, void* ctx, void* state, const ModelRende
 		}
 	}
 
-	L::Verbose("H::DrawModelExecuteHook - redraw");
+	L::Debug("H::DrawModelExecuteHook - redraw");
 	H::oDrawModelExecute(thisptr, ctx, state, info, customBoneToWorld);
 	if (ValidInfo)
 	{
-		L::Verbose("H::DrawModelExecuteHook - ValidInfo");
+		L::Debug("H::DrawModelExecuteHook - ValidInfo");
 		I::modelrender->ForcedMaterialOverride(nullptr);
 	}
 		

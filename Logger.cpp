@@ -1,98 +1,155 @@
 #include "Logger.hpp"
 
-namespace L
-{
-	std::string FilePath = "particle.log";
-	std::ofstream File;
-	FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
+#include <fstream>
+#include <iostream>
 
-	constexpr bool MustAllocateConsole =
-		OutputMode == LogMode::Console || OutputMode == LogMode::Both ||
-		VerboseMode == LogMode::Console || VerboseMode == LogMode::Both;
-	constexpr bool MustOpenFile =
-		OutputMode == LogMode::File || OutputMode == LogMode::Both ||
-		VerboseMode == LogMode::File || VerboseMode == LogMode::Both;
+#include <cstdint>
+#include <chrono>
+
+#include <Windows.h>
+
+L::OutputVerbosity previousVerbosity = L::OutputVerbosity::Debug;
+std::ofstream outputFile;
+
+void L::Log(const OutputVerbosity& verbosity, const char* txt, const char* end, const bool& flush, const bool& decorate)
+{
+	if constexpr (!LOGGING_ENABLED) return;
+
+	previousVerbosity = verbosity; // so SameLine() can copy it
+	if (verbosity < OUTPUT_VERBOSITY) return;
+
+	static std::string decoratorString = "";
+	if (decorate)
+	{
+		decoratorString.clear();
+
+		const uint64_t unix = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+		decoratorString += std::to_string(unix);
+		decoratorString += " - [";
+
+		switch (verbosity)
+		{
+		case OutputVerbosity::Debug:
+			decoratorString += "DEBUG";
+			break;
+		case OutputVerbosity::Info:
+			decoratorString += "INFO";
+			break;
+		case OutputVerbosity::Crit:
+			decoratorString += "CRITICAL";
+			break;
+		default:
+			decoratorString += "UNKNOWN";
+			break;
+		}
+
+		decoratorString += "]: ";
+	}
+
+	if constexpr (OUTPUT_TO_CONSOLE)
+	{
+		if (decorate) std::cout << decoratorString;
+
+		std::cout << txt << end;
+
+		if (flush) std::cout << std::flush;
+	}
+
+	if constexpr (OUTPUT_TO_FILE)
+	{
+		if (outputFile.is_open())
+		{
+			if (decorate) // this is likely a new log entry
+			{
+				// so it's a good time to check if we need to loop back to the beginning
+				if (outputFile.tellp() >= 1024 * OUTPUT_FILE_SIZE_KB)
+					outputFile.seekp(0);
+
+				outputFile.write(decoratorString.c_str(), decoratorString.length());
+			}
+
+			outputFile.write(txt, strlen(txt));
+			outputFile.write(end, strlen(end));
+
+			if (flush) outputFile.flush();
+		}
+	}
 }
 
-void L::Init()
+// forwards info on to L::Log
+void L::Debug(const char* txt, const char* end, const bool& flush)
 {
+	return L::Log(OutputVerbosity::Debug, txt, end, flush);
+}
+void L::Info(const char* txt, const char* end, const bool& flush)
+{
+	return L::Log(OutputVerbosity::Info, txt, end, flush);
+}
+void L::Crit(const char* txt, const char* end, const bool& flush)
+{
+	return L::Log(OutputVerbosity::Crit, txt, end, flush);
+}
+void L::SameLine(const char* txt, const char* end, const bool& flush)
+{
+	return L::Log(previousVerbosity, txt, end, flush, false);
+}
 
-	if (MustAllocateConsole)
+// initalization
+void L::init()
+{
+	// usually in release mode
+	if constexpr (!LOGGING_ENABLED) return;
+
+	// allocate console
+	if constexpr (OUTPUT_TO_CONSOLE)
 	{
 		AllocConsole();
+
+		FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
 		freopen_s(&fpstdin, "CONIN$", "r", stdin);
 		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 	}
 
-	if (MustOpenFile)
+	// open output file
+	if constexpr (OUTPUT_TO_FILE)
 	{
-		char exe_file[MAX_PATH];
-		GetModuleFileName(NULL, exe_file, MAX_PATH);
-		std::string csgo_directory(exe_file, strlen(exe_file) - strlen("csgo.exe"));
+		// create path to sibling of csgo.exe
+		char csgo_exe[MAX_PATH];
+		GetModuleFileName(NULL, csgo_exe, MAX_PATH);
+		std::string csgo_directory(csgo_exe, strlen(csgo_exe) - strlen("csgo.exe"));
+		std::string output_path = csgo_directory + OUTPUT_FILE_PATH;
 
-		File = std::ofstream(csgo_directory + FilePath, std::ios::trunc);
-		if (!File.is_open())
+		// create/open and truncate the file
+		outputFile = std::ofstream(output_path, std::ios::trunc);
+		if (!outputFile.is_open())
 		{
-			// lmao
-			Log("!!!!!!!!ATTENTION!!!!!!!!");
-			Log("FAILED TO OPEN LOG FILE !!!!!!!!!");
+			Crit("Failed to open logging file: ", "");
+			SameLine(output_path.c_str());
 		}
 	}
+
+	Info("Logger is constructed! This should be the first message.");
 }
 
-void L::Log(const char* txt, const char* end, bool flush)
+// deconstruction
+void L::free()
 {
-	constexpr bool ConsoleOutput = OutputMode == LogMode::Console || OutputMode == LogMode::Both;
-	constexpr bool FileOutput = OutputMode == LogMode::File || OutputMode == LogMode::Both;
+	if constexpr (!LOGGING_ENABLED) return;
 
-	if (ConsoleOutput)
+	Info("Logger is deconstructing. This should be the last message.");
+
+	// free and destroy console
+	if constexpr (OUTPUT_TO_CONSOLE)
 	{
-		std::cout << txt << end;
-		if (flush) std::cout << std::flush;
-	}
-
-	if (FileOutput)
-	{
-		File << txt << end;
-		if (flush)
-			File.flush();
-	}
-}
-
-__forceinline void L::Verbose(const char* txt, const char* end, bool flush)
-{
-	constexpr bool ConsoleOutput = VerboseMode == LogMode::Console || VerboseMode == LogMode::Both;
-	constexpr bool FileOutput = VerboseMode == LogMode::File || VerboseMode == LogMode::Both;
-
-	if (ConsoleOutput)
-	{
-		std::cout << txt << end;
-		if (flush) std::cout << std::flush;
-	}
-
-	if (FileOutput)
-	{
-		File << txt << end;
-		if (flush)
-			File.flush();
-	}
-}
-
-void L::Free()
-{
-	if (MustAllocateConsole)
-	{
-		HWND Console = GetConsoleWindow();
+		HWND con = GetConsoleWindow();
 		FreeConsole();
-		if (Console)
-		{
-			SendMessage(Console, WM_CLOSE, NULL, NULL);
-		}
+		if (con) SendMessage(con, WM_CLOSE, NULL, NULL);
 	}
-	
-	if (MustOpenFile)
+
+	// close output file
+	if constexpr (OUTPUT_TO_FILE)
 	{
-		File.close();
+		if (outputFile.is_open()) outputFile.close();
 	}
 }

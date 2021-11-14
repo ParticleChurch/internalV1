@@ -311,7 +311,7 @@ void Movement::AutoStop()
 
 	bool PossibleDamage = false;
 
-	L::Verbose("Autostop autowall checking");
+	L::Debug("Autostop autowall checking");
 
 	// only do what aimbot sees as important
 	int scans = 1;
@@ -354,7 +354,7 @@ void Movement::AutoStop()
 			return;
 		
 	}
-	L::Verbose("Autostop autowall - done");
+	L::Debug("Autostop autowall - done");
 
 	// If there's no possible way to do damage, return
 	if (!PossibleDamage)

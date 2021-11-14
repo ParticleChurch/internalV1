@@ -335,12 +335,12 @@ void Resolver::Resolve()
 		return;
 	tick_count = I::globalvars->m_tickCount;
 
-	L::Verbose("Resolver::PreResolver - begin");
+	L::Debug("Resolver::PreResolver - begin");
 	Entity* ent;
 
 	for (int i = 1; i < I::engine->GetMaxClients(); ++i)
 	{
-		L::Verbose("Resolver::PreResolver - ent ", "");  L::Verbose(std::to_string(i).c_str());
+		L::Debug("Resolver::PreResolver - ent ", "");  L::SameLine(std::to_string(i).c_str());
 		if (!(ent = I::entitylist->GetClientEntity(i))
 			|| ent == G::LocalPlayer
 			|| ent->GetTeam() == G::LocalPlayerTeam
@@ -413,7 +413,7 @@ void Resolver::Resolve()
 		ConsoleColorMsg(Color(0, 0, 255), " backtrack miscalculation\n");
 	}
 	LogShot = false;
-	L::Verbose("Resolver::Resolve - done");
+	L::Debug("Resolver::Resolve - done");
 }
 
 void Resolver::ResolveEnt(Entity* entity, int Index)

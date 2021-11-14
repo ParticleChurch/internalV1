@@ -152,10 +152,10 @@ void TestProxyHook(const CRecvProxyData* pData_const, void* pStruct, void* pOut)
     CRecvProxyData* pData = const_cast<CRecvProxyData*>(pData_const);
 
     Entity* Player = (Entity*)pStruct;
-    L::Log("origin changed to", " - ");
-    L::Log(std::to_string(pData_const->m_Value.m_Vector[0]).c_str(), ", ");
-    L::Log(std::to_string(pData_const->m_Value.m_Vector[1]).c_str(), ", ");
-    L::Log(std::to_string(pData_const->m_Value.m_Vector[2]).c_str());
+    L::Info("origin changed to", " - ");
+    L::SameLine(std::to_string(pData_const->m_Value.m_Vector[0]).c_str(), ", ");
+    L::SameLine(std::to_string(pData_const->m_Value.m_Vector[1]).c_str(), ", ");
+    L::SameLine(std::to_string(pData_const->m_Value.m_Vector[2]).c_str());
 
     if (oTestProxy && GetKeyState('T') >= 0)
         oTestProxy(pData_const, pStruct, pOut);

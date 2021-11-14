@@ -21,37 +21,39 @@ void Init()
     srand(static_cast <unsigned> (time(0)));
     GUI::LoadProgress = 0.f;
 
-    L::Init();    L::Log("DLLMain executed");
+    L::init();
+    L::Info("DLLMain executed");
 
-    Config::Init(); L::Log("Config::Init() complete");
-    I::GUIInit(); L::Log("I::GUIInit() complete");
-    G::GUIInit(); L::Log("G::GUIInit() complete");
-    H::GUIInit(); L::Log("H::GUIInit() complete"); // hooks endscene, gui will now show up
+    Config::Init(); L::Info("Config::Init() complete");
+    I::GUIInit(); L::Info("I::GUIInit() complete");
+    G::GUIInit(); L::Info("G::GUIInit() complete");
+    H::GUIInit(); L::Info("H::GUIInit() complete"); // hooks endscene, gui will now show up
     GUI::LoadProgress = 0.05f;
 
-    I::Init();           L::Log("I::Init() complete");
-    SkinChanger::Hook(); L::Log("SkinChanger::Hook() complete");
-    N::Init();           L::Log("N::Init() complete");
-    G::Init();           L::Log("G::Init() complete");
-    H::Init();           L::Log("H::Init() complete");
-    UserData::ConnectAPI();   L::Log("UserData::ConnectAPI() complete");
+    I::Init(); L::Info("I::Init() complete");
+    SkinChanger::Hook(); L::Info("SkinChanger::Hook() complete");
+    N::Init(); L::Info("N::Init() complete");
+    G::Init(); L::Info("G::Init() complete");
+    H::Init(); L::Info("H::Init() complete");
+    UserData::ConnectAPI(); L::Info("UserData::ConnectAPI() complete");
     GUI::LoadProgress = 1.f;
     //L::Log(N::Dump().c_str());
 
-    L::Log("DLLMain complete. Now waiting for ejection");
+    L::Info("DLLMain complete. Now waiting for ejection");
 
     while (!G::KillDLL)
     {
         Sleep(100);
     }
-    L::Log("Ejecting...");
+    L::Info("Ejecting...");
 
-    SkinChanger::UnHook(); L::Log("SkinChanger::UnHook(); complete");
-    H::UnHook();           L::Log("H::UnHook(); complete");
-    H::Free();             L::Log("H::Free(); complete");
+    SkinChanger::UnHook(); L::Info("SkinChanger::UnHook(); complete");
+    H::UnHook(); L::Info("H::UnHook(); complete");
+    H::Free(); L::Info("H::Free(); complete");
 
-    L::Log("Freeing logger and FreeLibraryAndExitThread");
-    L::Free();
+    L::Info("Freeing logger and FreeLibraryAndExitThread");
+
+    L::free();
     FreeLibraryAndExitThread(G::DLLModule, 0);
 }
 

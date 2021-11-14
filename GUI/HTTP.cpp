@@ -10,7 +10,7 @@ namespace HTTP
 
     byte* Post(std::string URL, std::string input, DWORD* bytesRead)
     {
-        L::Log(("HTTP::Post to url " + URL).c_str());
+        L::Info(("HTTP::Post to url " + URL).c_str());
 
 
         // split string into host and directory
@@ -36,7 +36,7 @@ namespace HTTP
             host = URL.substr(0, directoryIndex);
             directory = URL.substr(directoryIndex + 1);
         }
-        L::Log(("Determined that host = \"" + host + "\", and directory = \"" + directory + "\"").c_str());
+        L::Info(("Determined that host = \"" + host + "\", and directory = \"" + directory + "\"").c_str());
 
         HINTERNET hInternet = InternetOpen(
             userAgent.c_str(),
@@ -46,7 +46,7 @@ namespace HTTP
         );
         if (!hInternet)
         {
-            L::Log(("Failed to open hInternet w/ error: " + std::to_string(GetLastError())).c_str());
+            L::Info(("Failed to open hInternet w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -60,7 +60,7 @@ namespace HTTP
         );
         if (!hConnection)
         {
-            L::Log(("Failed to open hConnection w/ error: " + std::to_string(GetLastError())).c_str());
+            L::Info(("Failed to open hConnection w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -78,7 +78,7 @@ namespace HTTP
         );
         if (!hRequest)
         {
-            L::Log(("Failed to open hRequest w/ error: " + std::to_string(GetLastError())).c_str());
+            L::Info(("Failed to open hRequest w/ error: " + std::to_string(GetLastError())).c_str());
             return nullptr;
         }
 
@@ -97,9 +97,9 @@ namespace HTTP
         );
 
         if (requestSuccess)
-            L::Log("Request completed successfully");
+            L::Info("Request completed successfully");
         else
-            L::Log(("Request failed, error: " + std::to_string(GetLastError())).c_str());
+            L::Info(("Request failed, error: " + std::to_string(GetLastError())).c_str());
 
         if (!requestSuccess)
             return nullptr;
@@ -114,7 +114,7 @@ namespace HTTP
         DWORD chunkBytesRead = 0;
         if (!chunkBuffer)
         {
-            L::Log("failed to malloc for chunk buffer");
+            L::Info("failed to malloc for chunk buffer");
             free(fileBuffer);
             return nullptr;
         }
@@ -127,7 +127,7 @@ namespace HTTP
             byte* re = (byte*)realloc(fileBuffer, fileSize + chunkBytesRead);
             if (!re)
             {
-                L::Log("failed to realloc dynamic buffer");
+                L::Info("failed to realloc dynamic buffer");
                 free(fileBuffer);
                 free(chunkBuffer);
                 return nullptr;
@@ -144,7 +144,7 @@ namespace HTTP
 
         if (fileSize == 0)
         {
-            L::Log(("Got no bytes in response w/ error: " + std::to_string(GetLastError())).c_str());
+            L::Info(("Got no bytes in response w/ error: " + std::to_string(GetLastError())).c_str());
             free(fileBuffer);
             return nullptr;
         }

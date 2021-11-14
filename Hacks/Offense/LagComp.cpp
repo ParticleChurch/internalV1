@@ -46,7 +46,7 @@ void LagComp::Update()
 		// If not in the list... ADD IT BOY
 		if (PlayerList.find(UserId) == PlayerList.end())
 		{
-			L::Verbose("Add New Player");
+			L::Debug("Add New Player");
 			Player NewPlayer;
 			NewPlayer.ptrEntity = ent;
 			ent->SetupBones(NewPlayer.Matrix, 128, BONE_USED_BY_ANYTHING, 0.f);
@@ -69,7 +69,7 @@ void LagComp::Update()
 			{
 				free(NewPlayer.ptrModel);
 			}
-			L::Verbose("Continue update");
+			L::Debug("Continue update");
 			// O.W. Continue
 			NewPlayer.Index = i;
 			NewPlayer.Health = ent->GetHealth();
@@ -107,7 +107,7 @@ void LagComp::Update()
 			{
 				free(PlayerList[UserId].ptrModel);
 			}
-			L::Verbose("Continue update");
+			L::Debug("Continue update");
 			// O.W. Continue
 			PlayerList[UserId].Index = i;
 			PlayerList[UserId].Health = ent->GetHealth();
@@ -126,7 +126,7 @@ void LagComp::Update()
 		if (!PlayerList[UserId].Records.empty() && PlayerList[UserId].SimulationTime == PlayerList[UserId].Records.front().SimulationTime)
 			continue;
 
-		L::Verbose("Clear records if bad");
+		L::Debug("Clear records if bad");
 		// Clear records if dormant/dead
 		if (!ValidRecord(PlayerList[UserId]))
 		{
@@ -135,37 +135,37 @@ void LagComp::Update()
 		}
 
 		// Add the record
-		L::Verbose("Add to records");
+		L::Debug("Add to records");
 		auto& p = PlayerList[UserId];
 		Tick newTick;
-		L::Verbose("Matrix");
+		L::Debug("Matrix");
 		std::memcpy(newTick.Matrix, p.Matrix, 128 * sizeof(Matrix3x4));
-		L::Verbose("Dormant");
+		L::Debug("Dormant");
 		newTick.Dormant = p.Dormant;
-		L::Verbose("GetVecVelocity");
+		L::Debug("GetVecVelocity");
 		newTick.Velocity = p.ptrEntity->GetVecVelocity();
-		L::Verbose("Origin");
+		L::Debug("Origin");
 		newTick.Origin = p.Origin;
-		L::Verbose("HeadPos");
+		L::Debug("HeadPos");
 		newTick.HeadPos = Vec(p.Matrix[8][0][3], p.Matrix[8][1][3], p.Matrix[8][2][3]);
-		L::Verbose("EyeAng");
+		L::Debug("EyeAng");
 		newTick.EyeAng = p.ptrEntity->GetEyeAngles();
-		L::Verbose("SimulationTime");
+		L::Debug("SimulationTime");
 		newTick.SimulationTime = p.SimulationTime;
-		L::Verbose("Duck");
+		L::Debug("Duck");
 		newTick.Duck = p.ptrEntity->GetDuckAmount();
-		L::Verbose("LBY");
+		L::Debug("LBY");
 		newTick.LBY = p.ptrEntity->GetLBY();
-		L::Verbose("Flags");
+		L::Debug("Flags");
 		newTick.Flags = p.ptrEntity->GetFlags();
-		L::Verbose("Choked");
+		L::Debug("Choked");
 		newTick.Choked = 0;
 		if (!PlayerList[UserId].Records.empty())
 			newTick.Choked = TimeToTicks(PlayerList[UserId].SimulationTime - PlayerList[UserId].Records.front().SimulationTime);
-		L::Verbose("push_front");
+		L::Debug("push_front");
 		PlayerList[UserId].Records.push_front(newTick);
 		
-		L::Verbose("Deal with too many records");
+		L::Debug("Deal with too many records");
 		// Deal with too many records (anything above 200ms just forget about it :D)
 		unsigned int Ticks = TimeToTicks(0.2f);
 		while (PlayerList[UserId].Records.size() > 3 && PlayerList[UserId].Records.size() > Ticks) {
@@ -173,7 +173,7 @@ void LagComp::Update()
 		}
 
 		// Deal with Bad Sim Times (:D)
-		L::Verbose("Deal with Bad Sim Times");
+		L::Debug("Deal with Bad Sim Times");
 		for (size_t j = 0; j < PlayerList[UserId].Records.size(); j++)
 		{
 			if (!ValidSimTime(PlayerList[UserId].Records[j].SimulationTime))
