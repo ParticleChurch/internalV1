@@ -5,11 +5,7 @@ public:
 	virtual void* pad() = 0;
 	virtual Vec& obbMins() const = 0;
 	virtual Vec& obbMaxs() const = 0;
-	int get_solid()
-	{
-		typedef int(__thiscall* oget_solid)(void*);
-		return GetVFunc<oget_solid>(this, 11)(this);
-	}
+	DECLARE_VIRTUAL_METHOD(int, get_solid, 11, (), ());
 };
 
 
@@ -33,11 +29,7 @@ class Entity
 {
 public:
 	//2 should be GetRefEHandle
-	CBaseHandle& GetRefEHandle()
-	{
-		typedef CBaseHandle& (__thiscall* oGetRefEHandle)(void*);
-		return GetVFunc<oGetRefEHandle>(this, 2)(this);
-	}
+	DECLARE_VIRTUAL_METHOD(CBaseHandle&, GetRefEHandle, 2, (), ());
 
 	// FUCKING ANIMATIONS
 	CBoneAccessor& m_BoneAccessor() {
@@ -107,29 +99,17 @@ public:
 		return *(uint32_t*)((DWORD)this + 0xA28);
 	}
 
-	void StandardBlendingRules(studiohdr_t* hdr, Vec* pos, quaternion_t* q, float time, int mask)
-	{
-		using StandardBlendingRules_t = void(__thiscall*)(decltype(this), studiohdr_t*, Vec*, quaternion_t*, float, int);
-		return GetVFunc< StandardBlendingRules_t >(this, 205)(this, hdr, pos, q, time, mask);
-	}
+	DECLARE_VIRTUAL_METHOD(void, StandardBlendingRules, 205, (studiohdr_t* hdr, Vec* pos, quaternion_t* q, float time, int mask), (hdr, pos, q, time, mask));
+	DECLARE_VIRTUAL_METHOD(void, BuildTransformations, 189, (studiohdr_t* hdr, Vec* pos, quaternion_t* q, const Matrix3x4& transform, int mask, uint8_t* computed), (hdr, pos, q, transform, mask, computed));
+	DECLARE_VIRTUAL_METHOD(Collideable*, GetCollideable, 3, (), ());
 
-	void BuildTransformations(studiohdr_t* hdr, Vec* pos, quaternion_t* q, const Matrix3x4& transform, int mask, uint8_t* computed)
-	{
-		using BuildTransformations_t = void(__thiscall*)(decltype(this), studiohdr_t*, Vec*, quaternion_t*, Matrix3x4 const&, int, uint8_t*);
-		return GetVFunc< BuildTransformations_t >(this, 189)(this, hdr, pos, q, transform, mask, computed);
-	}
-
+	// yo wtf is going on here?
 	const Matrix3x4& GetTransform()
 	{
 		typedef const Matrix3x4& (__thiscall* oGetTransform)(void*);
-		return GetVFunc<oGetTransform>(this + sizeof(uintptr_t), 3)(this + sizeof(uintptr_t));
+		return VMT::GetVirtualMethod<oGetTransform>(this + sizeof(uintptr_t), 3)(this + sizeof(uintptr_t));
 	}
 
-	Collideable* GetCollideable() 
-	{
-		typedef Collideable* (__thiscall* oGetCollideable)(void*);
-		return GetVFunc<oGetCollideable>(this, 3)(this);
-	}
 
 	float* pGetFlashMaxAlpha()
 	{
@@ -142,27 +122,15 @@ public:
 		*(BYTE*)((DWORD)this + offset) = val;
 	}
 
-	float GetSpread()
-	{
-		typedef float(__thiscall* oGetSpread)(void*);
-		return GetVFunc<oGetSpread>(this, 452)(this);
-	}
-
-	float GetInaccuracy()
-	{
-		typedef float(__thiscall* oGetInaccuracy)(void*);
-		return GetVFunc<oGetInaccuracy>(this, 482)(this);
-	}
+	DECLARE_VIRTUAL_METHOD(float, GetSpread, 452, (), ());
+	DECLARE_VIRTUAL_METHOD(float, GetInaccuracy, 482, (), ());
 
 	float_t m_flSpawnTime()
 	{
 		return *(float_t*)((uintptr_t)this + 0xA360);
 	}
 
-	WeaponData* GetWeaponData() {
-		typedef WeaponData* (__thiscall* ogetWeaponData)(void*);
-		return GetVFunc<ogetWeaponData>(this, 460)(this);
-	}
+	DECLARE_VIRTUAL_METHOD(WeaponData*, GetWeaponData, 460, (), ());
 
 	WeaponId GetWeaponId() { //get active weapon entity then call
 		static DWORD offset = N::GetOffset("DT_BaseCombatWeapon", "m_iItemDefinitionIndex");
@@ -219,12 +187,12 @@ public:
 			Vec absOrigin = GetAbsOrigin();
 			*render = 0;
 			SetAbsOrigin(GetVecOrigin());
-			bool result = GetVFunc<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
+			bool result = VMT::GetVirtualMethod<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
 			SetAbsOrigin(absOrigin);
 			*render = backup;
 			return result;
 		} else
-			return GetVFunc<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
+			return VMT::GetVirtualMethod<oSetupBones>(this + 4, 13)(this + 4, pBoneToWorldOut, nMaxBones, boneMask, currentTime);
 
 
 
@@ -362,11 +330,7 @@ public:
 		return (int*)((DWORD)this + offset);
 	}
 
-	void SetModelIndex(const int index)
-	{
-		typedef void (__thiscall* oSetModelIndex)(void*, const int);
-		return GetVFunc<oSetModelIndex>(this, 75)(this, index);
-	}
+	DECLARE_VIRTUAL_METHOD(void, SetModelIndex, 75, (const int index), (index));
 
 	IClientNetworkable* GetClientNetworkable()
 	{
@@ -604,19 +568,8 @@ public:
 		*(QAngle*)((DWORD)this + offset) = angle;
 	}
 
-	Vec& GetAbsOrigin()
-	{
-		typedef Vec& (__thiscall* OriginalFn)(void*);
-		static OriginalFn f = GetVFunc<OriginalFn>(this, 10);
-		return f(this);
-	}
-
-	Vec& GetAbsAngles()
-	{
-		typedef Vec& (__thiscall* OriginalFn)(void*);
-		static OriginalFn f = GetVFunc<OriginalFn>(this, 11);
-		return f(this);
-	}
+	DECLARE_VIRTUAL_METHOD(Vec&, GetAbsOrigin, 10, (), ());
+	DECLARE_VIRTUAL_METHOD(Vec&, GetAbsAngles, 11, (), ());
 
 	float GetSimulationTime() 
 	{
@@ -708,12 +661,7 @@ public:
 		}
 	}
 
-	void UpdateClientSideAnimation()
-	{
-		typedef void(__thiscall* oUpdateClientSideAnimation)(void*);
-		static auto func = GetVFunc<oUpdateClientSideAnimation>(this, 223);
-		func(this);
-	}
+	DECLARE_VIRTUAL_METHOD(void, UpdateClientSideAnimation, 223, (), ());
 
 	void SetAbsAngles(Vec angle)
 	{
@@ -734,45 +682,36 @@ public:
 		return this->GetHealth() > 0 && this->GetLifeState() == 0;
 	}
 
-	bool IsPlayer()
-	{
-		typedef bool(__thiscall* oPlayer)(void*);
-		return GetVFunc<oPlayer>(this, 157)(this);
-	}
-
-	ClientClass* GetClientClass()
-	{
-		typedef ClientClass* (__thiscall* oGetClientClass)(void*);
-		return GetVFunc<oGetClientClass>(this, 2)(this);
-	}
+	DECLARE_VIRTUAL_METHOD(bool, IsPlayer, 157, (), ());
+	DECLARE_VIRTUAL_METHOD(ClientClass*, GetClientClass, 2, (), ());
 
 	bool IsDormant()
 	{
 		typedef bool(__thiscall* oIsDormant)(void*);
-		return GetVFunc<oIsDormant>(this + 8, 9)(this + 8);
+		return VMT::GetVirtualMethod<oIsDormant>(this + 8, 9)(this + 8);
 	}
 
 	int Index() {
 		typedef int(__thiscall* oGetIndex)(void*);
-		return GetVFunc<oGetIndex>(this + 8, 10)(this + 8);
+		return VMT::GetVirtualMethod<oGetIndex>(this + 8, 10)(this + 8);
 	}
 
 	Model* GetModel()
 	{
 		typedef Model* (__thiscall* oGetModel)(void*);
-		return GetVFunc<oGetModel>(this + 4, 8)(this + 4);
+		return VMT::GetVirtualMethod<oGetModel>(this + 4, 8)(this + 4);
 	}
 
 	void GetRenderBounds(Vec& mins, Vec& maxs)
 	{
 		typedef void(__thiscall* oGetRenderBounds)(void*, Vec&, Vec&);
-		return GetVFunc<oGetRenderBounds>(this + 4, 17)(this + 4, mins, maxs);
+		return VMT::GetVirtualMethod<oGetRenderBounds>(this + 4, 17)(this + 4, mins, maxs);
 	}
 
 	Vec& GetRenderOrigin()
 	{
 		typedef Vec& (__thiscall* oGetRenderOrigin)(void*);
-		return GetVFunc<oGetRenderOrigin>(this + 4, 1)(this + 4);
+		return VMT::GetVirtualMethod<oGetRenderOrigin>(this + 4, 1)(this + 4);
 	}
 
 	mstudiobbox_t* GetHitBoxSet(int Hitbox)

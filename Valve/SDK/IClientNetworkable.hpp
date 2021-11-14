@@ -1,12 +1,7 @@
 #pragma once
-#include "../../Utils/GetVFunc.hpp"
+#include "../../Utils/VMT.hpp"
 
 class IClientNetworkable {
 public:
-	void PreDataUpdate(int updateType)
-	{
-		typedef void(__thiscall* PreDataUpdateFn)(void*, int);
-		static PreDataUpdateFn oPreDataUpdate = GetVFunc<PreDataUpdateFn>(this, 6);
-		return oPreDataUpdate(this, updateType);
-	}
+	DECLARE_VIRTUAL_METHOD(void, PreDataUpdate, 6, (int updateType), (updateType));
 };

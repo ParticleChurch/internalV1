@@ -2,30 +2,13 @@
 
 class InputSystem {
 public:
-    void EnableInput(bool enable) noexcept
-    {
-        typedef void(__thiscall* oenableInput)(void*, bool);
-        return GetVFunc<oenableInput>(this, 11)(this, enable);
-    }
+    DECLARE_VIRTUAL_METHOD(void, EnableInput, 11, (bool enable), (enable));
+    DECLARE_VIRTUAL_METHOD(bool, IsButtonDown, 15, (int buttonCode), (buttonCode));
+    DECLARE_VIRTUAL_METHOD(void, ResetInputState, 39, (), ());
+    DECLARE_VIRTUAL_METHOD(const char*, ButtonCodeToString, 40, (int buttonCode), (buttonCode));
 
-    bool IsButtonDown(int buttonCode) noexcept
-    {
-        typedef bool(__thiscall* oisButtonDown)(void*, int);
-        return GetVFunc<oisButtonDown>(this, 15)(this, buttonCode);
-    }
-
-    void ResetInputState() noexcept
-    {
-        typedef void(__thiscall* oresetInputState)(void*);
-        return GetVFunc<oresetInputState>(this, 39)(this);
-    }
-
-    const char* ButtonCodeToString(int buttonCode) noexcept
-    {
-        typedef const char* (__thiscall* obuttonCodeToString)(void*, int);
-        return GetVFunc<obuttonCodeToString>(this, 40)(this, buttonCode);
-    }
-
+    // bro wtf is this lmao
+    // looks like just a vfunc call...?
     template <typename T, std::size_t Idx, typename ...Args>
     constexpr auto call(void* classBase, Args... args) noexcept
     {

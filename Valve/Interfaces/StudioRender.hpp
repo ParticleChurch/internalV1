@@ -12,12 +12,7 @@ class StudioRender {
     std::byte pad_1[12];
     OverrideType overrideType;
 public:
-   /* VIRTUAL_METHOD(void, forcedMaterialOverride, 33, (Material* material, OverrideType type = OverrideType::Normal, int index = -1), (this, material, type, index))*/
-    void ForcedMaterialOverride(Material* mat, OverrideType type = OverrideType::Normal, int index = -1)
-    {
-        typedef void(__thiscall* oForcedMaterialOverride)(void*, Material*, int, int);
-        return GetVFunc<oForcedMaterialOverride>(this, 33)(this, mat, (int)type, index);
-    }
+    DECLARE_VIRTUAL_METHOD_CUSTOM_ARGS(void, ForcedMaterialOverride, 33, (Material* mat, OverrideType type = OverrideType::Normal, int index = -1), (Material*, int, int), (mat, (int)type, index));
     //   bool isForcedMaterialOverride() noexcept
     //{
     //    if (!materialOverride)

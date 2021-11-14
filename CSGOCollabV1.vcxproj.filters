@@ -150,9 +150,6 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>Headers\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\GetVFunc.hpp">
-      <Filter>Headers\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Globals.hpp">
       <Filter>Headers</Filter>
     </ClInclude>

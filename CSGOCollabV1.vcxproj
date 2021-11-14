@@ -272,7 +272,6 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Netvars.hpp" />
-    <ClInclude Include="Utils\GetVFunc.hpp" />
     <ClInclude Include="Utils\StringEncryption.hpp" />
     <ClInclude Include="Utils\Math.hpp" />
     <ClInclude Include="Utils\StrHash.hpp" />

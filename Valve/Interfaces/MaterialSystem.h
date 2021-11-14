@@ -4,45 +4,11 @@ class KeyValues;
 
 class MaterialSystem {
 public:
-    Material* FindMaterial(const char* materialName) noexcept
-    {
-        typedef Material* (__thiscall* oFindMaterial)(void*, char const*, const char*, bool, const char*);
-        return GetVFunc<oFindMaterial>(this, 84)(this, materialName, nullptr, true, nullptr);
-    }
-
-    short FirstMaterial() noexcept
-    {
-        typedef short(__thiscall* ofirstMaterial)(void*);
-        return GetVFunc<ofirstMaterial>(this, 86)(this);
-    }
-
-    short NextMaterial(short handle) noexcept
-    {
-        typedef short(__thiscall* onextMaterial)(void*, short);
-        return GetVFunc<onextMaterial>(this, 87)(this, handle);
-    }
-
-    short InvalidMaterial() noexcept
-    {
-        typedef short(__thiscall* onextMaterial)(void*);
-        return GetVFunc<onextMaterial>(this, 88)(this);
-    }
-
-    Material* GetMaterial(short handle) noexcept
-    {
-        typedef Material* (__thiscall* ogetMaterial)(void*, short);
-        return GetVFunc<ogetMaterial>(this, 89)(this, handle);
-    }
-
-    RenderContext* GetRenderContext() noexcept
-    {
-        typedef RenderContext* (__thiscall* ogetRenderContext)(void*);
-        return GetVFunc<ogetRenderContext>(this, 115)(this);
-    }
-
-    Material* CreateMaterial(const char* materialName, KeyValues* keyValues) noexcept
-    {
-        typedef Material* (__thiscall* ocreateMaterial)(void*, const char*, KeyValues*);
-        return GetVFunc<ocreateMaterial>(this, 83)(this, materialName, keyValues);
-    }
+    DECLARE_VIRTUAL_METHOD(Material*, CreateMaterial, 83, (const char* materialName, KeyValues* keyValues), (materialName, keyValues));
+    DECLARE_VIRTUAL_METHOD_CUSTOM_ARGS(Material*, FindMaterial, 84, (const char* materialName), (char const*, const char*, bool, const char*), (materialName, nullptr, true, nullptr));
+    DECLARE_VIRTUAL_METHOD(short, FirstMaterial, 86, (), ());
+    DECLARE_VIRTUAL_METHOD(short, NextMaterial, 87, (short handle), (handle));
+    DECLARE_VIRTUAL_METHOD(short, InvalidMaterial, 88, (), ());
+    DECLARE_VIRTUAL_METHOD(Material*, GetMaterial, 89, (short handle), (handle));
+    DECLARE_VIRTUAL_METHOD(RenderContext*, GetRenderContext, 115, (), ());
 };

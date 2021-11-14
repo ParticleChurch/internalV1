@@ -1,31 +1,10 @@
 #pragma once
 struct ConVar {
-    float GetFloat() noexcept
-    {
-        typedef float(__thiscall* ogetFloat)(void*);
-        return GetVFunc<ogetFloat>(this, 12)(this);
-    }
-    int GetInt() noexcept
-    {
-        typedef float(__thiscall* ogetInt)(void*);
-        return GetVFunc<ogetInt>(this, 13)(this);
-    }
-
-    void SetValue(const char* val) noexcept
-    {
-        typedef void(__thiscall* osetValue)(void*, const char*);
-        return GetVFunc<osetValue>(this, 14)(this, val);
-    }
-    void SetValue(float val) noexcept
-    {
-        typedef void(__thiscall* osetValue)(void*, float);
-        return GetVFunc<osetValue>(this, 15)(this, val);
-    }
-    void SetValue(int val) noexcept
-    {
-        typedef void(__thiscall* osetValue)(void*, int);
-        return GetVFunc<osetValue>(this, 16)(this, val);
-    }
+    DECLARE_VIRTUAL_METHOD(float, GetFloat, 12, (), ());
+    DECLARE_VIRTUAL_METHOD(int, GetInt, 13, (), ());
+    DECLARE_VIRTUAL_METHOD(void, SetValue, 14, (const char* val), (val));
+    DECLARE_VIRTUAL_METHOD(void, SetValue, 15, (float val), (val));
+    DECLARE_VIRTUAL_METHOD(void, SetValue, 16, (int val), (val));
 
     std::byte pad[24];
     std::add_pointer_t<void __cdecl()> changeCallback;
@@ -38,9 +17,5 @@ struct ConVar {
 
 class CVar {
 public:
-    ConVar* FindVar(const char* name) noexcept
-    {
-        typedef ConVar* (__thiscall* ofinVar)(void*, const char*);
-        return GetVFunc<ofinVar>(this, 15)(this, name);
-    }
+    DECLARE_VIRTUAL_METHOD(ConVar*, FindVar, 15, (const char* name), (name));
 };
