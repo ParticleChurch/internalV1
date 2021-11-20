@@ -435,6 +435,9 @@
     <ClInclude Include="Utils\StringEncryption.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\time.hpp">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

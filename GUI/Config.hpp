@@ -12,6 +12,7 @@
 #include "HTTP.hpp"
 #include "ConfigConstants.hpp"
 #include "../json.hpp"
+#include "../Utils/time.hpp"
 
 namespace Config
 {
@@ -707,4 +708,232 @@ namespace Config
 			return x;
 		}
 	};
+}
+
+namespace Config2 {
+	struct State;
+	struct FloatingPoint;
+
+	struct Property {
+		std::string name;
+
+		Property(std::string name)
+		{
+			this->name = name;
+		}
+
+		virtual void draw() = 0;
+		virtual std::string toString() = 0;
+		virtual bool fromString(std::string) = 0;
+
+	protected:
+		struct {
+			size_t cachedOnFrame = (size_t)-1;
+			bool cachedValue = false;
+
+			Property* chain = nullptr;
+			
+			struct {
+				State* prop = nullptr;
+				int equals = 0;
+			} stateful;
+
+			struct {
+				FloatingPoint* prop = nullptr;
+				float greaterThan = -INFINITY;
+				float lessThan = INFINITY;
+			} floating;
+		} visibility;
+
+	public:
+		inline bool isVisible();
+	};
+
+	struct State : public Property {
+	protected:
+		int value = 0;
+		int min = 0, max = 0;
+
+		int lastValue = 0;
+		float timeChanged = 0.f;
+
+	public:
+		State(std::string name, int min, int max) : Property(name) 
+		{
+			this->min = min;
+			this->max = max;
+			this->value = min;
+			this->lastValue = this->value;
+		}
+
+		virtual std::string toString() 
+		{
+			return std::to_string(this->value);
+		}
+		virtual bool fromString(std::string s)
+		{
+			try {
+				this->set(std::stoi(s));
+				return true;
+			} catch(...) {
+				return false;
+			}
+		}
+
+		int getLastValue() { return this->lastValue; }
+		float getTimeChanged() { return this->timeChanged; }
+		int get() { return this->value; }
+		void set(int val) {
+			this->lastValue = this->value;
+			this->value = std::clamp(val, this->min, this->max);
+			this->timeChanged = getCurrentTimestamp();
+		}
+	};
+
+	struct FloatingPoint : public Property {
+	protected:
+		float value = 0.f;
+		float min = 0.f, max = 1.f;
+		float step = 0.f;
+
+		float lastValue = 0.f;
+		float timeChanged = 0.f;
+
+	public:
+		FloatingPoint(std::string name, float min, float max, float step = 0.f) : Property(name)
+		{
+			this->min = min;
+			this->max = max;
+			this->step = step;
+			this->value = min;
+			this->lastValue = this->value;
+		}
+
+		virtual std::string toString() 
+		{
+			return std::to_string(this->value);
+		}
+		virtual bool fromString(std::string s)
+		{
+			try {
+				this->set(std::stof(s));
+				return true;
+			} catch(...) {
+				return false;
+			}
+		}
+
+		float getLastValue() { return this->lastValue; }
+		float getTimeChanged() { return this->timeChanged; }
+		float get() { return this->value; }
+		void set(float val) {
+			if (this->step > 0.f)
+			{
+				int steps = (int)((val - this->min) / this->step + 0.5f);
+				val = this->min + steps * this->step;
+			}
+
+			this->lastValue = this->value;
+			this->value = std::clamp(val, this->min, this->max);
+			this->timeChanged = getCurrentTimestamp();
+		}
+	};
+
+	struct Slider : FloatingPoint
+	{
+	protected:
+		std::string unit;
+
+	public:
+		Slider(std::string name, float min, float max, float step = 0.f, std::string unit = "") : FloatingPoint(name, min, max, step)
+		{
+			this->unit = unit;
+		}
+	};
+
+	struct Boolean : public State
+	{
+		Boolean(std::string name) : State(name, 0, 1) {}
+
+		virtual void draw()
+		{
+			// TODO
+		}
+	};
+
+	struct NamedState : public State
+	{
+	protected:
+		std::vector<std::string> values;
+
+	public:
+		NamedState(std::string name, std::initializer_list<std::string> values) : State(name, 0, values.size()), values{ values } { }
+
+		virtual std::string toString()
+		{
+			return this->values.at(this->value);
+		}
+
+		virtual bool fromString(std::string s)
+		{
+			for (int i = 0; i < this->max; i++)
+			{
+				if (this->values.at(i) == s)
+				{
+					this->value = i;
+					return true;
+				}
+			}
+
+			return false;
+		}
+	};
+
+	struct SingleDropdown : public NamedState
+	{
+		using NamedState::NamedState;
+
+		virtual void draw()
+		{
+			// TODO
+		}
+	};
+
+	struct HorizontalSelect : public NamedState
+	{
+		using NamedState::NamedState;
+
+		virtual void draw()
+		{
+			// TODO
+		}
+	};
+
+	struct BigHorizontalSelect : public HorizontalSelect
+	{
+		using HorizontalSelect::HorizontalSelect;
+
+		virtual void draw()
+		{
+			// TODO
+		}
+	};
+
+	inline bool Property::isVisible()
+	{
+		if (Config::GUIFramesRenderedCounter == this->visibility.cachedOnFrame) return this->visibility.cachedValue;
+
+		const auto& vis = this->visibility;
+		this->visibility.cachedValue =
+			(!vis.chain || vis.chain->isVisible()) &&
+			(!vis.stateful.prop || vis.stateful.prop->get() == vis.stateful.equals) &&
+			(!vis.floating.prop || (vis.floating.greaterThan <= vis.floating.prop->get() && vis.floating.prop->get() <= vis.floating.lessThan));
+
+		this->visibility.cachedOnFrame = Config::GUIFramesRenderedCounter;
+		return this->visibility.cachedValue;
+	}
+
+	namespace Offense {
+		static BigHorizontalSelect x("test", {"1", "2", "3"});
+	}
 }
