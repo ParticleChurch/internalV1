@@ -10,9 +10,9 @@
 #include "SkinConstants.hpp"
 #include "animation.hpp"
 #include "HTTP.hpp"
-#include "ConfigConstants.hpp"
 #include "../json.hpp"
 #include "../Utils/time.hpp"
+#include "ConfigConstants.hpp"
 
 namespace Config
 {
@@ -710,40 +710,63 @@ namespace Config
 	};
 }
 
+
 namespace Config2 {
+	struct Property;
 	struct State;
+	struct Boolean;
 	struct FloatingPoint;
+
+	struct Visibility
+	{
+		size_t cachedOnFrame = (size_t)-1;
+		bool cachedValue = false;
+
+		Property* chain = nullptr;
+
+		struct {
+			State* prop = nullptr;
+			int equals = 0;
+		} stateful;
+
+		struct {
+			FloatingPoint* prop = nullptr;
+			float greaterThan = -INFINITY;
+			float lessThan = INFINITY;
+		} floating;
+
+		inline Visibility(State* prop, int equals)
+		{
+			this->stateful.prop = prop;
+			this->stateful.equals = equals;
+		}
+		inline Visibility(Boolean* prop, bool equals = true) : Visibility((State*)prop, (int)equals) {}
+
+		inline Visibility(FloatingPoint* prop, float greaterThan = -INFINITY, float lessThan = INFINITY)
+		{
+			this->floating.prop = prop;
+			this->floating.greaterThan = greaterThan;
+			this->floating.lessThan = lessThan;
+		}
+
+		inline Visibility(Property* chain)
+		{
+			this->chain = chain;
+		}
+
+		inline Visibility() = default;
+	};
 
 	struct Property {
 		std::string name;
-
-		Property(std::string name)
-		{
-			this->name = name;
-		}
+		Property(const std::string& name, Visibility visibility = {}) : name(name), visibility(visibility) {}
 
 		virtual void draw() = 0;
 		virtual std::string toString() = 0;
-		virtual bool fromString(std::string) = 0;
+		virtual bool fromString(const std::string& s) = 0;
 
 	protected:
-		struct {
-			size_t cachedOnFrame = (size_t)-1;
-			bool cachedValue = false;
-
-			Property* chain = nullptr;
-			
-			struct {
-				State* prop = nullptr;
-				int equals = 0;
-			} stateful;
-
-			struct {
-				FloatingPoint* prop = nullptr;
-				float greaterThan = -INFINITY;
-				float lessThan = INFINITY;
-			} floating;
-		} visibility;
+		Visibility visibility;
 
 	public:
 		inline bool isVisible();
@@ -758,7 +781,7 @@ namespace Config2 {
 		float timeChanged = 0.f;
 
 	public:
-		State(std::string name, int min, int max) : Property(name) 
+		State(std::string name, int min, int max, Visibility visibility = {}) : Property(name, visibility)
 		{
 			this->min = min;
 			this->max = max;
@@ -770,7 +793,7 @@ namespace Config2 {
 		{
 			return std::to_string(this->value);
 		}
-		virtual bool fromString(std::string s)
+		virtual bool fromString(const std::string& s)
 		{
 			try {
 				this->set(std::stoi(s));
@@ -780,9 +803,9 @@ namespace Config2 {
 			}
 		}
 
-		int getLastValue() { return this->lastValue; }
-		float getTimeChanged() { return this->timeChanged; }
-		int get() { return this->value; }
+		const int& getLastValue() { return this->lastValue; }
+		const float& getTimeChanged() { return this->timeChanged; }
+		const int& get() { return this->value; }
 		void set(int val) {
 			this->lastValue = this->value;
 			this->value = std::clamp(val, this->min, this->max);
@@ -800,7 +823,7 @@ namespace Config2 {
 		float timeChanged = 0.f;
 
 	public:
-		FloatingPoint(std::string name, float min, float max, float step = 0.f) : Property(name)
+		FloatingPoint(const std::string& name, float min, float max, float step = 0.f, Visibility visibility = {}) : Property(name, visibility)
 		{
 			this->min = min;
 			this->max = max;
@@ -808,12 +831,13 @@ namespace Config2 {
 			this->value = min;
 			this->lastValue = this->value;
 		}
+		FloatingPoint(const std::string& name, float min, float max, Visibility visibility) : FloatingPoint(name, min, max, 0.f, visibility) {}
 
 		virtual std::string toString() 
 		{
 			return std::to_string(this->value);
 		}
-		virtual bool fromString(std::string s)
+		virtual bool fromString(const std::string& s)
 		{
 			try {
 				this->set(std::stof(s));
@@ -823,9 +847,9 @@ namespace Config2 {
 			}
 		}
 
-		float getLastValue() { return this->lastValue; }
-		float getTimeChanged() { return this->timeChanged; }
-		float get() { return this->value; }
+		const float& getLastValue() { return this->lastValue; }
+		const float& getTimeChanged() { return this->timeChanged; }
+		const float& get() { return this->value; }
 		void set(float val) {
 			if (this->step > 0.f)
 			{
@@ -845,15 +869,19 @@ namespace Config2 {
 		std::string unit;
 
 	public:
-		Slider(std::string name, float min, float max, float step = 0.f, std::string unit = "") : FloatingPoint(name, min, max, step)
+		Slider(const std::string& name, float min, float max, float step = 0.f, std::string unit = "", Visibility visibility = {}) : FloatingPoint(name, min, max, step, visibility)
 		{
 			this->unit = unit;
 		}
+		Slider(const std::string& name, float min, float max, std::string unit = "", Visibility visibility = {}) : Slider(name, min, max, 0.f, unit, visibility) {}
+		Slider(const std::string& name, float min, float max, Visibility visibility = {}) : Slider(name, min, max, 0.f, "", visibility) {}
 	};
 
 	struct Boolean : public State
 	{
-		Boolean(std::string name) : State(name, 0, 1) {}
+		Boolean(const std::string& name, Visibility visibility = {}) : State(name, 0, 1, visibility) {}
+
+		const bool& get() { return this->value; }
 
 		virtual void draw()
 		{
@@ -867,14 +895,21 @@ namespace Config2 {
 		std::vector<std::string> values;
 
 	public:
-		NamedState(std::string name, std::initializer_list<std::string> values) : State(name, 0, values.size()), values{ values } { }
+		NamedState(const std::string& name, std::initializer_list<std::string> values, Visibility visibility = {}) : State(name, 0, values.size(), visibility), values{ values } { }
 
+		// more efficient than toString because doesn't make a copy
+		const std::string& getString()
+		{
+			return this->values.at(this->value);
+		}
+
+		// use getString instead if possible
 		virtual std::string toString()
 		{
 			return this->values.at(this->value);
 		}
 
-		virtual bool fromString(std::string s)
+		virtual bool fromString(const std::string& s)
 		{
 			for (int i = 0; i < this->max; i++)
 			{
@@ -923,7 +958,7 @@ namespace Config2 {
 	{
 		if (Config::GUIFramesRenderedCounter == this->visibility.cachedOnFrame) return this->visibility.cachedValue;
 
-		const auto& vis = this->visibility;
+		const Visibility& vis = this->visibility;
 		this->visibility.cachedValue =
 			(!vis.chain || vis.chain->isVisible()) &&
 			(!vis.stateful.prop || vis.stateful.prop->get() == vis.stateful.equals) &&
@@ -932,8 +967,17 @@ namespace Config2 {
 		this->visibility.cachedOnFrame = Config::GUIFramesRenderedCounter;
 		return this->visibility.cachedValue;
 	}
+}
 
-	namespace Offense {
-		static BigHorizontalSelect x("test", {"1", "2", "3"});
+#include "ConfigDefinitions.hpp"
+namespace Config2 {
+	namespace Enums {
+		enum OffenceMode : int {
+			Legit = 0,
+			Rage,
+		};
+	}
+	namespace Variables {
+		DECLARE_CONFIG
 	}
 }

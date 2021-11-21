@@ -1,4 +1,8 @@
-﻿#include "../Include.hpp"
+﻿#define CONFIG_IMPL
+#include "ConfigConstants.hpp"
+#undef CONFIG_IMPL
+
+#include "../Include.hpp"
 #include "HTTP.hpp"
 #include <sstream>
 #define HITBOXES_CONFIG "Head", "Neck", "Upper-Chest", "Lower-Chest", "Stomach", "Pelvis", "Upper-Arms", "Lower-Arms", "Upper-Legs", "Lower-Legs", "Toes"
@@ -2009,5 +2013,39 @@ namespace UserData
 		}
 
 		return true;
+	}
+}
+
+#define CONFIG_IMPL
+#include "ConfigDefinitions.hpp"
+#undef CONFIG_IMPL
+
+namespace Config2 {
+	namespace Variables {
+		DECLARE_CONFIG
+	}
+}
+
+namespace E = Config2::Enums;
+namespace C = Config2::Variables;
+
+void aimbot()
+{
+	namespace LA = C::Offence::LegitAimbot;
+	namespace RA = C::Offence::RageAimbot;
+
+	if (C::Offence::Meta::OffenceMode.get() == E::OffenceMode::Legit)
+	{
+		if (!LA::Enable.get())
+			return;
+
+		// legit code
+	}
+	else
+	{
+		if (!RA::Enable.get())
+			return;
+
+		// rage code
 	}
 }

@@ -234,6 +234,7 @@
     <ClInclude Include="GUI\animation.hpp" />
     <ClInclude Include="GUI\Config.hpp" />
     <ClInclude Include="GUI\ConfigConstants.hpp" />
+    <ClInclude Include="GUI\ConfigDefinitions.hpp" />
     <ClInclude Include="GUI\GUI.hpp" />
     <ClInclude Include="GUI\Keybind.hpp" />
     <ClInclude Include="GUI\HTTP.hpp" />

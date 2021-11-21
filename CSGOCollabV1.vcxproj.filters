@@ -438,6 +438,9 @@
     <ClInclude Include="Utils\time.hpp">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="GUI\ConfigDefinitions.hpp">
+      <Filter>Headers\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
