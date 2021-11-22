@@ -2020,16 +2020,92 @@ namespace UserData
 #include "ConfigDefinitions.hpp"
 #undef CONFIG_IMPL
 
+#include <set>
 namespace Config2 {
-	namespace Variables {
+	std::map<std::string, Property*> DebugAllProperties;
+
+	namespace Properties {
 		DECLARE_CONFIG
+	}
+
+	rapidjson::Document parseConfig(const char* bytes, size_t byteCount, bool* isValidOutput, std::string* errorOutput)
+	{
+		rapidjson::Document d;
+		rapidjson::ParseResult err = d.Parse(bytes, byteCount);
+		if (err.IsError())
+		{
+			if (isValidOutput) *isValidOutput = false;
+			if (errorOutput) *errorOutput = std::string("Invalid JSON: ") + rapidjson::GetParseError_En(err.Code());
+			return d;
+		}
+
+		if (!d.IsObject())
+		{
+			if (isValidOutput) *isValidOutput = false;
+			if (errorOutput) *errorOutput = "Was expecting an object.";
+			return d;
+		}
+
+		for (const auto& [key, value] : d.GetObj())
+		{
+			if (!key.IsString())
+			{
+				if (isValidOutput) *isValidOutput = false;
+				if (errorOutput) *errorOutput = "All keys must be strings in the JSON document.";
+				return d;
+			}
+			if (!value.IsString())
+			{
+				if (isValidOutput) *isValidOutput = false;
+				if (errorOutput) *errorOutput = "All values must be strings in the JSON document.";
+				return d;
+			}
+		}
+
+		if (isValidOutput) *isValidOutput = true;
+		if (errorOutput) *errorOutput = "Success";
+		return d;
+	}
+
+	// assumes json document has already been validated by `parseConfig`
+	std::vector<std::string> findValidTabsInConfig(const rapidjson::Document& json)
+	{
+		static std::set<std::string> allowedTabs = {};
+		if (allowedTabs.empty())
+		{
+			for (size_t i = 0; i < EXPORTABLE_TAB_COUNT; i++)
+			{
+				allowedTabs.emplace(EXPORTABLE_TABS[i]);
+			}
+		}
+
+		std::set<std::string> foundTabs = {};
+		for (const auto& [jKey, jValue] : json.GetObj())
+		{
+			std::string key(jKey.GetString(), jKey.GetStringLength());
+
+			size_t dash = key.find_first_of('-');
+			if (dash == std::string::npos) continue; // this key is invalid, it will be ignored when loading the config
+
+			foundTabs.emplace(key.substr(0, dash));
+		}
+
+		// no clue why it's so goddamn difficult to
+		// take the intersection of two sets
+		std::vector<std::string> output;
+		std::set_intersection(
+			foundTabs.begin(), foundTabs.end(),
+			allowedTabs.begin(), allowedTabs.end(),
+			std::back_inserter(output)
+		);
+		return output;
 	}
 }
 
 namespace E = Config2::Enums;
-namespace C = Config2::Variables;
+namespace C = Config2::Properties;
 
-void aimbot()
+void newConfigExampleUsage()
 {
 	namespace LA = C::Offence::LegitAimbot;
 	namespace RA = C::Offence::RageAimbot;

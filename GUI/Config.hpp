@@ -710,12 +710,24 @@ namespace Config
 	};
 }
 
+/*
+	Includes
+*/
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/error/en.h"
 
+
+/*
+	Property type definitions
+*/
 namespace Config2 {
 	struct Property;
 	struct State;
 	struct Boolean;
 	struct FloatingPoint;
+	extern std::map<std::string, Property*> DebugAllProperties;
 
 	struct Visibility
 	{
@@ -759,7 +771,10 @@ namespace Config2 {
 
 	struct Property {
 		std::string name;
-		Property(const std::string& name, Visibility visibility = {}) : name(name), visibility(visibility) {}
+		Property(const std::string& name, Visibility visibility = {}) : name(name), visibility(visibility)
+		{
+			DebugAllProperties.insert(std::make_pair(this->name, this));
+		}
 
 		virtual void draw() = 0;
 		virtual std::string toString() = 0;
@@ -969,6 +984,9 @@ namespace Config2 {
 	}
 }
 
+/*
+	Property declarations
+*/
 #include "ConfigDefinitions.hpp"
 namespace Config2 {
 	namespace Enums {
@@ -977,7 +995,23 @@ namespace Config2 {
 			Rage,
 		};
 	}
-	namespace Variables {
+	
+	namespace Properties {
 		DECLARE_CONFIG
 	}
+}
+
+/*
+	Config utility
+*/
+namespace Config2 {
+	constexpr const char* EXPORTABLE_TABS[] = {
+		Properties::Offence::_TAB_NAME,
+	};
+	constexpr size_t EXPORTABLE_TAB_COUNT = sizeof(EXPORTABLE_TABS) / sizeof(EXPORTABLE_TABS[0]);
+
+	rapidjson::Document parseConfig(const char* bytes, size_t byteCount, bool* isValidOutput = nullptr, std::string* errorOutput = nullptr);
+	std::vector<std::string> findValidTabsInConfig(const rapidjson::Document& json);
+	std::vector<std::string> loadConfig(const rapidjson::Document& json, std::vector<std::string> includeTabs);
+	rapidjson::Document dumpConfig(std::vector<std::string> includeTabs);
 }
