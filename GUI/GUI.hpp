@@ -1,7 +1,7 @@
 #pragma once
 #include "animation.hpp"
 #include "SkinConstants.hpp"
-#include "Utils/TextService.hpp"
+#include "../Utils/TextService.hpp"
 #include "Config.hpp"
 
 namespace GUI
@@ -49,3 +49,12 @@ namespace GUI
 	extern void ResetInventoryHud();
 	extern bool IsSteamOverlayOpen();
 };
+
+
+namespace GUI2
+{
+	extern uint64_t frameCounter;
+
+	void frame();
+
+}

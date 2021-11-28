@@ -23,12 +23,12 @@
 
 // define if this is an implementation or a declaration
 #ifdef CONFIG_IMPL
-#define CONFIG_TAB(code_name, visible_name) namespace code_name { 
-#define CONFIG_GROUP(code_name, visible_name) namespace code_name { 
-#define CONFIG_PROPERTY(type, code_name, visible_name, ...) type code_name(std::string(_TAB_NAME) + "-" + _GROUP_NAME + "-" + visible_name, __VA_ARGS__);
+#define CONFIG_TAB(code_name, visible_name) namespace code_name { Tab _TAB(#code_name, visible_name);
+#define CONFIG_GROUP(code_name, visible_name) namespace code_name { Group _GROUP(&_TAB, #code_name, visible_name);
+#define CONFIG_PROPERTY(type, code_name, visible_name, ...) type code_name {&_GROUP, #code_name, visible_name, __VA_ARGS__};
 #else
-#define CONFIG_TAB(code_name, visible_name) namespace code_name { constexpr const char* _TAB_NAME = visible_name;
-#define CONFIG_GROUP(code_name, visible_name) namespace code_name { constexpr const char* _GROUP_NAME = visible_name;
+#define CONFIG_TAB(code_name, visible_name) namespace code_name { extern Tab _TAB;
+#define CONFIG_GROUP(code_name, visible_name) namespace code_name { extern Group _GROUP;
 #define CONFIG_PROPERTY(type, code_name, visible_name, ...) extern type code_name;
 #endif
 
@@ -36,6 +36,11 @@
 #define CONFIG_GROUP_END() }
 
 #define DECLARE_CONFIG \
+	CONFIG_TAB(Meta, "") \
+		CONFIG_GROUP(Meta, "") \
+			CONFIG_PROPERTY(Boolean, ShowMenu, "") \
+		CONFIG_GROUP_END() \
+	CONFIG_TAB_END() \
 	CONFIG_TAB(Offence, "Offence") \
 		CONFIG_GROUP(Meta, "") \
 			CONFIG_PROPERTY(BigHorizontalSelect, OffenceMode, "", { "Legit", "Rage" }) \

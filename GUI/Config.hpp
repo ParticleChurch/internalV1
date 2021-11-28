@@ -713,21 +713,178 @@ namespace Config
 /*
 	Includes
 */
+#include <vector>
+#include <string>
+#include <set>
+#include <map>
+
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/error/en.h"
 
+/*
+	Keybinds
+*/
+namespace Config2 {
+	namespace Keybind {
+		struct Keybind;
+
+		typedef int Key; // corresponds to VirtualKey codes
+		extern std::map<Key, std::set<Keybind*>> keybinds;
+
+		enum class Mode {
+			Trigger = 0,
+			Toggle,
+			EnableWhileHolding,
+			DisableWhileHolding,
+		};
+
+		struct Keybind {
+		private:
+			Key key = 0;
+
+			bool isPressed = false;
+			bool toggle = false;
+			bool trigger = false;
+
+			void setKeyState(bool isDown)
+			{
+				static bool lastWasDown = !isDown;
+
+				if (lastWasDown == isDown) return;
+				lastWasDown = isDown;
+
+				this->trigger = isDown;
+				this->isPressed = isDown;
+
+				if (isDown) this->toggle ^= 1;
+			}
+
+			friend inline void update();
+
+		public:
+			Mode mode = Mode::Trigger;
+
+			Keybind(Mode mode = Mode::Toggle, Key key = 0) : mode(mode)
+			{
+				this->changeKey(key);
+			}
+
+			void changeKey(Key key)
+			{
+				// remove current bind
+				{
+					auto it = keybinds.find(this->key);
+					if (it != keybinds.end() && it->second.find(this) != it->second.end())
+					{
+						it->second.erase(this);
+
+						if (it->second.empty())
+							keybinds.erase(this->key);
+					}
+				}
+
+				// add new bind
+				{
+					this->key = key;
+					auto it = keybinds.find(this->key);
+					if (it == keybinds.end())
+						keybinds.insert(std::pair<Key, std::set<Keybind*>>(this->key, { this }));
+					else
+						it->second.insert(this);
+				}
+
+				// unbind
+				if (key == 0)
+				{
+					this->setKeyState(false);
+				}
+			}
+
+			/*
+				if mode = Mode::Trigger
+					will return true if the even should trigger right now
+				else
+					will return true if the state should be 1, otherwise return false
+			*/
+			bool consume()
+			{
+				switch (this->mode)
+				{
+				case Mode::Trigger:
+				{
+					bool v = this->trigger;
+					this->trigger = false;
+					return v;
+				}
+				case Mode::EnableWhileHolding:
+					return this->isPressed;
+				case Mode::DisableWhileHolding:
+					return !this->isPressed;
+				case Mode::Toggle:
+					return this->toggle;
+				}
+
+				// should not be possible
+				return false;
+			}
+		};
+
+		inline void update()
+		{
+			for (const auto& [key, binds] : keybinds)
+			{
+				// not bound
+				if (key == 0) continue;
+
+				bool isDown = GetAsyncKeyState(key) < 0;
+				for (const auto& bind : binds)
+					bind->setKeyState(isDown);
+			}
+		}
+	}
+}
 
 /*
 	Property type definitions
 */
+#define FIRST_PROP_ARGS Group* group, std::string codeName, std::string visibleName
+#define FIRST_PROP_ARGS_FWD group, codeName, visibleName
+#define LAST_PROP_ARGS Visibility visibility = {}
+#define LAST_PROP_ARGS_FWD visibility
+
 namespace Config2 {
 	struct Property;
 	struct State;
 	struct Boolean;
 	struct FloatingPoint;
-	extern std::map<std::string, Property*> DebugAllProperties;
+
+	struct Group;
+	struct Tab;
+	extern std::vector<Tab*> tabs;
+
+	struct Tab {
+		std::string codeName;
+		std::string visibleName;
+		std::vector<Group*> groups;
+
+		Tab(std::string codeName, std::string visibleName, std::vector<Group*> groups = {}) : codeName(codeName), visibleName(visibleName), groups(groups)
+		{
+			tabs.push_back(this);
+		}
+	};
+
+	struct Group {
+		std::string codeName;
+		std::string visibleName;
+		std::vector<Property*> properties;
+
+		Group(Tab* tab, std::string codeName, std::string visibleName, std::vector<Property*> properties = {}) : codeName(codeName), visibleName(visibleName), properties(properties)
+		{
+			tab->groups.push_back(this);
+		}
+	};
 
 	struct Visibility
 	{
@@ -770,15 +927,20 @@ namespace Config2 {
 	};
 
 	struct Property {
-		std::string name;
-		Property(const std::string& name, Visibility visibility = {}) : name(name), visibility(visibility)
+		Keybind::Keybind bind;
+
+		std::string codeName;
+		std::string visibleName;
+
+		Property(FIRST_PROP_ARGS, LAST_PROP_ARGS) : codeName(codeName), visibleName(visibleName), visibility(visibility)
 		{
-			DebugAllProperties.insert(std::make_pair(this->name, this));
+			group->properties.push_back(this);
 		}
 
 		virtual void draw() = 0;
 		virtual std::string toString() = 0;
 		virtual bool fromString(const std::string& s) = 0;
+		virtual void processKeybind() = 0;
 
 	protected:
 		Visibility visibility;
@@ -796,7 +958,7 @@ namespace Config2 {
 		float timeChanged = 0.f;
 
 	public:
-		State(std::string name, int min, int max, Visibility visibility = {}) : Property(name, visibility)
+		State(FIRST_PROP_ARGS, int min, int max, LAST_PROP_ARGS) : Property(FIRST_PROP_ARGS_FWD, LAST_PROP_ARGS_FWD)
 		{
 			this->min = min;
 			this->max = max;
@@ -817,14 +979,25 @@ namespace Config2 {
 				return false;
 			}
 		}
+		virtual void processKeybind()
+		{
+			this->set(this->bind.consume() ? this->min : this->max);
+		}
 
 		const int& getLastValue() { return this->lastValue; }
 		const float& getTimeChanged() { return this->timeChanged; }
 		const int& get() { return this->value; }
 		void set(int val) {
+			if (this->value == val) return;
+
 			this->lastValue = this->value;
 			this->value = std::clamp(val, this->min, this->max);
 			this->timeChanged = getCurrentTimestamp();
+		}
+
+		const int& operator*()
+		{
+			return this->get();
 		}
 	};
 
@@ -838,7 +1011,7 @@ namespace Config2 {
 		float timeChanged = 0.f;
 
 	public:
-		FloatingPoint(const std::string& name, float min, float max, float step = 0.f, Visibility visibility = {}) : Property(name, visibility)
+		FloatingPoint(FIRST_PROP_ARGS, float min, float max, float step = 0.f, LAST_PROP_ARGS) : Property(FIRST_PROP_ARGS_FWD, LAST_PROP_ARGS_FWD)
 		{
 			this->min = min;
 			this->max = max;
@@ -846,7 +1019,7 @@ namespace Config2 {
 			this->value = min;
 			this->lastValue = this->value;
 		}
-		FloatingPoint(const std::string& name, float min, float max, Visibility visibility) : FloatingPoint(name, min, max, 0.f, visibility) {}
+		FloatingPoint(FIRST_PROP_ARGS, float min, float max, LAST_PROP_ARGS) : FloatingPoint(FIRST_PROP_ARGS_FWD, min, max, 0.f, LAST_PROP_ARGS_FWD) {}
 
 		virtual std::string toString() 
 		{
@@ -860,6 +1033,10 @@ namespace Config2 {
 			} catch(...) {
 				return false;
 			}
+		}
+		virtual void processKeybind()
+		{
+			this->set(this->bind.consume() ? this->min : this->max);
 		}
 
 		const float& getLastValue() { return this->lastValue; }
@@ -876,6 +1053,12 @@ namespace Config2 {
 			this->value = std::clamp(val, this->min, this->max);
 			this->timeChanged = getCurrentTimestamp();
 		}
+
+
+		const float& operator*()
+		{
+			return this->get();
+		}
 	};
 
 	struct Slider : FloatingPoint
@@ -884,23 +1067,35 @@ namespace Config2 {
 		std::string unit;
 
 	public:
-		Slider(const std::string& name, float min, float max, float step = 0.f, std::string unit = "", Visibility visibility = {}) : FloatingPoint(name, min, max, step, visibility)
+		Slider(
+			FIRST_PROP_ARGS, 
+			float min, 
+			float max, 
+			float step = 0.f,
+			std::string unit = "", 
+			LAST_PROP_ARGS
+		) : FloatingPoint(FIRST_PROP_ARGS_FWD, min, max, step, LAST_PROP_ARGS_FWD)
 		{
 			this->unit = unit;
 		}
-		Slider(const std::string& name, float min, float max, std::string unit = "", Visibility visibility = {}) : Slider(name, min, max, 0.f, unit, visibility) {}
-		Slider(const std::string& name, float min, float max, Visibility visibility = {}) : Slider(name, min, max, 0.f, "", visibility) {}
+		Slider(FIRST_PROP_ARGS, float min, float max, std::string unit = "", LAST_PROP_ARGS) : Slider(FIRST_PROP_ARGS_FWD, min, max, 0.f, unit, LAST_PROP_ARGS_FWD) {}
+		Slider(FIRST_PROP_ARGS, float min, float max, LAST_PROP_ARGS) : Slider(FIRST_PROP_ARGS_FWD, min, max, 0.f, "", LAST_PROP_ARGS_FWD) {}
 	};
 
 	struct Boolean : public State
 	{
-		Boolean(const std::string& name, Visibility visibility = {}) : State(name, 0, 1, visibility) {}
+		Boolean(FIRST_PROP_ARGS, LAST_PROP_ARGS) : State(FIRST_PROP_ARGS_FWD, 0, 1, LAST_PROP_ARGS_FWD) {}
 
 		const bool& get() { return this->value; }
 
 		virtual void draw()
 		{
 			// TODO
+		}
+
+		const bool& operator*()
+		{
+			return this->get();
 		}
 	};
 
@@ -910,7 +1105,7 @@ namespace Config2 {
 		std::vector<std::string> values;
 
 	public:
-		NamedState(const std::string& name, std::initializer_list<std::string> values, Visibility visibility = {}) : State(name, 0, values.size(), visibility), values{ values } { }
+		NamedState(FIRST_PROP_ARGS, std::initializer_list<std::string> values, LAST_PROP_ARGS) : State(FIRST_PROP_ARGS_FWD, 0, values.size(), LAST_PROP_ARGS_FWD), values{ values } { }
 
 		// more efficient than toString because doesn't make a copy
 		const std::string& getString()
@@ -984,6 +1179,11 @@ namespace Config2 {
 	}
 }
 
+#undef FIRST_PROP_ARGS 
+#undef FIRST_PROP_ARGS_FWD 
+#undef LAST_PROP_ARGS 
+#undef LAST_PROP_ARGS_FWD
+
 /*
 	Property declarations
 */
@@ -1005,13 +1205,8 @@ namespace Config2 {
 	Config utility
 */
 namespace Config2 {
-	constexpr const char* EXPORTABLE_TABS[] = {
-		Properties::Offence::_TAB_NAME,
-	};
-	constexpr size_t EXPORTABLE_TAB_COUNT = sizeof(EXPORTABLE_TABS) / sizeof(EXPORTABLE_TABS[0]);
-
 	rapidjson::Document parseConfig(const char* bytes, size_t byteCount, bool* isValidOutput = nullptr, std::string* errorOutput = nullptr);
 	std::vector<std::string> findValidTabsInConfig(const rapidjson::Document& json);
-	std::vector<std::string> loadConfig(const rapidjson::Document& json, std::vector<std::string> includeTabs);
-	rapidjson::Document dumpConfig(std::vector<std::string> includeTabs);
+	std::vector<std::string> loadConfig(const rapidjson::Document& json, std::vector<Tab*> includeTabs);
+	rapidjson::Document dumpConfig(std::vector<Tab*> includeTabs);
 }

@@ -2020,10 +2020,12 @@ namespace UserData
 #include "ConfigDefinitions.hpp"
 #undef CONFIG_IMPL
 
-#include <set>
 namespace Config2 {
-	std::map<std::string, Property*> DebugAllProperties;
+	namespace Keybind {
+		std::map<Key, std::set<Keybind*>> keybinds;
+	}
 
+	std::vector<Tab*> tabs = {};
 	namespace Properties {
 		DECLARE_CONFIG
 	}
@@ -2073,9 +2075,9 @@ namespace Config2 {
 		static std::set<std::string> allowedTabs = {};
 		if (allowedTabs.empty())
 		{
-			for (size_t i = 0; i < EXPORTABLE_TAB_COUNT; i++)
+			for (const auto& tab: tabs)
 			{
-				allowedTabs.emplace(EXPORTABLE_TABS[i]);
+				allowedTabs.emplace(tab->codeName);
 			}
 		}
 
@@ -2084,10 +2086,10 @@ namespace Config2 {
 		{
 			std::string key(jKey.GetString(), jKey.GetStringLength());
 
-			size_t dash = key.find_first_of('-');
-			if (dash == std::string::npos) continue; // this key is invalid, it will be ignored when loading the config
+			size_t slash = key.find_first_of('/');
+			if (slash == std::string::npos) continue; // this key is invalid, it will be ignored when loading the config
 
-			foundTabs.emplace(key.substr(0, dash));
+			foundTabs.emplace(key.substr(0, slash));
 		}
 
 		// no clue why it's so goddamn difficult to
@@ -2099,29 +2101,5 @@ namespace Config2 {
 			std::back_inserter(output)
 		);
 		return output;
-	}
-}
-
-namespace E = Config2::Enums;
-namespace C = Config2::Properties;
-
-void newConfigExampleUsage()
-{
-	namespace LA = C::Offence::LegitAimbot;
-	namespace RA = C::Offence::RageAimbot;
-
-	if (C::Offence::Meta::OffenceMode.get() == E::OffenceMode::Legit)
-	{
-		if (!LA::Enable.get())
-			return;
-
-		// legit code
-	}
-	else
-	{
-		if (!RA::Enable.get())
-			return;
-
-		// rage code
 	}
 }

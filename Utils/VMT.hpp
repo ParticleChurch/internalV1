@@ -1,7 +1,7 @@
 #pragma once
 
 namespace VMT { // Virtual Method Table
-	typedef void* GenericSubclassInstance;
+	typedef void* GenericSubclassInstance; // just a pointer to an object in memory
 	typedef void* GenericFunction; // a function is a pointer to executable memory
 	typedef GenericFunction* VMT; // a VMT is an array of functions
 
@@ -23,7 +23,7 @@ namespace VMT { // Virtual Method Table
 		// really fkn annoying that this causes debugger interrupt
 		// but that is "by design". Fuck you microsoft
 		// just step over it, nothing actually went wrong
-		while (IsBadCodePtr((FARPROC)(vmt[output])) == 0)
+		while (!IsBadCodePtr((FARPROC)(vmt[output])))
 			++output;
 		
 		return output;
@@ -33,7 +33,7 @@ namespace VMT { // Virtual Method Table
 	{
 		size_t FunctionCount = 0;
 		VMT CustomVMT; // starts as a copy of the original, but you can edit this one
-		VMT OriginalVMT; // untouched original VMT, allocated by Valve
+		VMT OriginalVMT; // untouched original VMT, allocated by host program
 		VMT* ActiveVMT; // pointer to the VMT that is being used currently
 
 		Manager(VMT* pVMT)

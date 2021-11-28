@@ -3950,3 +3950,27 @@ bool GUI::IsSteamOverlayOpen()
 	static int* isOpen = (int*)((DWORD)GetModuleHandleA("gameoverlayrenderer.dll") + 0x14B7E4);
 	return *isOpen == 1;
 }
+
+
+namespace GUI2
+{
+	namespace E = Config2::Enums;
+	namespace P = Config2::Properties;
+	namespace K = Config2::Keybind;
+	namespace M = P::Meta::Meta;
+
+	uint64_t frameCounter = 0;
+	void frame()
+	{
+		++frameCounter;
+		K::update();
+
+		if (!*M::ShowMenu)
+			return;
+
+		for (const auto& tab : Config2::tabs)
+		{
+			
+		}
+	}
+}

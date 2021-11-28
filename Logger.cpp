@@ -1,5 +1,6 @@
 #include "Logger.hpp"
 
+#include <string>
 #include <fstream>
 #include <iostream>
 
